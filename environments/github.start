@@ -67,3 +67,12 @@ git branch -d  test   删除test分支
 git checkout -b  test   创建test分支并切换到该分支
 
 git merge 合并
+
+默认合并是fast forword：
+
+fast forword  两个分支归于一个commit点；丢失分支合并过程的信息；
+git merge --no-ff dev  两个分支不会归于一个commit点；有完整的合并信息展示；
+
+git log --graph  图形显示log信息
+
+
