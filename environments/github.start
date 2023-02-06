@@ -75,4 +75,6 @@ git merge --no-ff dev  两个分支不会归于一个commit点；有完整的合
 
 git log --graph  图形显示log信息
 
+git log --graph   --pretty=oneline --abbrev-commit      一行显示，sha1值精简
+
 
