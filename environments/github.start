@@ -66,3 +66,4 @@ git branch  test   创建test分支
 git branch -d  test   删除test分支
 git checkout -b  test   创建test分支并切换到该分支
 
+git merge 合并
