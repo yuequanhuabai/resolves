@@ -78,3 +78,45 @@ git log --graph  图形显示log信息
 git log --graph   --pretty=oneline --abbrev-commit      一行显示，sha1值精简
 
 
+gitlab安装部署：
+
+操作系统：centos7
+
+hostnamectl  set-hostname bigdata02
+
+网卡名：ifcfg-eno16777736
+centos7 不需要删70-persistent-net.rules
+
+centos6:
+service  xxx start
+centos7:
+systemctl start firewalld
+
+gitlab 仓库：https://packages.gitlab.com/gitlab/gitlab-ce
+选择11.9.0  el7(两个过滤条件)，点击右上角的下载
+
+执行的命令：
+firewall-cmd --permanent --add-service=http
+
+遇到问题：
+Feb 07 16:46:35 localhost.localdomain firewalld[5106]: 2023-02-07 16:46:35 ERROR: INVALID_ZONE
+Feb 07 16:46:48 localhost.localdomain firewalld[5106]: 2023-02-07 16:46:48 ERROR: INVALID_ZONE
+
+解决方案：
+https://blog.csdn.net/baidu_39459954/article/details/90641191
+
+
+rpm 安装命令：
+rpm -ivh gitlab-ce-11.9.0-ce.0.el7.x86_64.rpm
+
+gitlab-ctl reconfigure
+
+启动gitlab：
+gitlab-ctl start/stop
+
+注意防火墙的状态：
+systemctl start firewalld
+systemctl stop firewalld
+
+设置访问的密码：12345678
+帐号是root：
