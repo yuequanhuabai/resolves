@@ -1,0 +1,89 @@
+Mysql版本：
+	5.x：
+	5.0-5.1： 早期产品的延续，升级维护
+	5.4-5.x： Mysql整合了三方公司的新存储引擎(推荐5.5)
+
+rpm -ivh  rpm软件名
+
+如果冲突，则可以用以下命令卸载：
+yum -y remove  mysql-libs-5.1.73*    yum 卸载软件
+
+如果提示 “GPG keys...”安装失败，
+rpm -ivh rpm软件包名  --force --nodeps
+
+安装时提示修改root用户的密码：
+
+验证安装成功：
+mysqladmin --version
+
+启动： service mysql start
+关闭： service mysql stop
+重启： service mysql restart
+
+
+
+
+Mysql：
+ 连接层、服务层、引擎层、 存储层.
+
+连接层提供客户端的连接；
+服务层：1.提供各种用户使用的接口(sql语句)；2.提供SQL优化器帮助优化Sql语句；
+引擎层：提供了各种存储数据的方式(主要是InnoDB，MyISAM)
+存储层： 存储数据.
+
+InnoDB: 事务优先（适合高并发操作；行锁）
+MyISAM: 性能优先 （表锁）
+
+查看mysql的所有存储引擎： show engines;
+查看当前使用的引擎： show variables like '%storage_engine%'
+
+select teacher.tid, teacher.tname from teacher
+ left join course on course.tid =teacher.tid
+left join teacher.tcId=teacherCard.tcid
+where cid=2 or teacherCard=3
+
+
+sql 优化： 小表交大表，减少中间生成的数据条数，节省内存；
+
+
+explain优化参数： id,select_type,type,select_type
+id   
+id值相同，从上往下 顺序执行；
+id值不同，id值越大越优先;
+
+select_type: priamary (主查询，一般是最外层)，subquery(子查询，非最外层)
+                ： simple （不包含子查询，union）
+                 ： derived （衍生查询，使用到了临时表 ）
+type:   system>const>eq_ref>ref>range>index>all   越往左，优先级越高；
+
+ref：非唯一性索引，对于每个索引键的查询，返回匹配的所有行(0，多个)
+range： 范围查询，between， >,<；    in(有时候会失效为all)
+
+index： 查询命中索引数据结构中的所有 数据；
+all：查询全部表中的数据；
+
+system/const: 结果只有一条数据
+eq_ref: 结果多条，但每条数据都是唯一的；
+ref：结果多条，但每条数据是0或者多条；即不唯一；
+
+  using where(回表查询)   using index(索引覆盖，只会查找索引数据结构)
+
+SQL 优化排查：
+       慢查询日志： 默认关闭；
+      查看： show  variables like  '%slow_query_log%'
+       开启慢查询日志：
+         临时开启： set global slow_query_log =1;     在内存中开启；
+          永久开启：  /etc/my.cnf     [mysqld]  --> slow_query_log=1   slow_query_log_file=/var/lib/mysql/localhost-slow.log
+慢查询日志的时间（默认10秒）：
+       show variables like '%long_query_time%'
+
+设置时间： set global  long_query_tim=5;
+
+     永久设置： /etc/my.cnf   [mysqld]        long_query_time=3
+
+select sleep(4);
+
+查看超过阈值
+
+
+

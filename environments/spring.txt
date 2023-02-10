@@ -1,0 +1,41 @@
+手动下载Springjar包地址：https://repo.spring.io/ui/native/libs-release-local/org/springframework/spring/
+
+
+Spring注入的三种方式：
+set注入
+构造注入
+p命名空间注入
+自动装配：约定大于配置(只适用于引用类型，某个类里有另一个类时，如果配置文件中有个bean的id值和该类的引用变量名相同，那么会自动注入到对象中，
+bean标签上需要加入：autowire="byName"，还可以用autowire="byType"，还可以用autowire="constructor")
+
+简单类型 8中基本类型+String
+<bean id="唯一id，一般是类首字母小写，其他的也可，不过不建议" class="全局限定名">
+<property name="属性名" value="属性值"></property>
+ </bean>
+
+ 复杂对象注入：
+
+
+ <bean id="唯一id，一般是类首字母小写，其他的也可，不过不建议" class="全局限定名">
+<property name="属性名" value="属性值"></property>
+ </bean>
+
+ 自动装配默认格式：
+ 再beans标签内部添加属性： default-autowire="byName", default-autowire="byType",default-autowire="constructor"
+
+
+ 通过注解实现注入：
+在类上添加Component注解,如下所示：
+@Component("sqlCourse")
+public class SqlCourse implements ICourse{
+
+在配置文件中加入该类的包扫描路径，如下：
+<context:component-scan base-package="com.yq.te004,com.yq.te003"></context:component-scan>
+
+
+commons-logging 的respo路径：https://archive.apache.org/dist/commons/logging/binaries/  记住时bin目录下
+
+@Component细化：
+dao层：@Repository
+service层：@Service
+controller层：@Controller

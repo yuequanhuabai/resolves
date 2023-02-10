@@ -18,6 +18,14 @@ git push -u origin main:main
 因为提交代码的时候一般提交的是当前分支代码，该命令也可以省略为：
 git push -u origin main
 
+方法1.远程仓库变更：直接修改
+git remote set-url origin 远程仓库地址
+方法2.也可以先删除，再添加：
+git remote rm origin
+git remote add origin 远程仓库地址
+方法3.进入.git隐藏文件
+vi config，把[core]url参数改为更改后的仓库地址
+
 
 git 配置个人账户信息
 
