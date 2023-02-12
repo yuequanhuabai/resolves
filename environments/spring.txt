@@ -39,3 +39,205 @@ commons-logging 的respo路径：https://archive.apache.org/dist/commons/logging
 dao层：@Repository
 service层：@Service
 controller层：@Controller
+
+Spring  yml或properties文件数据注入
+@Component
+@ ConfigurationProperties(prefix="student")
+
+还可以通过@Values()注解实现注入
+
+        		@ConfigurationProperties                        	@Value
+注入值		批量注入(只需要在类上写一次)			单个注入(需要在每个属性上写)
+松散语法		支持user-name(类似驼峰转中划线)		不支持
+SpringEL		不支持(@Value("${student.uname}"))		支持
+JSR302数据校验	支持(类上@Validation注解，属性@Email注解)	不支持
+注入复杂类型	支持(Map,对象等)				不支持
+
+
+@PropertySource默认识别application.properties和application.yml文件，如果是其它名字的文件,需要显示指定.
+例如：@PropertySource(value={"classpath:conf.properties"})
+但是只能加载.properties后缀文件
+
+xml文件 和注解方式实现    配置信息注入：
+
+Springboot默认不识别自己编写的spring配置文件，实在要的话，可以通过@ImportResource实现，不推荐
+例如：@ImportResource(lacations={"classpath:spring.xml"})放在启动类上
+
+也可以通过注解形式注入
+@Configuration注解和@Bean 注解实现
+@Configuration注解作用于类，@Bean注解方法名为beanId的方法上；
+
+配置文件的信息可以相互引用，例如一个配置文件里的属性student.uname= zs
+另一个可以用student.uname=${student.uname: defautlValue} EL表达式来引用该唯一id对应的值,如果该值不存在，可以用冒号在后面添加一个默认值；
+
+配置文件元数据自动提示依赖：
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-configuration-processor</artifactId>
+    <optional>true</optional>
+</dependency>
+
+properties文件配置多环境
+多个配置文件
+application.properties
+spring.profiles.active=dev
+application-dev.properties
+application-test.properties
+
+yml文件配置多环境
+在一个yml文件中通过 ---(三个-)来隔开
+
+例如：
+server:  
+  port: 8883
+spring:
+  profiles: 
+    active: dev
+---
+server:
+  port: 8884
+spring:
+  profiles: dev
+
+---
+server:
+  port: 8884
+spring:
+  profiles: test
+
+就会激活dev的配置
+
+properties配置文件的优先级高于yml配置文件的优先级
+
+动态切换配置文件
+1.
+i.命令行方式：（STS()编译器）
+--spring.profiles.active=dev
+在启动类运行的时候配置，在Arguments的Program arguements 里 配置
+
+ii.先打包，获取jar包， 
+    java -jar  项目名.jar  --spring.profiles.active=dev
+
+2.通过虚拟机参数指定
+  i. 在启动类运行的时候配置，在Arguments的VM arguements 里 配置
+-Dspring.profiles.active=dev
+
+
+配置文件位置：  
+
+项目内部的配置文件：
+  properties和yml
+spring boot 默认能够读取的applcation.properties/application.yml，这2个文件可以存在下面4个位置
+file:项目根目录/config                 application.properties
+file:项目根目录                            application.properties
+classpath:项目根目录/config        application.properties
+classpath:项目根目录                   application.properties
+
+
+server.servlet.context-path=/boot
+项目外部的配置文件:
+访问入口:  localhost:8882/boot/helloWorld
+
+外部文件位置： D:\application.properties      server.servlet.context-path=/BBBoot
+--spring.config.location=D:/application.properties
+在启动类运行的时候配置，在Arguments的Program arguements 里 配置
+  访问入口:  localhost:8882/BBBoot/helloWorld
+
+Maven build
+
+Goals：clean package
+
+通过命令行
+java -jar 项目名.jar  --spring.config.location=D:/application.properties
+
+项目运行参数:(补救)
+在启动类运行的时候配置，在Arguments的Program arguements 里 配置
+--server.port=8883  --server.servlet.context-path=/BBBoot  (可以写多个，不过得用空格隔开)
+
+
+优先级问题：
+命令参数(调用外部得配置文件>运行参数) >内部文件(properties>yaml)
+
+以上参数存在spring官网，可以在spring官网上找到
+以2.0.3为例：
+进入历史文档https://docs.spring.io/spring-boot/docs/  选择2.0.3.RELEASE   选择 reference  选择html   在第一个 Spring Boot Documentation里得第5个
+选择Learning about Spring Boot Features     选择Core Features 里的 External Configuration  即可找到
+
+======================================================
+spring boot 历史文档：https://docs.spring.io/spring-boot/docs/ 
+spring 历史文档：https://docs.spring.io/spring/docs/
+spring cloud历史文档：https://docs.spring.io/spring-could/docs/
+=======================================================
+
+
+日志： 
+    日志框架： UCL  JUL   jboss-logging，logback，log4j，log4j2，slf4j...
+    spring boot 默认选用slf4j，logback
+    spring boot 默认帮我们配置好了日志，我们直接使用即可。
+
+Logger logger = LoggerFactory.getLogger(类名.class);
+
+调整日志级别：
+    TRACE < DEBUG < INFO < WARN < ERROR< FATAL < OFF
+通过配置文件调整
+Spring默认日志级别时info
+logging.level.主配置类所在的包=warn
+通过配置，将日志存储到文件中，默认项目的根目录
+logging.file=springboot.log
+文件
+也可以指定具体的决定路径logging.file=D:/springboot.log
+
+文件夹：
+logging.path=D:/log/,默认的文件名时spring.log
+
+
+更改日志文件格式：
+logging.pattern.console=%d{yyyy-MM-dd} [%thread] %-5level %logger{50}  - %msg%n
+
+%d：日期时间
+%thread：线程名
+%-5level：显示日志级别，-5表示从左显示5个字符宽度
+%logger{50}：设置日志长度, 例如o.s.w.s.m.m.a.
+%msg：日志消息
+%n：回车
+
+问题：
+如何实现日志的文件大小修改和存留时间？
+
+
+静态资源：
+
+约定大于配置
+
+如果要自定义，需要找到源码里的prefix，然后拼接上属性名； prefix+属性名
+更改后默认的约定就会失效
+
+
+动态资源：
+推荐：
+模板引擎：thymeleaf
+
+使用thymeleaf：代码在哪里写？
+ ThymeleafAutoConfiguration、
+ XXProperties
+
+
+
+spring boot 整合Jsp开发
+
+之前spring boot 默认自带一个内置的tomcat，不用打war包，直接通过jar包即可运行
+
+但是，如果要整合Jsp开发，就需要单独配置一个外置的tomcat，需要打war包。
+spring boot 整合JSP开发步骤：
+
+1.新建项目，注意为war包， tomcat依赖后加 <scope>provided</scope>
+2.建立基本的web项目所需要的目录结构：
+    webapp/WEB-INF(需要)
+    webapp/WEB-INF/web.xml (不需要，自动配置)
+3.创建一个tomcat，部署项目
+
+
+
+
+
+

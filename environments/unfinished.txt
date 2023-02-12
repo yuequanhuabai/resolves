@@ -1,0 +1,50 @@
+错误记忆：
+1.引包的时候不要把源码包和jar包一起放到libs目录下，造成tomcat无法启动，子容器缺失；
+2.配置文件可以分割；
+
+
+1.Sql优化的profile工具
+2.Spring整合Mybatis那块还得重复看看
+
+纳为Spring IOC容器的对象
+Bean+返回值获  ||   @注解+扫描器，
+|| xml直接配置
+
+
+IOC容器： 存Bean 和取Bean
+
+xml方式和注解方式两种方式：
+1.
+xml方式存bean就是在applicationContext.xml文件中添加bean标签，填充属性值，
+spring启动的时候会读取配置文件，
+把配置信息注入到IOC容器中
+2.
+注解方式存bean就是写一个带有@Configuration注解的类，例如Config，
+在该类下创建方法，该方法的返回值就是该bean的类型，方法上添加@Bean注解
+可以在方法内使用set或者构造器方式给该bean注入属性。spring启动的时候会检测类方法上的@Configuration注解，
+然后扫描该类下的方法是否有@Bean注解，如果有，则把该bean注入到Spring IOC容器当中。
+
+Bean的生命周期：
+初始化，销毁
+1.
+可以在注解或者xml标签里添加 init-method 和destory-method
+2.
+也可以使用JSR250 JAVA规范：
+将相应组件加@Component注解
+@PostConstruct： 相当于init方法；
+@PreDestroy：相当于destroy方法；
+
+3.接口：适用于三层组件扫描器
+InitializingBean初始化
+DisposableBean 销毁
+
+4.接口：适用于三层组件扫描器
+BeanPostProcessor
+
+3中注入方式；
+1.@Autowired
+2.@Resource(JSR250)
+3.@Inject(JSR330)
+
+
+
