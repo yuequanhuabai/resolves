@@ -1,0 +1,62 @@
+java web
+
+
+tomcat 虚拟路径配置方式：
+方式一：
+
+D:\software\develop_tools\tomcat\apache-tomcat-8.5.85\conf\server.xml的
+Host标签中添加
+
+<Context docBase="D:\software\develop_tools\tomcat\JspProject" path="/JspProject" />
+
+docBase:项目的实际存放路径
+path: 虚拟路径 (绝对路径、相对路径[相对于webapps])
+
+访问路径：http://localhost:8080/JspProject/index.jsp
+
+方式二：
+ 在D:\software\develop_tools\tomcat\apache-tomcat-8.5.85\conf\Catalina\localhost
+ 中新建 "项目名".xml 中新增一行：就是上面方式一的那个内容
+ <Context docBase="D:\software\develop_tools\tomcat\JspProject" path="/JspProject" />
+
+访问路径：http://localhost:8080/JspProject/index.jsp
+
+如果方式二 "项目名".xml 改为 ROOT.xml
+
+访问路径可以省略为：http://localhost:8080/index.jsp
+
+
+jsp的执行流程：
+
+在Eclipse中创建的Web项目，浏览器可以直接访问，
+但是WEB-INF文件是个例外，必须同过请求转发和重定向才可以访问；
+
+
+配置tomcat运行环境时
+jsp <-> Servlet
+
+目前只能jsp转Servlet,如果需要Servlet转jsp，需要添加依赖
+a.将tomcat目录的/lib中的servlet-api.jar加入项目的构建路径
+
+b.右键项目->Build path -> Add library -> Server Runtime (本质还是引入servlet-api.jar，不过把tomcat/lib目录的所有jar包全部引入了，它们包含了servlet-api.jar)
+
+
+Eclipse中创建的Web项目
+
+统一字符集编码
+a.编码分类：
+设置jsp文件的编码(jsp文件的pageEncoding属性)；
+设置浏览器读取Jsp文件的编码(jsp文件中的content属性)
+一般将上述设置设置成一致的编码，推荐使用UTF-8
+
+文本编码：
+    i. 将整个eclipse中的文件统一设置 (推荐) windows->preferences->web->Jsp files -> Encoding
+    ii. 设置某个项目 （右键properties）
+    iii. 设置单个文件（右键properties）
+
+把那个注册，显示的页面重新做一遍；
+
+
+
+
+
