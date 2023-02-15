@@ -205,3 +205,20 @@ apache DBUtils
 
 ThreadLocal只能解决共享资源只读的情况的多线程，无法解决对共享资源进行写操作的情况；
 
+
+一个事务，一个Connection:         Connection -->pstms -->update 
+
+一般来说，一个service包含多个dao操作，应该包含在一个事务中：
+
+转账一般会有各种银行的数据库，中国银行和建设银行，他们的数据库应该是相互独立的，
+如果要进行跨行操纵，例如中国银行和建设银行账户转账，首先要连接中国银行数据库的中国connection，对中国银行数据库的个人账号进行减100操作；
+同时要对建设银行数据进行操作，要连接建设银行数据库的建设connection，对建设银行数据库的个人账号进行加100操作；
+但是"中国银行connection"和"建设银行connection"应该不是同一个connection，他们属于不同的数据库连接；
+
+
+ 数据库元数据：，通过connection连接获取，通过prepareStatement获取；通过结果集ResultRet获取；
+
+下载apache工具：https://httpd.apache.org/
+
+
+
