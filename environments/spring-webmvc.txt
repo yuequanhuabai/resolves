@@ -1,0 +1,85 @@
+springmvc:
+1.jar
+spring-aop.jar
+spring-bean.jar
+spring-context.jar
+spring-core.jar
+spring-web.jar
+
+
+
+spring-webmvc.jar
+
+REST风格API：
+
+@RequestMapping(value="testPost/{id}")
+public String testPost(@PathVariable("id") Integer id){
+
+System.out.println("post: 增"+id);
+reutrn "success";
+}
+
+对部分浏览器不支持delete和put请求，可以通过过滤器处理实现；
+
+添加隐藏域(表单隐藏域)：
+1.过滤的条件：
+<input    type="hidden" name="_method"         value="delete/put" />
+
+2.请求方式为post
+
+3.在web.xml中添加对应的过滤器处理类的配置信息，类似servlet，HiddenHttpmethodFilter
+拦截那里有点区别： /*
+
+相当于把原来的post请求改为put或者delete请求；
+
+
+springmvc 可以使用原生的servlet
+
+在方法请求参数里加HttpServletRequest request , HttpServletResponse response即可
+
+使用下面配置会不走controller，直接从配置文件走，所有的controller都不会走
+<mvc:view-controller path="a" view-name="success"/>
+
+如果要适配走controller，则再加上下面配置
+<mvc:annotation-driven> </mvc:annotation-driven>
+
+mvc默认是转发方式，如果要显示处理的话，需要注意InternalSourceViewResolvies 会失效，需要显示指定前缀和后缀
+例如：
+return "forward:/views/success.jsp";
+
+解决静态资源方案：
+<mvc:default-servlet-handle></mvc:default-servlet-handle>
+<mvc:annotation-driven> </mvc:annotation-driven>
+
+
+前端传参名字和  springMVC的controller的参数名一致
+
+例如前端studentInfo
+<form action="/stu" mothod="post">
+<input type="text",name="studentInfo"
+</form>
+后端直接写  public String  paramConverter(Student student) ,则不会识别
+如果public String  paramConverter(@RequestParam("StudentInfo")Student student)
+
+
+中学生：信奥赛  
+
+证券，烟草，三桶油 + 本科+中级以上职称；
+
+
+@DateTimeFormat(pattern="yyyy-MM-dd")
+private Date birthday;
+
+@NumberFormat(pattern="###,#")
+private int id;
+
+可以限制前端传输过来的格式
+BindingResult 对象的顺序；
+
+public String test(Student stu, BindingResult result,Map<String,Object> map)
+
+
+JSR303   校验
+Hibernate Validator  是JSR303的扩展
+
+
