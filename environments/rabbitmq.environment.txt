@@ -23,3 +23,29 @@ netstat -ano | findstr “25672”
 taskkill -PID 进程号 -F
 
 
+springboot 集成 rabbitmq 教程：
+
+https://blog.csdn.net/qq_35387940/article/details/100514134
+
+https://www.cnblogs.com/yif0118/p/14670751.html
+
+http://www.caiwanghui.top/2021/06/21/SpringBoot%E6%95%B4%E5%90%88rabbitmq/
+
+https://cloud.tencent.com/developer/article/1802053
+
+https://developer.aliyun.com/article/672235
+
+https://www.xk857.com/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/%E4%B8%AD%E9%97%B4%E4%BB%B6/RabbitMQ/SpringBoot%E6%95%B4%E5%90%88RabbitMQ.html#web%E7%AE%A1%E6%8E%A7%E5%8F%B0%E6%B7%BB%E5%8A%A0%E8%99%9A%E6%8B%9F%E4%B8%BB%E6%9C%BA
+
+https://wangxin1248.github.io/java/2020/03/rabbitmq-with-springboot.html
+
+
+https://bbs.huaweicloud.com/blogs/345528
+
+https://juejin.cn/post/7060142837069217823
+
+
+
+
+
+
