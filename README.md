@@ -1,2 +1,3 @@
 # resolves
-some resolved questions  records in developing
+
+some resolved questions records in developing

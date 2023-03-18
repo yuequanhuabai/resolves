@@ -86,4 +86,31 @@ select sleep(4);
 查看超过阈值
 
 
+explain的执行参数：
+id，
+table ,
+select_type,
+type
+possible_keys
+key
+key_len
+ref
+rows 
+Extra
+
+如果没有子查询，三个表的级别相同，都是1，顺序为数据量小的表在前，数据量大的表在后
+如果有子查询，id值大的先执行(子查询)，id值小的后执行(主查询)
+
+select_type : primary, subquery, simple(不包含子查询、union), derived(临时表)
+
+type： system>const>eq_ref>ref>range>index>all
+
+system/const：结果只有一条数据
+eq_ref：结果多条；但是每条数据是唯一的；
+ref：结果多条；但是每条数据是0或者多条；
+range： 范围查询
+
+Extra： using filesort(常见于 order  by)
+            using temporary(常见于group by)
+
 

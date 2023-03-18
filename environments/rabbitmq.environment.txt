@@ -1,0 +1,18 @@
+
+erlang下载地址：
+https://erlang.org/download/otp_versions_tree.html
+
+我选择的： OTP 25.2
+
+rabbitmq下载： github
+
+https://github.com/rabbitmq/rabbitmq-server/releases/tag/v3.10.5
+
+我选择了 3.10.5
+
+
+netstat -ano | findstr “25672”
+
+taskkill -PID 进程号 -F
+
+
