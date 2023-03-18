@@ -1,4 +1,6 @@
 
+历史版本的springboot文档地址：
+https://docs.spring.io/spring-boot/docs/
 
 erlang版本和rabbitmq版本的兼容参考：
 https://www.rabbitmq.com/which-erlang.html
