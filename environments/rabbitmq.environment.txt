@@ -1,4 +1,9 @@
 
+
+erlang版本和rabbitmq版本的兼容参考：
+https://www.rabbitmq.com/which-erlang.html
+
+
 erlang下载地址：
 https://erlang.org/download/otp_versions_tree.html
 
