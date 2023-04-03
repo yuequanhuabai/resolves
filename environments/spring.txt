@@ -1,5 +1,8 @@
 手动下载Springjar包地址：https://repo.spring.io/ui/native/libs-release-local/org/springframework/spring/
 
+spring各个版本源码下载： https://github.com/spring-projects/spring-framework/tags
+spring各个版本源码下载： https://github.com/spring-projects/spring-framework/tags?spm=a2c6h.12873639.article-detail.4.5c383816QfH4qa
+spring各个版本后缀的命名规则释义： https://blog.csdn.net/qq_33589510/article/details/119704836
 
 Spring注入的三种方式：
 set注入
@@ -240,4 +243,29 @@ spring boot 整合JSP开发步骤：
 
 
 
+spring bean的生命周期：
 
+当Spring容器启动时，会按照预定的流程来创建和初始化bean对象，这个过程称为bean的生命周期。Spring bean的生命周期包括以下阶段：
+
+实例化Bean：Spring容器使用Java反射机制创建一个Bean实例对象。
+
+设置Bean属性值：Spring容器根据Bean定义中的配置，使用Setter方法或字段注入的方式为Bean设置属性值。
+
+调用Bean的Aware接口方法：Spring容器调用实现了Aware接口的Bean的特定方法，例如BeanNameAware、BeanClassLoaderAware、BeanFactoryAware等，让Bean获取Spring容器的上下文环境。
+
+Bean的前置处理：Spring容器将对实现了BeanPostProcessor接口的类的实例进行实例化，调用postProcessBeforeInitialization方法进行前置处理。
+
+调用Bean的初始化方法：Spring容器调用Bean定义中配置的初始化方法（可以是指定的方法名或是实现了InitializingBean接口的afterPropertiesSet方法）进行Bean的初始化工作。
+
+Bean的后置处理：Spring容器调用实现了BeanPostProcessor接口的类的postProcessAfterInitialization方法进行后置处理。
+
+使用Bean：此时Bean已经初始化完成，可以被容器使用。
+
+销毁Bean：当Spring容器关闭或者销毁某个Bean时，Spring容器会调用Bean的销毁方法（可以是指定的方法名或是实现了DisposableBean接口的destroy方法）进行Bean的清理工作。
+
+以上就是Spring bean的生命周期，可以通过实现BeanPostProcessor、BeanFactoryPostProcessor等接口，以及在Bean定义中配置初始化方法和销毁方法等方式来实现对Bean的生命周期的控制和管理。
+
+
+BeanDefinitionReader
+
+BeanFactory
