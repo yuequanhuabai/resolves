@@ -11,8 +11,11 @@ volatile 不能保证原子性和线程安全；
 
 原子性：      CAS算法；
 
-
-
+volatile 是通过 “内存屏障” 防止指令重排序的
+1. 在volatile写操作前，插入StoreStore屏障
+2. 在volatile写操作后，插入StoreLoad屏障
+3. 在volatile读操作后，插入LoadLoad屏障
+4. 在volatile读操作后，插入LoadStore屏障
 jvm
 
 五个部分，两大块；
