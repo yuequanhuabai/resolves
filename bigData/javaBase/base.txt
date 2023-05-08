@@ -1,0 +1,46 @@
+
+windows:
+ 桌面os
+
+
+linux :
+
+ ubuntu
+ centos
+ suse
+
+窗口：
+
+title bar
+menu  bar
+上下文菜单
+工具栏：tool bar
+状态栏： status bar
+任务栏： task bar
+
+active: 激活态
+deactive：钝化
+
+
+stack：
+
+调整计算机最佳性能：
+
+1.高级系统设置-->性能
+2.修改虚拟内存
+3.
+cpu的亲和力
+
+start /AFFINITY 3 notepad
+
+start /AFFINITY f notepad
+start /AFFINITY 0xf notepad
+
+
+负数的加法，
+
+取反+1
+
+
+
+
