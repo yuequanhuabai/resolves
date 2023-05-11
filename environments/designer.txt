@@ -1,0 +1,9 @@
+在现有的 Java 框架中，使用抽象类来实现接口的扩展是非常常见的。下面列举一些常见的例子：
+
+Java 集合框架中的 AbstractCollection、AbstractList、AbstractSet 等抽象类，它们实现了 Collection、List、Set 等接口中的大部分方法，子类只需要实现一些特定的方法即可。这样，在需要添加新的方法时，只需要修改抽象类即可，子类的代码不需要修改。
+
+Spring 框架中的 AbstractApplicationContext、AbstractBeanFactory、AbstractController 等抽象类，它们实现了 ApplicationContext、BeanFactory、Controller 等接口中的一些方法，子类只需要实现一些特定的方法即可。这样，在需要添加新的方法时，只需要修改抽象类即可，子类的代码不需要修改。
+
+Struts2 框架中的 AbstractInterceptor、AbstractResult 等抽象类，它们实现了 Interceptor、Result 等接口中的一些方法，子类只需要实现一些特定的方法即可。这样，在需要添加新的方法时，只需要修改抽象类即可，子类的代码不需要修改。
+
+这些抽象类的存在，使得框架开发人员可以通过继承抽象类来实现接口的扩展，而不必担心接口的修改会带来代码的不兼容性和维护成本的增加。这也是抽象类在实现接口的扩展性方面的一种应用。
