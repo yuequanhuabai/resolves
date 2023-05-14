@@ -1,0 +1,5 @@
+cmd
+
+// CPU亲和力
+
+start /affinity 0x1 java ThreadDemo1
