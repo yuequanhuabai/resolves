@@ -3,3 +3,32 @@ cmd
 // CPU亲和力
 
 start /affinity 0x1 java ThreadDemo1
+
+sleep
+不释放锁的监控权，释放CPU的抢占权；
+wait
+让当前线程进入锁旗标的等待队列。不仅释放CPU的抢占权，还释放锁旗标的监控权。
+等待通知，notify，notifyAll()
+notify(),一次只通知一个线程。
+
+
+a='a'
+a=97;
+a='\u0061';   unicode 国际标准码，融合了多种文字
+a=0xffff;
+
+字符串编解码：
+
+编码(encode)：String ---> byte[],str.getByte();
+解码(decode)：byte[] ---> String, new String(byte[],Charset);
+
+链式编程：
+相当于把之前的void的set方法改为了返回为当前对象的set方法，这样就可以连续调用set方法了，方法的链式编程
+也叫builder模式.
+
+
+// hashMap
+
+a.new hash 不同，对象不同
+b.new hash 相同，对象是同一对象，则对象相同。
+c.new hash 相同，对象不是同一对象，再判断equals方法，则对象相同判定和equals一致。
