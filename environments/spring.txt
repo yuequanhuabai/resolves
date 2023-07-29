@@ -178,6 +178,9 @@ spring 历史文档：https://docs.spring.io/spring/docs/
 spring cloud历史文档：https://docs.spring.io/spring-could/docs/
 =======================================================
 
+gradle 各个版本下载
+https://services.gradle.org/distributions/
+
 
 日志： 
     日志框架： UCL  JUL   jboss-logging，logback，log4j，log4j2，slf4j...
