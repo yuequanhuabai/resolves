@@ -1,0 +1,9 @@
+mysql的调试是文档：https://dev.mysql.com/doc/dev/mysql-server/8.0.34/PAGE_GET_STARTED.html#start_source
+
+该文档记录了mysql如何调试，文档包含源码的具体参数，该文档是由源码生成的。
+
+mysql的所有的文档归档地址： https://dev.mysql.com/doc/index-archive.html
+
+
+
+
