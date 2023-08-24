@@ -1,0 +1,20 @@
+查看当前系统的linux发行版信息：
+cat /etc/*-release
+
+查看当前cpu的架构：
+lscpu
+cat /proc/cpuinfo
+uname -a
+
+查看机器的所有shell发行版
+cat /etc/shells
+chsh -l
+查看当前shell
+echo $SHELL
+
+安装教程：
+https://cloud.tencent.com/developer/article/1886339
+
+
+
+

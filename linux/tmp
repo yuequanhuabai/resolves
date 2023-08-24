@@ -1,0 +1,32 @@
+
+在 CentOS 7 上安装完 MySQL 后，您可以使用以下步骤来启动 MySQL 服务：
+
+检查 MySQL 状态： 在安装完 MySQL 后，可以先检查一下 MySQL 服务的状态，以确保它已经正确安装。
+
+
+sudo systemctl status mysqld
+如果 MySQL 服务已经启动，您将会看到相关信息。
+
+启动 MySQL 服务： 如果 MySQL 服务未启动，您可以使用以下命令来启动它。
+
+
+sudo systemctl start mysqld
+这将启动 MySQL 服务。
+
+开机自启动 MySQL： 如果您希望在系统启动时自动启动 MySQL 服务，可以使用以下命令来启用开机自启动。
+
+
+sudo systemctl enable mysqld
+这将使 MySQL 服务在系统启动时自动启动。
+
+再次检查 MySQL 状态： 您可以再次检查 MySQL 服务的状态，以确保它已经启动。
+
+
+sudo systemctl status mysqld
+如果状态显示为 "active"，则表示 MySQL 服务已经成功启动。
+
+以上步骤中的命令假设您使用的是 MySQL 服务的默认名称 mysqld，如果您的 MySQL 服务名称不同，需要相应地替换为您的服务名称。在 CentOS 7 上，使用 systemctl 命令来管理系统服务，确保您具有管理员权限来执行这些操作。
+
+
+
+
