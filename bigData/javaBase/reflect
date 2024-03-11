@@ -1,0 +1,14 @@
+反射：
+com.sum.corba包下的类；
+
+jvm：
+方法区;堆区；java栈区；本地方法区；程序计数器；
+
+method area;heap;java stack; nativa method stack;program counter register;
+
+调整栈空间： java -Xss1m
+默认值1M
+
+设置堆的大小：
+-Xmx：设置最大堆大小（物理内存的1/4）
+-Xms:初始堆大小
