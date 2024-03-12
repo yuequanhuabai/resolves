@@ -1,0 +1,21 @@
+ip:
+1.12.77.41
+
+root：
+Aa-654,.12;
+
+
+
+mysql：
+root:
+密码: Aa+654,.123
+
+temp: 24sP8aj+Ss2x
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'Aa+654,.123';
+create database test;
+create table gradles(id varchar(64) primary key,stu_no varchar(64), grade varchar(64))
+
+user：
+remote_user
+Al;098,./+-3
+

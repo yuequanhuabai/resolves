@@ -15,6 +15,47 @@ echo $SHELL
 安装教程：
 https://cloud.tencent.com/developer/article/1886339
 
+mysql的远程连接用户：remote_user
+
+mysql 忘记root密码：https://cloud.tencent.com/developer/article/1855931
+                  https://learnku.com/articles/38455
+
+查看当前目录的文件大小：
+du -h --max-depth=1 /path/to/directory
+
+
+开启防火墙：
+sudo systemctl start firewalld
+sudo systemctl enable firewalld
+
+关闭防火墙：
+sudo systemctl start firewalld
+sudo systemctl enable firewalld
+sudo firewall-cmd --complete-reload
+重启防火墙：
+sudo systemctl restart firewalld
+sudo firewall-cmd --reload
+
+查看防火墙状态：
+sudo systemctl restart firewalld
+sudo firewall-cmd --state  # 检查防火墙状态，确保它处于 "running" 状态
+
+查看8080 端口占用
+netstat -tuln | grep 8080
+
+sudo lsof -i :8080
+
+kill -9 <PID>
+
+修改远程登录端口：
+sudo nano /etc/ssh/sshd_config
+重启：
+sudo systemctl restart sshd
+
+腾讯云安全组路径：
+https://console.cloud.tencent.com/vpc/security-group/detail/sg-84q144lr?rid=1&tab=policy
+
+
 
 
 

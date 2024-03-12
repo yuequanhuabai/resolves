@@ -1,0 +1,45 @@
+要为MySQL数据库允许远程连接并赋予适当的权限，您需要执行以下步骤：
+
+登录到MySQL服务器： 使用具有管理员权限的用户（通常是root用户）登录到MySQL服务器。您可以在命令行或任何MySQL客户端工具中执行以下命令：
+
+
+mysql -u root -p
+然后输入密码以登录。
+
+创建允许远程连接的用户： 如果您要创建一个新的允许远程连接的用户，可以使用以下SQL语句：
+
+
+CREATE USER 'your_username'@'%' IDENTIFIED BY 'your_password';
+这将在任何主机上都允许使用提供的用户名和密码进行连接。
+CREATE USER 'remote_user'@'%' IDENTIFIED BY 'Al;098,./+-3';
+
+授予权限： 接下来，您需要为该用户授予适当的权限。以下是一些常见的权限，您可以根据需要进行调整：
+
+如果您希望用户能够访问特定数据库：
+
+
+GRANT ALL PRIVILEGES ON your_database.* TO 'your_username'@'%';
+如果您希望用户能够访问所有数据库：
+GRANT ALL PRIVILEGES ON test.* TO 'remote_user'@'%';
+
+GRANT ALL PRIVILEGES ON *.* TO 'your_username'@'%';
+最后，为了使更改生效，务必刷新权限：
+
+
+FLUSH PRIVILEGES;
+更新防火墙设置： 确保服务器的防火墙设置允许MySQL的端口（默认为3306）接受远程连接。
+
+完成上述步骤后，远程客户端就可以使用提供的用户名和密码连接到您的MySQL数据库服务器了。请注意，允许任何主机上的任何用户连接到MySQL服务器可能存在安全风险。最好的做法是仅允许特定的IP地址或主机进行远程连接，并且为远程连接的用户分配最小必需的权限。
+
+CREATE USER 'remote_user'@'%' IDENTIFIED BY 'Al;098,./+-3';
+
+
+SELECT user, host FROM mysql.user WHERE user = 'remote_user';
+
+
+ALTER USER 'your_user'@'your_host' IDENTIFIED WITH 'caching_sha2_password' BY 'your_password';
+
+FLUSH PRIVILEGES;
+
+create table grades(id varchar(64) primary key,stu_no varchar(64), grade varchar(64));
+INSERT INTO test.gradles (id, stu_no, grade) VALUES(UUID(), concat('stu',FLOOR(RAND() * 100000)), FLOOR(RAND() * 100));

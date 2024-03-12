@@ -1,0 +1,148 @@
+centos7安装git
+
+yum install git
+
+git --version
+1.8.3.1
+不是最新版的
+
+查看最新版的git
+curl -s https://api.github.com/repos/git/git/tags | jq -r '.[0].name'
+如果没有jq,先安装jq：
+sudo yum install jq  # 如果你使用的是 CentOS 7
+
+-----------------------------------------------------------------------------------------------------------
+`jq` 是一个轻量级的命令行工具，用于处理和解析 JSON 数据。它允许你从 JSON 文本中提取、转换和操作数据，以便更轻松地处理 JSON 格式的信息。`jq` 可以非常方便地在命令行中进行 JSON 数据的查询和转换操作。
+
+一些常见的 `jq` 用法包括：
+
+- 选择特定字段或属性。
+- 过滤和筛选数据。
+- 修改 JSON 数据。
+- 转换 JSON 数据为不同的格式。
+
+例如，你可以使用 `jq` 来解析从 API 获取的 JSON 数据，提取所需的信息，或者将 JSON 数据格式化为易于阅读的形式。
+
+下面是一个简单的示例，假设你有以下 JSON 数据：
+
+```json
+{
+  "name": "John",
+  "age": 30,
+  "city": "New York"
+}
+```
+
+你可以使用 `jq` 来提取 `name` 字段的值：
+
+```bash
+echo '{"name": "John", "age": 30, "city": "New York"}' | jq '.name'
+```
+
+这将输出：
+
+```
+"John"
+```
+
+`jq` 是一个非常强大和灵活的工具，可以在处理 JSON 数据时提供很大的帮助。它可用于各种任务，从简单的数据提取到复杂的数据转换和筛选。如果你需要处理 JSON 数据，`jq` 可能会成为你的有用工具之一。
+
+-----------------------------------------------------------------------------------------------------------
+
+
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+
+安装cmake
+yum install cmake
+验证：
+cmake --version
+
+安装make：
+运行以下命令来安装 Development Tools 软件包组，其中包括 make 工具：
+sudo yum groupinstall "Development Tools"
+验证：
+make --version
+
+
+安装GCC 10
+
+首先卸载旧的gcc,
+rpm -qa | grep gcc
+
+yum remove gcc
+
+安装scl仓库：
+sudo yum install centos-release-scl
+
+安装GCC 10：
+sudo yum install devtoolset-10
+
+启用gcc 10:
+scl enable devtoolset-10 bash
+
+验证GCC版本：
+gcc --version
+
+
+下载mysql：
+git clone git@github.com:mysql/mysql-server.git
+
+nohup git clone git@github.com:mysql/mysql-server.git &
+
+nohub git clone git@github.com:mysql/mysql-server.git &
+
+复制密钥：
+ 假设你的SSH密钥文件在Windows上的路径为 C:\Users\YourUsername\.ssh\
+# 将私钥复制到Linux的~/.ssh/目录下
+scp username@windows_machine_ip:/mnt/c/Users/YourUsername/.ssh/id_rsa ~/.ssh/
+# 将公钥复制到Linux的~/.ssh/目录下
+scp username@windows_machine_ip:/mnt/c/Users/YourUsername/.ssh/id_rsa.pub ~/.ssh/
+
+设置SSH密钥权限：在Linux上，确保SSH密钥的文件权限正确，通常设置为只有拥有者可读和写入。
+
+Copy code
+chmod 600 ~/.ssh/id_rsa
+chmod 644 ~/.ssh/id_rsa.pub
+
+测试SSH连接：在Linux上测试SSH连接以确保它们正常工作。你可以运行以下命令来测试连接到GitHub：
+
+ssh -T git@github.com
+
+安装cmake3
+yum install cmake3
+
+卸载cmake
+sudo yum remove cmake
+
+卸载boost
+yum remove  boost boost-devel
+
+安装boost
+yum install boost boost-devel
+
+查看boost
+rpm -qi boost
+
+缺少软件工具包：
+   yum install devtoolset-11-gcc devtoolset-11-gcc-c++ devtoolset-11-binutils
+
+卸载：
+sudo yum remove devtoolset-11-gcc
+sudo yum remove devtoolset-11-gcc-c++
+sudo yum remove devtoolset-11-binutils
+
+
+cmake3 /usr/src/mysql/mysql-server -DWITH_BOOST=/usr/src/boost/boost_1_83_0
+
+
+
+
+
+
+
+
+
+
+
+

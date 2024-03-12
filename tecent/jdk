@@ -1,0 +1,14 @@
+open-jdk:
+
+yum install java-1.8.0-openjdk-devel
+
+默认安装目录：/usr/lib/jvm/java-1.8.0-openjdk-<arch>
+
+环境变量配置：
+~/.bashrc或~/.bash_profile
+
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-x86_64
+
+export PATH=$JAVA_HOME/bin:$PATH
+
+

@@ -1,0 +1,10 @@
+db2 的一些东西：
+
+db2数据导出：
+db2 "export to /home/user1/data.del of del modified by coldel0X0F codepage=1208 nochardel select * from tableA"
+
+
+
+db2数据导入：
+
+db2 "import from /home/user1/data.del of del modified by coldel0x0f codepage=1208 commitcount 10000 insert into tableA"

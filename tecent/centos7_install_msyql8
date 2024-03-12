@@ -1,0 +1,25 @@
+a.
+检查操作系统发行版，cpu架构
+uname -a
+
+确认自己的操作系统发行版和cpu架构后，开始安装对应的操作系统软件仓库(类似android手机里的应用市场，苹果手机里的App Store)
+centos7的软件仓库是yum，通过yum命令在centos7上安装对应的软件;
+
+需按照mysql的对应操作系统发行版和cpu架构的mysql版本包
+mysql所支持的操作系统及cpu架构：https://www.mysql.com/support/supportedplatforms/database.html
+
+选择mysql版本版本号选择？，二进制飞行版和源码发行版？
+
+最终选择源码安装;
+
+
+grep 'temporary password' /var/log/mysqld.log
+2023-09-14T15:51:35.103149Z 6 [Note] [MY-010454] [Server] A temporary password
+is generated for root@localhost: uG!retui>2iD
+
+
+
+
+
+
+
