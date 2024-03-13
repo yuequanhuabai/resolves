@@ -1,0 +1,25 @@
+Unix I/O
+
+All I/O devices, such as network,disks, and terminals,are modeled as files,
+and all input and output is performed by reading and writing the appropriate fiels.
+This elegant mapping of devices to files allows the Linux I/O, that enables all input
+and output to be performed in a uniform and consistent way:
+
+Opening files:
+The kernel keeeps track of all information about the open file.
+The application only keeps track of the descriptor.
+
+descriptor:
+0 standard input
+1 standard output
+2 standard error
+
+
+Changing the current file position
+an applicatin can set the current file position k explicitly by performing a seek operation
+
+Reading and writing files.
+
+The kernel maintain a file position k ,initally 0, for each open file.
+
+
