@@ -1,0 +1,55 @@
+ssh：
+git bash -->  ssh-keygen   一直回车，生成公私钥，默认为c:/User/${user}/.ssh/id-rsa.pub 把公钥放在整个账户的ssh-keys中，避免每个仓库都要配置一份.
+
+初始时需要对仓库和分支进行关联操作：
+
+
+git remote add origin git@github.com:yuequanhuabai/te.git
+
+origin为远程仓库“git@github.com:yuequanhuabai/te.git”的一个简写名称,可以修改,默认为origin.
+
+
+git push -u origin main:main
+
+-u 为 --set-upstream 的简写,为设置远程仓库,后面接的是远程仓库，我们上一步把它改为了origin,即 origin等同于git@github.com:yuequanhuabai/te.git
+
+后面的main:main  第一个参数main是本地的main分支，第二个是远程的main分支;
+整个命令的意思就是:把本地的main分支代码push到远程分支origin的main分支上;当然第一个main可以不写，
+因为提交代码的时候一般提交的是当前分支代码，该命令也可以省略为：
+git push -u origin main
+
+
+git 配置个人账户信息
+
+git config --system (给整个计算机所有用户一次性配置)
+git config --global (给当前用户一次性配置)
+git config --local  (给当前项目一次性配置)
+
+./git/config 配置文件中  --local
+git config --local user.name 'yuequanhuabai'
+git config --local user.email 'yuequanhuabai@qq.com'
+
+~/.gitconfig 配置文件中  --global
+git config --global user.name 'baiying.waming'
+git config --global user.email 'baiying.waming@qq.com'
+
+git安装目录/etc/.gitconfig    --system
+git config --system user.name 'baiying.waming'
+git config --system user.email 'baiying.waming@qq.com'
+
+system 范围最广，优先级最低;
+优先级从高到低分别是 local > global > system 
+
+删除配置信息：
+git config --global --unset user.name
+
+获取所有的配置项：
+git config --global -l
+
+git设置分页器，默认是less 可以设置为more，如果如设置或者设置为空串，git都会在一行显示
+
+返回上一步：
+cd - 
+
+
+
