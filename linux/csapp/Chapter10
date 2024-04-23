@@ -1,4 +1,12 @@
+Part III  Interaction and Communication between Programs
+
+
+
 Unix I/O
+10.1 Unix I/O
+
+linux 文件就是一系列字节组成;
+所有的I/O设备，例如网络，磁盘，终端，都可以看成文件；所有的输入，输出都可以类比对文件的读写操作；
 
 All I/O devices, such as network,disks, and terminals,are modeled as files,
 and all input and output is performed by reading and writing the appropriate fiels.
@@ -6,7 +14,9 @@ This elegant mapping of devices to files allows the Linux I/O, that enables all 
 and output to be performed in a uniform and consistent way:
 
 Opening files:
-The kernel keeeps track of all information about the open file.
+应用程序访问I/O设备通过内核实现.内核返回一个小的非负整数，它就是文件描述符，它就是操作该文件的钥匙，有了它就可以对文件进行一系列的操作；
+当然，这些操作是由内核提供的，内核记录着对该文件的所有操作记录信息，应用程序仅记录对文件描述符的操作。
+The kernel keeps track of all information about the open file.
 The application only keeps track of the descriptor.
 
 descriptor:
@@ -21,5 +31,7 @@ an applicatin can set the current file position k explicitly by performing a see
 Reading and writing files.
 
 The kernel maintain a file position k ,initally 0, for each open file.
+
+
 
 
