@@ -19,6 +19,9 @@ Opening files:
 The kernel keeps track of all information about the open file.
 The application only keeps track of the descriptor.
 
+应用程序--> 文件描述符
+内核---> (系统api)实际操作文件
+
 descriptor:
 0 standard input
 1 standard output
@@ -31,6 +34,15 @@ an applicatin can set the current file position k explicitly by performing a see
 Reading and writing files.
 
 The kernel maintain a file position k ,initally 0, for each open file.
+
+总结10.1 Unix I/O
+linux里把 网络，磁盘，终端，读看作文件，
+而所有的输入，输出看成对文件的读写操作即I/O
+打开文件：文件描述符
+改变当前文件的偏移offset： seek
+读写文件： read，write
+关闭文件：close ，内核释放内存数据，回收文件描述符到文件描述符池中。（异常关闭也是）
+
 
 
 
