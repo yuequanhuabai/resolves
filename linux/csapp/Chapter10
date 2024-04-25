@@ -45,5 +45,56 @@ linux里把 网络，磁盘，终端，读看作文件，
 
 
 
+10.2 Files
 
+linux和windows的文本行结束符
+\n 和 \r\n
+
+dos2unix
+unix2dos
+
+当前目录 .
+上级目录 ..
+相对路径，绝对路径
+
+10.3 Opening and Closing Files
+int open(char *filename, int flags, mode_t mode)
+Returns: new file descriptor if OK,
+-1 on error
+
+filename: file descriptor
+flags: the process intends to access the file:
+(O_RDONLY. Reading only;O_WRONLY.Writing only;O_RDWR.Reading and writing)
+mode: the access permission bits of new files
+(S_IRUSR: [User(owner) can read this file],
+S_IWUSR: [User (owner) can write thie file]
+S_IXUSR: [User (owner) can execute this file])
+
+
+
+10.4 Reading and Writing Files
+文件读写
+ssize_t read(int fd,void *buf, size_t n);
+returns: number of bytes
+read if OK, 0 on EOF, -1 on error
+ssize_t wirte(int fd,const void *buf, size_t n);
+returns: number of bytes
+written if OK,  -1 on error
+
+文件读写的的设计
+
+size_t   unsigned long
+ssize_t  long
+返回数据理论上只有传入数据的一般，
+long ，-2^63-2^63
+unsigned long    0-2^64
+实际为了返回-1异常，舍弃了理论的一半返回；
+
+短计数发生的场景：
+1.  文件只有20字节，实际读取50字节；
+2. 从终端读取文本，read函数每次通常会读取一行文本，返回的即是读取的文本行的字节数
+3. 读取网络socket，由于网络延迟或者内部缓冲限制而返回“短计数”
+
+
+10.5 Robust Reading and Writing with the Rio package
 
