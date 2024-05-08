@@ -98,3 +98,98 @@ unsigned long    0-2^64
 
 10.5 Robust Reading and Writing with the Rio package
 
+
+Trap和信号的区别：
+Trap：内核级别
+信号： 用户级别
+
+
+
+read
+fgets
+
+char *fgets(char *str, int num, FILE *stream);
+参数:
+char *str：指向用于存储读取数据的字符数组的指针。
+int num：最多读取的字符数，包括空终止字符（'\0'）。通常，num 的值设置为数组 str 的大小。
+FILE *stream：指向 FILE 结构的指针，该结构代表一个打开的文件或其他输入/输出流。
+功能和行为
+读取操作：fgets 从指定的 stream 中读取字符，直到发生以下三种情况之一：
+读取了 num-1 个字符。
+遇到换行符（\n），换行符也会被读取并存储在字符串中。
+遇到文件结束（EOF）。
+字符串终止：无论在何种情况下停止读取，fgets 都会在字符串的末尾添加空字符（'\0'）以形成一个完整的字符串。
+返回值：
+如果成功读取，fgets 返回 str 的指针。
+如果在读取任何字符之前遇到文件结束或发生错误，返回 NULL
+
+ssize_t read(int fd, void *buf, size_t count);
+fd：文件描述符，指定了要从中读取数据的文件或设备。
+buf：指向缓冲区的指针，这个缓冲区用于存储从文件描述符中读取的数据。
+count：要读取的最大字节数。
+功能详解
+当你调用 read 函数时，它会尝试从指定的文件描述符 fd 中读取多达 count 字节的数据到缓冲区 buf。读取的实际字节数可以小于请求的字节数，具体取决于几个因素：
+
+文件描述符指向的数据量：如果可用数据少于请求的字节数，read 将只返回可用的数据量。
+阻塞与非阻塞模式：在阻塞模式下，read 函数可能会挂起调用进程，直到有至少一个字节的数据可用为止。在非阻塞模式下，如果没有数据可读，read 会立即返回0或 EAGAIN/EWOULDBLOCK 错误。
+遇到文件结尾：如果达到了文件结尾，read 函数会返回0，表示没有更多数据可以读取。
+中断：如果读取操作被信号中断，read 可能返回 -1 并设置 errno 为 EINTR。
+
+
+read
+fgets
+rio_readinitb  缓存初始化； 在rio_readn 和rio_readlineb 读取前的缓存初始化
+rio_readn  读取指定字节的数据，无应用层级缓冲区，基于文件描述符的指定字节读取;适合明确从文件或者网络中读取固定大小的数据块
+rio_readlineb   读取行文本行数据，有应用级的缓冲区， rio_t 结构体内部缓冲区，rio_readinitb函数初始化，按行读取
+rio_read  应用级缓冲区，rio_t 结构体内部缓冲区，适用于高频率小读取   低级的辅助函数，通常不直接由应用程序直接调用；流数据，连续的数据读取
+rio_readnb  应用级缓存 ，适用于高频率小读取， rio_t 结构体内部缓冲区，每次读取固定数据的数据
+
+在 RIO (Robust I/O) 库中，各个函数名称的全称可以基于它们的功能来推断。以下是每个函数的概括和全称推断：
+
+### 1. rio_readinitb
+- **Full Name**: Robust I/O Read Initialize Buffer
+- **Description**: This function initializes a `rio_t` structure that is used across the RIO functions to manage an internal buffer associated with a file descriptor.
+
+### 2. rio_readn
+- **Full Name**: Robust I/O Read N Bytes
+- **Description**: This function reads a specified number of bytes (`n` bytes) from a file descriptor into a user-provided buffer,
+ensuring that it reads the exact amount unless the end of file is reached or an error occurs.
+
+### 3. rio_readlineb
+- **Full Name**: Robust I/O Read Line Buffer
+- **Description**: This function reads a line from a file descriptor into a user buffer, including the newline character,
+using the `rio_t` structure's internal buffer for efficient data handling.
+
+### 4. rio_read
+- **Full Name**: Robust I/O Read
+- **Description**: This function reads data from a file descriptor into a user buffer using an internal buffer (managed through a `rio_t` structure) to handle partial reads
+and interruptions more efficiently.
+
+### 5. rio_readnb
+- **Full Name**: Robust I/O Read N Bytes Buffer
+- **Description**: Similar to `rio_readn`, this function reads `n` bytes from a file descriptor but utilizes the internal buffer provided by the `rio_t` structure
+to potentially handle multiple calls or partial data more efficiently.
+
+These names and functionalities highlight the focus of the RIO library on providing robust, buffer-based I/O operations that handle common issues such as partial reads,
+system call interruptions, and stream-based data processing more effectively. Each function is tailored to specific types of I/O needs,
+ensuring data integrity and easing the handling of I/O operations in network programming and file management.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
