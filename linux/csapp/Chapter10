@@ -262,6 +262,55 @@ inode 实际记录了文件的元数据信息，
 
 10.9 I/O Redirection
 
+dup2(int oldfd, int newfd);
+
+Descriptor table
+file table
+v-node table
+
+
+10.10 Standard I/O
+
+#include <stdio.h>
+extern FILE *stdin;  /* Standard input  (descriptor 0) */
+extern FILE *stdout;  /* Standard output  (descriptor 1) */
+extern FILE *stderr;  /* Standard err  (descriptor 2) */
+
+和linux的标准输入，标准输出，标准错误一样；
+
+Stream
+
+C语言  -->  流 (文件描述符，应用级缓存组成的数据结构);
+文件描述符：操作文件
+应用级缓存：减少系统I/O
+
+java8 流   -->高效处理集合的抽象，惰性执行，支持并行；
+
+linux管道   --> 进程间通信，单向数据流，使用内存缓冲区来暂存从一端传来的数据，知道另一端读取；
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
