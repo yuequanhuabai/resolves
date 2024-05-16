@@ -289,7 +289,14 @@ java8 流   -->高效处理集合的抽象，惰性执行，支持并行；
 linux管道   --> 进程间通信，单向数据流，使用内存缓冲区来暂存从一端传来的数据，知道另一端读取；
 
 
+10.11 Putting It Together: Which I/O Functions Should I Use?
 
+Standard I/O functions(fopen,fread,fscanf,sscanf,fgets,fflush,fclose,fdopen,fwrite,fprintf,sprintf,fputs,fseek)
+Rio functions(rio_readn,rio_writen,rio_readinitb,rio_readlineb,rio_readnb)
+Unix I/O functions(open,read,write,lseek,stat,close)
+
+rio 处理文本高效
+Standard I/O 更加通用
 
 
 
