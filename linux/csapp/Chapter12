@@ -1,0 +1,63 @@
+12.1: Concurrent Programming with Processes
+并发程序和进程
+
+
+fork，exec，waitpid
+
+client1，
+client2，
+
+server1: listening   descriptor(say,3)
+
+server1--> client1    return: descriptor(say,4)
+---->
+child(copy from server1) close listening descriptor3
+
+server1 : close descriptor4
+
+
+waitpid   Chapter8   IPC mechanisms (tiny messages)
+
+进程的交互方式：
+pipes, FIFOs, System V shared memory, and System V semaphores
+
+总结：
+12.1 讲述了进程间的通讯方式，服务端和客户端的交互原理，
+客户端请求服务端，服务端会fork一个子进程处理客户端的请求，子进程会复制父进程的file table entry，关闭父进程的监听进程描述符；
+然后自己还是一直保持监听状态，期待下一个客户端的请求，一直和第一步一样循环；
+
+
+12.2  Concurrent Programming with I/O Multiplexing
+并发程序和多路复用
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
