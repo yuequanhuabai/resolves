@@ -30,6 +30,25 @@ pipes, FIFOs, System V shared memory, and System V semaphores
 12.2  Concurrent Programming with I/O Multiplexing
 并发程序和多路复用
 
+select ,poll, epoll;具体是怎么实现的？ 怎么调试？ 实验？
+
+select: 文件描述符集合；遍历；进程；事件；
+poll： 文件描述符集合；遍历；进程；事件；
+epoll： 事件驱动；
+
+I/O 多路复用
+基于事件驱动的设计 给程序更多的控制应用行为比基于进程的设计
+
+
+12.3 Concurrent Programming with Threads
+
+
+12.3.1 Thread Execution Model
+
+
+
+
+
 
 
 
