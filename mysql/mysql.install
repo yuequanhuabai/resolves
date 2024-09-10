@@ -1,0 +1,18 @@
+使用choco install mysql 默認安裝完mysql后（該版本是默認的最新穩定版），默認密碼為空，需要重置密碼：
+需要檢查環境變量，以及my.ini文件的配置；
+
+步驟如下：
+
+1.
+mysql -u root -p
+
+2.
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'Aa+123456';
+
+3.
+FLUSH PRIVILEGES;
+
+4.
+EXIT;
+
+
