@@ -1,0 +1,108 @@
+java SE  JSRs;
+
+3.JavaTM Management Extensions (JMXTM) Specification
+5.XML Parsing Specification
+6.Unified Printing API (Java Print Service API)
+10.Preferences API Specification
+13.Decimal Arithmetic Enhancement
+14.Add Generic Types To The JavaTM Programming Language
+15.Image I/O Framework Specification
+31.XML Data Binding Specification
+41.A Simple Assertion Facility
+47.Logging API Specification
+51.New I/O APIs for the JavaTM Platform
+54.JDBCTM 3.0 Specification
+55.Certification Path API
+57.Long-Term Persistence for JavaBeansTM Specification
+59.J2SETM Merlin Release Contents
+72.JavaTM GSS API
+105.XML Digital Signature APIs
+114.JDBC Rowset Implementations
+133.JavaTM Memory Model and Thread Specification Revision
+160.JavaTM Management Extensions (JMX) Remote API
+163.JavaTM Platform Profiling Architecture
+166.Concurrency Utilities
+173.Streaming API for XML
+174.Monitoring and Management Specification for the JavaTM Virtual Machine
+175.A Metadata Facility for the JavaTM Programming Language
+176.J2SETM 5.0 (Tiger) Release Contents
+199.JavaTM Compiler API
+200.Network Transfer Format for JavaTM Archives.
+201.Extending the JavaTM Programming Language with Enumerations, Autoboxing, Enhanced for loops and Static Import
+202.JavaTM Class File Specification Update
+203.More New I/O APIs for the JavaTM Platform ("NIO.2")
+204.Unicode Supplementary Character Support
+206.JavaTM API for XML Processing (JAXP) 1.3
+221.JDBCTM 4.0 API Specification
+222.JavaTM Architecture for XML Binding (JAXB) 2.0
+223.Scripting for the JavaTM Platform
+224.JavaTM API for XML-Based Web Services (JAX-WS) 2.0
+250.Common Annotations for the JavaTM Platform
+269.Pluggable Annotation Processing API
+270.JavaTM SE 6 Release Contents
+277.JavaTM Module System
+292.Supporting Dynamically Typed Languages on the JavaTM Platform
+294.Improved Modularity Support in the JavaTM Programming Language
+308.Annotations on Java Types
+310.Date and Time API
+334.Small Enhancements to the JavaTM Programming Language
+335.Lambda Expressions for the JavaTM Programming Language
+336.JavaTM SE 7 Release Contents
+337.JavaTM SE 8 Release Contents
+376.JavaTM Platform Module System
+379.JavaTM SE 9 Release Contents
+383.Java™ SE 10 (18.3)
+384.JavaTM SE 11 (18.9)
+386.JavaTM SE 12
+388.JavaTM SE 13
+389.JavaTM SE 14
+390.JavaTM SE 15
+391.JavaTM SE 16
+392.JavaTM SE 17
+393.JavaTM SE 18
+394.JavaTM SE 19
+395.JavaTM SE 20
+396.JavaTM SE 21
+397.JavaTM SE 22
+398.JavaTM SE 23
+399.JavaTM SE 24
+901.JavaTM Language Specification
+910.JDBC 2.1 Errata Sheet
+915.J2SETM 1.4 (Merlin) Maintenance Review
+916.J2SETM 1.4 (Merlin) Beta 2 Maintenance Review
+917.J2SETM 1.4 (Merlin) Beta 3 Maintenance Review
+918.J2SETM 1.4 Release Candidate
+923.J2SETM 1.4.2 (Mantis) Beta
+924.JavaTM Virtual Machine Specification
+925.JavaBeansTM Activation Framework 1.1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

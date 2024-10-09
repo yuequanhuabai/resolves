@@ -1,0 +1,83 @@
+java EE  JSRs;
+
+
+5.XML Parsing Specification
+16.J2EETM Connector Architecture
+19.Enterprise JavaBeansTM 2.0
+45.Debugging Support for Other Languages
+52.A Standard Tag Library for JavaServer PagesTM
+53.JavaTM Servlet 2.3 and JavaServer PagesTM 1.2 Specifications
+58.JavaTM 2 Platform, Enterprise Edition 1.3 Specification
+63.JavaTM API for XML Processing 1.1
+67.JavaTM APIs for XML Messaging 1.0
+77.J2EETM Management
+88.JavaTM EE Application Deployment
+93.JavaTM API for XML Registries 1.0 (JAXR)
+101.JavaTM APIs for XML based RPC
+109.Implementing Enterprise Web Services
+112.J2EETM Connector Architecture 1.5
+115.JavaTM Authorization Contract for Containers
+151.JavaTM 2 Platform, Enterprise Edition 1.4 (J2EE 1.4) Specification
+152.JavaServer PagesTM 2.0 Specification
+153.Enterprise JavaBeansTM 2.1
+154.JavaTM Servlet 2.4 Specification
+181.Web Services Metadata for the JavaTM Platform
+220.Enterprise JavaBeansTM 3.0
+222.JavaTM Architecture for XML Binding (JAXB) 2.0
+224.JavaTM API for XML-Based Web Services (JAX-WS) 2.0
+245.JavaServerTM Pages 2.1
+250.Common Annotations for the JavaTM Platform
+252.JavaServer Faces 1.2
+313.JavaTM Platform, Enterprise Edition 6 (Java EE 6) Specification
+315.JavaTM Servlet 3.0 Specification
+316.JavaTM Platform, Enterprise Edition 6 (Java EE 6) Specification
+317.JavaTM Persistence 2.0
+318.Enterprise JavaBeansTM 3.1/Interceptors 1.2
+322.JavaTM EE Connector Architecture 1.6
+342.JavaTM Platform, Enterprise Edition 7 (Java EE 7) Specification
+343.JavaTM Message Service 2.0
+366.Java Platform, Enterprise Edition 8 (Java EE 8) Specification
+367.JavaTM API for JSON Binding (JSON-B)
+368.JavaTM Message Service 2.1
+369.JavaTM Servlet 4.0 Specification
+370.JavaTM API for RESTful Web Services (JAX-RS 2.1) Specification
+371.Model-View-Controller (MVC 1.0) Specification
+372.JavaServer Faces (JSF 2.3) Specification.
+373.JavaTM EE Management API 2.0
+374.JavaTM API for JSON Processing 1.1
+375.JavaTM EE Security API
+380.Bean Validation 2.0
+902.JavaTM Servlet API Specification, Version 2.2, Errata Sheet, 4/1/2000
+903.JavaTM Servlet API Specification, Version 2.2, Errata Sheet, 4/27/2000
+904.JavaMailTM Specification
+907.JavaTM Transaction API (JTA)
+914.JavaTM Message Service (JMS) API
+919.JavaMailTM
+921.Implementing Enterprise Web Services 1.1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
