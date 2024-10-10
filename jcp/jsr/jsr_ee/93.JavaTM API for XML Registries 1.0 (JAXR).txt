@@ -1,0 +1,1 @@
+93.JavaTM API for XML Registries 1.0 (JAXR)
