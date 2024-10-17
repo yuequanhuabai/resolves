@@ -1,0 +1,17 @@
+
+Modify the application context's internal bean definition registry after its standard initialization. All
+regular bean definitions will have been loaded, but no beans will have been instantiated yet. this allows for
+adding further bean definitions before the next post-processing phase kicks in.
+
+
+BeanFactoryPostProcessor
+針對已經注冊的bean定義進行操作;
+
+BeanDefinitionRegistryPostprocessor
+允許直接操作Bean定義的注冊表;
+
+BeanDefinitionRegistry
+管理bean定義;
+
+BeanDefinition
+bean定義信息
