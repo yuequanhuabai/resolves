@@ -83,3 +83,4 @@ public class A implements ApplicationContextAware {
 ### 总结：
 - **实例化**是通过构造方法创建对象的过程，相当于 `new` 操作。
 - **初始化**是指给对象属性赋值并执行初始化逻辑的过程，在 Spring 中包括依赖注入和生命周期回调（如 `@PostConstruct`、`afterPropertiesSet()`）。
+

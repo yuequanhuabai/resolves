@@ -15,3 +15,6 @@ BeanDefinitionRegistry
 
 BeanDefinition
 bean定義信息
+
+BeanFactoryPostProcessor
+對bean的元數據進行自定義處理（bean定義加載之後，實例化之前）
