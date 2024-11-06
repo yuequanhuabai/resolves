@@ -24,5 +24,7 @@
 
 專利權：專利權可禁止他人未經授權製造、使用、銷售或進口專利產品。（技術方案）
 
+quality attribute
 
 
+architectural style
