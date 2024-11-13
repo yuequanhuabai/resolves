@@ -2,3 +2,158 @@ oracle 数据库下载地址：https://www.oracle.com/cn/database/technologies/o
 
 历史版本oracle地址：
 https://edelivery.oracle.com/osdc/faces/SoftwareDelivery
+
+
+
+在linux上安装步骤：
+
+在Linux上安装Oracle 11g时，通常会有两个安装包（Part 1和Part 2）。您可以按照以下步骤来进行安装：
+
+### 步骤1：准备环境
+1. **系统要求**：确保您的Linux系统符合Oracle 11g的系统要求，包括内存、CPU、磁盘空间等。
+2. **安装依赖包**：根据Oracle官方文档，安装所需的依赖包。例如，使用以下命令安装常用依赖项：
+   ```bash
+   sudo yum install -y binutils compat-libcap1 gcc gcc-c++ glibc glibc-devel libaio libaio-devel libgcc libstdc++ libstdc++-devel libXi libXtst make sysstat
+   ```
+3. **创建用户和组**：为Oracle创建专用用户和组。
+   ```bash
+   sudo groupadd oinstall
+   sudo groupadd dba
+   sudo useradd -g oinstall -G dba oracle
+   sudo passwd oracle
+   ```
+4. **创建安装目录**：创建Oracle安装和数据文件的目录，并赋予权限。
+   ```bash
+   sudo mkdir -p /u01/app/oracle/product/11.2.0/dbhome_1
+   sudo chown -R oracle:oinstall /u01
+   sudo chmod -R 775 /u01
+   ```
+
+### 步骤2：解压安装包
+将下载的两个压缩包上传到Linux服务器，然后使用以下命令解压缩：
+```bash
+unzip linux_11gR2_database_1of2.zip
+unzip linux_11gR2_database_2of2.zip
+```
+解压后，您会得到一个 `database` 目录，其中包含Oracle的安装文件。
+
+### 步骤3：运行安装程序
+1. **切换用户**：切换到Oracle用户。
+   ```bash
+   su - oracle
+   ```
+2. **启动安装程序**：进入 `database` 目录并运行安装脚本。
+   ```bash
+   cd /path/to/database
+   ./runInstaller
+   ```
+3. **安装向导**：安装向导会启动，按步骤填写配置选项：
+   - **安装类型**：选择“创建和配置数据库”或“仅安装软件”，根据您的需求选择。
+   - **安装目录**：确认或更改Oracle Base路径。
+   - **操作系统组**：选择刚才创建的 `oinstall` 和 `dba` 组。
+
+4. **运行root脚本**：在安装过程中，安装程序会提示您以 `root` 用户身份运行两个脚本（`orainstRoot.sh` 和 `root.sh`）。打开一个新终端窗口，以 `root` 用户身份运行这些脚本。
+   ```bash
+   sudo /u01/app/oraInventory/orainstRoot.sh
+   sudo /u01/app/oracle/product/11.2.0/dbhome_1/root.sh
+   ```
+
+### 步骤4：完成安装
+安装完成后，您可以通过SQL*Plus或其他工具来连接和管理Oracle数据库。
+
+### 其他注意事项
+- **监听配置**：如果需要远程连接，使用`netca`配置监听服务。
+- **启动和停止数据库**：可以使用 `dbstart` 和 `dbshut` 脚本来启动和关闭数据库。
+- **环境变量**：为oracle用户配置环境变量，在 `.bash_profile` 中添加：
+  ```bash
+  export ORACLE_BASE=/u01/app/oracle
+  export ORACLE_HOME=$ORACLE_BASE/product/11.2.0/dbhome_1
+  export PATH=$PATH:$ORACLE_HOME/bin
+  ```
+
+这样，您的Oracle 11g数据库就可以在Linux上正常运行了！
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+windows安装步骤：
+
+
+在Windows上安装Oracle 11g数据库的步骤相对简单，您可以按照以下步骤进行操作：
+
+### 步骤1：准备安装文件
+Oracle 11g的Windows安装文件通常分为两个压缩包（Part 1和Part 2）。将它们下载到同一个目录中并解压，您将会得到一个 `database` 文件夹，其中包含安装文件。
+
+### 步骤2：运行安装程序
+1. **进入 `database` 目录**：双击解压得到的 `database` 文件夹。
+2. **启动安装程序**：找到 `setup.exe` 文件并双击运行它，Oracle安装向导会启动。
+
+### 步骤3：使用安装向导配置
+Oracle的安装向导会引导您完成安装过程，按以下步骤进行配置：
+
+1. **选择安装配置**：
+   - **选择创建和配置数据库**：通常，选择“创建和配置数据库”选项，这样安装完成后会自动创建一个数据库实例。
+
+2. **选择系统类别**：
+   - 如果是在个人电脑上安装，可以选择“桌面类”；如果是在服务器上安装，可以选择“服务器类”。
+
+3. **设置Oracle主目录（Oracle Base）**：
+   - 选择安装路径，默认情况下，安装程序会自动设置 `Oracle Base` 和 `软件位置`。您可以使用默认路径，也可以自定义路径（建议避免中文或空格）。
+
+4. **选择数据库类型**：
+   - 通常选择“单实例数据库安装”，如果不需要集群功能，这个选项最合适。
+
+5. **设置全局数据库名和SID**：
+   - 您可以设置一个全局数据库名称（例如 `orcl`）和SID（系统标识符）。默认值是 `orcl`，您可以按需更改。
+
+6. **配置管理选项**：
+   - 安装向导会提示您是否使用Enterprise Manager进行管理，您可以选择默认选项。
+
+7. **指定管理员密码**：
+   - 设置SYS和SYSTEM等数据库管理员用户的密码。确保记住密码，因为安装完成后您将需要它来登录数据库。
+
+8. **安装检查**：
+   - Oracle安装程序会检查系统要求是否满足，包括内存、磁盘空间等。如果有警告或错误信息，您可以根据提示调整系统设置。
+
+9. **开始安装**：
+   - 检查完所有配置后，点击“安装”按钮。安装过程会需要一些时间，请耐心等待。
+
+### 步骤4：完成安装并运行脚本
+安装过程中，安装向导可能会提示您运行一些脚本，但在Windows系统上，这一步通常是自动完成的。
+
+### 步骤5：验证安装
+1. **启动SQL*Plus**：在“开始”菜单中查找SQL*Plus工具，使用SYS或SYSTEM账户登录，确保数据库已经安装成功。
+2. **测试连接**：打开SQL*Plus，并输入以下命令测试连接：
+   ```sql
+   sqlplus / as sysdba
+   ```
+   您应该能够连接到数据库并进入SQL*Plus命令行。
+
+3. **访问Enterprise Manager**（如果已启用）：
+   - 打开浏览器，输入`https://localhost:1158/em`，使用SYS或SYSTEM账户登录。通过Enterprise Manager可以方便地管理数据库。
+
+### 启动和关闭数据库
+在Windows上，您可以通过Oracle服务管理器启动和关闭数据库服务：
+1. 打开“服务”窗口（按 `Win + R` 键，输入 `services.msc`）。
+2. 找到Oracle相关的服务，如 `OracleServiceORCL`（ORCL是SID，根据您的SID可能不同）。
+3. 右键点击该服务，选择启动或停止数据库服务。
+
+### 环境变量配置（可选）
+为方便使用，您可以将Oracle的安装目录添加到系统的环境变量中。
+1. 右键点击“我的电脑” > “属性” > “高级系统设置” > “环境变量”。
+2. 在系统变量中的 `Path` 添加Oracle安装目录（如 `C:\app\oracle\product\11.2.0\dbhome_1\bin`）。
+
+这样，您在Windows上就完成了Oracle 11g的安装和配置，可以正常使用了！
