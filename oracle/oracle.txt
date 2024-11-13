@@ -1,1 +1,4 @@
 oracle 数据库下载地址：https://www.oracle.com/cn/database/technologies/oracle-database-software-downloads.html
+
+历史版本oracle地址：
+https://edelivery.oracle.com/osdc/faces/SoftwareDelivery
