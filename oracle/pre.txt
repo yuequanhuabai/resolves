@@ -1,0 +1,102 @@
+虚拟机没有安装ssh服务，无法远程连接：
+
+先检查一遍：
+sudo systemctl status ssh
+或者：
+sudo systemctl status sshd
+
+如果显示：
+ssh.server或者sshd.server not found; 则证明没有安装ssh服务；
+
+apt-get: apt-get 最初是为了自动化安装、升级和删除软件包而设计的，它的输出和操作模式被设计成适合自动化脚本处理
+apt-cache: apt-cache 用于查询和分析APT软件包的元数据，它的存在是为了帮助用户和管理员理解和管理系统中的软件包关系和属性，这是 apt-get 安装和更新功能之外的需求。
+apt: apt 作为一个较新的工具，旨在提供一个更友好的用户界面，整合了 apt-get 和 apt-cache 的一些最常用功能，使命令更加直观易用。
+
+
+sudo apt-get update
+
+系统添加开机自启动路径：
+/etc/systemd/system/
+在该路径下添加软链接即可；
+
+和window的路径一样： cmd：  shell:startup
+C:\Users\yuequanhuabai\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+在该目录下的程序会在开机的时候自启动；
+
+
+sudo systemctl is-enabled ssh
+该命令可以判断服务是否开机自启动：
+
+enabled: 服务已被设置为启动时自动启动。
+disabled: 服务未被设置为启动时自动启动。
+static: 服务不能被启用或禁用，它由其他活动的服务或设置管理。
+masked: 服务已被“屏蔽”，即被强制禁用，无法启动。
+indirect: 服务的启动是间接的，通常依赖于其他服务或条件。
+
+apt-get upgrade和apt-get dist-upgrade命令的区别：
+
+差不多，但还可以更精确一些。你的理解基本正确，但让我帮你澄清和精确一下细节：
+### `apt-get upgrade`
+- **更新已安装的包**：`apt-get upgrade` 会更新所有已安装的软件包到最新版本，但前提是这些更新不会引入任何新的依赖关系或改变现有依赖关系。
+- **依赖冲突处理**：如果某个包的更新需要新的依赖或者更改现有依赖而这些依赖还未满足，那么该包的更新将不会进行。它不会自动安装新的包或移除现有包来解决这些依赖问题。
+
+### `apt-get dist-upgrade`
+- **更智能的包处理**：`apt-get dist-upgrade` 会更新所有已安装的包，并在必要时安装新的依赖或调整现有依赖。如果更新某个包需要移除其他包（为了满足新的依赖条件），`dist-upgrade` 也会处理这种情况。
+- **系统底层和依赖更新**：这个命令更彻底，因为它能处理通过普通 `upgrade` 无法解决的依赖问题。它能确保系统中的软件都尽可能是最新的版本，即使这意味着更复杂的依赖变动。
+
+总的来说，`apt-get upgrade` 足以处理大部分常规的更新任务，而且风险较低，因为它不会引入或移除任何软件包。而 `apt-get dist-upgrade` 更适用于需要全面更新的情况，特别是在较大的系统升级中，因为它能更彻底地解决依赖问题。这两个命令的选择依赖于你的更新需求和对系统稳定性的考量。
+
+sudo apt-get upgrade -y
+自动同意所有：
+
+安装openjdk-8:
+sudo apt-get install openjdk-8-jdk -y
+
+ubuntu查看当前系统安装了哪些jdk：
+sudo update-alternatives --config java
+或者：
+sudo update-alternatives --list java
+
+或者查看标准的安装目录：
+ls /usr/lib/jvm/
+
+ubuntu环境变量设置：
+
+1.临时设置：
+export VAR=value  可以临时设置环境变量，这种变量仅对当前shell会话有效，并且不会影响其他已经打开或之后开启的shell会话
+
+2.永久设置：
+
+.bashrc  .bashrc 是在每个新开的终端会话中读取，适合那些仅影响终端会话的变量。
+
+.bash_profile 或者 .profile    .bash_profile 和 .profile 在登录时读取一次，适合那些需要在登录后立即生效的设置。
+
+
+/etc/environment   /etc/environment 由PAM模块读取，是在用户会话开始时设置，与Shell类型无关。
+
+
+/etc/profile
+
+/etc/bash.bashrc
+
+安装unzip
+sudu apt-get install unzip
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
