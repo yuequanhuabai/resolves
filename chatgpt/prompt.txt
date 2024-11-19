@@ -1,0 +1,18 @@
+BeanDefinitionRegistryPostProcessor
+ResourceLoaderAware
+ApplicationContextAware
+
+MetadataREaderFactory
+ResourcePatternResolver
+
+
+
+你知道BeanDefinitionRegistryPostProcessor类吗，它的诞生背景是什么？ 为什么会有它，在它诞生之前有哪个类替代它的工作
+
+你知道ResourceLoaderAware类吗，它的诞生背景是什么？ 为什么会有它，在它诞生之前有哪个类替代它的工作
+
+你知道ApplicationContextAware类吗，它的诞生背景是什么？ 为什么会有它，在它诞生之前有哪个类替代它的工作
+
+你知道MetadataREaderFactory类吗，它的诞生背景是什么？ 为什么会有它，在它诞生之前有哪个类替代它的工作
+
+你知道ResourcePatternResolver类吗，它的诞生背景是什么？ 为什么会有它，在它诞生之前有哪个类替代它的工作
