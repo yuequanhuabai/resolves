@@ -1,0 +1,3 @@
+ubuntu18
+重置root密码：
+https://www.cnblogs.com/ioufev/articles/16008704.html
