@@ -1,3 +1,12 @@
 ubuntu18
 重置root密码：
 https://www.cnblogs.com/ioufev/articles/16008704.html
+
+
+nano编辑器：
+
+Ctrl + O，开启保存命令。
+确认文件名，按 Enter 保存。
+Ctrl + X，退出 nano 编辑器。
+
+保存成功！

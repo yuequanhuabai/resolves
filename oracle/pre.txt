@@ -84,15 +84,91 @@ sudu apt-get install unzip
 
 
 
+useradd -m -g dba -s /bin/bash oracle
+
+这条命令是用于在类 Unix 操作系统中创建新用户的命令。这里具体解释一下每个部分的含义：
+
+- `useradd`：这是用于创建新用户的命令。
+- `-m`：这个选项表示创建用户的同时，为该用户在 `/home` 目录下创建一个与用户名同名的主目录（home directory）。
+- `-g dba`：这个选项指定新用户的初始或主要群组（group）为 `dba`。
+- `-s /bin/bash`：这个选项指定新用户的登录 shell，这里是使用 `/bin/bash`，这是 Bash shell 的路径，是很多 Linux 系统的默认 shell。
+- `oracle`：这是新创建的用户的用户名。
+
+总结来说，这个命令的作用是创建一个名为 `oracle` 的新用户，为其创建一个主目录，在 `/home/oracle`，将用户的主要群组设置为 `dba`，并指定用户使用 `/bin/bash` 作为登录 shell。这样的设置常见于安装和设置数据库（如 Oracle）的用户环境中。
+
+为 Oracle 的安装目录设置权限：
+
+sudo mkdir -p /u01/app/oracle
+sudo chown -R oracle:dba /u01/app/oracle
+sudo chmod -R 775 /u01/app/oracle
 
 
 
+这两个操作是对系统配置文件的修改，分别调整系统内核参数和用户限制参数，以满足 Oracle 数据库运行的需求。
 
+---
 
+### **1. 修改 `/etc/sysctl.conf`**
+- **作用**：配置和调整系统的内核参数。这些参数主要影响系统的内存、共享内存、信号量、网络等资源管理。
 
+#### **Oracle 数据库需要的典型配置：**
+```bash
+fs.file-max = 6815744                  # 文件描述符的最大数量
+kernel.shmall = 2097152                # 共享内存段总页数
+kernel.shmmax = 2147483648             # 单个共享内存段的最大大小 (单位: 字节)
+kernel.shmmni = 4096                   # 系统支持的共享内存段最大数量
+kernel.sem = 250 32000 100 128         # 信号量的设置
+net.ipv4.ip_local_port_range = 9000 65500  # 可用端口范围
+net.core.rmem_default = 262144         # 默认接收缓冲区大小
+net.core.rmem_max = 4194304            # 最大接收缓冲区大小
+net.core.wmem_default = 262144         # 默认发送缓冲区大小
+net.core.wmem_max = 1048576            # 最大发送缓冲区大小
+```
 
+#### **为什么需要这些设置？**
+- Oracle 数据库在运行时需要大量的共享内存来存储数据库结构、缓存数据等。
+- 信号量（`kernel.sem`）和文件描述符（`fs.file-max`）直接影响数据库的并发连接数和文件操作能力。
+- 网络缓冲区参数（`net.core` 和 `net.ipv4`）优化了网络通信性能。
 
+#### **应用更改：**
+修改完成后，执行以下命令使其立即生效：
+```bash
+sudo sysctl -p
+```
 
+---
+
+### **2. 修改 `/etc/security/limits.conf`**
+- **作用**：配置用户资源限制，主要是对特定用户的文件打开数、进程数等进行限制。
+
+#### **Oracle 用户需要的典型配置：**
+```bash
+oracle soft nproc 2047          # 用户可启动的最大进程数 (soft 限制)
+oracle hard nproc 16384         # 用户可启动的最大进程数 (hard 限制)
+oracle soft nofile 1024         # 用户可打开的最大文件数 (soft 限制)
+oracle hard nofile 65536        # 用户可打开的最大文件数 (hard 限制)
+oracle soft stack 10240         # 用户栈的最大大小 (soft 限制)
+oracle hard stack 32768         # 用户栈的最大大小 (hard 限制)
+```
+
+#### **为什么需要这些设置？**
+- Oracle 用户需要大量的文件描述符和进程资源来处理并发请求。
+- 不配置这些限制可能导致系统在高负载下报错，如 "Too many open files" 或 "Out of processes"。
+
+#### **注意：**
+某些系统还需要修改以下文件以配合 `limits.conf` 生效：
+- `/etc/pam.d/common-session` 和 `/etc/pam.d/common-session-noninteractive`：
+  添加以下内容：
+  ```bash
+  session required pam_limits.so
+  ```
+
+---
+
+### **总结**
+- **`/etc/sysctl.conf`**：调整内核资源参数，为系统提供更大的内存、信号量和网络资源支持。
+- **`/etc/security/limits.conf`**：为 Oracle 用户提供必要的系统资源（文件、进程、栈大小等）。
+- 这些调整是为确保 Oracle 数据库能够高效运行和处理大规模并发连接而设置的。
 
 
 
