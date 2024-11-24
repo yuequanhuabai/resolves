@@ -157,3 +157,62 @@ Oracle的安装向导会引导您完成安装过程，按以下步骤进行配�
 2. 在系统变量中的 `Path` 添加Oracle安装目录（如 `C:\app\oracle\product\11.2.0\dbhome_1\bin`）。
 
 这样，您在Windows上就完成了Oracle 11g的安装和配置，可以正常使用了！
+
+
+非图形安装：
+
+./runInstaller -silent -responseFile /path/to/your_response_file.rsp
+
+
+
+
+oracle账户被锁：
+
+sqlplus / as sysdba
+
+
+出现`ORA-28000`错误意味着账户被锁定，这是Oracle数据库安全策略的一部分，以防止未授权访问或者在多次密码尝试失败后自动锁定账户。要解锁这些账户并重置密码，你可以按照以下步骤操作：
+
+1. **打开命令提示符**：作为管理员运行命令提示符。
+
+2. **连接到数据库**：使用`sqlplus`命令行工具，以`SYSDBA`权限连接到数据库。你可以通过以下命令连接：
+
+   ```bash
+   sqlplus / as sysdba
+   ```
+
+3. **解锁账户并重置密码**：使用以下SQL命令来解锁账户并设置新密码。下面是针对常见账户的示例：
+
+   ```sql
+   ALTER USER sys IDENTIFIED BY new_password ACCOUNT UNLOCK;
+   ALTER USER system IDENTIFIED BY new_password ACCOUNT UNLOCK;
+   ALTER USER scott IDENTIFIED BY new_password ACCOUNT UNLOCK;
+   ALTER USER hr IDENTIFIED BY new_password ACCOUNT UNLOCK;
+   ```
+
+   将`new_password`替换为你想设置的新密码。确保密码符合你的数据库密码策略，例如密码长度和复杂性要求。
+
+4. **退出SQL*Plus**：
+
+   ```sql
+   EXIT;
+   ```
+
+解锁账户后，你应该能够使用新设置的密码正常登录到这些账户。如果你不确定密码策略或需要进一步帮助设置密码，可以查阅Oracle数据库的官方文档或者询问数据库管理员。
+
+
+出现`ORA-00922: missing or invalid option`错误通常意味着SQL命令的格式或选项有误。在你的命令中，`IDENTIFIED BY`和`ACCOUNT UNLOCK`应当作为单独的子句来执行。在Oracle SQL中，修改密码和解锁账户需要稍微调整你的命令格式。
+
+以下是正确的命令结构，用以同时重设密码并解锁账户：
+
+```sql
+ALTER USER scott IDENTIFIED BY "密码字符串" ACCOUNT UNLOCK;
+```
+
+注意几个关键点：
+
+1. **密码包含特殊字符**：如果密码包含特殊字符（如`-`），最好将密码用双引号`"`括起来，以避免解析错误。
+
+2. **分号结束**：确保命令末尾有一个分号`;`，这是SQL命令的结束符。
+
+再次运行上述调整后的命令，应该可以成功解锁`scott`用户并更新其密码。如果继续遇到问题，检查是否其他的语法或配置错误存在。

@@ -12,3 +12,10 @@ export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-x86_64
 export PATH=$JAVA_HOME/bin:$PATH
 
 
+
+openjdk下载：
+https://jdk.java.net/archive/
+
+
+oracle jdk下载路径：
+https://www.oracle.com/java/technologies/downloads/archive/
