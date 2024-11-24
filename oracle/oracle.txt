@@ -231,6 +231,7 @@ CREATE USER test IDENTIFIED BY "test";
 
 授权：
 
+
 GRANT CREATE SESSION, CREATE TABLE, CREATE VIEW TO test;
 
 用户不用加双引号，但是密码需要加双引号
