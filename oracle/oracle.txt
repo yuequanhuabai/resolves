@@ -216,3 +216,21 @@ ALTER USER scott IDENTIFIED BY "密码字符串" ACCOUNT UNLOCK;
 2. **分号结束**：确保命令末尾有一个分号`;`，这是SQL命令的结束符。
 
 再次运行上述调整后的命令，应该可以成功解锁`scott`用户并更新其密码。如果继续遇到问题，检查是否其他的语法或配置错误存在。
+
+
+=======================================================================================
+
+oracle jdk下载路径：
+https://www.oracle.com/java/technologies/downloads/archive/
+
+oracle创建新的schema：
+
+CREATE USER new_user IDENTIFIED BY password;
+
+CREATE USER test IDENTIFIED BY "test";
+
+授权：
+
+GRANT CREATE SESSION, CREATE TABLE, CREATE VIEW TO test;
+
+用户不用加双引号，但是密码需要加双引号
