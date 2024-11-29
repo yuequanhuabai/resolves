@@ -223,6 +223,8 @@ ALTER USER scott IDENTIFIED BY "密码字符串" ACCOUNT UNLOCK;
 oracle jdk下载路径：
 https://www.oracle.com/java/technologies/downloads/archive/
 
+
+sqlplus / as sysdba
 oracle创建新的schema：
 
 CREATE USER new_user IDENTIFIED BY password;
@@ -235,3 +237,20 @@ CREATE USER test IDENTIFIED BY "test";
 GRANT CREATE SESSION, CREATE TABLE, CREATE VIEW TO test;
 
 用户不用加双引号，但是密码需要加双引号
+
+
+在 DBeaver 中，确保使用正确的 JDBC URL 格式：
+
+对于 SERVICE_NAME：
+
+jdbc:oracle:thin:@//host:port/SERVICE_NAME
+对于 SID：
+
+jdbc:oracle:thin:@host:port:SID
+确保 SERVICE_NAME 和 SID 与 sqlplus 的配置一致。
+
+SQL 错误 [1950] [42000]: ORA-01950: 对表空间 'USERS' 无权限 -site:csdn.net
+解決方案：
+alter user 数据库用户名 quota unlimited on USERS;
+
+
