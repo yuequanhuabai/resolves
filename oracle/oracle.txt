@@ -242,3 +242,8 @@ ALTER USER [username] QUOTA UNLIMITED ON USERS;
 
 ALTER USER test QUOTA UNLIMITED ON USERS;
 
+
+oracle
+uuid():
+INSERT INTO test.student (id, name) VALUES(RAWTOHEX(SYS_GUID()), 'zhangsan10');
+
