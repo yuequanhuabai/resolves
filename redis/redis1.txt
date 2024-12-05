@@ -86,6 +86,7 @@ redis作为缓存的一个具体实现：
 5.丰富的特性， public/subscribe
 
 
+
 multi: 开启事物
 exec：提交事物
 discard： 回滚事物
