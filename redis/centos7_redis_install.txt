@@ -1,0 +1,42 @@
+安装版本： redis-6.2.6.tar.gz
+
+root帐号：
+
+cd  /root/training/
+
+解压  tar -zxvf redis-6.2.6.tar.gz
+
+同目录文件名：redis-6.2.6
+
+cd  /root/training/redis-6.2.6
+
+make(和适用java命令编译 java为.class文件一样)
+
+mkdir /root/training/redis
+
+make PREFIX=/root/training/redis install
+
+cd /root/training/redis
+
+mkdir conf
+
+cp /root/training/redis-6.2.6/redis.conf  /root/training/redis/conf
+
+
+redis 信息：
+
+延迟，吞吐；
+
+
+
+
+
+
+
+
+
+
+
+
+
+
