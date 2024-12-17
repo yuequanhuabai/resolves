@@ -266,3 +266,4 @@ oracle
 uuid():
 INSERT INTO test.student (id, name) VALUES(RAWTOHEX(SYS_GUID()), 'zhangsan10');
 
+INSERT INTO test.student (id) VALUES(RAWTOHEX(SYS_GUID()));

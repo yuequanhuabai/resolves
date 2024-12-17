@@ -7,3 +7,6 @@ mysql的所有的文档归档地址： https://dev.mysql.com/doc/index-archive.h
 
 
 
+mysql的基准测试：
+mysqlslap --concurrency=50 --iterations=10 --query=select * from student  --create-schema=test --user=root --password=Aa+123456
+

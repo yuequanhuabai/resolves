@@ -1,0 +1,56 @@
+
+sql的执行顺序：
+
+from，join，where，group by，聚合函数，having， select，distinct，order by，limit/offset；
+
+
+
+
+1.
+where 条件右边的语句先执行
+
+2排序：
+order by  作用于后面的所有列，
+         desc只作用于离它最近的列，如果多个字段都要降序，需要在每个字段后面加desc
+
+sql优化：
+如果没有函数，如何在正常sql中实现函数的功能？
+
+函数的实现：
+
+oracle
+DDL，DML，DCL，DQL
+
+
+数据碎片处理：
+alter table 表名  move;
+导出和导入；
+
+
+drop table
+
+删除表： 删除到回收站
+
+select * from tab;  等价于mysql的show tables;
+
+rowid  是不是硬盘的物理地址
+
+
+
+分组函数会过滤列的null值;
+
+select sum(comm)/count(*) , sum(comm)/count(comm), avg(comm) from emp;
+
+下面会不一样；当comm有null值的时候；count(*)会统计所有列，count(comm)只会统计不为null的列；
+
+mysql的基准测试：
+mysqlslap --concurrency=50 --iterations=10 --query=select * from student  --create-schema=test --user=root --password=Aa+123456
+
+
+
+
+
+
+
+
+
