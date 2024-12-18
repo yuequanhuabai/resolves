@@ -267,3 +267,19 @@ uuid():
 INSERT INTO test.student (id, name) VALUES(RAWTOHEX(SYS_GUID()), 'zhangsan10');
 
 INSERT INTO test.student (id) VALUES(RAWTOHEX(SYS_GUID()));
+
+
+
+oracle 查询执行计划：
+
+explain plan for
+select empno,ename, sal, (select avg(sal) from emp where deptno=e.deptno) avgsal
+from emp e
+where sal>(select avg(sal) from emp where deptno=e.deptno);
+
+select * from table(dbms_xplain.display);
+=========================================================================================
+
+select e.empno,e.ename,e.sal,d.avgsal
+from emp e , (select deptno,avg(sal) avgsal from emp group by deptno ) d
+where e.deptno=d.deptno and e.sal>d.avgsal;
