@@ -1,0 +1,130 @@
+1. hadoop 伪分布的安装步骤
+
+
+
+
+
+
+2.hadoop 完全分布的安装步骤
+
+前提：
+在所有的节点上，安装JDK、关闭防火墙、配置主机名、免密码登录
+
+配置主机名（hosts文件的映射）
+免密码登录（复制各自的公钥到对应节点上的 ~/.ssh/authorized_keys 文件里）
+
+1. 传入hadoop的jar包到主节点：
+解压 tar -zxvf
+配置环境变量
+vi ~/.bash_profile
+
+            HADOOP_HOME=/root/training/hadoop-3.1.2
+			export HADOOP_HOME
+
+			PATH=$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$PATH
+			export PATH
+			export HDFS_DATANODE_USER=root
+			export HDFS_DATANODE_SECURE_USER=root
+			export HDFS_NAMENODE_USER=root
+			export HDFS_SECONDARYNAMENODE_USER=root
+			export YARN_RESOURCEMANAGER_USER=root
+			export YARN_NODEMANAGER_USER=root
+
+修改文件hadoop-env.sh，设置JAVA_HOME
+			export JAVA_HOME=/root/training/jdk1.8.0_181
+
+hdfs-site.xml
+			<!-- 设置数据块的冗余度 -->
+			<!-- 数据块的冗余度一般跟数据节点的个数保持一致 -->
+			<!-- 最大不超过3 -->
+			<property>
+			   <name>dfs.replication</name>
+			   <value>2</value>
+			</property>
+
+			<!-- true开启HDFS的权限检查 -->
+			<!-- 开发和测试中设置false -->
+			<!-- 生成中设置true -->
+			<property>
+			   <name>dfs.permissions</name>
+			   <value>true</value>
+			</property>
+
+		core-site.xml
+			<!-- 配置HDFS主节点NameNode的地址 -->
+			<!-- 9000是客户端与服务器端进行RPC通信的端口号 -->
+			<property>
+			   <name>fs.defaultFS</name>
+			   <value>hdfs://bigdata112:9000</value>
+			</property>
+
+			<!-- HDFS所对应操作系统目录 -->
+			<!-- 该参数在生成环境中一定要修改一下 -->
+			<property>
+			   <name>hadoop.tmp.dir</name>
+			   <value>/root/training/hadoop-3.1.2/tmp</value>
+			</property>
+
+		mapred-site.xml
+			<!-- MapReduce运行框架 -->
+			<property>
+			   <name>mapreduce.framework.name</name>
+			   <value>yarn</value>
+			</property>
+
+			<property>
+			   <name>yarn.app.mapreduce.am.env</name>
+			   <value>HADOOP_MAPRED_HOME=${HADOOP_HOME}</value>
+			</property>
+
+			<property>
+			   <name>mapreduce.map.env</name>
+			   <value>HADOOP_MAPRED_HOME=${HADOOP_HOME}</value>
+			</property>
+
+			<property>
+			   <name>mapreduce.reduce.env</name>
+			   <value>HADOOP_MAPRED_HOME=${HADOOP_HOME}</value>
+			</property>
+
+		yarn-site.xml
+			<!-- ResourceManager的地址 -->
+			<property>
+			   <name>yarn.resourcemanager.hostname</name>
+			   <value>bigdata112</value>
+			</property>
+
+			<!-- shuffle洗牌 -->
+			<!-- MapReduce执行方式 -->
+			<property>
+			   <name>yarn.nodemanager.aux-services</name>
+			   <value>mapreduce_shuffle</value>
+			</property>
+
+		workers 指定从节点的地址
+			bigdata113
+			bigdata114
+
+把bigdata112上配置好的Hadoop目录拷贝到从节点上
+			cd ~/training/
+			scp -r hadoop-3.1.2/ root@bigdata113:/root/training
+			scp -r hadoop-3.1.2/ root@bigdata114:/root/training
+
+
+
+注意：在执行MapReduce程序的时候，尤其是分区的时候，可能出现以下的错误：
+
+Container [pid=62136,containerID=container_1561961257277_0005_01_000012] is running 480668160B beyond the 'VIRTUAL' memory limit. Current usage: 107.4 MB of 1 GB physical memory used; 2.5 GB of 2.1 GB virtual memory used. Killing container.
+
+如果要解决这个问题，可以调整虚拟内存率yarn.nodemanager.vmem-pmem-ratio （这个hadoop默认是2.1），我们可以设置大一点。
+<property>
+   <name>yarn.nodemanager.vmem-pmem-ratio</name>
+   <value>3</value>
+</property>
+
+或者：在yarn-site.xml中，将yarn.nodemanager.vmem-check-enabled设置为false，禁用虚拟内存的检查。
+
+<property>
+   <name>yarn.nodemanager.vmem-check-enabled</name>
+   <value>false</value>
+</property>
