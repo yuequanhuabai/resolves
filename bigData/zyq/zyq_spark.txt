@@ -1,0 +1,40 @@
+
+全分布模式：
+
+
+解压
+spark://bigData111:7077
+
+
+主节点：
+
+1.上传spark的软件包
+2.解压：
+3.配置
+        修改spark-env.sh文件
+        export JAVA_HOME=/root/training/jdk1.8.0_181
+        export SPARK_MASTER_HOST=bigdata112
+        export SPARK_MASTER_PORT=7077
+		配置从节点的地址  mv slaves.template slaves
+			bigdata113
+			bigdata114
+
+	把配置好的spark复制到两个从节点上
+    			cd ~/training/
+    			scp -r spark-3.0.0-bin-hadoop3.2/ root@bigdata113:/root/training/
+    			scp -r spark-3.0.0-bin-hadoop3.2/ root@bigdata114:/root/training/
+启动
+sbin/start-all.sh
+
+运行shell：
+bin/spark-shell --master spark://bigData112:7077
+
+退出shell
+:quit
+
+停止spark
+sbin/stop-all.sh
+
+
+
+
