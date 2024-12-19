@@ -1,0 +1,14 @@
+1.上传spark的软件包
+2.解压：
+3.进入目录：
+修改flink-conf.yaml
+		jobmanager.rpc.address: bigdata111
+
+启动Flink集群
+		cd ~/training/flink-1.11.0/
+		bin/start-cluster.sh
+
+
+伪分布模式启动ok
+
+查看web界面flink-conf.yaml的关于web的端口：

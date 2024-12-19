@@ -1,0 +1,45 @@
+hadoop配置文件：
+core-site.xml
+hdfs-site.xml
+mapred-site.xml
+yarn-site.xml
+workers (配置从节点)
+
+1.启动：start-dfs.sh
+
+
+联盟配置启动：
+
+删除原来的hadoop目录
+
+验证jdk
+防火墙的状态
+免密登录
+hosts文件
+
+配置文件：
+core-site.xml
+hdfs-site.xml
+mapred-site.xml
+yarn-site.xml
+workers (配置从节点)
+
+scp -r hadoop-3.1.2/ root@bigData113:/root/training/
+scp -r hadoop-3.1.2/ root@bigData114:/root/training/
+scp -r hadoop-3.1.2/ root@bigData115:/root/training/
+
+
+
+开发需要的jar包：
+
+$HADOOP_HOME/share/hadoop/common/*.jar
+$HADOOP_HOME/share/hadoop/common/lib/*.jar
+$HADOOP_HOME/share/hadoop/mapreduce/*.jar
+$HADOOP_HOME/share/hadoop/mapreduce/lib/*.jar
+
+
+
+
+
+
+
