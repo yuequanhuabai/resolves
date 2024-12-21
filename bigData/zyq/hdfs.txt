@@ -40,6 +40,28 @@ $HADOOP_HOME/share/hadoop/mapreduce/lib/*.jar
 
 
 
+wordcount:
+
+key1,value1
+偏移量，文本值
+
+key2,vlaue2
+分词, 1
+
+key3,value3
+分词， 同词统计集合(1,1,1)
+
+key4,value4
+分词，累加结果
+
+
+
+
+
+
+
+
+
 
 
 
