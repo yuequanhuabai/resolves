@@ -1,0 +1,6 @@
+
+mysql初始化后修改密码：
+
+alter user 'root'@'localhost' identified by 'Aa-123456'
+
+alter user 'root'@'localhost' identified by 'Welcome_1'
