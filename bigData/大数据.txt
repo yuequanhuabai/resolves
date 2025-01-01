@@ -1,0 +1,35 @@
+大数据：
+
+
+数据的收集：
+数据的清洗
+数据的存储
+数据的处理
+
+
+数据的收集：
+日志：  log4j,flume(日志收集工具，汇总的作用)
+爬虫：  python，jsoup，nutch
+历史数据： mysql，oracle 通过sqoop导出数据（ELK）
+
+
+数据的清洗
+sql清洗
+逻辑清洗
+
+
+数据的存储
+Hadoop.HDFS （海量数据存储） （Hive,Hbase,Spark,pig, 全部底层基于HDFS）
+
+
+数据的处理
+离线： Hadoop.Mapreduce,(Hive,Hbase,SparkSQL,flinkDataSet)
+流式：Storm,SparkStreaming,FlinkDataStream
+
+
+Sqoop 将大数据环境和关系型数据库进行连接
+
+Echart： 大数据可视化
+
+Hbase: nosql 数据库
+
