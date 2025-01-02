@@ -1,3 +1,123 @@
 
+首先创建BeanFactory
+
 1.加载xml文件-->2.解析xml文件-->3.封装BeanDefinition-->4.实例化-->5.放到spring容器-->6.从spring容器中获取
 
+BeanFactoryPostProcessor
+
+BeanPostProcessor
+
+一级缓存： singletonObjects
+二级缓存： earlySingletonObjects
+三级缓存： singletonFactories
+
+
+1.修改Beandefinition (自定义类实现接口BeanFactoryPostProcessor)
+2.
+
+创建对象：
+实例化：在堆中开辟一块内存空间(给队形的属性赋值，都是默认值)
+初始化：给属性设置值（1.填充属性；2执行初始化方法：init-method）
+
+实例化：
+BeanFactoryPostProcessor
+
+初始化：
+填充属性：populate
+设置Aware接口的属性
+BeanPostProcessor.before
+afterproperties 然后才是 init-method
+BeanPostProcessor.after
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+详情简介：
+
+顺序：
+
+Spring 加载解析所有 BeanDefinition
+调用 BeanFactoryPostProcessor 接口的实现类，修改 BeanDefinition
+开始根据最终的 BeanDefinition 创建 Bean
+调用 BeanPostProcessor 接口的实现类，对已创建的 Bean 做进一步处理
+
+
+===================================================================================================
+
+1. PropertyPlaceholderConfigurer / PropertySourcesPlaceholderConfigurer
+这两个类是最常见的 BeanFactoryPostProcessor 实现之一，用来解析外部属性文件（如 .properties），然后替换掉 Spring 配置文件或注解中所有类似 ${mykey} 的占位符。
+
+PropertyPlaceholderConfigurer：比较早期的实现，常用于 XML 配置；
+PropertySourcesPlaceholderConfigurer：较新的实现，结合了 Environment 和 PropertySource 机制。
+其工作流程大致是：
+
+Spring 启动时，加载所有 BeanDefinition；
+PropertyPlaceholderConfigurer 读取 .properties 文件，获取所有键值；
+遍历所有 BeanDefinition，找到含有${...} 的属性值，进行替换；
+处理完后，Spring 才开始正式创建 Bean，最终各 Bean 得到正确的配置信息。
+
+===================================================================================================
+
+
+除了 BeanFactoryPostProcessor，Spring 中还有很多扩展接口，比如：
+
+BeanPostProcessor：对 Bean 实例 在初始化前后进行处理（如 AOP 代理、动态属性赋值等）。
+BeanDefinitionRegistryPostProcessor：它是 BeanFactoryPostProcessor 的子接口，允许直接操作 BeanDefinitionRegistry，甚至可以在这里注册新的 BeanDefinition（而不仅仅是修改已有的）。典型实现如 ConfigurationClassPostProcessor（解析 @Configuration、@Bean 等注解），这在 Spring 注解驱动中非常常见。
+ApplicationContextAwareProcessor：感知 ApplicationContext，通常是给相关的 Bean 注入 ApplicationContext 对象。
+
+===================================================================================================
+位置与作用
+BeanFactoryPostProcessor 是 Spring 提供的一个在 Bean 定义层 做“后置处理”的接口，能够在实际创建 Bean 之前修改或扩展 BeanDefinition 的信息。
+
+解决问题
+
+支持动态配置、占位符替换；
+在加载 BeanDefinition 后、Bean 实例化前进行集中管理与修改；
+降低与运行环境、外部资源的耦合度，便于在不同环境下做灵活的属性注入或 BeanDefinition 修饰。
+典型场景
+
+PropertyPlaceholderConfigurer / PropertySourcesPlaceholderConfigurer：解析外部属性文件，替换占位符；
+自定义的后处理器：批量修改 Bean 的 Scope、依赖、BeanClass 等；
+与 BeanDefinitionRegistryPostProcessor、BeanPostProcessor 等配合使用，实现从定义到实例的全方位灵活控制。
+背后的设计理念
+Spring 一贯秉承 “分层设计” 和 “高扩展性” 的原则，把“对 BeanDefinition 的修饰”集中到一个可插拔的接口中，让开发者可以在 IoC 容器启动流程的早期就介入并深度定制。这不仅让 Spring 具备了强大的适配能力，也让企业应用在复杂多变的环境中依然能够保持高可维护性和灵活性。
+
+
+===================================================================================================
+
+
+
+===================================================================================================
+
+
+===================================================================================================
