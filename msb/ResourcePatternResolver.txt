@@ -1,0 +1,210 @@
+在 Spring 的资源抽象体系中，**`ResourcePatternResolver`** 是在 **`ResourceLoader`** 之上进一步扩展，用来解决“**批量资源匹配**”的需求。它可以根据带有 **通配符**（`*`, `**` 等）的路径模式，**一次性** 找到符合条件的所有资源（`Resource[]`），而不仅仅是加载单个资源。这在开发中非常常见，比如想加载某个包下的所有配置文件、扫描某个目录中的所有模板文件、或者在类路径中找到所有匹配某种模式的 `.class` 文件等等。
+
+> **核心特点**：支持 **`getResources(String locationPattern)`** 方法，能处理类似
+> - `classpath*:com/example/**/*.xml`
+> - `file:/path/to/*.properties`
+> - `classpath:/META-INF/spring.factories`
+> 等等通配符场景。
+
+---
+
+## 一、为什么需要 `ResourcePatternResolver`？
+
+1. **一次性处理多个资源**
+
+   `ResourceLoader` 只能加载**单个**资源（通过 `getResource(String location)`）。但在许多实际场景，可能需要同时加载多个文件（如所有 `.xml` 配置、所有 `.properties` 配置或所有 `.class` 文件），如果仅用 `ResourceLoader`，需要自己去解析目录、遍历文件系统或类路径，写额外的逻辑来匹配路径模式，这既繁琐又容易出错。
+
+2. **统一、通用的通配符支持**
+
+   Spring 提供了**统一**的通配符解析策略（主要靠内部的 `PathMatchingResourcePatternResolver` 及 `PathMatcher` 实现），让我们只需写一个形如 `classpath*:com/example/**/*.xml` 的表达式，就能遍历所有匹配的文件位置，减少了大量自定义扫描的工作。
+
+3. **与 Spring 生态的无缝集成**
+
+   - 在 Spring 内部，比如 **组件扫描**（`@ComponentScan`）、**自动配置**、**资源加载**等都依赖 `ResourcePatternResolver` 提供的多资源扫描能力。
+   - 用户也可以轻松在自己的应用里直接使用它来完成批量文件扫描、插件加载、注解处理等工作。
+
+---
+
+## 二、接口定义与主要方法
+
+`ResourcePatternResolver` 继承自 `ResourceLoader`：
+
+```java
+public interface ResourcePatternResolver extends ResourceLoader {
+    // 特殊前缀，用来表示要扫描所有类路径
+    String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
+
+    // 根据一个带通配符的模式，返回所有匹配的 Resource
+    Resource[] getResources(String locationPattern) throws IOException;
+}
+```
+
+1. **`getResources(String locationPattern)`**
+   - 核心方法：给定一个包含通配符的资源路径模式，返回所有匹配的 `Resource`。
+   - 典型通配符：
+     - `*`：匹配文件名中的任意字符（不含路径分隔符）；
+     - `**`：匹配多级目录；
+     - `classpath*:`：表示在**所有**类路径（含多个 jar 包或文件夹）中进行匹配，而不仅仅是当前类路径。
+   - 可能会抛出 `IOException`，因为访问文件系统、jar 包等过程有 IO 风险。
+
+2. **继承的 `getResource(String location)`** 和 `getClassLoader()` 方法
+   - 因为它继承了 `ResourceLoader`，所以也能加载单个资源并获取类加载器。
+   - 只是在此基础上，增强了多资源扫描能力。
+
+---
+
+## 三、常用实现类
+
+### 1. `PathMatchingResourcePatternResolver`
+
+- **最常用的具体实现**。内部逻辑大概是：
+  1. 先根据协议（`classpath:`, `file:`，或 `classpath*:` 等）定位基础目录；
+  2. 使用一个 `PathMatcher`（默认 `AntPathMatcher`）来解析通配符并进行遍历、匹配；
+  3. 收集所有符合条件的文件或 jar 条目，封装成 `Resource[]` 返回。
+- **适用场景**：
+  几乎所有需要批量文件扫描的场景都可以用它。比方说在 Spring Boot 启动时扫描 `META-INF/spring.factories`，就是通过类似 `classpath*:META-INF/spring.factories` 来获取可能存在于多个 jar 包里的同名文件。
+
+### 2. `ServletContextResourcePatternResolver`（Web 环境）
+
+- 当处在 Web 容器环境中（有 `ServletContext`）时，Spring 也提供了 `ServletContextResourcePatternResolver`，让你可以在 Web 应用下扫描资源（例如 `WEB-INF/` 目录，或 servlet context 中的路径），并同样支持通配符模式。
+- 如果你拿到的是一个 `ServletContext` 而非 `ApplicationContext`，就可以用这个类来做批量资源查找。
+
+### 3. 其它自定义实现
+
+- 在极个别场景下，用户可能需要定制对某些特殊协议或资源系统的扫描逻辑，也可以通过继承 `PathMatchingResourcePatternResolver` 或实现 `ResourcePatternResolver` 来扩展。
+
+---
+
+## 四、使用示例
+
+### 示例 1：使用 `PathMatchingResourcePatternResolver` 扫描类路径下的所有 .xml 配置
+
+```java
+public class ResourcePatternResolverDemo {
+    public static void main(String[] args) throws IOException {
+        // 直接 new 一个 PathMatchingResourcePatternResolver
+        ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+
+        // 扫描所有匹配 "classpath*:config/**/*.xml" 的资源
+        Resource[] resources = resolver.getResources("classpath*:config/**/*.xml");
+
+        for (Resource resource : resources) {
+            System.out.println("Found resource: " + resource.getFilename());
+        }
+    }
+}
+```
+
+- 这里的 `"classpath*:"` 意味着**在所有类路径**上去查找文件，而 `**/*.xml` 则表示扫描多级目录并匹配 .xml 文件。
+
+### 示例 2：在 Spring 应用中直接获取 `ResourcePatternResolver`
+
+如果我们已经处于 Spring 容器中（例如在某个组件里），可以：
+
+```java
+@Component
+public class MyResourceScanner {
+    @Autowired
+    private ResourceLoader resourceLoader;
+
+    public void scanSomeResources() throws IOException {
+        // 把普通的 ResourceLoader 包装成支持通配符的 ResourcePatternResolver
+        ResourcePatternResolver resolver =
+            ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
+
+        Resource[] resources = resolver.getResources("classpath*:templates/**/*.html");
+        for (Resource res : resources) {
+            System.out.println("Template file: " + res.getFilename());
+        }
+    }
+}
+```
+
+- 这里借助 `ResourcePatternUtils.getResourcePatternResolver(...)` 能够自动判断 `resourceLoader` 是否已经是 `ResourcePatternResolver`，若不是则包装成 `PathMatchingResourcePatternResolver`。
+
+---
+
+## 五、`classpath*:` 与 `classpath:` 的区别
+
+- **`classpath:`**
+  - 只从**单个类路径**（通常是当前线程上下文 ClassLoader 下的）加载资源。
+  - 如果一个资源在多个 jar 包里重名，只会加载到**第一个匹配**到的。
+
+- **`classpath*:`**
+  - 会搜索**所有**的类路径位置，包括多个 jar 包、多个目录。
+  - 若有同名资源存在于多处，也会全部返回。
+  - 这在多 jar 整合中很有用，比如 `META-INF/spring.factories` 经常出现在不同第三方依赖的 jar 包里，必须用 `classpath*:` 才能一次性加载到所有配置文件。
+
+---
+
+## 六、与其他相关接口/类的关系
+
+1. **`ResourceLoader`**
+   - `ResourcePatternResolver` 继承自 `ResourceLoader`，额外提供了 `getResources()`。
+   - **只需要单资源？** 用 `ResourceLoader.getResource()` 就好；
+   - **需要通配符多资源？** 用 `ResourcePatternResolver.getResources()`。
+
+2. **`Resource`**
+   - `ResourcePatternResolver` 的 `getResources()` 返回值就是一个 `Resource[]`，每个 `Resource` 代表扫描到的单个文件或条目。之后再基于 `Resource` 去做读取、解析等操作。
+
+3. **`ResourcePatternUtils`**
+   - 一个工具类，帮我们把一个 `ResourceLoader` 包装成 `ResourcePatternResolver`（若原本就是则直接返回），方便使用通配符功能。
+
+4. **`PathMatchingResourcePatternResolver`**
+   - `ResourcePatternResolver` 的常用默认实现，使用 `AntPathMatcher` 等来处理通配符。
+
+5. **`ApplicationContext`**
+   - Spring 各种 `ApplicationContext` 通常也实现了 `ResourcePatternResolver`，例如 `AnnotationConfigApplicationContext`、`ClassPathXmlApplicationContext`。
+   - 这样在容器环境中，可以直接调用 `applicationContext.getResources("classpath*:...")` 来批量加载资源。
+
+---
+
+## 七、常见应用场景
+
+1. **组件/Bean 扫描**
+   - Spring 自带的注解扫描（`@ComponentScan`）底层就需要查找 `*.class` 文件里带有特定注解的类，这个过程会用到类似 `ResourcePatternResolver` 的扫描机制。
+
+2. **解析多处配置**
+   - 在大中型项目中，可能需要把某些配置文件（XML、properties、YAML 等）分散到多个 jar 包或目录，`ResourcePatternResolver` 可以一次性查找并加载它们，合并到一起。
+
+3. **自动配置**
+   - Spring Boot 使用 `classpath*:META-INF/spring.factories` 等模式，来加载所有自动配置的候选信息。同理，还有 `classpath*:META-INF/spring-configuration-metadata.json` 等文件也用 `ResourcePatternResolver` 来查找。
+
+4. **自定义插件或模块化**
+   - 如果你的系统允许加载外部 jar 包或插件，需要扫描它们的配置或类信息，也可用 `ResourcePatternResolver` 做统一扫描。
+
+---
+
+## 八、使用注意事项
+
+1. **性能 & 范围控制**
+   - 当使用通配符时，特别是 `classpath*:` + `**`，可能会遍历很多 jar 包和目录。一旦路径过于宽泛，就会造成大量 IO 访问，影响启动速度或系统性能。
+   - 在大规模项目或复杂依赖场景下，要注意尽量**缩小扫描范围**。
+
+2. **重名资源处理**
+   - `classpath*:` 下加载同名资源时，会返回多个 `Resource`；如果有**优先级**需求，需要在逻辑里做相应判定或处理。
+
+3. **加载后的缓存**
+   - `PathMatchingResourcePatternResolver` 本身并不缓存扫描结果，每次调用 `getResources()` 都会重复扫描。如果需要缓存结果以提升性能，可以在应用层自己做缓存。
+
+4. **兼容性**
+   - 不同版本的 Spring 对 `ResourcePatternResolver` 的实现细节、对 jar 内部路径的解析可能略有差异，但核心原理较为稳定。
+   - 使用时最好跟 Spring 的核心包保持一致的版本，避免某些内部依赖冲突。
+
+---
+
+## 九、小结
+
+- **`ResourcePatternResolver`** 是 Spring 框架中专门用于**批量资源解析**的接口，继承自 `ResourceLoader`，提供 `getResources(String locationPattern)` 方法，能够处理通配符（`*`, `**`, `classpath*:`）等模式。
+- **设计初衷**：在大量应用场景中需要**一次性**查找多个文件或类路径资源，若只用 `ResourceLoader` 不够，手动解析通配符则繁琐，于是 Spring 提供 `ResourcePatternResolver` 及其默认实现 `PathMatchingResourcePatternResolver` 来统一解决“批量扫描”问题。
+- **核心价值**：
+  1. 支持 `classpath:`、`file:`、`http:` 等各种协议；
+  2. 支持 `classpath*:` 查找所有类路径位置；
+  3. 统一了对通配符的处理（`**`, `*`），可一次性获取匹配的所有资源；
+  4. 与 Spring 容器深度整合，`ApplicationContext` 就是一个 `ResourcePatternResolver`，方便在任意地方做资源扫描。
+- **典型应用**：
+  - Spring 注解扫描、自动配置文件加载、插件/模块化扫描等；
+  - 自定义扫描器需要批量加载特定文件时，也可直接使用。
+
+> **一句话总结**：
+> *`ResourcePatternResolver` 让 Spring 在处理资源时，可以“**一网打尽**”所有匹配的文件或条目，极大简化了多资源扫描的编程工作，并成为诸多 Spring 功能（如组件扫描、自动配置）的坚实基础。*

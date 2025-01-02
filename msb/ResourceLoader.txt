@@ -1,0 +1,184 @@
+在 Spring 体系下，**`ResourceLoader`** 是最基础的 **资源加载**（Resource Loading）抽象接口，提供了一种统一的方式来根据指定的**资源路径**获取相应的 **`Resource`** 对象。`ResourceLoader` 不负责解析**通配符**（如 `**`, `*`）等复杂模式，而是针对单个资源做加载工作，并不关心它背后到底是**文件系统**、**类路径**，还是**URL** 资源。
+
+> **核心功能**：
+> - 提供 `getResource(String location)` 方法，依据给定的 `location` 字符串创建并返回一个 `Resource` 实例；
+> - 提供 `getClassLoader()` 方法，获取底层使用的 `ClassLoader`。
+
+在实际使用中，**`ResourceLoader`** 的一个重要特点是：**不一定**只处理 `classpath:`，它还可以处理 `file:`、`http:` 等协议，或者用户自定义的协议。这样就做到了对外**统一**而对内**灵活**的设计。
+
+---
+
+## 一、设计背景和动机
+
+1. **统一资源访问抽象**
+
+   在 Java 开发中，不同资源（文件、类路径资源、URL 资源等）往往需要不同的访问方式。为降低耦合度、简化编程，Spring 在 `org.springframework.core.io` 包中提供了 `Resource` 接口以及一系列实现类（如 `ClassPathResource`, `FileSystemResource`, `UrlResource`），并通过 `ResourceLoader` 来统一管理如何根据一个字符串路径来创建对应的 `Resource` 对象。
+
+2. **支持多种协议**
+
+   如果我们手动写代码去加载文件，往往会直接写 `new File(...)`；如果要加载类路径，就要用 `ClassLoader.getResourceAsStream(...)`；如果要访问网络资源，还要用 `URL` 类或 HttpClient。这样会造成大量重复且分散的代码。
+   通过 `ResourceLoader`，我们只需提供一个**带协议前缀**的字符串（如 `file:`, `classpath:`, `http:`, `ftp:` 等），剩余的细节就由 Spring 的 `Resource` 实现类来处理。
+
+3. **易扩展**
+
+   Spring 允许我们**注册自定义的协议**或扩展，来解析特殊的资源位置。例如：`myprotocol:someCustomAddress`。只要我们实现对应的 `Resource` 类，并在 `ResourceLoader` 里处理这种协议，就能无缝地加载这类资源，保持对上层逻辑的透明。
+
+---
+
+## 二、核心接口与方法
+
+`ResourceLoader` 定义如下（简化）：
+
+```java
+public interface ResourceLoader {
+    String CLASSPATH_URL_PREFIX = "classpath:";
+
+    Resource getResource(String location);
+
+    ClassLoader getClassLoader();
+}
+```
+
+1. **`getResource(String location)`**
+   - **语义**：根据给定的 `location` 字符串获取到一个 `Resource` 对象，资源尚未被真正读取或打开，直到我们去调用 `Resource` 对应的方法才会进行实际 IO 操作。
+   - **常见协议**：
+     - `classpath:`——返回 `ClassPathResource`
+     - `file:`——返回 `FileSystemResource`
+     - `http:`/`https:`——返回 `UrlResource`
+     - 没有前缀时，默认逻辑下会被视为 `file:` 协议（在一些实现类中可能略有区别）。
+   - **注意**：如果资源不存在，通常不会在 `getResource()` 时就抛异常，而是等到后续读取资源内容时才抛出。
+
+2. **`getClassLoader()`**
+   - 返回此 `ResourceLoader` 内部使用的 `ClassLoader`，用来辅助处理 `classpath:` 等操作。
+   - 在 Spring 的默认实现中，通常会返回应用上下文（`ApplicationContext`）所使用的 `ClassLoader`，或者线程上下文 `ClassLoader`。
+
+---
+
+## 三、典型实现类
+
+在 Spring 中，`ResourceLoader` 并不是一个“可直接使用”的具体类，而是一个**接口**，真正使用时通常会遇到以下实现或子接口：
+
+1. **`DefaultResourceLoader`**
+   - Spring 提供的 `ResourceLoader` 基础实现。大多数情况下，如果没有特别指定，Spring 会使用 `DefaultResourceLoader` 来处理资源加载。它包含了对 `classpath:`、`file:`、`url:` 等协议的默认解析逻辑。
+
+2. **`ApplicationContext`**（间接实现）
+   - 所有的 `ApplicationContext`（如 `ClassPathXmlApplicationContext`, `AnnotationConfigApplicationContext` 等）也实现了 `ResourceLoader`。
+   - 因此，当我们在使用 Spring 上下文时，可以直接调用 `applicationContext.getResource("classpath:...")` 或 `applicationContext.getResource("file:...")`，不需要自己 new 一个 `ResourceLoader`。
+
+3. **`ServletContextResourceLoader`**（在 Web 环境中）
+   - 用来基于 `ServletContext` 的 `getResource` 或 `getResourceAsStream` 来访问 Web 应用内的资源（通常放在 `webapp` 目录下），支持 `ServletContext` 特有的路径规则。
+
+4. **其他自定义实现**
+   - 如果你想要扩展自定义协议或处理逻辑，也可以继承 `DefaultResourceLoader` 并覆盖其中的方法。
+
+---
+
+## 四、使用示例
+
+### 1. 直接使用 `ApplicationContext` 作为 `ResourceLoader`
+
+```java
+@Configuration
+public class MyConfig {
+    @Bean
+    public CommandLineRunner demoRunner(ApplicationContext ctx) {
+        return args -> {
+            Resource resource = ctx.getResource("classpath:data/sample.txt");
+            // 读取内容
+            try (InputStream inputStream = resource.getInputStream()) {
+                String content = new String(inputStream.readAllBytes());
+                System.out.println("File content: " + content);
+            }
+        };
+    }
+}
+```
+
+- 因为 `ApplicationContext` 实现了 `ResourceLoader`，所以这里可以直接用 `ctx.getResource(...)` 来加载文件。
+
+### 2. 手动使用 `DefaultResourceLoader`
+
+如果没有 `ApplicationContext`，或不想依赖 Spring 全容器，只想用资源加载功能，也可以：
+
+```java
+public class ResourceLoaderDemo {
+    public static void main(String[] args) throws IOException {
+        ResourceLoader resourceLoader = new DefaultResourceLoader();
+
+        // 加载类路径下的文件
+        Resource classpathResource = resourceLoader.getResource("classpath:config/app.properties");
+
+        // 加载文件系统路径
+        Resource fileResource = resourceLoader.getResource("file:/tmp/data.txt");
+
+        // 加载网络资源
+        Resource urlResource = resourceLoader.getResource("http://example.com/data.json");
+
+        // 读取内容示例
+        try (InputStream is = classpathResource.getInputStream()) {
+            String content = new String(is.readAllBytes());
+            System.out.println("Classpath resource content: " + content);
+        }
+    }
+}
+```
+
+---
+
+## 五、与 ResourcePatternResolver 的区别
+
+- **`ResourceLoader`**：
+  - 只能加载单个资源，不支持带通配符的路径模式解析。
+  - 侧重于“给我一个具体路径，就返回一个 `Resource`”。
+
+- **`ResourcePatternResolver`**：
+  - 继承 `ResourceLoader`，额外增加 `getResources(String locationPattern)` 方法，可以一次性扫描多个资源（支持通配符，如 `**/*.xml`）。
+  - 实际开发中，如果要进行批量资源扫描（常见于配置文件、类路径扫描等），就需要使用 `ResourcePatternResolver`（通常是 `PathMatchingResourcePatternResolver`）或者直接使用 `ApplicationContext` 提供的高级功能。
+
+> **如果手头只有 `ResourceLoader``，想用通配符功能，就需要借助 `ResourcePatternUtils` 把它包装成 `ResourcePatternResolver`**。
+
+---
+
+## 六、常见应用场景
+
+1. **加载配置文件**
+   - 在一些微服务或工具类中，需要从外部文件或类路径加载配置，可以直接使用 `ResourceLoader` 提供的统一方式，而无需亲自写 `FileInputStream` 或 `getResourceAsStream` 等低级操作。
+
+2. **根据协议灵活加载资源**
+   - 文件、类路径、HTTP、FTP 等都可以统一处理。对上层调用者来说，只是换了个 `location` 前缀，代码几乎不变。
+
+3. **作为 IoC 容器的一部分**
+   - `ApplicationContext` 把 `ResourceLoader` 的能力集成进来，让我们在任何需要的地方都能便捷地访问资源。
+
+4. **自定义协议或资源处理**
+   - 可继承 `DefaultResourceLoader` 并注册自定义协议（如 `myprotocol:`），在 `getResourceByPath` 或 `getResource` 中处理对应逻辑。这对于封装特殊存储介质（比如分布式文件系统、云存储等）很有帮助。
+
+---
+
+## 七、小结
+
+1. **核心定位**
+   `ResourceLoader` 是 Spring 用来加载**单个**资源的最底层抽象接口。在资源路径处理方面，Spring 提供了一系列标准协议前缀（如 `classpath:`、`file:`、`http:`），统一了各种类型资源的访问方式。
+
+2. **解决的问题**
+   - 为业务代码或框架组件提供一个**简洁、一致**的资源加载 API；
+   - 隐藏底层资源访问的多样性，减少重复的 IO 代码；
+   - 提高可扩展性：可轻松添加或更换新的协议处理器。
+
+3. **常见实现**
+   - `DefaultResourceLoader`：最基础、最通用的实现；
+   - `ApplicationContext`：在高级容器中直接实现了 `ResourceLoader`，方便开发者在任意位置加载资源；
+   - `ServletContextResourceLoader`：针对于 Web 环境下的 servlet context；
+   - 自定义实现：针对特殊协议或存储来源。
+
+4. **与其它相关接口**
+   - **`Resource`**：真正表示“资源本身”的接口，有多种实现（`ClassPathResource`, `FileSystemResource`, `UrlResource` 等）；
+   - **`ResourcePatternResolver`**：继承自 `ResourceLoader`，提供多资源匹配功能（通配符解析）；
+   - **`ResourcePatternUtils`**：工具类，用于把一个 `ResourceLoader` 包装成 `ResourcePatternResolver`；
+   - **`ApplicationContext`**：更高级的容器，同样实现了 `ResourceLoader`，使我们能直接用 `ctx.getResource(...)`。
+
+---
+
+### 总结
+
+> **`ResourceLoader`** 是 Spring 核心中不可或缺的“资源加载”接口，通过一个统一的 `getResource(String location)` 方法，把繁杂的文件系统、类路径、网络协议等资源访问都封装起来，让我们可以**用同一套 API** 来加载各类资源，同时也为上层的扫描、配置管理等功能打下了扎实的基础。
