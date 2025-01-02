@@ -1,0 +1,151 @@
+**`CachingMetadataReaderFactory`** 是 Spring 中对 **`MetadataReaderFactory`** 接口的 **增强实现**，它在内部**缓存**了对 `.class` 文件元数据（`MetadataReader`）的解析结果，从而避免在**重复读取同一个类**时每次都重新解析字节码。这在**大规模类扫描**或**频繁访问**同一类元数据**的场景下，能显著提升性能和减少 IO 开销。
+
+如果使用 **`SimpleMetadataReaderFactory`**，每一次获取 `MetadataReader` 都会触发一次 ASM 解析，而 **`CachingMetadataReaderFactory`** 则会先查缓存，如果缓存里已有，则直接返回，无需再次解析。
+
+---
+
+## 一、为什么需要缓存？
+
+1. **类扫描场景往往有重复解析**
+   - 在 Spring 启动时的组件扫描、注解处理、自动配置等过程中，可能会有多个步骤/组件都需要访问同一个类的元数据（注解、父类接口等）。
+   - 如果每次都重新解析 `.class` 文件，不仅浪费资源，还可能导致启动性能不佳。
+
+2. **ASM 解析和 IO 读取开销大**
+   - 读取 `.class` 文件并用 ASM 分析其常量池、注解、方法签名等，属于**比较重**的操作。
+   - 当扫描量大时（成百上千个类），解析速度就显得非常重要。缓存能**大幅减少重复解析**。
+
+3. **保持对上层的透明**
+   - `CachingMetadataReaderFactory` 依旧实现 `MetadataReaderFactory`，对外接口不变，上层代码无感知；若需要切换到无缓存的实现也很方便。
+
+---
+
+## 二、核心功能
+
+1. **缓存 `MetadataReader`**
+   - 内部维护一个 `ConcurrentMap<String, MetadataReader>`，Key 通常是全限定类名或某种统一标识。
+   - 当 `getMetadataReader(String className)` 或 `getMetadataReader(Resource resource)` 被调用时，先检查缓存，如果存在则直接返回缓存结果；如不存在才去实际解析 `.class` 文件，并把结果存入缓存。
+
+2. **灵活清理或刷新缓存**
+   - 在某些实现里，如果担心内存占用或类变更问题，可以手动调用清理或重置缓存（不同 Spring 版本的实现可能略有差异）。
+   - 一般情况下，`CachingMetadataReaderFactory` 不会自动检测 `.class` 文件是否更新；它假设你不会在运行时频繁修改 class 文件，如果有这种需求就要做额外处理。
+
+3. **遵守 `MetadataReaderFactory` 接口**
+   - 同 `SimpleMetadataReaderFactory` 一样，对外提供 `getMetadataReader(String className)`、`getMetadataReader(Resource resource)`；
+   - 底层仍然使用 ASM 来实际解析 `.class` 文件，只不过多了一层缓存机制。
+
+4. **可选地结合自定义 `ResourceLoader`**
+   - 如果需要支持多协议（`file:`, `classpath:`, `http:` 等），也可以传入自定义的 `ResourceLoader`。对外依旧统一由 `getMetadataReader(...)` 提供。
+
+---
+
+## 三、使用示例
+
+以下示例演示了如何使用 `CachingMetadataReaderFactory` 并观察缓存行为：
+
+```java
+public class CachingMetadataReaderFactoryDemo {
+    public static void main(String[] args) throws IOException {
+        // 1. 创建 CachingMetadataReaderFactory
+        CachingMetadataReaderFactory factory = new CachingMetadataReaderFactory();
+
+        // 2. 第一次获取某个类的 MetadataReader
+        String className = "com.example.MyClass";
+        MetadataReader reader1 = factory.getMetadataReader(className);
+        System.out.println("First time class name: " + reader1.getClassMetadata().getClassName());
+
+        // 3. 第二次获取同一个类
+        MetadataReader reader2 = factory.getMetadataReader(className);
+        System.out.println("Second time class name: " + reader2.getClassMetadata().getClassName());
+
+        // 4. 验证是不是同一个对象（若在缓存里，通常返回同一实例）
+        System.out.println("Is same instance? " + (reader1 == reader2));
+    }
+}
+```
+
+- 如果缓存起效，则 `reader1 == reader2` 通常为 `true`，表示**同一个** `MetadataReader` 对象（有些版本可能会重新生成实例，但缓存解析数据的效果是一样的）。
+- 在第一次获取时会触发**真实的** ASM 解析，第二次及后面则直接从缓存返回，无需重复解析。
+
+---
+
+## 四、与其他实现类的区别
+
+1. **`SimpleMetadataReaderFactory`**
+   - **无缓存**；每次调用都重新解析 `.class` 文件。
+   - 适合**小规模**或**一次性**的解析场景、调试示例。
+
+2. **`CachingMetadataReaderFactory`**（本文主角）
+   - **有缓存**；同一个类多次访问时仅解析一次。
+   - 适合**大规模**或**频繁重复**访问 `.class` 元数据的场景，能显著提升性能。
+
+3. **`MetadataReaderFactory`**（接口）
+   - 对外只定义 `getMetadataReader(String className)` / `getMetadataReader(Resource resource)`；
+   - 具体是否缓存、如何解析由实现类决定。
+
+---
+
+## 五、常见应用场景
+
+1. **Spring 启动时的组件扫描**
+   - 在扫描阶段，可能要访问同一个 `.class` 文件多次（例如多层过滤器或多次重复判定时）。**`CachingMetadataReaderFactory`** 就能减少重复解析。
+   - Spring 默认会使用它（或类似机制）来提升扫描效率。
+
+2. **自动配置 / 插件管理**
+   - Spring Boot 在启动时也会扫描 `META-INF/spring.factories`、各种注解类等，需要反复读取元数据；缓存能避免重复加载。
+
+3. **自定义框架或工具**
+   - 如果你开发一个需要大量扫描 `.class` 文件的功能（比如一个注解处理器、文档生成器等），也可以使用 `CachingMetadataReaderFactory` 来加速解析。
+
+4. **集成第三方库**
+   - 有些第三方库或框架也会在启动时扫描类路径。如果它们基于 Spring 的资源抽象（`MetadataReaderFactory`），就可直接依赖 `CachingMetadataReaderFactory` 提升扫描性能。
+
+---
+
+## 六、使用注意事项
+
+1. **缓存大小与内存占用**
+   - 若扫描量非常大，会在缓存中存下大量 `MetadataReader`；虽然这些对象通常不算巨大，但仍需注意内存开销。
+   - 若场景中 `.class` 文件可能动态更新（不常见），缓存可能会导致拿到**过期**数据，需要手动刷新或重新创建工厂。
+
+2. **类变动感知**
+   - 默认情况下，`CachingMetadataReaderFactory` 不会自动检测 `.class` 文件变化。如果在运行时文件发生替换，缓存不能立即感知到。
+   - 在典型的生产应用场景，类文件不会在运行时频繁变动，所以这是可接受的。
+
+3. **线程安全**
+   - Spring 在其内部使用了线程安全的 `ConcurrentMap` 来存储缓存条目，因此 `CachingMetadataReaderFactory` 在多线程同时访问时是安全的。
+   - 但要注意，如果手动操作缓存或强行清理，需要考虑并发问题。
+
+4. **单实例**
+   - 一般情况下，可以将 `CachingMetadataReaderFactory` 作成一个**单例**使用，这样多个扫描过程都能共享缓存。
+   - 在 Spring 容器内，通常由扫描器或框架组件创建并管理这个工厂对象。
+
+---
+
+## 七、小结
+
+1. **核心作用**
+   **`CachingMetadataReaderFactory`** 通过在内部维护一个缓存 `Map`，将对同一 `.class` 文件的解析结果保存起来。下次访问同一类时，直接返回缓存中的 `MetadataReader`，避免重复**IO** 和 **ASM** 解析。
+
+2. **解决问题**
+   - **提升效率**：在扫描众多 `.class` 文件时可能有重复访问或反复判断的需求，缓存让这些操作更快；
+   - **减少重复工作**：每次重走解析流程成本高、也浪费资源；缓存极大减少重复解析次数。
+
+3. **典型应用场景**
+   - Spring IoC 启动时的大规模包扫描；
+   - Spring Boot 自动配置扫描；
+   - 自定义框架或工具需要在短时间内多次访问同一个类的元数据。
+
+4. **与其他实现对比**
+   - 相比 `SimpleMetadataReaderFactory`，`CachingMetadataReaderFactory` 更适合**频繁**或**大规模**扫描场景。
+   - 对外仍然是 `MetadataReaderFactory` 接口，方便替换或调试。
+
+5. **注意事项**
+   - 可能会增加**内存开销**；
+   - 若 `.class` 文件在运行时变更，缓存不会自动同步；
+   - 一般作为一个**单例**工厂使用，在同一个扫描流程或应用生命周期中共享。
+
+---
+
+### 总结
+
+> **`CachingMetadataReaderFactory`** 是 Spring 中基于字节码解析（ASM）读取类元数据时的**缓存加速**实现。它遵循 `MetadataReaderFactory` 接口规范，但在内部采用了 `ConcurrentMap` 来缓存已经解析好的类信息（`MetadataReader`），从而在 **多次访问同一类** 的典型场景下提升性能、减少重复解析。对注解扫描、自动配置等大规模或频繁操作来说，使用 `CachingMetadataReaderFactory` 能显著优化启动和运行效率，也因此被广泛应用于 Spring IoC 各层功能之中。

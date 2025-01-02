@@ -1,0 +1,133 @@
+**`SimpleMetadataReaderFactory`** 是 Spring 中 `MetadataReaderFactory` 接口的一个**基础实现类**，用于根据给定的类名（`className`）或 `Resource`（一般对应 `.class` 文件）创建并返回一个 **`MetadataReader`**。它的主要特点是**每次都会直接解析字节码**，**不会**进行任何形式的缓存（相对于 `CachingMetadataReaderFactory` 来说），所以在需要**快速测试、低访问量**或**对缓存不敏感**的场景下，`SimpleMetadataReaderFactory` 就可以直接使用。
+
+如果你在大规模扫描或频繁重复读取某些 `.class` 文件的场景中，则通常会使用 **`CachingMetadataReaderFactory`**，以避免重复解析同一个类文件，减少 IO 和 ASM 解析的开销。
+
+下面我们从设计背景、主要功能、使用方式以及和其它相关类的区别来介绍一下 `SimpleMetadataReaderFactory`。
+
+---
+
+## 一、设计背景与定位
+
+1. **提供一个最简实现**
+   - Spring 在 `MetadataReaderFactory` 接口下，通常有好几个实现：`SimpleMetadataReaderFactory`、`CachingMetadataReaderFactory` 等。
+   - **`SimpleMetadataReaderFactory`** 不带缓存，逻辑简单，代码更容易阅读、调试，在小规模场景或测试场景中使用比较合适。
+
+2. **面向接口 & 可替换**
+   - 在 Spring 中，无论是 `SimpleMetadataReaderFactory` 还是 `CachingMetadataReaderFactory`，对外都只暴露 `MetadataReaderFactory` 接口。
+   - 这意味着，如果后来想引入缓存机制，只需把 `MetadataReaderFactory` 的实现换成 `CachingMetadataReaderFactory` 即可，对调用方不产生影响。
+
+3. **典型用途**
+   - 在**单测**或**简单工具**中，如果只需要一次性解析某些 `.class` 文件，且不担心重复读带来的性能问题，就可以直接用 `SimpleMetadataReaderFactory`。
+   - 它也可以作为理解 Spring ASM 解析流程的一个入门示例，比起缓存实现，源码更短更直观。
+
+---
+
+## 二、主要功能
+
+1. **读取 `.class` 文件元数据**
+   - 实现了 `getMetadataReader(String className)` 和 `getMetadataReader(Resource resource)`，底层使用 **ASM** 来解析 `.class` 文件里的注解信息、类继承关系、方法签名等。
+
+2. **不进行结果缓存**
+   - 每次调用 `getMetadataReader(...)`，都会重新定位 `.class` 文件并解析一次，**不会**对先前解析过的类做任何记录或缓存。
+
+3. **依赖 `ResourceLoader` 或默认 ClassLoader**
+   - 内部通常会使用 `DefaultResourceLoader` 或传入的 `ClassLoader`（若有）来定位 `.class` 文件对应的 `Resource`。
+
+4. **生成 `MetadataReader` 对象**
+   - 返回一个包含 `ClassMetadata`、`AnnotationMetadata` 和 `Resource` 的 `MetadataReader`，供上层使用（例如扫描器、注解处理器等）。
+
+---
+
+## 三、使用方式示例
+
+```java
+public class SimpleMetadataReaderFactoryDemo {
+    public static void main(String[] args) throws IOException {
+        // 1. 创建一个 SimpleMetadataReaderFactory（可选指定 ClassLoader）
+        SimpleMetadataReaderFactory factory = new SimpleMetadataReaderFactory();
+
+        // 2. 通过类名获取 MetadataReader
+        String className = "com.example.demo.MyClass";
+        MetadataReader metadataReader = factory.getMetadataReader(className);
+
+        // 3. 读取基本的类信息
+        ClassMetadata cm = metadataReader.getClassMetadata();
+        System.out.println("Class name: " + cm.getClassName());
+        System.out.println("Is interface: " + cm.isInterface());
+
+        // 4. 读取注解信息
+        AnnotationMetadata am = metadataReader.getAnnotationMetadata();
+        if (am.hasAnnotation("org.springframework.stereotype.Component")) {
+            System.out.println("This class is annotated with @Component");
+        }
+
+        // 5. 资源信息
+        Resource resource = metadataReader.getResource();
+        System.out.println("Class resource: " + resource.getURI());
+    }
+}
+```
+
+- 该示例展示了 **`SimpleMetadataReaderFactory`** 的最简单用法：
+  1. 构造一个工厂；
+  2. 传入类名（也可以传入 `Resource`）；
+  3. 获取 `MetadataReader` 并检查类信息、注解信息等。
+
+> **注意**：若反复调用 `getMetadataReader` 解析同一个类，`SimpleMetadataReaderFactory` 每次都会执行一次字节码解析，没有缓存。
+
+---
+
+## 四、与其它类的区别
+
+1. **`CachingMetadataReaderFactory`**
+   - **有缓存**：多次请求相同 `.class` 文件时，不会重复进行 ASM 解析；在大规模扫描场景中可显著减少开销。
+   - 适合于**频繁**或**大规模**扫描（如 Spring 启动时组件扫描）。
+   - 如果你只需要解析几次 `.class` 文件，或对性能无高要求，可以用 `SimpleMetadataReaderFactory`。
+
+2. **`MetadataReaderFactory`**（接口）
+   - `SimpleMetadataReaderFactory` 和 `CachingMetadataReaderFactory` 都是它的实现。
+   - 调用方只依赖该接口即可，在需要缓存时替换实现而不影响上层代码。
+
+3. **`MetadataReader`**
+   - `MetadataReader` 才是**真正**提供类元数据访问的对象，如 `getClassMetadata()`, `getAnnotationMetadata()`, `getResource()`。
+   - `SimpleMetadataReaderFactory` 负责**创建**或**解析**这个 `MetadataReader` 实例，不直接暴露解析细节给用户。
+
+4. **`ClassPathScanningCandidateComponentProvider`**
+   - 在包扫描流程里，会间接使用 `MetadataReaderFactory` 来批量读取每个 `.class` 文件的信息。大多数情况下会用到 `CachingMetadataReaderFactory`，以避免重复解析。
+
+---
+
+## 五、在 Spring 中的典型应用场景
+
+1. **小规模或临时扫描**
+   - 如果你需要自己写一点工具或测试代码，想解析少量 `.class` 文件来看看注解、父类信息，`SimpleMetadataReaderFactory` 就能满足需求。
+
+2. **调试或学习**
+   - 在研究 Spring `MetadataReader` 解析原理时，`SimpleMetadataReaderFactory` 代码最为简单清晰，可以作为一个示例或入口点。
+
+3. **自定义的注解处理**
+   - 你可能自己写一个处理器，需要针对**几个特定**的类检查某些注解值，那么无需引入缓存，`SimpleMetadataReaderFactory` 就够了。
+
+> 在实际生产环境中，若要大范围扫描 classpath（例如解析上百、上千个类），最好用 **`CachingMetadataReaderFactory`**，以减少重复解析并提升性能。
+
+---
+
+## 六、小结
+
+- **主要功能**：
+  - `SimpleMetadataReaderFactory` 能够在**不加载类**的前提下（基于 ASM）解析 `.class` 文件，并生成 `MetadataReader`，让我们读取注解、父类、接口等信息。
+
+- **特点**：
+  - **不带缓存**；
+  - 代码简单、易理解，适用于小规模使用场景或在调试学习场合。
+
+- **与 `CachingMetadataReaderFactory` 区别**：
+  - 前者**每次**解析 `.class`，后者**缓存**已解析的结果；
+  - 后者适合**大规模**扫描（如组件扫描、自动配置）来提高效率。
+
+- **常见用法**：
+  - 开发者手动创建这个工厂，传入类名或 `Resource`，调用 `getMetadataReader(...)`。
+  - 在返回的 `MetadataReader` 中查看 `ClassMetadata`、`AnnotationMetadata`、`Resource` 等信息。
+
+> **一句话总结**：
+> *`SimpleMetadataReaderFactory` 是 Spring 中最简单的 `MetadataReaderFactory` 实现，为我们提供在“**无缓存、一次性**”场景下解析 `.class` 文件元数据的能力。它既方便理解 Spring ASM 解析流程，又能在小规模场景满足快速读取类注解和元信息的需求。*
