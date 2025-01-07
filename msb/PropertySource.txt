@@ -1,0 +1,217 @@
+下面从**宏观**和**微观**两个层面，来系统介绍 Spring 中的 `PropertySource`。
+
+---
+
+## 一、宏观层面：`PropertySource` 的背景与意义
+
+### 1. 设计背景与历史沿革
+
+- **传统配置方式（Spring 3.1 之前）**
+  在较早版本的 Spring（如 2.x 甚至 3.0），若要加载应用所需的各种配置（例如 `application.properties`、系统环境变量、JVM 属性、甚至 XML 配置），主要依靠：
+  - **`PropertyPlaceholderConfigurer`**：通过占位符 `${...}` 解析来替换 bean 配置中的属性。
+  - **`System.getProperty()` 和 `System.getenv()`**：手动访问系统属性或操作系统环境变量。
+  - 不同的配置来源分散且缺乏一个「**统一抽象**」来管理各种配置“源”，也没有在框架层面明确属性源的优先级顺序。
+
+- **Spring 3.1 引入 `Environment` / `PropertySource`**
+  在 Spring 3.1（2011 年末发布）中，正式推出了 `Environment` + `PropertySource` 架构：
+  - **`Environment`**：统一管理应用的配置与 Profile 信息。
+  - **`PropertySource`**：抽象出对「某种配置来源」的封装，通过一条链或列表的形式（`PropertySources` 集合）注册到 `Environment` 中。
+  - 这样，使得来自不同地方（系统环境变量、命令行参数、properties 文件、YAML 文件、JNDI 等）的配置都可以用一个**统一的方式**读取，并有**优先级**可言。
+
+### 2. 为什么需要这个接口 & 它解决了什么问题
+
+- **多配置源管理**
+  不同应用场景可能需要读取多种配置源（文件、环境变量、命令行参数、数据库、远程配置中心等），在没有 `PropertySource` 之前，开发者通常要使用各种各样的类或工具方法分别处理，代码分散且难以统一。
+- **优先级与有序性**
+  Spring Boot 中常见的**属性覆盖规则**（命令行参数优先级高于系统环境变量，高于 JVM 属性，高于 `application.properties`，高于默认值...），正是通过**按顺序**把不同 `PropertySource` 注册到 `Environment` 中来实现。
+- **可扩展性**
+  提供一个抽象 `PropertySource<T>`，使得我们可以非常容易地**自定义**一个属性源，比如自己去读取某个远程配置中心、Redis、ZooKeeper 等，然后按照所需的优先级插入到 Spring 的配置解析体系中。
+
+### 3. 在它之前，谁在做相似工作？
+
+- 主要是：
+  - **`PropertyPlaceholderConfigurer`**(Spring 2.x/3.0 时代)——也能处理外部 properties 文件、占位符解析，但它更偏向于 **BeanFactoryPostProcessor** 的形式，仅仅做注入前的字符串替换；也没有抽象“不同来源”的概念，也不管理 Profile。
+  - 也会依赖**系统调用**（`System.getProperty()` / `System.getenv()`）或在 `BeanFactoryPostProcessor` 手动处理属性。
+
+`PropertySource` 和 `Environment` 的出现将这些工作抽象化并内聚成一个更强大的配置体系。
+
+---
+
+## 二、微观层面：设计背景与核心定位、核心方法、相关类、实现与示例
+
+### 1. 设计背景与核心定位
+
+- **设计背景**：
+  - 统一描述“某种类型的属性配置来源”。这样无论是文件、系统变量、数据库还是云端配置中心，统统都可用 `PropertySource` 来封装。
+- **核心定位**：
+  - 一个最基础的接口/抽象类，定义「如何通过 key 获取对应的 value」。
+  - Spring 会将多个 `PropertySource` 放到一个 `PropertySources` 列表中，**按顺序**进行查找属性值，一旦找到就返回。
+
+简而言之：**`PropertySource` = “一个配置源”**，而 **`PropertySources` = “多个配置源组成的有序集合”**。
+
+### 2. 核心方法
+
+`PropertySource<T>` 是个泛型类（或抽象类），**典型的关键属性或方法**有：
+
+1. **`String name`**
+   - 标识该属性源的名称，一般用来区分不同源，比如 `"applicationConfig: [classpath:/application.properties]"`、`"systemEnvironment"` 等。
+
+2. **`T source`**
+   - 具体存储配置的对象类型，比如 if `T` 是 `Map<String, Object>` 就存键值对；也可能是一个 `Resource`、`Properties`、`ServletContext` 等，视实现而定。
+
+3. **`String getName()`**
+   - 返回属性源的名称。
+
+4. **`Object getProperty(String name)`**
+   - 给定一个 key，去当前 `PropertySource` 的内部数据结构里查找对应 value。
+   - 如果没找到，返回 `null`。
+
+5. **`containsProperty(String name)`**（可选）
+   - 判断是否包含某属性 key，实际默认实现可能是 `return getProperty(name) != null;`。
+
+在 Spring 的实际应用中，我们通常不直接实现 `PropertySource` 接口，而是**继承** `org.springframework.core.env.PropertySource<T>` 抽象类来定义自定义逻辑。
+
+### 3. 与其他接口和类的关系
+
+- **`Environment`**
+  - `Environment` 内部有一个 `MutablePropertySources` 集合，保存若干个 `PropertySource<?>`。当我们调用 `environment.getProperty("xxx")` 时，会逐个查询这些 `PropertySource`，先找到即先返回。
+- **`PropertySourcesPlaceholderConfigurer`**
+  - 在 Spring Boot 或传统 Spring 中，`@Value("${xxx}")` 的占位符解析，最终也是依赖于 `Environment` 和 `PropertySources`。此 `Configurer` 会去 `Environment` 查值。
+- **`@ConfigurationProperties`**
+  - 也是通过底层访问 `Environment` / `PropertySources` 来把配置绑定到 Java Bean 的字段上。
+- **`ConfigurableEnvironment`**
+  - 允许在运行时对 `PropertySources` 进行**增删改**，比如 `((ConfigurableEnvironment) environment).getPropertySources().addFirst(new MyCustomPropertySource(...));`。
+
+### 4. 常见实现类
+
+- **`MapPropertySource`**
+  - 最简单的基于 `Map<String, Object>` 的实现，内部就是一个 `Map`。
+  - 像 `SystemEnvironmentPropertySource`, `SystemPropertiesPropertySource` 等都继承它，用来封装系统环境变量或 JVM 系统属性。
+
+- **`ResourcePropertySource`**
+  - 从 `Resource`（如 classpath 下的 `*.properties` 文件）加载配置并放到 `Map` 中，然后由 `ResourcePropertySource` 封装起来。
+  - Spring Boot 默认加载 `application.properties` / `application.yaml` 文件时，就会创建一个或多个 `ResourcePropertySource`。
+
+- **`EnumerablePropertySource<T>`**
+  - 当属性源可枚举全部 key 时，可以扩展这个抽象类，以便调用方获取所有的 propertyNames。
+  - `MapPropertySource` 就是一个 `EnumerablePropertySource<Map<String,Object>>`。
+
+- **`OriginTrackedMapPropertySource`** (Spring Boot)
+  - 用来追踪每个属性的**来源**(文件名、行号等)，在 `spring-boot` 包中比较常见，主要是为了更好地在 IDE 或 Actuator 上调试属性来源。
+
+### 5. 使用示例
+
+#### 示例 1：自定义一个简单的 `PropertySource`
+假设我们要从一个自定义数据结构 (例如 Redis or MySQL) 中取配置：
+
+```java
+public class MyCustomPropertySource extends PropertySource<Object> {
+
+    public MyCustomPropertySource(String name) {
+        super(name);
+    }
+
+    @Override
+    public Object getProperty(String key) {
+        // 伪代码：从你自定义的存储里查询这个key
+        String value = MyRemoteConfigService.getValue(key);
+        return value;
+    }
+}
+```
+
+然后在某个配置类中，把它注册到 `Environment` 里：
+
+```java
+@Configuration
+public class MyConfig implements EnvironmentAware {
+
+    private Environment environment;
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
+    }
+
+    @PostConstruct
+    public void init() {
+        if (this.environment instanceof ConfigurableEnvironment) {
+            ConfigurableEnvironment configEnv = (ConfigurableEnvironment) this.environment;
+            // 加到首位，优先级最高
+            configEnv.getPropertySources().addFirst(new MyCustomPropertySource("myRemoteConfig"));
+        }
+    }
+}
+```
+
+这样一来，当我们在应用中 `environment.getProperty("someKey")` 或者 `@Value("${someKey}")` 时，都会先查 `myRemoteConfig` 这个源。
+
+#### 示例 2：在 Spring Boot 项目里查看默认 `PropertySources`
+- 在 Spring Boot 启动时，你可以通过调试或在 `CommandLineRunner` / `ApplicationRunner` 中打印：
+
+```java
+@Component
+public class PrintPropertySources implements CommandLineRunner {
+
+    @Autowired
+    private Environment environment;
+
+    @Override
+    public void run(String... args) throws Exception {
+        ConfigurableEnvironment ce = (ConfigurableEnvironment) environment;
+        for (PropertySource<?> ps : ce.getPropertySources()) {
+            System.out.println("PropertySource: " + ps.getName() + " - " + ps.getClass().getName());
+        }
+    }
+}
+```
+
+你会看到类似：
+- `commandLineArgs`
+- `servletConfigInitParams`
+- `servletContextInitParams`
+- `systemProperties`
+- `systemEnvironment`
+- `applicationConfig: [classpath:/application.properties]`
+- ...等按顺序排列。
+
+---
+
+## 三、常见应用场景
+
+1. **多源外部化配置**
+   - Spring Boot 会自动创建多个 `PropertySource`，包括命令行参数、系统环境变量、系统属性、以及 `application.properties/yml` 等；我们也能自定义追加新的。
+2. **优先级控制**
+   - 比如要让某些配置覆盖默认值，可以调用 `addFirst(...)` 或 `addLast(...)` 等方法控制顺序。
+3. **自定义配置中心**
+   - 如果要对接远程配置中心（Apollo、Nacos、Consul、ZK 等），可以实现自己的 `PropertySource` 并动态更新内部属性，进而实现**热更新**。
+4. **调试与溯源**
+   - 借助 `OriginTrackedMapPropertySource`，可在 Actuator / 日志里看到某个配置具体来自哪行哪列，便于排查问题。
+
+---
+
+## 四、注意事项与最佳实践
+
+1. **刷新与动态更新**
+   - 默认的 `PropertySource` 通常是**只读**且**静态**的；如果需要在运行时更新配置，需要额外的机制来刷新 `source` 并触发相应的变更通知（如 `@RefreshScope`、`EnvironmentChangeEvent` 等）。
+2. **顺序与覆盖**
+   - 在 `PropertySources` 里顺序**非常重要**：如果两个 `PropertySource` 有同样的 key，先出现的覆盖后出现的。
+   - Spring Boot 默认顺序：命令行 > 系统环境变量 > 系统属性 > `application.properties` > 默认属性。
+3. **最简用法**
+   - 大部分普通应用仅需依赖 Spring Boot 的自动加载机制即可，不需要手动操作 `PropertySource`；只有在**自定义**或**高级场景**（比如远程配置、动态刷新）才会继承或注册。
+4. **与 `EnvironmentAware`**
+   - 若想在容器早期阶段自定义添加 `PropertySource`，通常需实现 `EnvironmentAware` 或在 `EnvironmentPostProcessor`（Spring Boot 提供）里操作。
+
+---
+
+## 五、总结
+
+- **诞生背景**：Spring 3.1 为了统一管理多路配置来源以及配置解析优先级，引入了 `Environment` + `PropertySource` 机制。
+- **核心价值**：`PropertySource` 抽象了「一个配置源」的数据访问方式，配合 `PropertySources` 可以**按优先级**依次查找配置，让应用对外部化配置的访问变得弹性、可扩展。
+- **常见实现**：`MapPropertySource`, `ResourcePropertySource`, `SystemEnvironmentPropertySource`, `OriginTrackedMapPropertySource` 等。
+- **使用方式**：
+  - 在大多数场景中，开发者只要用 `@Value` 或 `@ConfigurationProperties` 就能透明享受 `PropertySource` 的好处；
+  - 若要自定义高级功能（如接入远程配置中心或特殊数据源），则可以继承 `PropertySource<T>`，在 `Environment` 中注册，从而纳入 Spring 的属性解析体系。
+- **注意事项**：要充分理解属性源的**顺序**和**刷新机制**，尽量遵循 Spring Boot 默认约定（如不必要，别过度自定义），以免造成配置管理的混乱。
+
+归根结底，`PropertySource` 设计的初衷是**将配置从多种来源统一、抽象地管理起来**，让我们可以在复杂环境中更简单地使用、扩展和维护应用配置。
