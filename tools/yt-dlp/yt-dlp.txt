@@ -1,0 +1,60 @@
+yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=Ia82xrp8_i8"
+
+格式转换：
+
+ffmpeg -i input.webm -c:v libx264 -c:a aac output.mp4
+
+
+ffmpeg -i input.webm -q:a 0 -map a output.mp3
+
+ffmpeg -i input.webm -q:a 0 -map a output.mp3
+
+ffmpeg -i input.webm -q:a 0 -map a output.mp3
+
+ffmpeg -i input.webm -c:a pcm_s16le output.wav
+
+
+
+https://www.youtube.com/watch?v=yrlNXCzQvoA
+
+视频和音频：
+yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.bilibili.com/video/BV1xxxxxx"
+
+视频：
+yt-dlp -f bestvideo -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=Ia82xrp8_i8"
+
+音频：
+yt-dlp -f bestaudio -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=Ia82xrp8_i8"
+
+
+yt-dlp -f bestaudio -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=yrlNXCzQvoA"
+
+
+
+
+yt-dlp -f bestvideo[height<=?1080]+bestaudio --merge-output-format mp4 -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=EqCmAYywrwI"
+
+
+
+yt-dlp -f bestvideo+bestaudio --merge-output-format mp4 -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.bilibili.com/video/BV1sTsTeUEt2/?spm_id_from=333.337.search-card.all.click&vd_source=51a06b9758c7915156d70e8ca5843bf6"
+
+
+yt-dlp -f bestvideo+bestaudio --merge-output-format mp4 -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=2utK3uHUSmM&list=OLAK5uy_k51aZS5VEJDoI6j749P63gxEO1bsboN7I"
+
+yt-dlp -f bestvideo+bestaudio --merge-output-format mp4 -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.xvideos.com/video.hvkvuk70f6/orgasms_-_the_most_incredible_wife"
+
+yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.xvideos.com/video.hvkvuk70f6/orgasms_-_the_most_incredible_wife"
+
+yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.xvideos.com/video.itkpev6d20/orgasms_-_the_ultimate_milf#show-related"
+
+yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://91.9p9.xyz/ev.php?VID=3102pi35IiWcaDDmDvlAQiNSVNXkjikdD9opNBgGXlmCWrm5"
+
+yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://1258712167.vod2.myqcloud.com/fb8e6c92vodtranscq1258712167/34fecf355285890807397788200/drm/v.f745468.ts?start=201584&end=235439&type=mpegts&exper=0&sign=01461f3a3b72672057c2339eb3184ec6&t=66F01294&us=779765362517268053
+"
+
+yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=XToK00VcBI8"
+
+
+
+do you know
+Breakthrough Prize ?
