@@ -1,0 +1,10 @@
+jdk動態代理的實現步驟：
+
+1. 包掃描
+2. 解析dao層的接口元數據信息
+3. 基於Spring聲明週期，修改對應的BeanDefinition的beanClass屬性
+4. FactoryBean手動創建對應的代理對象，參數包括，類加載器、實現的接口，以及方法攔截處理類
+5. InvocationHandler方法攔截處理器的詳細處理
+6. dao層的BeanName的設計， insertUserDao ==> insertUserDaoOb，insertUserDaoDb2
+7. 異步線程池的創建，可以通過實現InitialBean接口的afterproperties方法內部，通過線程工廠對象創建線程池對象；
+8. 執行同步或者異步操作， 在沒有問題之後，切換執行順序，把之前ob2在前的改爲ob在前，最後把db2的去掉

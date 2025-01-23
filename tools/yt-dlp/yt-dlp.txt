@@ -17,11 +17,11 @@ ffmpeg -i input.webm -c:a pcm_s16le output.wav
 
 https://www.youtube.com/watch?v=yrlNXCzQvoA
 
- ”∆µ∫Õ“Ù∆µ£∫
-yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.bilibili.com/video/BV1xxxxxx"
 
  ”∆µ£∫
-yt-dlp -f bestvideo -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=Ia82xrp8_i8"
+yt-dlp -f bestvideo -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www
+ ”∆µ∫Õ“Ù∆µ£∫
+yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.bilibili.com/video/BV1xxxxxx".youtube.com/watch?v=Ia82xrp8_i8"
 
 “Ù∆µ£∫
 yt-dlp -f bestaudio -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=Ia82xrp8_i8"
