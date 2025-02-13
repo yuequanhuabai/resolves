@@ -1,0 +1,69 @@
+是的，您可以讓每個線程計算自己負責區間的總和，然後將各自的結果匯總起來。這種方法可以有效避免多線程之間的競爭條件，因為每個線程只操作自己的局部變量，無需同步。
+
+### 為什麼這樣做是安全的？
+在 Java 中，**方法內的局部變量是線程安全的**。每個線程在調用方法時，都會在自己的棧上創建一份局部變量的副本，這些副本之間互不干擾。 citeturn0search0
+
+### 實現步驟：
+1. **劃分區間：** 將總範圍（1 到 10000）劃分為多個子範圍，每個線程負責一個子範圍的總和計算。
+2. **線程計算：** 每個線程計算自己負責區間的總和，並將結果返回。
+3. **結果匯總：** 主線程等待所有子線程完成計算，然後將各自的結果相加，得到最終總和。
+
+### 示例代碼：
+```java
+import java.util.concurrent.*;
+
+public class SumCalculation {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
+        int start = 1;
+        int end = 10000;
+        int threadCount = 4;  // 使用4個線程
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+
+        // 計算每個線程負責的區間
+        int range = (end - start + 1) / threadCount;
+
+        // 用來存儲每個線程的部分總和
+        List<Future<Integer>> futures = new ArrayList<>();
+
+        // 提交任務
+        for (int i = 0; i < threadCount; i++) {
+            final int threadStart = start + i * range;
+            final int threadEnd = (i == threadCount - 1) ? end : threadStart + range - 1;
+
+            futures.add(executor.submit(() -> {
+                int sum = 0;
+                for (int j = threadStart; j <= threadEnd; j++) {
+                    sum += j;
+                }
+                return sum;
+            }));
+        }
+
+        // 等待所有任務完成並匯總結果
+        int totalSum = 0;
+        for (Future<Integer> future : futures) {
+            totalSum += future.get();
+        }
+
+        System.out.println("Total Sum: " + totalSum);  // 輸出: Total Sum: 50005000
+
+        // 關閉線程池
+        executor.shutdown();
+    }
+}
+```
+
+### 解釋：
+1. **劃分區間：** 將範圍 1 到 10000 平均劃分為 4 個子範圍，每個線程負責一個子範圍的總和計算。
+2. **線程計算：** 每個線程計算自己負責區間的總和，並返回結果。
+3. **結果匯總：** 主線程等待所有子線程完成計算，然後將各自的結果相加，得到最終總和。
+
+### 優點：
+- **線程安全：** 每個線程只操作自己的局部變量，無需同步，避免了競爭條件。
+- **性能：** 通過多線程並行計算，可以提高計算效率，特別是在多核處理器上。
+
+### 注意事項：
+- **線程數量：** 線程數量應根據可用的處理器核心數量來調整，以達到最佳性能。
+- **結果匯總：** 主線程需要等待所有子線程完成計算，這可以通過 `Future.get()` 方法來實現。
+
+這種方法利用了線程封閉的特性，即每個線程擁有自己的局部變量副本，從而避免了多線程之間的競爭條件，確保了線程安全。
