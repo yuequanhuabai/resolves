@@ -1,0 +1,355 @@
+
+PAP-HK:  Portfolio Assessment Platform   投資管理平臺
+
+FWB-CL：
+
+UMS：
+
+
+DIC - Domestic Investment Consultant  国内投资顾问
+ICA - International Client Advisor   国际客户顾问
+IC Head - Investment Committee Head   投資委員會主席
+CIO （Chief Investment Officer's Perspective）  首席投资官
+RM （Relationship Manager's Perspective） 客戶經理
+
+RM Team Head - Relationship Manager Team Head： 客户经理团队负责人
+RMA - Relationship Manager Assistant： 客户经理助理
+
+FX spot  Foreign Exchange Spot Transaction  ： 外汇即期交易
+
+FX Forward   （外汇远期交易）
+
+FX Swap   外汇掉期交易）
+
+
+FX Margin（外汇保证金）
+Precious Metal Margin（贵金属保证金）
+FX Options（外汇期权）
+看涨期权（Call Option）：买方有权以约定的汇率买入外币。
+看跌期权（Put Option）：买方有权以约定的汇率卖出外币。
+
+
+Gold Options（黄金期权）:
+
+Equities ： 股票
+
+Bonds（债券）
+
+Mutual Funds（共同基金）
+
+Structured Investment（结构化投资）
+
+
+ELI 和 ELN
+权益联结票据（Equity-Linked Instruments）
+
+ELN（Equity-Linked Note，权益联结票据）
+
+
+Bond IPO（债券首次公开发行）
+
+
+Equity IPO (股票首次公开发行):
+
+IPO Financing (IPO融资):
+
+Interest Rate Swap（利率互换）
+
+Currency Linked Investment（货币联结投资）
+
+Investment Book of Record (IBOR)
+
+
+PvB 代表的是 Private Banking，即私人银行
+
+Relationship Manager，即客户经理
+Teller，即银行出纳员
+Customer Care，即客户服务部门
+
+RM (Relationship Manager) 负责客户关系管理，提供定制化的金融服务和产品。
+Teller 负责处理日常的现金和银行交易，如存取款、支票处理等。
+CC (Customer Care) 负责处理客户的咨询、投诉和问题解决，确保客户满意度。
+
+
+WM (Wealth Management) - 财富管理：
+WM-Retail Front Office   结合了财富管理和零售银行业务的前台部门
+
+Global Market (全球市场)：
+Treasury (财 treasury / 财务管理)
+IC (Investment Banking / Investment Committee)：
+
+
+Middle Office （PvB Ops）
+
+PWRM - Personal Wealth Relationship Manager：个人财富客户经理
+RMA - Relationship Manager Assistant：客户经理助理
+RM - Relationship Manager：客户经理
+BSM - Branch Sales Manager：分行销售经理
+IPC - Investment Product Consultant：投资产品顾问
+BM - Branch Manager：分行经理
+ DM - District Manager：地区经理
+ DIC - Domestic Investment Consultant：国内投资顾问
+ ICA - International Client Advisor：国际客户顾问
+  IC Head - Investment Committee Head：投资委员会主席
+  Portfolio-based Approach to Suitability Assessment（基于投资组合的适配性评估方法）
+
+PAP - Portfolio Assessment Process (投资组合评估过程)
+WPS - Wealth Protection Strategy (财富保护策略)    Wealth Planning System" 或 "Wealth Planning Solution"
+TAP - Tactical Asset Allocation (战术资产配置)
+
+
+Roles & Data Access Mapping 是指在企业或组织中，基于角色（Role）来定义和控制不同用户对数据的访问权限和权限范围的过程
+
+
+Marker-Checker（标记-检查）机制： Marker-Checker 是一种内控框架，其中涉及到两个角色的职责分配：
+
+Marker（标记人）：负责对某一项操作或任务进行标记或发起。这通常是执行某些数据修改操作的人员，比如更新账户信息、记录交易等。标记人负责执行操作并将修改标记为“待审核”状态。
+
+Checker（检查人）：负责审核和检查由标记人所做的修改或操作，确保操作的正确性、合规性和合法性。检查人的角色类似于审批人，通常有权限撤销不符合要求的操作。
+
+
+
+
+ SMD（Senior Management Director，高级管理董事）
+CPP（Customer Proposition Plan，客户提议计划）
+IPC（Investment Product Committee，投资产品委员会）
+BOD（Board of Directors，董事会）
+客层 CED（Customer Engagement Director，客户参与总监）
+
+
+SMD 是高层管理职位，负责公司的战略方向。
+CPP 关注于设计吸引客户的产品和服务提案。
+IPC 是一个审议投资产品或策略的决策委员会。
+BOD 是公司的董事会，负责重大决策和监督管理层。
+客层 CED 是负责客户参与和关系管理的职位，确保公司与客户的长期良好关系。
+
+
+SMP - Strategic Management Plan（战略管理计划）
+TAP - Tactical Asset Allocation（战术资产配置）
+
+
+IC&MO-PvB
+IC&MO-PvB 指的是在私人银行的背景下，投资委员会（IC） 和 中台（MO） 的角色，通常这两者的职责是协作进行投资决策、风险控制、合规性检查以及确保私人银行客户的投资策略的执行和管理。
+
+SSI\FFI\WSI\IPC\CED-PB
+SSI: Standard Settlement Instructions（标准结算指令）
+FFI: Foreign Financial Institution（外国金融机构）
+WSI: 这个缩写不常见，可能是特定公司或行业内部的术语，但有时它也可能指Wealth Strategy & Investment（财富策略与投资）
+IPC: Investment Product Committee（投资产品委员会）
+CED-PB: Customer Engagement Director - Private Banking（客户参与总监-私人银行）
+
+
+IC&MO-PvB 涉及到私人银行中的投资委员会和中台的协作，主要聚焦于投资决策、风险管理和合规性。
+SSI, FFI, WSI, IPC, CED-PB 代表不同的金融服务和角色：
+SSI 是关于结算指令的标准化；
+FFI 代表外资金融机构；
+WSI 可能与财富管理策略相关；
+IPC 是负责审批投资产品的委员会；
+CED-PB 是私人银行中负责客户关系和客户参与的角色。
+
+
+充 PI 客户通常指的是那些符合某些额外或特定条件的客户，可能是指拥有更多资产、较高净值，或具备特定合规要求的客户。在这种情况下，"补充"的意思可能指客户需要额外提供信息、文档或其他资料来满足监管要求、合规规定或公司政策。
+非补充 PI 客户通常指的是不需要满足额外要求的标准个人投资者。非补充 PI 客户可能不符合某些高净值或复杂投资的要求，或者他们的投资需求和风险偏好较为标准。
+
+补充 PI 客户和非补充 PI 客户的区别主要体现在合规要求、资产审查和个性化服务等方面。补充 PI 客户需要提供更多的额外信息或材料，可能享有更高端、更定制化的投资产品与服务，而非补充 PI 客户则是标准的个人投资者，流程相对简化，服务也较为标准化。这种区分主要是为了根据客户的需求和投资能力提供更合适的服务。
+
+UMS，FWB，SMP，OMS，BDP，FTG
+
+UMS - Unified Messaging System（统一消息系统）
+
+
+
+MS：统一消息系统，用于通讯管理。
+FWB：法兰克福证券交易所。
+SMP：证券市场平台，支持证券交易和管理。
+OMS：订单管理系统，处理交易订单。
+BDP：彭博数据平台，提供金融数据和分析。
+FTG：固定收益交易平台，专注于债券和固定收益产品交易。
+
+
+
+BMS - Banking Management System（银行管理系统）
+CCI - Customer Credit Information（客户信用信息）
+MRG - Margining System（保证金管理系统）
+
+
+PVB - Private Banking System（私人银行系统）
+
+PVB 是专门为私人银行业务设计的系统，通常用于管理高净值客户的投资产品、财富管理和财务规划。这个系统帮助私人银行为客户提供个性化的金融服务。
+COS - Core Operating System（核心操作系统）
+
+COS 是银行的核心操作系统，负责处理银行的主要业务流程，包括账户管理、交易处理、支付系统等。它是银行IT架构中的核心组件。
+MTC - Market Trading System（市场交易系统）
+
+MTC 是用于执行金融市场交易的系统，广泛应用于股票、债券、外汇、期货等市场。该系统支持交易员下单、执行交易并进行风险控制。
+FMS - Financial Management System（财务管理系统）
+
+FMS 是一个综合性的系统，用于管理银行的财务运作，包括账务处理、资金流动、预算管理、财务报表生成等。它是银行内部财务管理的核心工具。
+BND - Bond Trading System（债券交易系统）
+
+BND 是专门用于债券交易的系统。它支持债券的买卖、报价、市场数据获取和结算等功能。债券市场的交易员和投资者通常使用此系统来执行债券交易。
+SMS - Securities Management System（证券管理系统）
+
+SMS 是用于管理和处理证券交易、结算和记录的系统。它有助于确保证券的买卖、登记、清算和交割过程顺利完成，特别是在股票和债券市场中。
+CBL - Commodity and Bullion Trading System（商品和贵金属交易系统）
+
+CBL 是一个专门用于商品和贵金属交易的系统，支持黄金、银、石油等商品的买卖和交易管理。它涉及市场报价、交易执行、交割等功能。
+PDS - Payment Delivery System（支付交付系统）
+
+PDS 是一个银行支付系统，用于处理各种支付指令的传输和清算。该系统确保跨银行、跨国支付的顺利执行，是金融交易和结算中不可或缺的工具
+
+
+PBA（Portfolio-Based Approach，基于投资组合的方法）
+EIP： Enterprise Information Portal（企业信息门户）
+FWB：可能指的是 Financial Web-Based system 或 Financial Wealth Base
+
+PPM 可能是指 Portfolio and Product Management（投资组合与产品管理） 系统
+
+
+OCRM (Order and Client Relationship Management)：OCRM 是一个客户关系管理系统
+WPS (Wealth Planning System) WPS 是一个财富规划系统
+SMP (Structured Product Management)：SMP 指的是结构化产品管理系统
+
+
+W-8 BEN 是美国国税局（IRS）用来收集非美国（外国）个人或实体税务信息的表格，用于确认其在美国的税务身份。具体来说，W-8 BEN 表格用于外国个人声明他们不是美国税务居民，从而使他们能够获得在美国境内获得收入时适用的税收减免或免税待遇
+W-8 BEN 检查（手动） 是对提交的 W-8 BEN 表格进行人工审查的过程，目的是确保表格填写正确、信息真实有效，并符合相关税务法规，特别是对于涉及国际税收协议和减免的部分
+
+
+QIP状态展示（第一次或已过期）及重检
+QIP状态展示（第一次或已过期）及重检 可能与金融或合规领域中的 QIP（Qualified Institutional Buyer，合格机构买家）相关。QIP 是美国证券法下的一种特殊投资者身份，指符合特定条件的机构投资者，允许他们参与某些私募证券的购买。
+
+QIP（Qualified Institutional Buyer）：
+QIP 是一个符合美国证券交易委员会（SEC）要求的机构投资者类别，通常包括大规模的机构投资者（如对冲基金、养老基金、保险公司等）。这些机构拥有相当的财力和投资经验，能够承担更多的投资风险。
+QIP 被允许购买不向公众公开发行的证券（如私募股权、债务工具等）。
+QIP状态展示（第一次或已过期）及重检：
+QIP状态展示：
+
+这个展示可能是指在系统中显示一个投资者是否被认证为 QIP。有时，投资者的 QIP 认证会在某个时间段内有效，因此会有状态展示，比如"第一次"认证或"已过期"。
+第一次：指投资者首次获得 QIP 状态，通常是某些条件被满足后，投资者会被认证为 QIP。
+已过期：指 QIP 认证的有效期已经结束。通常，某些认证是有限期的，可能需要定期重新认证。
+重检：
+
+重检 是指重新审核和确认 QIP 认证状态，特别是在 QIP 状态已过期时，需要进行重审或重认证。
+这可能涉及审核投资者的财务状况、投资经验、资产规模等，确保他们仍然符合 QIP 的标准。
+可能的背景：
+在证券发行、私募基金或某些投资产品的交易中，只有符合 QIP 资格的机构投资者才有资格参与。这些认证和状态检查确保了只有具备足够资金和投资经验的机构能够参与更复杂、风险更高的投资。
+重检 和 过期 的概念说明，投资者的 QIP 资格并非永久有效，可能会随时间变化，因此需要定期审核其资格，确保符合法律和合规要求。
+总结：
+QIP状态展示（第一次或已过期）及重检 是指对机构投资者的 QIP 资格进行展示和审查的过程。它确保投资者符合 QIP 条件（如第一次认证或经过一段时间后的重检），以便他们能够参与某些限定的证券交易或投资产品。
+
+
+CIN（Customer Identification Number，客户识别号码
+
+
+
+VC (Verification Code) 校验：
+AIRPS检查
+
+AIRPS（Anti-Investment Related Party System，反投资相关方系统）
+
+AIRPS（Anti-Investment Related Party System）：
+AIRPS 可能是一个专门用于检测投资相关方（如关联公司、关联人员等）是否参与某些投资活动的系统。
+这些检查是为了确保公司遵守与投资相关方交易的法律规定，避免因利益冲突或不合规操作而带来的风险。
+在许多国家和地区的证券法中，金融机构、投资基金等在进行某些投资时，必须避免与关联方进行不透明的交易，或在交易中避免滥用市场地位。
+AIRPS检查的目标和意义：
+检测关联方交易：
+AIRPS检查 主要用于识别投资活动中可能涉及关联方（如股东、管理层、其家族成员等）的交易。通过这些检查，金融机构可以确保所有投资交易符合相关法规，不存在潜在的利益冲突。
+合规性和风险管理：
+该检查有助于确保公司遵守与关联方交易相关的法律法规，防止非法或不合规的交易行为。
+例如，某些情况下，企业或投资者可能会利用其在公司中的特殊地位进行与自己有利益关联的交易，这种行为通常需要披露或受到限制。
+减少利益冲突：
+AIRPS检查 可以帮助发现和预防可能影响投资者公平性的行为，比如某些公司高管通过操控资源或信息优势，优先获得某些投资机会。
+
+
+
+PTCC 在金融和银行业务中，通常是指 Pre-Trade Compliance Check，即 交易前合规检查。它是为了确保交易符合相关的法律、法规和内部政策，以避免合规风险、潜在的法律问题或市场操纵行为。
+
+PTCC（Pre-Trade Compliance Check）：
+PTCC 是一种在交易执行之前进行的合规审查流程，确保所有即将执行的交易符合公司、监管机构以及市场的相关规定。
+这个检查通常包括对客户的身份、资金来源、交易产品、市场风险以及交易的合法性等方面进行审查。
+主要目的是识别潜在的合规问题，如内幕交易、市场操纵、洗钱活动等，避免在交易执行后产生问题。
+RM/IC于交易前进行PTCC：
+RM（Relationship Manager）和 IC（Investment Counselor）是两种与客户直接相关的角色。
+RM 主要负责管理客户关系、了解客户需求并提供定制化的金融服务。
+IC 负责为客户提供投资建议，帮助他们选择适合的投资产品或策略。
+PTCC 在交易前的执行：
+作为交易前的一部分，RM 和 IC 需要确保在客户进行交易前进行 Pre-Trade Compliance Check，确保所有交易活动符合合规要求：
+客户背景检查：确保客户的身份、资金来源符合反洗钱（AML）和反恐怖融资（CFT）法规。
+市场合规性：确认交易是否符合市场规则和监管要求。
+交易产品合法性：检查客户拟交易的产品是否符合公司政策及相关法规的规定。
+目的和意义：
+降低风险：交易前的合规检查有助于降低因未遵守法规或政策而引起的法律风险和市场风险。
+确保客户行为符合规定：确保客户的投资活动符合道德规范，不涉及违法行为。
+增加透明度：通过合规检查，增加交易的透明度，并防止内幕交易、市场操纵等不当行为。
+总结：
+PTCC（Pre-Trade Compliance Check） 是在交易前由 RM（Relationship Manager）和 IC（Investment Counselor）等人员执行的合规检查，旨在确保客户交易符合所有相关法规和内部政策，避免合规风险和法律问题。
+
+
+
+W-8 BEN 是否 WMOD 可能与金融领域中有关客户身份验证、税务合规和系统检查的内容有关。让我们逐个解释这些术语：
+
+W-8 BEN：
+W-8 BEN 是美国国税局（IRS）要求非美国个人或实体填写的表格，用于声明他们不是美国税务居民，并且可能根据与美国的税务协定获得税收减免或豁免。
+非美国个人填写 W-8 BEN，以便确认自己符合美国税务法规，避免不必要的税收。
+WMOD：
+WMOD 通常是指 Wealth Management Operations（财富管理运营）或类似的合规和操作系统，专注于财富管理业务中的操作流程、客户管理、投资产品等方面。
+在一些机构中，WMOD 可能也代表一个特定的操作流程，用于检查客户身份信息、税务文件或投资记录。
+W-8 BEN 是否 WMOD：
+W-8 BEN 是否 WMOD 可能是在某个财富管理或银行系统中，进行 W-8 BEN 表格的合规性检查和操作的一部分。
+这表示一个检查过程，用来确定是否需要在财富管理操作（WMOD）中处理 W-8 BEN 表格。例如，在系统中，财富管理团队可能需要确认客户是否提交了有效的 W-8 BEN 表格，以确保其税务身份信息正确无误，符合合规要求。
+总结：
+W-8 BEN 是否 WMOD 很可能是指在财富管理操作过程中，系统需要验证客户是否提交了 W-8 BEN 表格，并根据表格信息进行进一步的合规检查。这确保了非美国客户在与美国的税务事务中符合规定，避免了税务风险或合规问题。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
