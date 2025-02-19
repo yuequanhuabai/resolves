@@ -1,0 +1,17 @@
+analyze total porifolio  : 分析总投资组合
+
+analyze proposal : 分析提案
+
+generate proposal review : 生成提案审查
+
+retrieve proposal : 检索提案
+
+proposal  status : 提案状态
+
+proposal  supplement  : 提案补充
+
+intraday portfolio : 日内投资组合
+
+intraday securities : 日内证券
+
+structured products : 结构性产品
