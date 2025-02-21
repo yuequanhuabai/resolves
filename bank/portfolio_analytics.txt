@@ -1,0 +1,35 @@
+
+Contents
+
+GETTING STARTED
+CHANGE MANAGEMENT
+PORTFOLIO ANALYTICS FEATURES
+Asset Resolution
+Portfolio Analytics Headers
+
+Total Portfolio Analysis
+Portfolio Analytics Parameters
+
+Total PortfolioS Analysis
+
+Bulk Portfolio Risk
+
+SAMPLE PORTFOLIO ANALYTICS TEST CODE
+
+
+add new optional request parameters or add fields to objects in the body of a request for existing API endpoints.
+If not included, your requests will continue to perform as before. We will use sensible defaults when optional fields are not present.
+
+
+
+
+The API enables a caller to perform a complete analysis of a portfolio using BlackRock's proprietary Aladdin technology and risk models
+
+
+
+
+backward compatibility
+
+Aladdin will not :
+
+remove or rename an existing API endpoint.
