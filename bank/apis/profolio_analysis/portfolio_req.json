@@ -1,0 +1,108 @@
+{
+"id": "profolio-1",
+  "positions": [
+    {
+      "id": "asdfljsdf-asdfsa;ldfksajd-asdlfk",
+      "identifiers": {
+        "cusip": "12342134",
+        "sedol": "2342134",
+        "isin": "US1234234",
+        "clientId": "XXX"
+      },
+      "proxyIdentifiers":{
+        "cusip": "12342134",
+        "sedol": "2342134",
+        "isin": "US1234234",
+        "clientId": "ZZZ"
+    },
+      "marketValue": 22728.09,
+      "notionalMarketValue": 29768.27,
+      "quantity": 25,
+      "weight": 1,
+      "notionalWeight": 1.2,
+      "posInfo": {}
+    }
+  ],
+  "currency": "USD",
+  "metadata": {},
+  "openLots": [
+    {
+      "id": "23lfqwe-ekfwq;e-slakdfl-123k4",
+      "positionId": "sdflsadf-sadfsd-q23rqwer-sdlf",
+      "purchaseDate": "2020-03-22",
+      "quantity": 250,
+      "costBasis": 20000,
+      "lotInfo": {}
+    }
+  ],
+  "closedLots": [
+    {
+      "identifiers": {
+        "cusip": "12342134",
+        "sedol": "2342134",
+        "isin": "US1234234",
+        "ric": "NVDA.OQ",
+        "clientId": "XXX"
+      },
+      "proxyIdentifiers": {
+        "cusip": "12342134",
+        "sedol": "2342134",
+        "isin": "US1234234",
+        "ric": "NVDA.OQ",
+        "clientId": "XXX"
+      },
+      "purchaseDate": "2020-03-22",
+      "closeDate": "2020-03-22",
+      "realizeGainOrLoss": 3417.42,
+      "lotInfo": {}
+    }
+  ],
+  "supplement": {
+    "sleeveInfo": [
+      {
+          "tag": "SMA_ID",
+        "value": "BLK123",
+        "benchmark": {
+          "id": "BENCH-1",
+          "currency": "USD",
+          "components": [
+            {
+              "id": "comp-1",
+              "identifiers": {
+                "cusip": "12342134",
+                "sedol": "2342134",
+                "isin": "US1234234",
+                "ric": "NVDA.OQ",
+                "clientId": "ZZZ"
+              },
+              "weight": 1
+            }
+          ],
+          "metadata": {
+            "RISK_PROFILE": "Aggressive"
+          }
+        },
+        "metadata": {},
+        "fees": [
+          {
+            "category": "Client",
+            "subCateGory": "Dues",
+            "startYear": 0,
+            "endYear": 15,
+            "minimumPositionMarketValue": 100,
+            "maxiMumPositionMarketValue": 200,
+            "amount": 4.5,
+            "paymentMethod": "P",
+            "percentMethod": "P",
+            "eventType": "E"
+          }
+        ]
+      }
+    ]
+  },
+  "simulatedPerformanceUserInputs": {
+    "endDateOverride": "2022-05-31",
+    "maxMonthsOverride": 100,
+    "feeOverride": 0.01
+  }
+}
