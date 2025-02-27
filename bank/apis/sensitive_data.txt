@@ -1,0 +1,360 @@
+This document serves as a user or developer guide to handling sensitive data in Aladdin Wealth and associated
+configuration options and APIs. Please note that, while this document covers the comprehensive suite of capabilities
+supported by Aladdin Wealth, your firm's specific integration requirements/access will be reviewed by your Aladdin Wealth
+Relationship Manager during the implementation process.
+
+What data is considered "sensitive"?
+
+Aladdin Wealth does not require any Personal Identifiable Information("PII") or otherwise "sensitive" data to function
+(excluding, of course, investment positions within a portfolio though this is anonymous). However, to provide a good
+user experience, our clients typically request certain more sensitive information to be displayed in the Aladdin Wealth Web
+Application. The most common types of such data are customer or client names, members of households, or advisor's
+names at your organization. To help you comply with your organization's data security policies and with dat privacy
+regulations in the jurisdictions in which you operate, Aladdin Wealth has multiple options for making data of this type
+available within the Aladdin Wealth Web Application.
+
+
+Does Aladdin Wealth require sensitive data ?
+
+While the platform does require unique identifiers to be able to map certain entities,portfolio,or individuals,Aladdin
+Wealth does not require any specific sensitive personal dat or PII to provide its core functionality.
+
+Identifiers such as account numbers, household identifiers and user ids can all be substituted for anonymized tokens prior
+to being sent to Aladdin as part of the over-night batch process(data interface files). This does require that the client is able
+to translate between these anonymized tokens and the real identifiers when integrating with Aladdin (for example a deep-
+link URL to view an account will require the anonymized account token in its path -not the real account id).
+Otherwise, sensitive data is only "needed" in order to provide a good user experience.
+
+Where does sensitive data appear in Aladdin Wealth?
+
+Such data may appear include tables and deep-dives in admin views (Aladdin Wealth "Vision"), proposals and portfolios in
+client views (Aladdin Wealth "Focus"), and in client reports generated through Aladdin Wealth. For a more detailed demo of
+where sensitive data may appear, please contact your Aladdin Wealth RelationShip Manager.
+
+
+Figure 1. Example of personal data in the Aladdin Wealth front end
+
+
+
+What are my options for handling sensitive data ?
+
+Depending on your organization's dat policy, you may choose to either send sensitive data to BlackRock in an encrypted
+format, or to keep all sensitive data hosted only on your servers. Aladdin Wealth allows for both options as shown below.
+
+Option 1: Send data to BlackRock in an encrypted format.
+
+Any sensitive daa sent to BlackRock is encrypted on BlackRock servers and requires special permission to decrypt. Please
+refer to the respective section for additional details.
+
+Option 2: Do not send data to BlackRock.
+
+If you choose to keep all sensitive data hosted on servers that you control, there are multiple options available to you.
+However, please note that all the options below will require varying degrees of development effort on your part during
+implementation. Please refer to the respective section of this document to review the details of implementing these options.
+
+Embedding Links to your own applications: Aladdin Wealth supports user-driven integration points on the frontend,
+enabling you to link to your existing systems by opening a new tabe in the browser and avoid passing sensitive data
+to BlackRock
+
+Sensitive data APIs: By implementing sensitive data API endpoints, Aladdin Wealth's front end can make requests
+directly from the browser to display sensitive data without  it leaving your network.
+
+The Aladdin Wealth frontend requires the availability of two APIs to enable this setup. These APIs are:
+
+ClintDataAPI- an API to retrieve sensitive client(or advisor) data, generally in tables or individual
+account views, and to update metadata (e.g. comments based on a recent meeting or conversation)
+
+ClientDataSearchAPI-an API to unmask results when searching for individuals or household(e.g. from a search bar)
+
+Both APIs are required for Aladdin Wealth to be able to display sensitive data. Details are contained in the section
+on "Sensitive Data APIs".
+
+==============================================================================================================================================
+Quick reference - choosing a method for handling sensitive data
+==============================================================================================================================================
+Method1:
+
+Option:
+Send BRS sensitive data [BRS uses encryption-at-rest]
+
+BlackRock processes plaintext sensitive data?
+Yes
+
+Description:
+Sensitive data sent to BRS in encrypted format. BRS system account has access to private key.
+Data is stored encrypted in Aladdin database.Data is retrieved and decryted on-the-fly only when client user
+with appropriate permissions access accounts in Aladdin.
+
+Client Build Effort:
+Low
+
+Commentary:
+
+==============================================================================================================================================
+Method2:
+
+Option:
+Do not send sensitive data [URL link to Client app]
+
+BlackRock processes plaintext sensitive data?
+No
+
+Description:
+Aladdin web tools incorporate customized URL,with account ID embedded into it, to Client-hosted web application.
+Allows user to seamlessly launch internal app from Aladdin Wealth and go directly to relevant
+account to see its information.
+
+Client Build Effort:
+Medium
+
+Commentary:
+Client app must accept parameterized URL that includes account ID from Aladdin
+
+==============================================================================================================================================
+Method3:
+
+Option:
+Do not send sensitive data [Use Client-hosted Sensitive Data API]
+
+BlackRock processes plaintext sensitive data?
+No
+
+Description:
+Aladdin web toos make API calls to a client-hosted API from the user's browser to fetch sensitive data.
+Sensitive data is displayed in the user's Aladdin frontend and the data never leaves the client network.
+
+Client Build Effort:
+High
+
+Commentary:
+Client is responsible for building ,operating, and scaling a sensitive data API to BlackRock provided spec
+==============================================================================================================================================
+
+
+
+Sending Data to BackRock
+
+Sensitive data can be sent to BlackRock in an encrypted format, and many consumers of the Aladdin Wealth platform
+choose this option. Under this solution, dta is stored encrypted in the Aladdin database and BlackRock's system account
+has access to a private key. Data is retrieved and decrypted on-the-fly only when client user with appropriate permissions
+access accounts in Aladdin.
+
+
+Aladdin allows the option fro cllents to provides sensitive data associated with accounts
+
+Clients already provide a set of non-sensitive account attributes to Aladdin through an ACCOUNT_INFO file
+
+    -Example data points include Risk Profile and Account Type
+    -Each account must be identified with a unique Account ID
+    -Account IDs can be masked to avoid sending the "real" Account ID, but Aladdin tools can only display the unique
+     Account ID from the file
+
+Encrypted sensitive account attributes are sent in an ACCOUNT_ATTRIBUTE file.
+
+    -- Example dta points include customer first/last name or other Personally Identifiable Information(PII)
+    -- The ACCOUNT_ATTRIBUTE file, which must be keyed on the same unique Account ID as the ACCOUNT_INFO file, is
+    PGP encrypted prior to sending to BlackRock
+    -- Once received, the file is unencrypted(in memory),and the records are loaded to a database while also encrypting
+    (AES-256) the sensitive fields in each record
+    -- When a user with appropriate authorization and account entitlements accesses a specific account in Aladdin,the
+    sensitive fields are retrieved and decrypted on-the-fly for display in the tools
+    -- BlackRock personnel are not authoried for sensitive fields, so they never see them in the tools. In this way, the
+    sensitive data is always stored in an encrypted state(encryption at rest) and is not visible to BlackRock support staff
+
+
+
+Example - data transmission of client name
+
+
+
+
+
+
+
+
+
+
+
+
+
+Client Requirements
+
+- APIs will be implemented to specification(see respective sections that follow).
+- Client is responsible for technical scaling and adequate throughput of all APIs to handle peak usage
+- Best effort will be made to have APIs available at all times
+- APIs will not be accessible to BlackRock(hosted behind firewall)
+
+
+BlackRock Requirements
+
+- Aladdin Wealth app will call the Sensitive Data APIs from the browser and display the response data in targeted area
+- In the event of API call failures, the application will remain functional (but unalbe to display sensitive data)
+- Aladdin Wealth app will not transmit sensitive data received from the APIs back to BlackRock application servers
+
+
+
+
+
+
+
+SUPPORTED AUTHENTICATION
+
+Aladdin Wealth does not require the client hosted  APIs to be behind authentication. However, Aladdin Wealth today
+supports the following options should you chose to implement any authentication.
+
+
+Please note that these  options are used for obtaining an access token, after which the Aladdin Wealth front end will call
+your hosted Sensitive Data API endpoints using that access token.
+
+
+Authorization Code Grant with Proof Key for Code Exchange(PKCE)
+
+Aladdin Wealth can authenticate using Proof Key for Code Exchange by OAuth Public Clients defined under RFC:7636.
+Your Aladdin Wealth implementation team will work with you to gather requirements and configure a flow as follows.
+    1. A user tries to access the dat through the Aladdin Wealth frontend application.
+    2. The Aladdin Wealth frontend generates a code_verifier and transforms it into code_challenge along with the
+       authorization request.
+    3. The frontend application calls your authorization server's authorize endpoint and sends the code challenge along
+       with the authorization request.
+    4. Your authorization server responds with a redirect URI. The user gets redirected to the consent form, if any.
+    5. The user authenticates with the identity source and gives their consent.
+    6. Your authorization server issues an authorization code.
+    7. Aladdin Wealth frontend requests authentication to the token endpoint using the authorization code provided in
+       the previous step. The requests to the authorization server must also include the code_challenge with value equal
+       to that sent in the request to the authorize endpoint.
+    8. The authorization server validates the authorization code, code_verifier, and code_challenge.
+    9. The authorization server returns a token.
+    10. The Aladdin Wealth frontend requests protected resources from the resource server ( your hosted Sensitive Data API )
+       and submits the token it received in the previous step.
+    11. The resource server (your hosted Sensitive Data API) validates the token and responds with the requested resources.
+
+
+    //        时序图1
+
+    Further reading:
+
+    PKCE flow on OAuth.net
+    PKCE on the OAuth2.0 Playground
+
+
+
+
+
+    OAuth 2.0 Client Credential Grant flow
+
+Aladdin Wealth supports a client credentials flow as defined in RFC:6749. For this flow,you would be required to provided
+your Aladdin Wealth implementation team with a Client ID and Client Secret , to facilitate a flow as follows:
+
+1. The Aladdin Wealth frontend app requests an access token form our outbound Aladdin Wealth backend servers .
+2. The Aladdin Wealth backend requests an access token by calling your token endpoint with client ID and client
+   secret. Please note that this call will be made over the public internet,so your auth server needs to be internet facing.
+3. Your authorization server validates the client credentials (client ID and secret) received in the request.
+4. Your authorization server returns the token.
+5. Aladdin Wealth backend servers return the token received from your server to the Aladdin Wealth frontend.
+6. The Aladdin Wealth frontend requests protected resources from the resource server (in this case , your hosted
+   Sensitive Data API ) and submits the token it received in the previous step.
+7.Your Sensitive Data API validates the token and respionds with the requested resources.
+
+Further reading:
+
+OAuth 2.0 Client Credentials Grant at OAuth.net
+
+
+Client Credentials Flow Illustrative Diagram:
+
+// 时序图2
+
+
+
+
+JSON Web Token (JWT)based authentication
+
+Aladdin Wealth also supports the use of JSON Web Tokens (JWT)as defined in RFC:7519 for the use of access tokens.
+These JWTs can be signed by either a shared secret, or a public/private key pair in the form of a X.509 certificate.
+
+    1. The Aladdin Wealth frontend app requests a JWT from ourt autbound Aladdin Wealth backend servers
+    2. Aladdin Wealth servers ceate a JWT request with client ID and client secret and signs with client provided X.509
+    3. Aladdin Wealth backend application calls yourt token endpoint with JWT request from the previous step
+    4. Receives JWT access token with expiry (and in some cases with refresh token if applicable)
+    5. Aladdin Wealth backend servers return the JWT token received from your IDP server to the Aladdin Wealth frontend.
+    6. Our Aladdin Wealth frontend web app calls the resource(in this case your hosted Sensitive Data API) with received JWT token
+    7. Your hosted Sensitive Data API returns sensitive data and its only accessible in browser and not stored/processed
+        by any backend components
+
+Further reading:
+    JSON Web Tokens on OAuth.net
+    JWT Signing Algorithms on authO.com
+
+JWT Flow Illustrative Diagram
+
+
+// 时序图3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
