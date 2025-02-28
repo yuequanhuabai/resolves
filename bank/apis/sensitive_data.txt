@@ -1,3 +1,4 @@
+
 This document serves as a user or developer guide to handling sensitive data in Aladdin Wealth and associated
 configuration options and APIs. Please note that, while this document covers the comprehensive suite of capabilities
 supported by Aladdin Wealth, your firm's specific integration requirements/access will be reviewed by your Aladdin Wealth
@@ -170,12 +171,31 @@ Example - data transmission of client name
 
 
 
+SENSITIVE DATA APIS -REQUIREMENTS
 
+Aladdin Wealth Web Application is able to query APIs to display sensitive data on the frontend without this data ever
+leaving your network. However, please note that the steps to implement this will require development effort on your part
+during implementation as well as hosting and ongoing maintenance.
 
+Using the Clint-hosted API solution requires the implementation of two APIs that the Aladdin Wealth frontend will call:
+    -- ClientDataAPI
+    -- ClientDataSearchAPI
 
+Using the ACCOUNT_INFO data as the input(e.g. Account ID),the frontend will perform a lookup by calling the Client-
+hosted API, returning the associated plain-text,sensitive data to the user's browser to be displayed in Aladdin Wealth.
 
+    -Example data points could inlude customer names or real account numbers
+    -All sensitive data is stored and maintained on the Client side and is never sent or interfaced to BackRock
+    -BlackRock never receives or has any visibility into sensitive data -all decoding and display of sensitive data is
+        initailed from the browser and stays within the Client network, behind their firewall.
+    -The Client hosted API must be hosted without authentication,or with supported authentication methods(see section below)
 
+Note that Client provides a set of non-sensitive account attributes to Aladdin through an ACCOUNT_INFO file
 
+    - Example data points include Risk Profile and Account Type
+    - Each account must be identified with a unique Account ID
+    - Account IDs can be masked to avoid sending the "real" Account ID, but Aladdin tools can only display the
+      unique Account ID from the file(i.e. in the absence of the API)
 
 Client Requirements
 
