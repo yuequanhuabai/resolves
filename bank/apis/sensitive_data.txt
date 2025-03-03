@@ -319,6 +319,37 @@ JWT Flow Illustrative Diagram
 
 
 
+The diagram illustrate the actions token once a user attempts to view sensitive data and the time each step tokens.
+Note that all this takes place client's own network
+
+
+
+When are calls to ClientDataAPI trggered?
+
+Aladdin Wealth Focus relies on full-data being loaded upon the initial load-up of the app. Parallel ClintDataAPI calls are
+made at the same time to fetch sensitivedata linked to ALL Accounts and ALL Aggregates upon app load. Requests will be
+made in batches of up to 5000 items at a time.
+
+In Aladdin Welth Vision, sensitive data is only requested when needed, e.g. for Risk Monitor talbes, when a user expands
+the Risk Monitor groupings to view accounts households, a call is made to the ClientDataAPI to fetch relevant sensitive
+data for the underlying accounts households.
+
+
+Prerequisites and configuration
+
+For data to populate on the browser, your Aladdin Wealth implementation team will require the URL of your API along with
+any applicable auth details, and they will need to make configuration changes appropriately.
+
+
+
+
+1. Client's account info file containing masked account ids is transmitted via SFTP to BlackRock. Sensitive data is never sent to BlackRock.
+2. Files are batch processed and loaded to a secure BlockRock hosted client Aloddin data store.
+3. The non-sensitive client data is used by the handed services for processing
+4. Analytics are displayed on the Aladdin Wealth front-end app.
+5. An entitleed user searchs for an account using a sensitive client account id. E.g. "ACCT-abc" client_serach {"searchQuery":"ACCT-abc"}
+6. The API retrieve the account data from the client's system and provides it to the AW front-end
+7. Aladdin Wealth Application shows requested account with plaintext sensitive data returned by the API. response: {"tag":"accountId","value":"9017"...}
 
 
 
@@ -327,18 +358,23 @@ JWT Flow Illustrative Diagram
 
 
 
+Authorization Code Grant with Proof  Key for Code Exchange(PKCE)
+Futher reading:
+
+PKCE flow on OAuth.net
+PKCE on the OAuth2.0 Playground
 
 
+OAuth 2.0 Client Credentials Grant flow
+Further reading:
+OAuth 2.0 Client Credentials Grant at OAuth.net
 
 
+JSON Web Token (JWT) based authentication
+Further reading
 
-
-
-
-
-
-
-
+JSON Web Tokens on OAuth.net
+JWT Signing Algorithms on authO.com
 
 
 
