@@ -1,0 +1,137 @@
+{
+  "portfolio": {
+    "id": "PORTFOLIO-1",
+    "positions": [
+      {
+        "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+        "identifiers": {
+          "cusip": "67066G104",
+          "sedol": "1279504",
+          "isin": "US67066G1040",
+          "clientId": "XXX"
+        },
+        "proxyIdentifiers": {
+          "cusip": "67066G104",
+          "sedol": "1279504",
+          "isin": "US67066G1040",
+          "clientId": "ZZZZ"
+        },
+        "marketValue": 22728.09,
+        "notionalMarketValue": 29768.27,
+        "quantity": 25,
+        "weight": 1,
+        "notionalWeight": 1.2,
+        "posInfo": {}
+      }
+    ],
+    "currency": "USD",
+    "metadata": {},
+    "openLots": [
+      {
+        "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+        "positionId": "487fe396-2849-4b44-b0ef-b020492daaf0",
+        "purchaseDate": "2020-03-22",
+        "quantity": 250,
+        "costBasis": 20000,
+        "lotInfo": {}
+      }
+    ],
+    "closedLots": [
+      {
+        "identifiers": {},
+        "proxyIdentifiers": {},
+        "purchaseDate": "2022-03-22",
+        "realizedGainOrLoss": 3417.42,
+        "lotInfo": {}
+      }
+    ],
+    "supplement": {
+      "supplement": [
+        {
+          "tag": "SMA_ID",
+          "value": "BLK123",
+          "benchmark": {
+            "id": "BENCH-1",
+            "currency": "USD",
+            "componets": [
+              {
+                "id": "comp-1",
+                "identifiers": {
+                  "cusip": "67066G104",
+                  "sedol": "2379504",
+                  "isin": "US67066G1040",
+                  "ric": "NVDA.OQ",
+                  "clientId": "XXXX"
+                },
+                "weight": 1
+              }
+            ],
+            "metadata": {
+              "RISK_PROFILE": "Aggressive"
+            }
+          },
+          "metadata": {},
+          "fees": [
+            {
+              "category": "Client",
+              "subcategory": "Dues",
+              "startYear": 0,
+              "endYear": 15,
+              "minimumPositionMarketValue": 100,
+              "maximumPositionMarketValue": 200,
+              "amount": 4.5,
+              "paymentMethod": "P",
+              "percentMethod": "P",
+              "eventType": "E"
+            }
+          ]
+        }
+      ]
+    },
+    "simulatedPerfromanceUserInputs": {
+      "endDateOverride": "2022-05-31",
+      "maxMonthsOverride": 100,
+      "feeOverride": 0.01
+    }
+  },
+  "benchmark": {
+    "id": "BENCH-1",
+    "currency": "USD",
+    "components": [
+      {
+        "id": "comp-1",
+        "identifiers": {
+          "cusip": "67066G104",
+          "sedol": "2379504",
+          "isin": "US67066G1040",
+          "ric": "NVDA.OQ",
+          "clientId": "XXXX"
+        },
+        "weight": 1
+      }
+    ],
+    "metadata": {
+      "RISK_PROFILE": "Aggressive"
+    }
+  },
+  "sleeveTags": [
+    "SMA_ID","CONTRACT_ID"
+  ],
+  "customAnalyticTags": [],
+  "wealthProjectionUserInputs": {
+    "inflationAssumption": 0.021,
+    "netAlpha": 0.00732,
+    "cashFlows": [
+      {
+        "period": 3,
+        "contribution": 10000
+      }
+    ],
+    "yearsInprojection": 15
+  },
+  "simulatedPerformanceUserInputs": {
+    "endDateOverride": "2022-05-31",
+    "maxMonthsOverride": 100,
+    "feeOverride": 0.01
+  }
+}

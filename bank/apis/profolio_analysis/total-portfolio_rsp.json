@@ -1,0 +1,239 @@
+{
+  "date": "2018-03-31",
+  "unmappedPositions": [
+    "487fe396-2849-4b44-b0ef-b020492daaf0"
+  ],
+  "portfolioCoverage": 0.97,
+  "portfolio": {
+    "id": "PORTFOLIO-1",
+    "proxiedPositions": [
+      "487fe396-2849-4b44-b0ef-b020492daaf0"
+    ],
+    "risk": {
+      "totalRisk": 0.231656,
+      "totalStandaloneRisk": 0.231656,
+      "positionContributors": [
+        {
+          "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+          "contribution": 0.024969,
+          "standalone": 0.024969,
+          "diversification": 0.024969,
+          "securityStandalone": 0.024969,
+          "securityCorrelation": 0.024969
+        }
+      ],
+      "factorContributors": [
+        {
+          "blockName": "rates",
+          "contribution": 3.708406,
+          "positionContributors": [
+            {
+              "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+              "contribution": 0.024969,
+              "standalone": 0.024969,
+              "diversification": 0.024969,
+              "securityStandalone": 0.024969,
+              "securityCorrelation": 0.024969
+            }
+          ],
+          "exposure": 2.478438,
+          "standalone": 0.013102
+        }
+      ],
+      "fxFactorContributors": [
+        {
+          "blockName": "rates",
+          "contribution": 3.708406,
+          "positionContributors": [
+            {
+              "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+              "contribution": 0.024969,
+              "standalone": 0.024969,
+              "diversification": 0.024969,
+              "securityStandalone": 0.024969,
+              "securityCorrelation": 0.024969
+            }
+          ],
+          "exposure": 2.478438,
+          "standalone": 0.013102
+        }
+      ],
+      "totalIdioContribution": 0.108843,
+      "totalIdioStandaloneRisk": 0.108843,
+      "idioPositionContributors": [
+        {
+          "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+          "contribution": 0.024969,
+          "standalone": 0.024969,
+          "diversification": 0.024969,
+          "securityStandalone": 0.024969,
+          "securityCorrelation": 0.024969
+        }
+      ],
+      "beta": 0,
+      "correlation": 0
+    },
+    "tailRisk": {
+      "hvar": {
+        "total": 0,
+        "positionContributors": [
+          {
+            "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+            "contribution": 0.024969,
+            "type": "INTEREST"
+          }
+        ]
+      },
+      "expectedShortfall": {
+        "total": 0,
+        "positionContributors": [
+          {
+            "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+            "contribution": 0.024969,
+            "type": "INTEREST"
+          }
+        ]
+      }
+    },
+    "creditRisk": {
+      "expectedLoss": 0.000253,
+      "unexpectedLoss": 0.007035,
+      "positionContributors": [
+        {
+          "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+          "expectedLossContribution": 0.000112,
+          "expectedLossContributionPercent": 0.441097,
+          "unexpectedLossContribution": 0.003104,
+          "unexpectedLossContributionPercent": 0.4411839
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "name": "string",
+        "displayName": "string",
+        "total": 0,
+        "positionContributors": [
+          {
+            "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+            "contribution": 0.024969,
+            "type": "INTEREST"
+          }
+        ],
+        "factorContributors": [
+          {
+            "blockName": "Rates",
+            "contribution": 3.708406
+          }
+        ]
+      }
+    ],
+    "liquidity": {
+      "daysToUnwind": [
+        {
+          "redemptionScenario": 0.2,
+          "total": 3.94,
+          "max": 0,
+          "positionContributors": [
+            {
+              "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+              "contribution": 0.024969,
+              "type": "INTEREST"
+            }
+          ]
+        }
+      ]
+    },
+    "breakdowns": [
+      {
+        "name": "string",
+        "displayName": "string",
+        "sectors": [
+          {
+            "name": "string",
+            "displayName": "string",
+            "contribution": 0,
+            "positionContributors": [
+              {
+                "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+                "contribution": 0.024969,
+                "type": "INTEREST"
+              }
+            ],
+            "children": [
+              {}
+            ]
+          }
+        ]
+      }
+    ],
+    "characteristics": [
+      {
+        "name": "string",
+        "displayName":"string",
+        "total": 0
+      }
+    ],
+    "performance": {
+      "timeSeries": [],
+      "expostMetrics": {},
+      "positionPerformanceDateRanges": [],
+      "fee": 0,
+      "timeSeriesNet": [
+        {
+          "periodReturn": 0,
+          "cumulativeReturn": 0,
+          "dateInterval": {
+            "startDate": "2017-01-01",
+            "stopDate": "2019-12-31"
+          }
+        }
+      ],
+      "expostMetricsNet": {
+        "numberOfMonths": 36,
+        "metrics": [
+          {
+            "startDate": "2017-01-01",
+            "stopDate": "2017-01-31",
+            "exPostType": "TRR_ANN",
+            "exPostPeriod": "ONE_YEAR",
+            "disPlayName": "AAA",
+            "name": "A desc for AAA",
+            "value": 0.0003
+          }
+        ],
+        "startDate": "2017-01-01",
+        "stopDate": "2019-12-31"
+      }
+    },
+    "wealthProjections": {
+      "assumptions": {
+        "inflationAssumption": 0.021,
+        "netAlpha": 0.00732,
+        "cashFlows": [
+          {
+            "period": 3,
+            "contribution": 10000
+          }
+        ],
+        "yearsInProjection": 15
+      },
+      "projection": {
+        "initialValue": 0,
+        "real": [],
+      }
+    },
+    "cashFlowProjection": {},
+    "nav": {},
+    "leverage": {},
+    "sleeves": [],
+    "dynamicSleeves": [],
+    "esg": [],
+    "tax": {}
+  },
+  "benchmark": {},
+  "active": {},
+  "ruleEvaluations":[],
+  "scores": [],
+  "custom": {}
+}

@@ -1,0 +1,50 @@
+/total-portfolio
+
+This stateless endpoint offers comprehensive analysis for a single portfolio and its benchmark, delivering a full suite of
+ analytics for portfolio, benchmark, and active measures. It supports requests for individual analytics or a collection thereof.
+ The endpoint accepts a range of analytic parameters, which are enabled on a case-by-case basis in consultation with an
+ Aladdin Wealth Relationship Manager.
+
+
+ Available analytics include total portfolio risk, contributors to risk (both position and factor), expected shortfall, HVaR,
+ leverage,scenario PNL,sector breakdowns,portfolio characteristics,simulated performance,wealth projections,portfolio
+ suitability rules,Portfolio Quality Score, credit risk, ESG metrics, custom analytics , and liquidity.
+
+
+/total-portfolios
+
+The Total Portfolios Analysis endpoint extends the functionalities of the Total Portfolio Analysis endpoint to analyze multiple
+portfoios, with a current limit of up to 5. It provides a comprehensive set of analytics for each portfolio and its benchmark,
+returning the results in the same order as the request, This endpoint is ideal for clients needing simultaneous,detailed
+analysis across serveral portfolios, ensuring consistency and efficiency in reporting and risk assessment.
+
+
+/bulk-portfolio-risk
+
+This sateless endpoint is tailored for large-scale operations, specifically designed to process multiple portfolios with similar
+holdings efficiently.
+
+It is most commonly utilized for simulating model rebalances across various client accounts. The endpoint is optimized for
+performance but coms with xertain limitations that users must consider.
+
+-It exclusively returns the total risk for each portfolio without the option to configure additional analytics.
+-Only weights for holdings are accepted as input, market values are not compatible.
+-This endpoint will not undergo enhancements or support new inputs or analytics in the future.
+
+Users should be mindful of these constraints to prevent failed API calls, such as segmenting requests into batches if the
+number of securities exceeds the endpoint's capacity. This endpoint is ideal for scenarios requiring bulk risk assessment
+with a focus on total risk metrics.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
