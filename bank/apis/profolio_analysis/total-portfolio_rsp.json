@@ -220,7 +220,7 @@
       },
       "projection": {
         "initialValue": 0,
-        "real": [],
+        "real": []
       }
     },
     "cashFlowProjection": {},
