@@ -1,0 +1,3949 @@
+{
+  "date": "2018-03-31",
+  "unmappedPositions": [
+    "487fe396-2849-4b44-b0ef-b020492daaf0"
+  ],
+  "portfolioCoverage": 0.97,
+  "portfolio": {
+    "id": "PORTFOLIO-1",
+    "proxiedPositions": [
+      "487fe396-2849-4b44-b0ef-b020492daaf0"
+    ],
+    "risk": {
+      "totalRisk": 0.231656,
+      "totalStandaloneRisk": 0.231656,
+      "positionContributors": [
+        {
+          "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+          "contribution": 0.024969,
+          "standalone": 0.024969,
+          "diversification": 0.024969,
+          "securityStandalone": 0.024969,
+          "securityCorrelation": 0.024969
+        }
+      ],
+      "factorContributors": [
+        {
+          "blockName": "rates",
+          "contribution": 3.708406,
+          "positionContributors": [
+            {
+              "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+              "contribution": 0.024969,
+              "standalone": 0.024969,
+              "diversification": 0.024969,
+              "securityStandalone": 0.024969,
+              "securityCorrelation": 0.024969
+            }
+          ],
+          "exposure": 2.478438,
+          "standalone": 0.013102
+        }
+      ],
+      "fxFactorContributors": [
+        {
+          "blockName": "rates",
+          "contribution": 3.708406,
+          "positionContributors": [
+            {
+              "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+              "contribution": 0.024969,
+              "standalone": 0.024969,
+              "diversification": 0.024969,
+              "securityStandalone": 0.024969,
+              "securityCorrelation": 0.024969
+            }
+          ],
+          "exposure": 2.478438,
+          "standalone": 0.013102
+        }
+      ],
+      "totalIdioContribution": 0.108843,
+      "totalIdioStandaloneRisk": 0.108843,
+      "idioPositionContributors": [
+        {
+          "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+          "contribution": 0.024969,
+          "standalone": 0.024969,
+          "diversification": 0.024969,
+          "securityStandalone": 0.024969,
+          "securityCorrelation": 0.024969
+        }
+      ],
+      "beta": 0,
+      "correlation": 0
+    },
+    "tailRisk": {
+      "hvar": {
+        "total": 0,
+        "positionContributors": [
+          {
+            "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+            "contribution": 0.024969,
+            "type": "INTEREST"
+          }
+        ]
+      },
+      "expectedShortfall": {
+        "total": 0,
+        "positionContributors": [
+          {
+            "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+            "contribution": 0.024969,
+            "type": "INTEREST"
+          }
+        ]
+      }
+    },
+    "creditRisk": {
+      "expectedLoss": 0.000253,
+      "unexpectedLoss": 0.007035,
+      "positionContributors": [
+        {
+          "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+          "expectedLossContribution": 0.000112,
+          "expectedLossContributionPercent": 0.441097,
+          "unexpectedLossContribution": 0.003104,
+          "unexpectedLossContributionPercent": 0.4411839
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "name": "string",
+        "displayName": "string",
+        "total": 0,
+        "positionContributors": [
+          {
+            "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+            "contribution": 0.024969,
+            "type": "INTEREST"
+          }
+        ],
+        "factorContributors": [
+          {
+            "blockName": "Rates",
+            "contribution": 3.708406
+          }
+        ]
+      }
+    ],
+    "liquidity": {
+      "daysToUnwind": [
+        {
+          "redemptionScenario": 0.2,
+          "total": 3.94,
+          "max": 0,
+          "positionContributors": [
+            {
+              "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+              "contribution": 0.024969,
+              "type": "INTEREST"
+            }
+          ]
+        }
+      ]
+    },
+    "breakdowns": [
+      {
+        "name": "string",
+        "displayName": "string",
+        "sectors": [
+          {
+            "name": "string",
+            "displayName": "string",
+            "contribution": 0,
+            "positionContributors": [
+              {
+                "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+                "contribution": 0.024969,
+                "type": "INTEREST"
+              }
+            ],
+            "children": [
+              {}
+            ]
+          }
+        ]
+      }
+    ],
+    "characteristics": [
+      {
+        "name": "string",
+        "displayName": "string",
+        "total": 0
+      }
+    ],
+    "performance": {
+      "timeSeries": [],
+      "expostMetrics": {},
+      "positionPerformanceDateRanges": [],
+      "fee": 0,
+      "timeSeriesNet": [
+        {
+          "periodReturn": 0,
+          "cumulativeReturn": 0,
+          "dateInterval": {
+            "startDate": "2017-01-01",
+            "stopDate": "2019-12-31"
+          }
+        }
+      ],
+      "expostMetricsNet": {
+        "numberOfMonths": 36,
+        "metrics": [
+          {
+            "startDate": "2017-01-01",
+            "stopDate": "2017-01-31",
+            "exPostType": "TRR_ANN",
+            "exPostPeriod": "ONE_YEAR",
+            "disPlayName": "AAA",
+            "name": "A desc for AAA",
+            "value": 0.0003
+          }
+        ],
+        "startDate": "2017-01-01",
+        "stopDate": "2019-12-31"
+      }
+    },
+    "wealthProjections": {
+      "assumptions": {
+        "inflationAssumption": 0.021,
+        "netAlpha": 0.00732,
+        "cashFlows": [
+          {
+            "period": 3,
+            "contribution": 10000
+          }
+        ],
+        "yearsInProjection": 15
+      },
+      "projection": {
+        "initialValue": 0,
+        "real": [
+          {
+            "period": 0,
+            "expectedReturn": 0,
+            "volatility": 0,
+            "mean": {
+              "cumulativeReturn": 0,
+              "annualizedReturn": 0,
+              "portfolioValue": 0
+            },
+            "percentileReturns": [
+              {
+                "percentile": 0,
+                "cumulativeReturn": 0,
+                "annualizedReturn": 0,
+                "portfolioValue": 0
+              }
+            ]
+          }
+        ],
+        "nominal": [
+          {
+            "period": 0,
+            "expectedReturn": 0,
+            "volatility": 0,
+            "mean": {
+              "cumulativeReturn": 0,
+              "annualizedReturn": 0,
+              "portfolioValue": 0
+            },
+            "percentileReturns": [
+              {
+                "percentile": 0,
+                "cumulativeReturn": 0,
+                "annualizedReturn": 0,
+                "portfolioValue": 0
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "cashFlowProjection": {
+      "total": 107.3,
+      "dateInterval": {
+        "startDate": "2017-01-01",
+        "endDate": "2019-12-31"
+      },
+      "noIncomeSecurities": [
+        "string"
+      ],
+      "cashFlows": [
+        {
+          "date": "2024-01-14",
+          "total": 107.3,
+          "positionContributors": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "contribution": 0.024969,
+              "type": "INTEREST"
+            }
+          ]
+        }
+      ]
+    },
+    "nav": {
+      "accountBaseMarketValue": 100000,
+      "organizationalBaseMarketValue": 0,
+      "accountBaseNotionalMarketValue": 0,
+      "organizationalBaseNotionalMarketValue": 0
+    },
+    "leverage": {
+      "loanToValue": 1.048812
+    },
+    "sleeves": [
+      {
+        "name": "string",
+        "risk": {
+          "totalRisk": 0.231656,
+          "totalStandaloneRisk": 0.231656,
+          "positionContributors": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "contribution": 0.024969,
+              "standalone": 0.024969,
+              "diversification": 0.024969,
+              "securityStandalone": 0.024969,
+              "securityCorrelation": 0.024969
+            }
+          ],
+          "factorContributors": [
+            {
+              "blockName": "rates",
+              "contribution": 3.708406,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "standalone": 0.024969,
+                  "diversification": 0.024969,
+                  "securityStandalone": 0.024969,
+                  "securityCorrelation": 0.024969
+                }
+              ],
+              "exposure": 2.478438,
+              "standalone": 0.013102
+            }
+          ],
+          "fxFactorContributors": [
+            {
+              "blockName": "rates",
+              "contribution": 3.708496,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "standalone": 0.024969,
+                  "diversification": 0.024969,
+                  "securityStandalone": 0.024969,
+                  "securityCorrelation": 0.024969
+                }
+              ],
+              "exposure": 2.478438,
+              "standalone": 0.013102
+            }
+          ],
+          "totalIdioContribution": 0.108843,
+          "totalIdioStandaloneRisk": 0.108843,
+          "idioPositionContributors": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "contribution": 0.024969,
+              "standalone": 0.024969,
+              "diversification": 0.024969,
+              "securityStandalone": 0.024969,
+              "securityCorrelation": 0.024969
+            }
+          ],
+          "beta": 0,
+          "correlation": 0
+        },
+        "tailRisk": {
+          "hvar": {
+            "total": 0,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "type": "INTEREST"
+              }
+            ]
+          },
+          "expectedShortfall": {
+            "total": 0,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "type": "INTEREST"
+              }
+            ]
+          }
+        },
+        "creditRisk": {
+          "expectedLoss": 0.000253,
+          "unexpectedLoss": 0.007035,
+          "positionContributors": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "expectedLossContribution": 0.000112,
+              "expectedLossContributionPercent": 0.441096,
+              "unexpectedLossContribution": 0.003104,
+              "unexpectedLossContributionPercent": 0.4411839
+            }
+          ]
+        },
+        "scenarios": [
+          {
+            "name": "string",
+            "displayName": "string",
+            "total": 0,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "type": "INTEREST"
+              }
+            ],
+            "factroContributors": [
+              {
+                "baockName": "Rates",
+                "contribution": 3.708406
+              }
+            ]
+          }
+        ],
+        "breakdowns": [
+          {
+            "name": "string",
+            "displayName": "string",
+            "sectors": [
+              {
+                "name": "string",
+                "displayName": "string",
+                "contribution": 0,
+                "positionContributors": [
+                  {
+                    "id": null,
+                    "contribution": null,
+                    "type": null
+                  }
+                ],
+                "children": [
+                  {}
+                ]
+              }
+            ]
+          }
+        ],
+        "characteristics": [
+          {
+            "name": "string",
+            "displayName": "string",
+            "total": 0
+          }
+        ],
+        "performance": {
+          "timeSeries": [
+            {
+              "periodReturn": 0,
+              "cumulativeReturn": 0,
+              "dateInterval": {
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31"
+              }
+            }
+          ],
+          "expostMetrics": {
+            "numberOfMonths": 36,
+            "metrics": [
+              {
+                "startDate": "2017-01-01",
+                "stopDate": "2017-01-31",
+                "exPostType": "TRR_ANN",
+                "exPostPeriod": "ONE_YEAR",
+                "displayName": "AAA",
+                "name": "A desc for AAA",
+                "value": 0.0003
+              }
+            ],
+            "startDate": "2017-01-01",
+            "stopDate": "2019-12-31"
+          },
+          "positionPerfromanceDateRanges": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "dateInterval": {
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31"
+              }
+            }
+          ],
+          "fee": 0,
+          "timeSeriesNet": [
+            {
+              "periodReturn": 0,
+              "cumulativeReturn": 0,
+              "dateInterval": {
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31"
+              }
+            }
+          ],
+          "expostMetricsNet": {
+            "numberOfMonths": 36,
+            "metrics": [
+              {
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31",
+                "exPostType": "TRR_ANN",
+                "exPostPeriod": "ONE_YEAR",
+                "displayName": "AAA",
+                "name": "A desc for AAA",
+                "value": 0.0003
+              }
+            ],
+            "startDate": "2017-01-01",
+            "stopDate": "2019-12-31"
+          }
+        },
+        "wealthProjections": {
+          "assumptions": {
+            "inflationAssumption": 0.021,
+            "netAlpha": 0.00732,
+            "cashFlows": [
+              {
+                "period": 3,
+                "contribution": 10000
+              }
+            ],
+            "yearsInProjection": 15
+          },
+          "projection": {
+            "initialValue": 0,
+            "real": [
+              {
+                "period": 0,
+                "expectedReturn": 0,
+                "volatility": 0,
+                "mean": [
+                  {
+                    "cumulativeReturn": 0,
+                    "annualizedReturn": 0,
+                    "protfolioValue": 0
+                  }
+                ],
+                "percentileReturns": [
+                  {
+                    "percentile": null,
+                    "cumulativeReturn": null,
+                    "annualizedReturn": null,
+                    "portfolioValue": null
+                  }
+                ]
+              }
+            ],
+            "nominal": [
+              {
+                "period": 0,
+                "expectedReturn": 0,
+                "volatility": 0,
+                "mean": {
+                  "cumulativeReturn": 0,
+                  "annualizedReturn": 0,
+                  "portfolioValue": 0
+                },
+                "percentileReturns": [
+                  {
+                    "percentile": null,
+                    "cumulativeReturn": null,
+                    "annualizedReturn": null,
+                    "portfolioValue": null
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "cashFlowProjection": {
+          "total": 107.3,
+          "dateInterval": {
+            "startDate": "2017-01-01",
+            "stopDate": "2019-12-31"
+          },
+          "noIncomeSecurities": [
+            "string"
+          ],
+          "cashFlows": [
+            {
+              "date": "2024-01-14",
+              "total": 107.3,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.034969,
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          ]
+        },
+        "nav": {
+          "accountBaseMarketValue": 100000,
+          "organizationalBaseMarketValue": 0,
+          "accountBaseNotionalMarketValue": 0,
+          "organizationalBaseNotionalMarketValue": 0
+        },
+        "leverage": {
+          "loanToValue": 1.048812
+        },
+        "tax": {
+          "unrealized": {
+            "totalGain": 2000,
+            "totalLoss": -10081.03000000028,
+            "netGainLoss": -8081.03000000028,
+            "taxLiability": 300,
+            "taxGroups": [
+              {
+                "type": "SHORT_TERN",
+                "gain": 2000,
+                "loss": -10081.03000000028,
+                "net": -10081.0300000000028,
+                "taxLiability": 300,
+                "contributors": [
+                  {
+                    "lotId": null,
+                    "positionId": null,
+                    "contribution": null,
+                    "taxLiability": null
+                  }
+                ]
+              }
+            ]
+          },
+          "realized": {
+            "totalGain": 2000,
+            "totalLoss": -10081.03000000028,
+            "netGainLoss": -8081.03000000028,
+            "taxLiability": 300,
+            "taxGroups": [
+              {
+                "type": "SHORT_TERN",
+                "gain": 2000,
+                "loss": -10081.03000000028,
+                "net": -10081.0300000000028,
+                "taxLiability": 300,
+                "contributors": [
+                  {
+                    "lotId": null,
+                    "positionId": null,
+                    "contribution": null,
+                    "taxLiability": null
+                  }
+                ]
+              }
+            ]
+          },
+          "taxDate": "2022-05-31"
+        }
+      }
+    ],
+    "dynamicSleeves": [
+      {
+        "tag": "string",
+        "value": "string",
+        "portfolio": {
+          "risk": {
+            "totalRisk": 0.231656,
+            "totalStandaloneRisk": 0.231656,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "factorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "fxFactorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "totalIdioContribution": 0.108843,
+            "totalIdioStandaloneRisk": 0.108843,
+            "idioPositionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "beta": 0,
+            "correlation": 0
+          },
+          "tailRisk": {
+            "hvar": {
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            },
+            "expectedShortfall": {
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          },
+          "creditRisk": {
+            "expectedLoss": 0.000253,
+            "unexpectedLoss": 0.007035,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "expectedLossContribution": 0.000112,
+                "expectedLossContributionPercent": 0.441096,
+                "unexpectedLossContribution": 0.003104,
+                "unexpectedLossContributionPercent": 0.4411839
+              }
+            ]
+          },
+          "scenarios": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ],
+              "factroContributors": [
+                {
+                  "baockName": "Rates",
+                  "contribution": 3.708406
+                }
+              ]
+            }
+          ],
+          "breakdowns": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "sectors": [
+                {
+                  "name": "string",
+                  "displayName": "string",
+                  "contribution": 0,
+                  "positionContributors": [
+                    {
+                      "id": null,
+                      "contribution": null,
+                      "type": null
+                    }
+                  ],
+                  "children": [
+                    {}
+                  ]
+                }
+              ]
+            }
+          ],
+          "characteristics": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "total": 0
+            }
+          ],
+          "performance": {
+            "timeSeries": [
+              {
+                "periodReturn": 0,
+                "cumulativeReturn": 0,
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ],
+            "expostMetrics": {
+              "numberOfMonths": 36,
+              "metrics": [
+                {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2017-01-31",
+                  "exPostType": "TRR_ANN",
+                  "exPostPeriod": "ONE_YEAR",
+                  "displayName": "AAA",
+                  "name": "A desc for AAA",
+                  "value": 0.0003
+                }
+              ],
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            },
+            "positionPerfromanceDateRanges": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ],
+            "fee": 0,
+            "timeSeriesNet": [
+              {
+                "periodReturn": 0,
+                "cumulativeReturn": 0,
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ],
+            "expostMetricsNet": {
+              "numberOfMonths": 36,
+              "metrics": [
+                {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31",
+                  "exPostType": "TRR_ANN",
+                  "exPostPeriod": "ONE_YEAR",
+                  "displayName": "AAA",
+                  "name": "A desc for AAA",
+                  "value": 0.0003
+                }
+              ],
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            }
+          },
+          "wealthProjections": {
+            "assumptions": {
+              "inflationAssumption": 0.021,
+              "netAlpha": 0.00732,
+              "cashFlows": [
+                {
+                  "period": 3,
+                  "contribution": 10000
+                }
+              ],
+              "yearsInProjection": 15
+            },
+            "projection": {
+              "initialValue": 0,
+              "real": [
+                {
+                  "period": 0,
+                  "expectedReturn": 0,
+                  "volatility": 0,
+                  "mean": [
+                    {
+                      "cumulativeReturn": 0,
+                      "annualizedReturn": 0,
+                      "protfolioValue": 0
+                    }
+                  ],
+                  "percentileReturns": [
+                    {
+                      "percentile": null,
+                      "cumulativeReturn": null,
+                      "annualizedReturn": null,
+                      "portfolioValue": null
+                    }
+                  ]
+                }
+              ],
+              "nominal": [
+                {
+                  "period": 0,
+                  "expectedReturn": 0,
+                  "volatility": 0,
+                  "mean": {
+                    "cumulativeReturn": 0,
+                    "annualizedReturn": 0,
+                    "portfolioValue": 0
+                  },
+                  "percentileReturns": [
+                    {
+                      "percentile": null,
+                      "cumulativeReturn": null,
+                      "annualizedReturn": null,
+                      "portfolioValue": null
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "cashFlowProjection": {
+            "total": 107.3,
+            "dateInterval": {
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            },
+            "noIncomeSecurities": [
+              "string"
+            ],
+            "cashFlows": [
+              {
+                "date": "2024-01-14",
+                "total": 107.3,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.034969,
+                    "type": "INTEREST"
+                  }
+                ]
+              }
+            ]
+          },
+          "nav": {
+            "accountBaseMarketValue": 100000,
+            "organizationalBaseMarketValue": 0,
+            "accountBaseNotionalMarketValue": 0,
+            "organizationalBaseNotionalMarketValue": 0
+          },
+          "leverage": {
+            "loanToValue": 1.048812
+          },
+          "esg": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "coverageThreashould": 0,
+              "coverage": 0,
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          ],
+          "tax": {
+            "unrealized": {
+              "totalGain": 2000,
+              "totalLoss": -10081.03000000028,
+              "netGainLoss": -8081.03000000028,
+              "taxLiability": 300,
+              "taxGroups": [
+                {
+                  "type": "SHORT_TERN",
+                  "gain": 2000,
+                  "loss": -10081.03000000028,
+                  "net": -10081.0300000000028,
+                  "taxLiability": 300,
+                  "contributors": [
+                    {
+                      "lotId": null,
+                      "positionId": null,
+                      "contribution": null,
+                      "taxLiability": null
+                    }
+                  ]
+                }
+              ]
+            },
+            "realized": {
+              "totalGain": 2000,
+              "totalLoss": -10081.03000000028,
+              "netGainLoss": -8081.03000000028,
+              "taxLiability": 300,
+              "taxGroups": [
+                {
+                  "type": "SHORT_TERN",
+                  "gain": 2000,
+                  "loss": -10081.03000000028,
+                  "net": -10081.0300000000028,
+                  "taxLiability": 300,
+                  "contributors": [
+                    {
+                      "lotId": null,
+                      "positionId": null,
+                      "contribution": null,
+                      "taxLiability": null
+                    }
+                  ]
+                }
+              ]
+            },
+            "taxDate": "2022-05-31"
+          }
+        },
+        "benchmark": {
+          "risk": {
+            "totalRisk": 0.231656,
+            "totalStandaloneRisk": 0.231656,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "factorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "fxFactorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "totalIdioContribution": 0.108843,
+            "totalIdioStandaloneRisk": 0.108843,
+            "idioPositionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "beta": 0,
+            "correlation": 0
+          },
+          "tailRisk": {
+            "hvar": {
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            },
+            "expectedShortfall": {
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          },
+          "creditRisk": {
+            "expectedLoss": 0.000253,
+            "unexpectedLoss": 0.007035,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "expectedLossContribution": 0.000112,
+                "expectedLossContributionPercent": 0.441096,
+                "unexpectedLossContribution": 0.003104,
+                "unexpectedLossContributionPercent": 0.4411839
+              }
+            ]
+          },
+          "scenarios": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ],
+              "factroContributors": [
+                {
+                  "baockName": "Rates",
+                  "contribution": 3.708406
+                }
+              ]
+            }
+          ],
+          "breakdowns": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "sectors": [
+                {
+                  "name": "string",
+                  "displayName": "string",
+                  "contribution": 0,
+                  "positionContributors": [
+                    {
+                      "id": null,
+                      "contribution": null,
+                      "type": null
+                    }
+                  ],
+                  "children": [
+                    {}
+                  ]
+                }
+              ]
+            }
+          ],
+          "characteristics": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "total": 0
+            }
+          ],
+          "performance": {
+            "timeSeries": [
+              {
+                "periodReturn": 0,
+                "cumulativeReturn": 0,
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ],
+            "expostMetrics": {
+              "numberOfMonths": 36,
+              "metrics": [
+                {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2017-01-31",
+                  "exPostType": "TRR_ANN",
+                  "exPostPeriod": "ONE_YEAR",
+                  "displayName": "AAA",
+                  "name": "A desc for AAA",
+                  "value": 0.0003
+                }
+              ],
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            },
+            "positionPerfromanceDateRanges": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ],
+            "fee": 0,
+            "timeSeriesNet": [
+              {
+                "periodReturn": 0,
+                "cumulativeReturn": 0,
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ],
+            "expostMetricsNet": {
+              "numberOfMonths": 36,
+              "metrics": [
+                {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31",
+                  "exPostType": "TRR_ANN",
+                  "exPostPeriod": "ONE_YEAR",
+                  "displayName": "AAA",
+                  "name": "A desc for AAA",
+                  "value": 0.0003
+                }
+              ],
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            }
+          },
+          "wealthProjections": {
+            "assumptions": {
+              "inflationAssumption": 0.021,
+              "netAlpha": 0.00732,
+              "cashFlows": [
+                {
+                  "period": 3,
+                  "contribution": 10000
+                }
+              ],
+              "yearsInProjection": 15
+            },
+            "projection": {
+              "initialValue": 0,
+              "real": [
+                {
+                  "period": 0,
+                  "expectedReturn": 0,
+                  "volatility": 0,
+                  "mean": [
+                    {
+                      "cumulativeReturn": 0,
+                      "annualizedReturn": 0,
+                      "protfolioValue": 0
+                    }
+                  ],
+                  "percentileReturns": [
+                    {
+                      "percentile": null,
+                      "cumulativeReturn": null,
+                      "annualizedReturn": null,
+                      "portfolioValue": null
+                    }
+                  ]
+                }
+              ],
+              "nominal": [
+                {
+                  "period": 0,
+                  "expectedReturn": 0,
+                  "volatility": 0,
+                  "mean": {
+                    "cumulativeReturn": 0,
+                    "annualizedReturn": 0,
+                    "portfolioValue": 0
+                  },
+                  "percentileReturns": [
+                    {
+                      "percentile": null,
+                      "cumulativeReturn": null,
+                      "annualizedReturn": null,
+                      "portfolioValue": null
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "cashFlowProjection": {
+            "total": 107.3,
+            "dateInterval": {
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            },
+            "noIncomeSecurities": [
+              "string"
+            ],
+            "cashFlows": [
+              {
+                "date": "2024-01-14",
+                "total": 107.3,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.034969,
+                    "type": "INTEREST"
+                  }
+                ]
+              }
+            ]
+          },
+          "nav": {
+            "accountBaseMarketValue": 100000,
+            "organizationalBaseMarketValue": 0,
+            "accountBaseNotionalMarketValue": 0,
+            "organizationalBaseNotionalMarketValue": 0
+          },
+          "leverage": {
+            "loanToValue": 1.048812
+          },
+          "esg": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "coverageThreashould": 0,
+              "coverage": 0,
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          ],
+          "tax": {
+            "unrealized": {
+              "totalGain": 2000,
+              "totalLoss": -10081.03000000028,
+              "netGainLoss": -8081.03000000028,
+              "taxLiability": 300,
+              "taxGroups": [
+                {
+                  "type": "SHORT_TERN",
+                  "gain": 2000,
+                  "loss": -10081.03000000028,
+                  "net": -10081.0300000000028,
+                  "taxLiability": 300,
+                  "contributors": [
+                    {
+                      "lotId": null,
+                      "positionId": null,
+                      "contribution": null,
+                      "taxLiability": null
+                    }
+                  ]
+                }
+              ]
+            },
+            "realized": {
+              "totalGain": 2000,
+              "totalLoss": -10081.03000000028,
+              "netGainLoss": -8081.03000000028,
+              "taxLiability": 300,
+              "taxGroups": [
+                {
+                  "type": "SHORT_TERN",
+                  "gain": 2000,
+                  "loss": -10081.03000000028,
+                  "net": -10081.0300000000028,
+                  "taxLiability": 300,
+                  "contributors": [
+                    {
+                      "lotId": null,
+                      "positionId": null,
+                      "contribution": null,
+                      "taxLiability": null
+                    }
+                  ]
+                }
+              ]
+            },
+            "taxDate": "2022-05-31"
+          }
+        },
+        "sleeves": [
+          {
+            "name": "string",
+            "risk": {
+              "totalRisk": 0.231656,
+              "totalStandaloneRisk": 0.231656,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "standalone": 0.024969,
+                  "diversification": 0.024969,
+                  "securityStandalone": 0.024969,
+                  "securityCorrelation": 0.024969
+                }
+              ],
+              "factorContributors": [
+                {
+                  "blockName": "rates",
+                  "contribution": 3.708406,
+                  "positionContributors": [
+                    {
+                      "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+                  ],
+                  "exposure": 2.478438,
+                  "standalone": 0.013102
+                }
+              ],
+              "fxFactorContributors": [
+                {
+                  "blockName": "rates",
+                  "contribution": 3.708406,
+                  "positionContributors": [
+                    {
+                      "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+                  ],
+                  "exposure": 2.478438,
+                  "standalone": 0.013102
+                }
+              ],
+              "totalIdioContribution": 0.108843,
+              "totalIdioStandaloneRisk": 0.108843,
+              "idioPositionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "standalone": 0.024969,
+                  "diversification": 0.024969,
+                  "securityStandalone": 0.024969,
+                  "securityCorrelation": 0.024969
+                }
+              ],
+              "beta": 0,
+              "correlation": 0
+            },
+            "tailRisk": {
+              "hvar": {
+                "total": 0,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "type": "INTEREST"
+                  }
+                ]
+              },
+              "expectedShortfall": {
+                "total": 0,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "type": "INTEREST"
+                  }
+                ]
+              }
+            },
+            "creditRisk": {
+              "expectedLoss": 0.000253,
+              "unexpectedLoss": 0.007035,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "expectedLossContribution": 0.000112,
+                  "expectedLossContributionPercent": 0.441096,
+                  "unexpectedLossContribution": 0.003104,
+                  "unexpectedLossContributionPercent": 0.4411839
+                }
+              ]
+            },
+            "scenarios": [
+              {
+                "name": "string",
+                "displayName": "string",
+                "total": 0,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "type": "INTEREST"
+                  }
+                ],
+                "factroContributors": [
+                  {
+                    "baockName": "Rates",
+                    "contribution": 3.708406
+                  }
+                ]
+              }
+            ],
+            "breakdowns": [
+              {
+                "name": "string",
+                "displayName": "string",
+                "sectors": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "contribution": 0,
+                    "positionContributors": [
+                      {
+                        "id": null,
+                        "contribution": null,
+                        "type": null
+                      }
+                    ],
+                    "children": [
+                      {}
+                    ]
+                  }
+                ]
+              }
+            ],
+            "characteristics": [
+              {
+                "name": "string",
+                "displayName": "string",
+                "total": 0
+              }
+            ],
+            "performance": {
+              "timeSeries": [
+                {
+                  "periodReturn": 0,
+                  "cumulativeReturn": 0,
+                  "dateInterval": {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  }
+                }
+              ],
+              "expostMetrics": {
+                "numberOfMonths": 36,
+                "metrics": [
+                  {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2017-01-31",
+                    "exPostType": "TRR_ANN",
+                    "exPostPeriod": "ONE_YEAR",
+                    "displayName": "AAA",
+                    "name": "A desc for AAA",
+                    "value": 0.0003
+                  }
+                ],
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31"
+              },
+              "positionPerfromanceDateRanges": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "dateInterval": {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  }
+                }
+              ],
+              "fee": 0,
+              "timeSeriesNet": [
+                {
+                  "periodReturn": 0,
+                  "cumulativeReturn": 0,
+                  "dateInterval": {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  }
+                }
+              ],
+              "expostMetricsNet": {
+                "numberOfMonths": 36,
+                "metrics": [
+                  {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31",
+                    "exPostType": "TRR_ANN",
+                    "exPostPeriod": "ONE_YEAR",
+                    "displayName": "AAA",
+                    "name": "A desc for AAA",
+                    "value": 0.0003
+                  }
+                ],
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31"
+              }
+            },
+            "wealthProjections": {
+              "assumptions": {
+                "inflationAssumption": 0.021,
+                "netAlpha": 0.00732,
+                "cashFlows": [
+                  {
+                    "period": 3,
+                    "contribution": 10000
+                  }
+                ],
+                "yearsInProjection": 15
+              },
+              "projection": {
+                "initialValue": 0,
+                "real": [
+                  {
+                    "period": 0,
+                    "expectedReturn": 0,
+                    "volatility": 0,
+                    "mean": [
+                      {
+                        "cumulativeReturn": 0,
+                        "annualizedReturn": 0,
+                        "protfolioValue": 0
+                      }
+                    ],
+                    "percentileReturns": [
+                      {
+                        "percentile": null,
+                        "cumulativeReturn": null,
+                        "annualizedReturn": null,
+                        "portfolioValue": null
+                      }
+                    ]
+                  }
+                ],
+                "nominal": [
+                  {
+                    "period": 0,
+                    "expectedReturn": 0,
+                    "volatility": 0,
+                    "mean": {
+                      "cumulativeReturn": 0,
+                      "annualizedReturn": 0,
+                      "portfolioValue": 0
+                    },
+                    "percentileReturns": [
+                      {
+                        "percentile": null,
+                        "cumulativeReturn": null,
+                        "annualizedReturn": null,
+                        "portfolioValue": null
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "cashFlowProjection": {
+              "total": 107.3,
+              "dateInterval": {
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31"
+              },
+              "noIncomeSecurities": [
+                "string"
+              ],
+              "cashFlows": [
+                {
+                  "date": "2024-01-14",
+                  "total": 107.3,
+                  "positionContributors": [
+                    {
+                      "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                      "contribution": 0.034969,
+                      "type": "INTEREST"
+                    }
+                  ]
+                }
+              ]
+            },
+            "nav": {
+              "accountBaseMarketValue": 100000,
+              "organizationalBaseMarketValue": 0,
+              "accountBaseNotionalMarketValue": 0,
+              "organizationalBaseNotionalMarketValue": 0
+            },
+            "leverage": {
+              "loanToValue": 1.048812
+            },
+            "tax": {
+              "unrealized": {
+                "totalGain": 2000,
+                "totalLoss": -10081.03000000028,
+                "netGainLoss": -8081.03000000028,
+                "taxLiability": 300,
+                "taxGroups": [
+                  {
+                    "type": "SHORT_TERN",
+                    "gain": 2000,
+                    "loss": -10081.03000000028,
+                    "net": -10081.0300000000028,
+                    "taxLiability": 300,
+                    "contributors": [
+                      {
+                        "lotId": null,
+                        "positionId": null,
+                        "contribution": null,
+                        "taxLiability": null
+                      }
+                    ]
+                  }
+                ]
+              },
+              "realized": {
+                "totalGain": 2000,
+                "totalLoss": -10081.03000000028,
+                "netGainLoss": -8081.03000000028,
+                "taxLiability": 300,
+                "taxGroups": [
+                  {
+                    "type": "SHORT_TERN",
+                    "gain": 2000,
+                    "loss": -10081.03000000028,
+                    "net": -10081.0300000000028,
+                    "taxLiability": 300,
+                    "contributors": [
+                      {
+                        "lotId": null,
+                        "positionId": null,
+                        "contribution": null,
+                        "taxLiability": null
+                      }
+                    ]
+                  }
+                ]
+              },
+              "taxDate": "2022-05-31"
+            }
+          }
+        ],
+        "active": {
+          "risk": {
+            "totalRisk": 0.231656,
+            "totalStandaloneRisk": 0.231656,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "factorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "fxFactorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "totalIdioContribution": 0.108843,
+            "totalIdioStandaloneRisk": 0.108843,
+            "idioPositionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "beta": 0,
+            "correlation": 0
+          }
+        }
+      }
+    ],
+    "esg": [
+      {
+        "name": "string",
+        "displayName": "string",
+        "coverageThreashould": 0,
+        "coverage": 0,
+        "total": 0,
+        "positionContributors": [
+          {
+            "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+            "contribution": 0.024969,
+            "type": "INTEREST"
+          }
+        ]
+      }
+    ],
+    "tax": {
+      "unrealized": {
+        "totalGain": 2000,
+        "totalLoss": -10081.03000000028,
+        "netGainLoss": -8081.03000000028,
+        "taxLiability": 300,
+        "taxGroups": [
+          {
+            "type": "SHORT_TERN",
+            "gain": 2000,
+            "loss": -10081.03000000028,
+            "net": -10081.0300000000028,
+            "taxLiability": 300,
+            "contributors": [
+              {
+                "lotId": null,
+                "positionId": null,
+                "contribution": null,
+                "taxLiability": null
+              }
+            ]
+          }
+        ]
+      },
+      "realized": {
+        "totalGain": 2000,
+        "totalLoss": -10081.03000000028,
+        "netGainLoss": -8081.03000000028,
+        "taxLiability": 300,
+        "taxGroups": [
+          {
+            "type": "SHORT_TERN",
+            "gain": 2000,
+            "loss": -10081.03000000028,
+            "net": -10081.0300000000028,
+            "taxLiability": 300,
+            "contributors": [
+              {
+                "lotId": null,
+                "positionId": null,
+                "contribution": null,
+                "taxLiability": null
+              }
+            ]
+          }
+        ]
+      },
+      "taxDate": "2022-05-31"
+    }
+  },
+  "benchmark": {
+    "id": "PORTFOLIO-1",
+    "proxiedPositions": [
+      "6742ab51-f0d2-49cc-9569-070a622c30ac"
+    ],
+    "risk": {
+      "totalRisk": 0.231656,
+      "totalStandaloneRisk": 0.231656,
+      "positionContributors": [
+        {
+          "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+          "contribution": 0.024969,
+          "standalone": 0.024969,
+          "diversification": 0.024969,
+          "securityStandalone": 0.024969,
+          "securityCorrelation": 0.024969
+        }
+      ],
+      "factorContributors": [
+        {
+          "blockName": "rates",
+          "contribution": 3.708406,
+          "positionContributors": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "contribution": 0.024969,
+              "standalone": 0.024969,
+              "diversification": 0.024969,
+              "securityStandalone": 0.024969,
+              "securityCorrelation": 0.024969
+            }
+          ],
+          "exposure": 2.478438,
+          "standalone": 0.013102
+        }
+      ],
+      "fxFactorContributors": [
+        {
+          "blockName": "rates",
+          "contribution": 3.708406,
+          "positionContributors": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "contribution": 0.024969,
+              "standalone": 0.024969,
+              "diversification": 0.024969,
+              "securityStandalone": 0.024969,
+              "securityCorrelation": 0.024969
+            }
+          ],
+          "exposure": 2.478438,
+          "standalone": 0.013102
+        }
+      ],
+      "totalIdioContribution": 0.108843,
+      "totalIdioStandaloneRisk": 0.108843,
+      "idioPositionContributors": [
+        {
+          "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+          "contribution": 0.024969,
+          "standalone": 0.024969,
+          "diversification": 0.024969,
+          "securityStandalone": 0.024969,
+          "securityCorrelation": 0.024969
+        }
+      ],
+      "beta": 0,
+      "correlation": 0
+    },
+    "tailRisk": {
+      "hvar": {
+        "total": 0,
+        "positionContributors": [
+          {
+            "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+            "contribution": 0.024969,
+            "type": "INTEREST"
+          }
+        ]
+      },
+      "expectedShortfall": {
+        "total": 0,
+        "positionContributors": [
+          {
+            "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+            "contribution": 0.024969,
+            "type": "INTEREST"
+          }
+        ]
+      }
+    },
+    "creditRisk": {
+      "expectedLoss": 0.000253,
+      "unexpectedLoss": 0.007035,
+      "positionContributors": [
+        {
+          "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+          "expectedLossContribution": 0.000112,
+          "expectedLossContributionPercent": 0.441096,
+          "unexpectedLossContribution": 0.003104,
+          "unexpectedLossContributionPercent": 0.4411839
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "name": "string",
+        "displayName": "string",
+        "total": 0,
+        "positionContributors": [
+          {
+            "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+            "contribution": 0.024969,
+            "type": "INTEREST"
+          }
+        ],
+        "factroContributors": [
+          {
+            "baockName": "Rates",
+            "contribution": 3.708406
+          }
+        ]
+      }
+    ],
+    "liquidity": {
+      "daysToUnwind": [
+        {
+          "redemptionScenario": 0.2,
+          "total": 3.94,
+          "max": 0,
+          "positionContributors": [
+            {
+              "id": "487fe396-2849-4b44-b0ef-b020492daaf0",
+              "contribution": 0.024969,
+              "type": "INTEREST"
+            }
+          ]
+        }
+      ]
+    },
+    "breakdowns": [
+      {
+        "name": "string",
+        "displayName": "string",
+        "sectors": [
+          {
+            "name": "string",
+            "displayName": "string",
+            "contribution": 0,
+            "positionContributors": [
+              {
+                "id": null,
+                "contribution": null,
+                "type": null
+              }
+            ],
+            "children": [
+              {}
+            ]
+          }
+        ]
+      }
+    ],
+    "characteristics": [
+      {
+        "name": "string",
+        "displayName": "string",
+        "total": 0
+      }
+    ],
+    "performance": {
+      "timeSeries": [
+        {
+          "periodReturn": 0,
+          "cumulativeReturn": 0,
+          "dateInterval": {
+            "startDate": "2017-01-01",
+            "stopDate": "2019-12-31"
+          }
+        }
+      ],
+      "expostMetrics": {
+        "numberOfMonths": 36,
+        "metrics": [
+          {
+            "startDate": "2017-01-01",
+            "stopDate": "2017-01-31",
+            "exPostType": "TRR_ANN",
+            "exPostPeriod": "ONE_YEAR",
+            "displayName": "AAA",
+            "name": "A desc for AAA",
+            "value": 0.0003
+          }
+        ],
+        "startDate": "2017-01-01",
+        "stopDate": "2019-12-31"
+      },
+      "positionPerfromanceDateRanges": [
+        {
+          "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+          "dateInterval": {
+            "startDate": "2017-01-01",
+            "stopDate": "2019-12-31"
+          }
+        }
+      ],
+      "fee": 0,
+      "timeSeriesNet": [
+        {
+          "periodReturn": 0,
+          "cumulativeReturn": 0,
+          "dateInterval": {
+            "startDate": "2017-01-01",
+            "stopDate": "2019-12-31"
+          }
+        }
+      ],
+      "expostMetricsNet": {
+        "numberOfMonths": 36,
+        "metrics": [
+          {
+            "startDate": "2017-01-01",
+            "stopDate": "2019-12-31",
+            "exPostType": "TRR_ANN",
+            "exPostPeriod": "ONE_YEAR",
+            "displayName": "AAA",
+            "name": "A desc for AAA",
+            "value": 0.0003
+          }
+        ],
+        "startDate": "2017-01-01",
+        "stopDate": "2019-12-31"
+      }
+    },
+    "wealthProjections": {
+      "assumptions": {
+        "inflationAssumption": 0.021,
+        "netAlpha": 0.00732,
+        "cashFlows": [
+          {
+            "period": 3,
+            "contribution": 10000
+          }
+        ],
+        "yearsInProjection": 15
+      },
+      "projection": {
+        "initialValue": 0,
+        "real": [
+          {
+            "period": 0,
+            "expectedReturn": 0,
+            "volatility": 0,
+            "mean": [
+              {
+                "cumulativeReturn": 0,
+                "annualizedReturn": 0,
+                "protfolioValue": 0
+              }
+            ],
+            "percentileReturns": [
+              {
+                "percentile": null,
+                "cumulativeReturn": null,
+                "annualizedReturn": null,
+                "portfolioValue": null
+              }
+            ]
+          }
+        ],
+        "nominal": [
+          {
+            "period": 0,
+            "expectedReturn": 0,
+            "volatility": 0,
+            "mean": {
+              "cumulativeReturn": 0,
+              "annualizedReturn": 0,
+              "portfolioValue": 0
+            },
+            "percentileReturns": [
+              {
+                "percentile": null,
+                "cumulativeReturn": null,
+                "annualizedReturn": null,
+                "portfolioValue": null
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "cashFlowProjection": {
+      "total": 107.3,
+      "dateInterval": {
+        "startDate": "2017-01-01",
+        "stopDate": "2019-12-31"
+      },
+      "noIncomeSecurities": [
+        "string"
+      ],
+      "cashFlows": [
+        {
+          "date": "2024-01-14",
+          "total": 107.3,
+          "positionContributors": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "contribution": 0.034969,
+              "type": "INTEREST"
+            }
+          ]
+        }
+      ]
+    },
+    "nav": {
+      "accountBaseMarketValue": 100000,
+      "organizationalBaseMarketValue": 0,
+      "accountBaseNotionalMarketValue": 0,
+      "organizationalBaseNotionalMarketValue": 0
+    },
+    "leverage": {
+      "loanToValue": 1.048812
+    },
+    "sleeves": [
+      {
+        "name": "string",
+        "risk": {
+          "totalRisk": 0.231656,
+          "totalStandaloneRisk": 0.231656,
+          "positionContributors": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "contribution": 0.024969,
+              "standalone": 0.024969,
+              "diversification": 0.024969,
+              "securityStandalone": 0.024969,
+              "securityCorrelation": 0.024969
+            }
+          ],
+          "factorContributors": [
+            {
+              "blockName": "rates",
+              "contribution": 3.708406,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "standalone": 0.024969,
+                  "diversification": 0.024969,
+                  "securityStandalone": 0.024969,
+                  "securityCorrelation": 0.024969
+                }
+              ],
+              "exposure": 2.478438,
+              "standalone": 0.013102
+            }
+          ],
+          "fxFactorContributors": [
+            {
+              "blockName": "rates",
+              "contribution": 3.708406,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "standalone": 0.024969,
+                  "diversification": 0.024969,
+                  "securityStandalone": 0.024969,
+                  "securityCorrelation": 0.024969
+                }
+              ],
+              "exposure": 2.478438,
+              "standalone": 0.013102
+            }
+          ],
+          "totalIdioContribution": 0.108843,
+          "totalIdioStandaloneRisk": 0.108843,
+          "idioPositionContributors": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "contribution": 0.024969,
+              "standalone": 0.024969,
+              "diversification": 0.024969,
+              "securityStandalone": 0.024969,
+              "securityCorrelation": 0.024969
+            }
+          ],
+          "beta": 0,
+          "correlation": 0
+        },
+        "tailRisk": {
+          "hvar": {
+            "total": 0,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "type": "INTEREST"
+              }
+            ]
+          },
+          "expectedShortfall": {
+            "total": 0,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "type": "INTEREST"
+              }
+            ]
+          }
+        },
+        "creditRisk": {
+          "expectedLoss": 0.000253,
+          "unexpectedLoss": 0.007035,
+          "positionContributors": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "expectedLossContribution": 0.000112,
+              "expectedLossContributionPercent": 0.441096,
+              "unexpectedLossContribution": 0.003104,
+              "unexpectedLossContributionPercent": 0.4411839
+            }
+          ]
+        },
+        "scenarios": [
+          {
+            "name": "string",
+            "displayName": "string",
+            "total": 0,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "type": "INTEREST"
+              }
+            ],
+            "factroContributors": [
+              {
+                "baockName": "Rates",
+                "contribution": 3.708406
+              }
+            ]
+          }
+        ],
+        "breakdowns": [
+          {
+            "name": "string",
+            "displayName": "string",
+            "sectors": [
+              {
+                "name": "string",
+                "displayName": "string",
+                "contribution": 0,
+                "positionContributors": [
+                  {
+                    "id": null,
+                    "contribution": null,
+                    "type": null
+                  }
+                ],
+                "children": [
+                  {}
+                ]
+              }
+            ]
+          }
+        ],
+        "characteristics": [
+          {
+            "name": "string",
+            "displayName": "string",
+            "total": 0
+          }
+        ],
+        "performance": {
+          "timeSeries": [
+            {
+              "periodReturn": 0,
+              "cumulativeReturn": 0,
+              "dateInterval": {
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31"
+              }
+            }
+          ],
+          "expostMetrics": {
+            "numberOfMonths": 36,
+            "metrics": [
+              {
+                "startDate": "2017-01-01",
+                "stopDate": "2017-01-31",
+                "exPostType": "TRR_ANN",
+                "exPostPeriod": "ONE_YEAR",
+                "displayName": "AAA",
+                "name": "A desc for AAA",
+                "value": 0.0003
+              }
+            ],
+            "startDate": "2017-01-01",
+            "stopDate": "2019-12-31"
+          },
+          "positionPerfromanceDateRanges": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "dateInterval": {
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31"
+              }
+            }
+          ],
+          "fee": 0,
+          "timeSeriesNet": [
+            {
+              "periodReturn": 0,
+              "cumulativeReturn": 0,
+              "dateInterval": {
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31"
+              }
+            }
+          ],
+          "expostMetricsNet": {
+            "numberOfMonths": 36,
+            "metrics": [
+              {
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31",
+                "exPostType": "TRR_ANN",
+                "exPostPeriod": "ONE_YEAR",
+                "displayName": "AAA",
+                "name": "A desc for AAA",
+                "value": 0.0003
+              }
+            ],
+            "startDate": "2017-01-01",
+            "stopDate": "2019-12-31"
+          }
+        },
+        "wealthProjections": {
+          "assumptions": {
+            "inflationAssumption": 0.021,
+            "netAlpha": 0.00732,
+            "cashFlows": [
+              {
+                "period": 3,
+                "contribution": 10000
+              }
+            ],
+            "yearsInProjection": 15
+          },
+          "projection": {
+            "initialValue": 0,
+            "real": [
+              {
+                "period": 0,
+                "expectedReturn": 0,
+                "volatility": 0,
+                "mean": [
+                  {
+                    "cumulativeReturn": 0,
+                    "annualizedReturn": 0,
+                    "protfolioValue": 0
+                  }
+                ],
+                "percentileReturns": [
+                  {
+                    "percentile": null,
+                    "cumulativeReturn": null,
+                    "annualizedReturn": null,
+                    "portfolioValue": null
+                  }
+                ]
+              }
+            ],
+            "nominal": [
+              {
+                "period": 0,
+                "expectedReturn": 0,
+                "volatility": 0,
+                "mean": {
+                  "cumulativeReturn": 0,
+                  "annualizedReturn": 0,
+                  "portfolioValue": 0
+                },
+                "percentileReturns": [
+                  {
+                    "percentile": null,
+                    "cumulativeReturn": null,
+                    "annualizedReturn": null,
+                    "portfolioValue": null
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "cashFlowProjection": {
+          "total": 107.3,
+          "dateInterval": {
+            "startDate": "2017-01-01",
+            "stopDate": "2019-12-31"
+          },
+          "noIncomeSecurities": [
+            "string"
+          ],
+          "cashFlows": [
+            {
+              "date": "2024-01-14",
+              "total": 107.3,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.034969,
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          ]
+        },
+        "nav": {
+          "accountBaseMarketValue": 100000,
+          "organizationalBaseMarketValue": 0,
+          "accountBaseNotionalMarketValue": 0,
+          "organizationalBaseNotionalMarketValue": 0
+        },
+        "leverage": {
+          "loanToValue": 1.048812
+        },
+        "tax": {
+          "unrealized": {
+            "totalGain": 2000,
+            "totalLoss": -10081.03000000028,
+            "netGainLoss": -8081.03000000028,
+            "taxLiability": 300,
+            "taxGroups": [
+              {
+                "type": "SHORT_TERN",
+                "gain": 2000,
+                "loss": -10081.03000000028,
+                "net": -10081.0300000000028,
+                "taxLiability": 300,
+                "contributors": [
+                  {
+                    "lotId": null,
+                    "positionId": null,
+                    "contribution": null,
+                    "taxLiability": null
+                  }
+                ]
+              }
+            ]
+          },
+          "realized": {
+            "totalGain": 2000,
+            "totalLoss": -10081.03000000028,
+            "netGainLoss": -8081.03000000028,
+            "taxLiability": 300,
+            "taxGroups": [
+              {
+                "type": "SHORT_TERN",
+                "gain": 2000,
+                "loss": -10081.03000000028,
+                "net": -10081.0300000000028,
+                "taxLiability": 300,
+                "contributors": [
+                  {
+                    "lotId": null,
+                    "positionId": null,
+                    "contribution": null,
+                    "taxLiability": null
+                  }
+                ]
+              }
+            ]
+          },
+          "taxDate": "2022-05-31"
+        }
+      }
+    ],
+    "dynamicSleeves": [
+      {
+        "tag": "string",
+        "value": "string",
+        "portfolio": {
+          "risk": {
+            "totalRisk": 0.231656,
+            "totalStandaloneRisk": 0.231656,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "factorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "fxFactorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "totalIdioContribution": 0.108843,
+            "totalIdioStandaloneRisk": 0.108843,
+            "idioPositionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "beta": 0,
+            "correlation": 0
+          },
+          "tailRisk": {
+            "hvar": {
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            },
+            "expectedShortfall": {
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          },
+          "creditRisk": {
+            "expectedLoss": 0.000253,
+            "unexpectedLoss": 0.007035,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "expectedLossContribution": 0.000112,
+                "expectedLossContributionPercent": 0.441096,
+                "unexpectedLossContribution": 0.003104,
+                "unexpectedLossContributionPercent": 0.4411839
+              }
+            ]
+          },
+          "scenarios": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ],
+              "factroContributors": [
+                {
+                  "baockName": "Rates",
+                  "contribution": 3.708406
+                }
+              ]
+            }
+          ],
+          "breakdowns": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "sectors": [
+                {
+                  "name": "string",
+                  "displayName": "string",
+                  "contribution": 0,
+                  "positionContributors": [
+                    {
+                      "id": null,
+                      "contribution": null,
+                      "type": null
+                    }
+                  ],
+                  "children": [
+                    {}
+                  ]
+                }
+              ]
+            }
+          ],
+          "characteristics": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "total": 0
+            }
+          ],
+          "performance": {
+            "timeSeries": [
+              {
+                "periodReturn": 0,
+                "cumulativeReturn": 0,
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ],
+            "expostMetrics": {
+              "numberOfMonths": 36,
+              "metrics": [
+                {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2017-01-31",
+                  "exPostType": "TRR_ANN",
+                  "exPostPeriod": "ONE_YEAR",
+                  "displayName": "AAA",
+                  "name": "A desc for AAA",
+                  "value": 0.0003
+                }
+              ],
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            },
+            "positionPerfromanceDateRanges": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ],
+            "fee": 0,
+            "timeSeriesNet": [
+              {
+                "periodReturn": 0,
+                "cumulativeReturn": 0,
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ],
+            "expostMetricsNet": {
+              "numberOfMonths": 36,
+              "metrics": [
+                {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31",
+                  "exPostType": "TRR_ANN",
+                  "exPostPeriod": "ONE_YEAR",
+                  "displayName": "AAA",
+                  "name": "A desc for AAA",
+                  "value": 0.0003
+                }
+              ],
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            }
+          },
+          "wealthProjections": {
+            "assumptions": {
+              "inflationAssumption": 0.021,
+              "netAlpha": 0.00732,
+              "cashFlows": [
+                {
+                  "period": 3,
+                  "contribution": 10000
+                }
+              ],
+              "yearsInProjection": 15
+            },
+            "projection": {
+              "initialValue": 0,
+              "real": [
+                {
+                  "period": 0,
+                  "expectedReturn": 0,
+                  "volatility": 0,
+                  "mean": [
+                    {
+                      "cumulativeReturn": 0,
+                      "annualizedReturn": 0,
+                      "protfolioValue": 0
+                    }
+                  ],
+                  "percentileReturns": [
+                    {
+                      "percentile": null,
+                      "cumulativeReturn": null,
+                      "annualizedReturn": null,
+                      "portfolioValue": null
+                    }
+                  ]
+                }
+              ],
+              "nominal": [
+                {
+                  "period": 0,
+                  "expectedReturn": 0,
+                  "volatility": 0,
+                  "mean": {
+                    "cumulativeReturn": 0,
+                    "annualizedReturn": 0,
+                    "portfolioValue": 0
+                  },
+                  "percentileReturns": [
+                    {
+                      "percentile": null,
+                      "cumulativeReturn": null,
+                      "annualizedReturn": null,
+                      "portfolioValue": null
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "cashFlowProjection": {
+            "total": 107.3,
+            "dateInterval": {
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            },
+            "noIncomeSecurities": [
+              "string"
+            ],
+            "cashFlows": [
+              {
+                "date": "2024-01-14",
+                "total": 107.3,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.034969,
+                    "type": "INTEREST"
+                  }
+                ]
+              }
+            ]
+          },
+          "nav": {
+            "accountBaseMarketValue": 100000,
+            "organizationalBaseMarketValue": 0,
+            "accountBaseNotionalMarketValue": 0,
+            "organizationalBaseNotionalMarketValue": 0
+          },
+          "leverage": {
+            "loanToValue": 1.048812
+          },
+          "esg": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "coverageThreashould": 0,
+              "coverage": 0,
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          ],
+          "tax": {
+            "unrealized": {
+              "totalGain": 2000,
+              "totalLoss": -10081.03000000028,
+              "netGainLoss": -8081.03000000028,
+              "taxLiability": 300,
+              "taxGroups": [
+                {
+                  "type": "SHORT_TERN",
+                  "gain": 2000,
+                  "loss": -10081.03000000028,
+                  "net": -10081.0300000000028,
+                  "taxLiability": 300,
+                  "contributors": [
+                    {
+                      "lotId": null,
+                      "positionId": null,
+                      "contribution": null,
+                      "taxLiability": null
+                    }
+                  ]
+                }
+              ]
+            },
+            "realized": {
+              "totalGain": 2000,
+              "totalLoss": -10081.03000000028,
+              "netGainLoss": -8081.03000000028,
+              "taxLiability": 300,
+              "taxGroups": [
+                {
+                  "type": "SHORT_TERN",
+                  "gain": 2000,
+                  "loss": -10081.03000000028,
+                  "net": -10081.0300000000028,
+                  "taxLiability": 300,
+                  "contributors": [
+                    {
+                      "lotId": null,
+                      "positionId": null,
+                      "contribution": null,
+                      "taxLiability": null
+                    }
+                  ]
+                }
+              ]
+            },
+            "taxDate": "2022-05-31"
+          }
+        },
+        "benchmark": {
+          "risk": {
+            "totalRisk": 0.231656,
+            "totalStandaloneRisk": 0.231656,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "factorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "fxFactorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "totalIdioContribution": 0.108843,
+            "totalIdioStandaloneRisk": 0.108843,
+            "idioPositionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "beta": 0,
+            "correlation": 0
+          },
+          "tailRisk": {
+            "hvar": {
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            },
+            "expectedShortfall": {
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          },
+          "creditRisk": {
+            "expectedLoss": 0.000253,
+            "unexpectedLoss": 0.007035,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "expectedLossContribution": 0.000112,
+                "expectedLossContributionPercent": 0.441096,
+                "unexpectedLossContribution": 0.003104,
+                "unexpectedLossContributionPercent": 0.4411839
+              }
+            ]
+          },
+          "scenarios": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ],
+              "factroContributors": [
+                {
+                  "baockName": "Rates",
+                  "contribution": 3.708406
+                }
+              ]
+            }
+          ],
+          "breakdowns": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "sectors": [
+                {
+                  "name": "string",
+                  "displayName": "string",
+                  "contribution": 0,
+                  "positionContributors": [
+                    {
+                      "id": null,
+                      "contribution": null,
+                      "type": null
+                    }
+                  ],
+                  "children": [
+                    {}
+                  ]
+                }
+              ]
+            }
+          ],
+          "characteristics": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "total": 0
+            }
+          ],
+          "performance": {
+            "timeSeries": [
+              {
+                "periodReturn": 0,
+                "cumulativeReturn": 0,
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ],
+            "expostMetrics": {
+              "numberOfMonths": 36,
+              "metrics": [
+                {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2017-01-31",
+                  "exPostType": "TRR_ANN",
+                  "exPostPeriod": "ONE_YEAR",
+                  "displayName": "AAA",
+                  "name": "A desc for AAA",
+                  "value": 0.0003
+                }
+              ],
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            },
+            "positionPerfromanceDateRanges": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ],
+            "fee": 0,
+            "timeSeriesNet": [
+              {
+                "periodReturn": 0,
+                "cumulativeReturn": 0,
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ],
+            "expostMetricsNet": {
+              "numberOfMonths": 36,
+              "metrics": [
+                {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31",
+                  "exPostType": "TRR_ANN",
+                  "exPostPeriod": "ONE_YEAR",
+                  "displayName": "AAA",
+                  "name": "A desc for AAA",
+                  "value": 0.0003
+                }
+              ],
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            }
+          },
+          "wealthProjections": {
+            "assumptions": {
+              "inflationAssumption": 0.021,
+              "netAlpha": 0.00732,
+              "cashFlows": [
+                {
+                  "period": 3,
+                  "contribution": 10000
+                }
+              ],
+              "yearsInProjection": 15
+            },
+            "projection": {
+              "initialValue": 0,
+              "real": [
+                {
+                  "period": 0,
+                  "expectedReturn": 0,
+                  "volatility": 0,
+                  "mean": [
+                    {
+                      "cumulativeReturn": 0,
+                      "annualizedReturn": 0,
+                      "protfolioValue": 0
+                    }
+                  ],
+                  "percentileReturns": [
+                    {
+                      "percentile": null,
+                      "cumulativeReturn": null,
+                      "annualizedReturn": null,
+                      "portfolioValue": null
+                    }
+                  ]
+                }
+              ],
+              "nominal": [
+                {
+                  "period": 0,
+                  "expectedReturn": 0,
+                  "volatility": 0,
+                  "mean": {
+                    "cumulativeReturn": 0,
+                    "annualizedReturn": 0,
+                    "portfolioValue": 0
+                  },
+                  "percentileReturns": [
+                    {
+                      "percentile": null,
+                      "cumulativeReturn": null,
+                      "annualizedReturn": null,
+                      "portfolioValue": null
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "cashFlowProjection": {
+            "total": 107.3,
+            "dateInterval": {
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            },
+            "noIncomeSecurities": [
+              "string"
+            ],
+            "cashFlows": [
+              {
+                "date": "2024-01-14",
+                "total": 107.3,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.034969,
+                    "type": "INTEREST"
+                  }
+                ]
+              }
+            ]
+          },
+          "nav": {
+            "accountBaseMarketValue": 100000,
+            "organizationalBaseMarketValue": 0,
+            "accountBaseNotionalMarketValue": 0,
+            "organizationalBaseNotionalMarketValue": 0
+          },
+          "leverage": {
+            "loanToValue": 1.048812
+          },
+          "esg": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "coverageThreashould": 0,
+              "coverage": 0,
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          ],
+          "tax": {
+            "unrealized": {
+              "totalGain": 2000,
+              "totalLoss": -10081.03000000028,
+              "netGainLoss": -8081.03000000028,
+              "taxLiability": 300,
+              "taxGroups": [
+                {
+                  "type": "SHORT_TERN",
+                  "gain": 2000,
+                  "loss": -10081.03000000028,
+                  "net": -10081.0300000000028,
+                  "taxLiability": 300,
+                  "contributors": [
+                    {
+                      "lotId": null,
+                      "positionId": null,
+                      "contribution": null,
+                      "taxLiability": null
+                    }
+                  ]
+                }
+              ]
+            },
+            "realized": {
+              "totalGain": 2000,
+              "totalLoss": -10081.03000000028,
+              "netGainLoss": -8081.03000000028,
+              "taxLiability": 300,
+              "taxGroups": [
+                {
+                  "type": "SHORT_TERN",
+                  "gain": 2000,
+                  "loss": -10081.03000000028,
+                  "net": -10081.0300000000028,
+                  "taxLiability": 300,
+                  "contributors": [
+                    {
+                      "lotId": null,
+                      "positionId": null,
+                      "contribution": null,
+                      "taxLiability": null
+                    }
+                  ]
+                }
+              ]
+            },
+            "taxDate": "2022-05-31"
+          }
+        },
+        "sleeves": [
+          {
+            "name": "string",
+            "risk": {
+              "totalRisk": 0.231656,
+              "totalStandaloneRisk": 0.231656,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "standalone": 0.024969,
+                  "diversification": 0.024969,
+                  "securityStandalone": 0.024969,
+                  "securityCorrelation": 0.024969
+                }
+              ],
+              "factorContributors": [
+                {
+                  "blockName": "rates",
+                  "contribution": 3.708406,
+                  "positionContributors": [
+                    {
+                      "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+                  ],
+                  "exposure": 2.478438,
+                  "standalone": 0.013102
+                }
+              ],
+              "fxFactorContributors": [
+                {
+                  "blockName": "rates",
+                  "contribution": 3.708406,
+                  "positionContributors": [
+                    {
+                      "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+                  ],
+                  "exposure": 2.478438,
+                  "standalone": 0.013102
+                }
+              ],
+              "totalIdioContribution": 0.108843,
+              "totalIdioStandaloneRisk": 0.108843,
+              "idioPositionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "contribution": 0.024969,
+                  "standalone": 0.024969,
+                  "diversification": 0.024969,
+                  "securityStandalone": 0.024969,
+                  "securityCorrelation": 0.024969
+                }
+              ],
+              "beta": 0,
+              "correlation": 0
+            },
+            "tailRisk": {
+              "hvar": {
+                "total": 0,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "type": "INTEREST"
+                  }
+                ]
+              },
+              "expectedShortfall": {
+                "total": 0,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "type": "INTEREST"
+                  }
+                ]
+              }
+            },
+            "creditRisk": {
+              "expectedLoss": 0.000253,
+              "unexpectedLoss": 0.007035,
+              "positionContributors": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "expectedLossContribution": 0.000112,
+                  "expectedLossContributionPercent": 0.441096,
+                  "unexpectedLossContribution": 0.003104,
+                  "unexpectedLossContributionPercent": 0.4411839
+                }
+              ]
+            },
+            "scenarios": [
+              {
+                "name": "string",
+                "displayName": "string",
+                "total": 0,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "type": "INTEREST"
+                  }
+                ],
+                "factroContributors": [
+                  {
+                    "baockName": "Rates",
+                    "contribution": 3.708406
+                  }
+                ]
+              }
+            ],
+            "breakdowns": [
+              {
+                "name": "string",
+                "displayName": "string",
+                "sectors": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "contribution": 0,
+                    "positionContributors": [
+                      {
+                        "id": null,
+                        "contribution": null,
+                        "type": null
+                      }
+                    ],
+                    "children": [
+                      {}
+                    ]
+                  }
+                ]
+              }
+            ],
+            "characteristics": [
+              {
+                "name": "string",
+                "displayName": "string",
+                "total": 0
+              }
+            ],
+            "performance": {
+              "timeSeries": [
+                {
+                  "periodReturn": 0,
+                  "cumulativeReturn": 0,
+                  "dateInterval": {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  }
+                }
+              ],
+              "expostMetrics": {
+                "numberOfMonths": 36,
+                "metrics": [
+                  {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2017-01-31",
+                    "exPostType": "TRR_ANN",
+                    "exPostPeriod": "ONE_YEAR",
+                    "displayName": "AAA",
+                    "name": "A desc for AAA",
+                    "value": 0.0003
+                  }
+                ],
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31"
+              },
+              "positionPerfromanceDateRanges": [
+                {
+                  "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                  "dateInterval": {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  }
+                }
+              ],
+              "fee": 0,
+              "timeSeriesNet": [
+                {
+                  "periodReturn": 0,
+                  "cumulativeReturn": 0,
+                  "dateInterval": {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  }
+                }
+              ],
+              "expostMetricsNet": {
+                "numberOfMonths": 36,
+                "metrics": [
+                  {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31",
+                    "exPostType": "TRR_ANN",
+                    "exPostPeriod": "ONE_YEAR",
+                    "displayName": "AAA",
+                    "name": "A desc for AAA",
+                    "value": 0.0003
+                  }
+                ],
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31"
+              }
+            },
+            "wealthProjections": {
+              "assumptions": {
+                "inflationAssumption": 0.021,
+                "netAlpha": 0.00732,
+                "cashFlows": [
+                  {
+                    "period": 3,
+                    "contribution": 10000
+                  }
+                ],
+                "yearsInProjection": 15
+              },
+              "projection": {
+                "initialValue": 0,
+                "real": [
+                  {
+                    "period": 0,
+                    "expectedReturn": 0,
+                    "volatility": 0,
+                    "mean": [
+                      {
+                        "cumulativeReturn": 0,
+                        "annualizedReturn": 0,
+                        "protfolioValue": 0
+                      }
+                    ],
+                    "percentileReturns": [
+                      {
+                        "percentile": null,
+                        "cumulativeReturn": null,
+                        "annualizedReturn": null,
+                        "portfolioValue": null
+                      }
+                    ]
+                  }
+                ],
+                "nominal": [
+                  {
+                    "period": 0,
+                    "expectedReturn": 0,
+                    "volatility": 0,
+                    "mean": {
+                      "cumulativeReturn": 0,
+                      "annualizedReturn": 0,
+                      "portfolioValue": 0
+                    },
+                    "percentileReturns": [
+                      {
+                        "percentile": null,
+                        "cumulativeReturn": null,
+                        "annualizedReturn": null,
+                        "portfolioValue": null
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "cashFlowProjection": {
+              "total": 107.3,
+              "dateInterval": {
+                "startDate": "2017-01-01",
+                "stopDate": "2019-12-31"
+              },
+              "noIncomeSecurities": [
+                "string"
+              ],
+              "cashFlows": [
+                {
+                  "date": "2024-01-14",
+                  "total": 107.3,
+                  "positionContributors": [
+                    {
+                      "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                      "contribution": 0.034969,
+                      "type": "INTEREST"
+                    }
+                  ]
+                }
+              ]
+            },
+            "nav": {
+              "accountBaseMarketValue": 100000,
+              "organizationalBaseMarketValue": 0,
+              "accountBaseNotionalMarketValue": 0,
+              "organizationalBaseNotionalMarketValue": 0
+            },
+            "leverage": {
+              "loanToValue": 1.048812
+            },
+            "tax": {
+              "unrealized": {
+                "totalGain": 2000,
+                "totalLoss": -10081.03000000028,
+                "netGainLoss": -8081.03000000028,
+                "taxLiability": 300,
+                "taxGroups": [
+                  {
+                    "type": "SHORT_TERN",
+                    "gain": 2000,
+                    "loss": -10081.03000000028,
+                    "net": -10081.0300000000028,
+                    "taxLiability": 300,
+                    "contributors": [
+                      {
+                        "lotId": null,
+                        "positionId": null,
+                        "contribution": null,
+                        "taxLiability": null
+                      }
+                    ]
+                  }
+                ]
+              },
+              "realized": {
+                "totalGain": 2000,
+                "totalLoss": -10081.03000000028,
+                "netGainLoss": -8081.03000000028,
+                "taxLiability": 300,
+                "taxGroups": [
+                  {
+                    "type": "SHORT_TERN",
+                    "gain": 2000,
+                    "loss": -10081.03000000028,
+                    "net": -10081.0300000000028,
+                    "taxLiability": 300,
+                    "contributors": [
+                      {
+                        "lotId": null,
+                        "positionId": null,
+                        "contribution": null,
+                        "taxLiability": null
+                      }
+                    ]
+                  }
+                ]
+              },
+              "taxDate": "2022-05-31"
+            }
+          }
+        ],
+        "active": {
+          "risk": {
+            "totalRisk": 0.231656,
+            "totalStandaloneRisk": 0.231656,
+            "positionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "factorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "fxFactorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "totalIdioContribution": 0.108843,
+            "totalIdioStandaloneRisk": 0.108843,
+            "idioPositionContributors": [
+              {
+                "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "beta": 0,
+            "correlation": 0
+          }
+        }
+      }
+    ],
+    "esg": [
+      {
+        "name": "string",
+        "displayName": "string",
+        "coverageThreashould": 0,
+        "coverage": 0,
+        "total": 0,
+        "positionContributors": [
+          {
+            "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+            "contribution": 0.024969,
+            "type": "INTEREST"
+          }
+        ]
+      }
+    ],
+    "tax": {
+      "unrealized": {
+        "totalGain": 2000,
+        "totalLoss": -10081.03000000028,
+        "netGainLoss": -8081.03000000028,
+        "taxLiability": 300,
+        "taxGroups": [
+          {
+            "type": "SHORT_TERN",
+            "gain": 2000,
+            "loss": -10081.03000000028,
+            "net": -10081.0300000000028,
+            "taxLiability": 300,
+            "contributors": [
+              {
+                "lotId": null,
+                "positionId": null,
+                "contribution": null,
+                "taxLiability": null
+              }
+            ]
+          }
+        ]
+      },
+      "realized": {
+        "totalGain": 2000,
+        "totalLoss": -10081.03000000028,
+        "netGainLoss": -8081.03000000028,
+        "taxLiability": 300,
+        "taxGroups": [
+          {
+            "type": "SHORT_TERN",
+            "gain": 2000,
+            "loss": -10081.03000000028,
+            "net": -10081.0300000000028,
+            "taxLiability": 300,
+            "contributors": [
+              {
+                "lotId": null,
+                "positionId": null,
+                "contribution": null,
+                "taxLiability": null
+              }
+            ]
+          }
+        ]
+      },
+      "taxDate": "2022-05-31"
+    }
+  },
+  "active": {
+    "risk": {
+      "totalRisk": 0.231656,
+      "totalStandaloneRisk": 0.231656,
+      "positionContributors": [
+        {
+          "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+          "contribution": 0.024969,
+          "standalone": 0.024969,
+          "diversification": 0.024969,
+          "securityStandalone": 0.024969,
+          "securityCorrelation": 0.024969
+        }
+      ],
+      "factorContributors": [
+        {
+          "blockName": "rates",
+          "contribution": 3.708406,
+          "positionContributors": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "contribution": 0.024969,
+              "standalone": 0.024969,
+              "diversification": 0.024969,
+              "securityStandalone": 0.024969,
+              "securityCorrelation": 0.024969
+            }
+          ],
+          "exposure": 2.478438,
+          "standalone": 0.013102
+        }
+      ],
+      "fxFactorContributors": [
+        {
+          "blockName": "rates",
+          "contribution": 3.708406,
+          "positionContributors": [
+            {
+              "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+              "contribution": 0.024969,
+              "standalone": 0.024969,
+              "diversification": 0.024969,
+              "securityStandalone": 0.024969,
+              "securityCorrelation": 0.024969
+            }
+          ],
+          "exposure": 2.478438,
+          "standalone": 0.013102
+        }
+      ],
+      "totalIdioContribution": 0.108843,
+      "totalIdioStandaloneRisk": 0.108843,
+      "idioPositionContributors": [
+        {
+          "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+          "contribution": 0.024969,
+          "standalone": 0.024969,
+          "diversification": 0.024969,
+          "securityStandalone": 0.024969,
+          "securityCorrelation": 0.024969
+        }
+      ],
+      "beta": 0,
+      "correlation": 0
+    }
+  },
+  "ruleEvaluations": [
+    {
+      "passed": true,
+      "ruleName": "string",
+      "shortName": "string",
+      "comment": "string",
+      "metadata": {
+        "risk": 7.92141584584509555665,
+        "riskProfile": "Aggressive"
+      },
+      "failureContributors": [
+        {
+          "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+          "group": "",
+          "amount": 0
+        }
+      ],
+      "evalValue": 0,
+      "evalThresholdLow": 0,
+      "evalThresholdHigh": 0,
+      "evaluationError": {},
+      "source": "string"
+    }
+  ],
+  "scores": [
+    {
+      "scoreNames": "hrealthScore",
+      "compositeScore": "43.0",
+      "maxScore": "100.0",
+      "contributors": [
+        {
+          "ruleName": "PROFOLIO_RISK",
+          "contribution": 20,
+          "maxContribution": 20
+        }
+      ]
+
+    }
+  ],
+  "custom": {
+    "analytics": [
+      {
+        "name": "",
+        "displayName": "",
+        "evalValue": 0,
+        "positionContributors": [
+          {
+            "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+            "contribution": 0.024969,
+            "type": "INTEREST"
+          }
+        ],
+        "metadata": {
+          "RISK_PROFILE": "Aggressive"
+        }
+      }
+    ],
+    "analyticsSleeves": [
+      {
+        "sleeveTag": "CONTRACT_ID",
+        "sleeveValue": "C123",
+        "name": "customYield",
+        "displayName": "Risk Tatio",
+        "evalValue": 4.1,
+        "positionContributors": [
+          {
+            "id": "6742ab51-f0d2-49cc-9569-070a622c30ac",
+            "contribution": 0.024969,
+            "type": "INTEREST"
+
+          }
+        ],
+        "metadata": {
+          "RISK_PROFILE": "Aggressive"
+        }
+      }
+    ]
+  }
+}

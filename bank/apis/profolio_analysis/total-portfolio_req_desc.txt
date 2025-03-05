@@ -1,0 +1,255 @@
+
+
+QUERY PARAMETER
+
+analytics:  Array of strings[required]
+
+Items Enum: "RISK","POSITION_RISK_CONTRIB","FACTOR_RISK_CONTRIB"
+            "FACTOR_RISK_POSITION_CONTRIB", "IDIO_POSITION_CONTRIB","TALL_RISK"
+            "LEVERAGE","SCENARIOS","BREAKDOWNS","CHARACTERISTICS","ESG"
+            "SIMULATED_PERFORMANCE", "WEALTH_PROJECTIONS","NAV","RULES","SCORES"
+            "CUSTOM_ANALYTICS","CREDIT_RISK","LIQUIDITY","TAX"
+            "CASH_FLOW_PROJECTION","ALL"
+            Requested analytics
+
+date: string <date>
+            Analysis date in ISO 8601 date format i.e. yyyy-MM-dd. Not required; defaults to most
+            recent security/risk date available in Aladdin.
+
+=====================================================================================================================================================================
+
+HEADER PARAMETER
+
+VND.com.blackrock.Request-ID:  string <uuid>  [required]
+
+             Unique identifier assigned by client program to a request , to aid support and debugging. Aladdin will echo it
+             back in responses.UUID(4) recommended.
+
+VND.com.backrock.Origin-Timestamp: string <imf-fixdate>
+
+            Timestamp assigned at the origin of this request, in "HTTP-date" format as
+            defined by RFC 7231 (IMF-fixdate format/UTC)
+
+
+
+
+=====================================================================================================================================================================
+REQUEST BODY SCHEMA: application/json
+
+Portfolio to submit for analysis
+
+
+portfolio : object (InputPortfolio) [required]
+
+
+
+benchmark: object (BenchmarkPortfolio)
+
+            Represetation for a portfolio's benchmark. Contains properties that describe
+            the benchmark such as base currency. metadata and the components that
+            make up the benchmark, such as securities or indices.
+
+
+sleeveTags: Array of strings
+
+            List of unique dynamic sleeve tags contained within InputPortfolio
+
+
+
+
+customAnalyticTags: Array of strings
+
+            List of custom analytics to execute and return for the given portfolio. The list
+            of possible analytics should be discussed with your BRS relationship team. If
+            none is provided , all customAnalytics Tags in the configuration will be run and returned.
+
+
+
+
+wealthProjectionUserInputs: object (WealthProjectionAssumptions)
+
+            Wealth projection inputs to allow user to override default inflation, alpha,
+            years in projection and cash flow values.
+
+
+
+
+
+simulatedPerformanceUserInputs: object (SimulatedPerformanceUserInput)
+
+            Optional additional simulated performance inputs to allow user to override
+            net management fee and max number of months to calculate simulated performance.
+
+
+
+
+id:  <string> unique alpha-numberic position identifier
+
+identifiers: <object> Map of security identifiers
+
+cusip: <string> Asset CUSIP identifier
+sedol: <string> Asset SEDOL identifier
+isin:  <String> Asset ISIN identifier
+clientId : <string> Client's unique inernal asset identifier
+morningstarSecId : <string> (morningstarSecId)  Asset Morningstart security identifier
+wkn : <string> (wkn) Asset WKN identifier
+valoren : <string> (valoren) Asset Valoren identifier
+
+proxyIdentifiers: <object> Map of proxy security identifiers
+
+marketValue: number <double>
+            Market vlue of the position in portfolio base currency expressed in monetary units. Sum
+            of Market Values across all positions should equal portfolioi's NAV. Specify either Market
+            Values or Weithts for all positions. If both are provided,
+            Maket Values will be used.
+
+notionalMarketValue: number<double>
+            Notional Market Value of the position in portfolio base currency expressed in
+            monetary units. Notional Market Value does not equal Market Value for
+            notional securities such as FX Forwards, Futures, Interest Rate Swaps, etc.
+            Notional Market Value is only required if the portfolio holds notional securities.
+            If Notinal Market Value is provided, Market Value must also be provided. If
+            Notional Market Values and Notional Weights are both provided, Notional
+            Market Values will be used.
+
+
+quantity : number <double>
+            The amount owned in "tradable" units. For example number of stocks for
+            equities, face value for bonds , etc. This is required for positions of account
+            portfolio. This is ignored for model and benchmark portfolio positions.
+
+weight:     number <double>
+            Weight of the position (position Market Value divided by portfolio NAV)
+            expressed as a decimal value. The sum of Weights across all positions must
+            be 1. Specify either Market Values or Weights for all positions . If both are
+            Provided, Market Values will be used.
+
+
+notianlWeight : number <double>
+            Notianl Weight of the position (position Notional Market Value divided by)
+            portfolio NAV) expressed as a decimal value. Notianl Weight does not equal
+            Weight for notional securities such as FX Forwards, Interest Rate Swaps,etc.
+            Notional Weight is only required if the portfolio holds notional
+            securities and may not sum to 1 across all positions. If Notional Weight is
+            provided, Weight must also be provided. If Notional Market Values and
+            Notional Weights are both provided, Notional Market Values will be used.
+
+
+posInfo     : object
+
+            Position-related metadata attributes. Work with your Aladdin Wealth
+            Relationship Manager to define the values used here as they may be specific
+            to your use-case. E.g. restrited.
+
+
+
+
+
+openLots:  Array of objects(OpenLot)
+            List of open position lots of this portfolio
+
+
+Array[
+id: string [required]
+    An arbitrary alpha-numeric position lot identifier
+
+positionId : string[required]
+    The corresponding string identifier for this position.
+
+purchaseDate : string [date]
+    The date this lot was purchased in ISO 8061 format (YYYY-MM-DD)
+
+quantiry : number <double> [required]
+    The number of shares purchased.
+
+costBasis : number <double>[required]
+    The purchase price of the whole lot.
+
+lotInfo : object
+    Dynamic field for client-provided string position metadata.
+
+]
+
+
+
+
+closedLots: Array of objects (ClosedLot)
+            List of closed position lots for this portfolio
+
+
+Array[
+identifiers: object(SecurityIdentifiers)[required]
+             Map of security identifiers
+             <
+             cusip: string
+                    Asset CUIP identifier
+             sedol: string
+                    Asset SEDOL identifier
+             isin: string
+                    Asset ISIN identifier
+             ric : string
+                    Asset RIC identifier
+             clientId: string
+                    An Aladdin client's unique internal asset identifier
+             aladdinId : string
+                    An Aladdin identifier intended for internal BlackRock use only
+             morningstarSecId : string
+                    Asset Morningstar security identifier
+             wkn: string
+                    Asset WKN identifier
+             valoren: string
+                    Asset Valoren identifier
+             >
+
+proxyIdentifiers: object (SecurityIdentifiers)
+             Map of security identifiers
+             <
+             cusip: string
+                    Asset CUIP identifier
+             sedol: string
+                    Asset SEDOL identifier
+             isin: string
+                    Asset ISIN identifier
+             ric : string
+                    Asset RIC identifier
+             clientId: string
+                    An Aladdin client's unique internal asset identifier
+             aladdinId : string
+                    An Aladdin identifier intended for internal BlackRock use only
+             morningstarSecId : string
+                    Asset Morningstar security identifier
+             wkn: string
+                    Asset WKN identifier
+             valoren: string
+                    Asset Valoren identifier
+             >
+
+purchaseDate : string<date>[required]
+            The date this lot was purchased in ISO 8061 fromat (YYYY-MM-DD)
+
+closedDate : string <date>
+            The date this lot was sold in ISO 8061 format(YYYY-MM-DD)
+
+realizedGainOrLoss: number<double>[required]
+            Realized gain or loss associated with this lot
+
+lotInfo : object
+            Dynamic field for client-provided string position metadata.
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
