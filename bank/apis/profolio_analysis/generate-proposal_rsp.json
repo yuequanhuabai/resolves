@@ -1,3 +1,4111 @@
 {
+"proxiedPositions": ["bf90c797-edef-4509-8c13-c1aee6d6dc11"],
+  "proposal": {
+    "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+    "name": "My proposal",
+    "original": {
+      "id": "HH-1",
+      "name": "My Proposal",
+      "asOf": "2024-06-27T05:39:00Z",
+      "creationTimestamp": "2024-06-27T05:39:00Z",
+      "lastUpdatedTimestamp": "2024-06-27T05:39:00Z",
+      "tag": "HOUSEHOLD_ID",
+      "currency": "USD",
+      "benchmark": {
+        "id": "BENCH-1",
+        "currency": "USD",
+        "components": [
+          {
+            "id": "SP-500",
+            "identifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "NVDA.OQ",
+              "clientId": "XXXX"
+            },
+            "proxyIdentifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "NVDA.OQ",
+              "clientId": "XXXX"
+            },
+            "weight": 1,
+            "posInfo": {}
+          }
+        ],
+        "metadata": {}
+      },
+      "benchmarkRef": {
+        "id": "BENCH-1",
+        "tag": "benchmark"
+      },
+      "metadata": {},
+      "supplement": {
+        "sleeveInfo": [
+          {
+            "tag": "SMA_ID",
+            "value": "BLK123",
+            "benchmark": {
+              "id": "BENCH-1",
+              "currency": "USD",
+              "components": [
+                {
+                  "id": "SP-500",
+                  "identifiers": {
+                    "cusip": "67066G104",
+                    "sedol": "2379504",
+                    "isin": "US67066G1040",
+                    "ric": "NVDA.OQ",
+                    "clientId": "XXX"
+                  },
+                  "proxyIdentifiers": {
+                    "cusip": "67066G104",
+                    "sedol": "2379504",
+                    "isin": "US67066G1040",
+                    "ric": "NVDA.OQ",
+                    "clientId": "XXXX"
+                  },
+                  "weight": 1,
+                  "posInfo": {}
+                }
+              ],
+              "metadata": {}
+            },
+            "benchmarkRef": {
+              "id": "BENCH-1",
+              "tag": "benchmark"
+            },
+            "metadata": {},
+            "fees": [
+              {
+                "category": "Client",
+                "subcategory": "Dues",
+                "startYear": 0,
+                "endYear": 15,
+                "minimumPositionMarketValue": 100,
+                "maximumPositionMarketValue": 200,
+                "amount": 4.5,
+                "paymentMethod": "P",
+                "percentMethod": "P",
+                "eventType": "E"
+              }
+            ]
+          }
+        ]
+      },
+      "protfolios": {
+        "id": "ACCT-1",
+        "name": "My Proposql",
+        "asOf": "2024-06-27T05:39:00Z",
+        "currency": "USD",
+        "position": [
+          {
+            "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+            "identifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "NVDA.OQ",
+              "clientId": "XXXX"
+            },
+            "proxyIdentifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "NVDS.OQ",
+              "clientId": "XXXX"
+            },
+            "quantity": 250,
+            "marketValue": 22728.09,
+            "notionalMaketValue": 29768.27,
+            "posInfo": {}
+          }
+        ],
+        "openLots": [
+          {
+            "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+            "positionId": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+            "purchaseDate": "2020-03-22",
+            "quantity": 250,
+            "costBasis": 20000,
+            "lotInfo": {}
+          }
+        ],
+        "closedLots": [
+          {
+            "id": "AC2E21||2024-05-06||916",
+            "identifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "NVDA.OQ",
+              "clientId": "XXXX"
+            },
+            "proxyIdentifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "VNDA.OQ",
+              "clientId": "XXXX"
+            },
+            "purchaseDate": "2020-03-22",
+            "closedDate": "2020-03-22",
+            "realizedGainOrLoss": 3417.22,
+            "lotInfo": {}
+          }
+        ],
+        "benchmark": {
+          "id": "BENCH-1",
+          "currency": "USD",
+          "components": [
+            {
+              "id": "SP-500",
+              "identifiers": {
+                "cusip": "67066G104",
+                "sedol": "2379504",
+                "isin": "US67066G1040",
+                "ric": "NVDA.OQ",
+                "clientId": "XXXX"
+              },
+              "proxyIdentifiers": {
+                "cusip": "67066G104",
+                "sedol": "2379504",
+                "isin": "US67066G1040",
+                "ric": "VNDA.OQ",
+                "clientId": "XXXX"
+              },
+              "weight": 1,
+              "posInfo": {}
+            }
+          ],
+          "metadata": {}
+        },
+        "benchmarkRef": {
+          "id": "BENCH-1",
+          "tag": "benchmark"
+        },
+        "metadata": {},
+        "supplement": {
+          "sleeveInfo": [
+            {
+              "tag": "SMA_ID",
+              "value": "BLK123",
+              "benchmark": {
+                "id": "BENCH-1",
+                "currency": "USD",
+                "components": [
+                  {
+                    "id": "SP-500",
+                    "identifiers": {
+                      "cusip": "67066G104",
+                      "sedol": "2379504",
+                      "isin": "US67066G1040",
+                      "ric": "NVDA.OQ",
+                      "clientId": "XXX"
+                    },
+                    "proxyIdentifiers": {
+                      "cusip": "67066G104",
+                      "sedol": "2379504",
+                      "isin": "US67066G1040",
+                      "ric": "NVDA.OQ",
+                      "clientId": "XXXX"
+                    },
+                    "weight": 1,
+                    "posInfo": {}
+                  }
+                ],
+                "metadata": {}
+              },
+              "benchmarkRef": {
+                "id": "BENCH-1",
+                "tag": "benchmark"
+              },
+              "metadata": {},
+              "fees": [
+                {
+                  "category": "Client",
+                  "subcategory": "Dues",
+                  "startYear": 0,
+                  "endYear": 15,
+                  "minimumPositionMarketValue": 100,
+                  "maximumPositionMarketValue": 200,
+                  "amount": 4.5,
+                  "paymentMethod": "P",
+                  "percentMethod": "P",
+                  "eventType": "E"
+                }
+              ]
+            }
+          ]
+        },
+        "origin": "SYSTEM"
+      },
+      "childAggregates": [],
+      "origin": "SYSTEM"
+    },
+    "proposed": {
+      "id": "HH-1",
+      "name": "My proposal",
+      "asOf": "2024-06-27T05:39:00Z",
+      "creationTimestamp": "2024-06-27T05:39:00Z",
+      "lastUpdateTimestamp": "2024-06-27T05:39:00Z",
+      "tag": "HOUSEHOLD_ID",
+      "currency": "USD",
+      "benchmark": {
+        "id": "BENCH-1",
+        "currency": "USD",
+        "components": [
+          {
+            "id": "SP-500",
+            "identifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "NVDA.OQ",
+              "clientId": "XXXX"
+            },
+            "proxyIdentifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "VNDA.OQ",
+              "clientId": "XXXX"
+            },
+            "weight": 1,
+            "posInfo": {}
+          }
+        ],
+        "metadata": {}
+      },
+      "benchmarkRef": {
+        "id": "BENCH-1",
+        "tag": "benchmark"
+      },
+      "metadata": {},
+      "supplement": {
+        "sleeveInfo": [
+          {
+            "tag": "SMA_ID",
+            "value": "BLK123",
+            "benchmark": {
+              "id": "BENCH-1",
+              "currency": "USD",
+              "components": [
+                {
+                  "id": "SP-500",
+                  "identifiers": {
+                    "cusip": "67066G104",
+                    "sedol": "2379504",
+                    "isin": "US67066G1040",
+                    "ric": "NVDA.OQ",
+                    "clientId": "XXX"
+                  },
+                  "proxyIdentifiers": {
+                    "cusip": "67066G104",
+                    "sedol": "2379504",
+                    "isin": "US67066G1040",
+                    "ric": "NVDA.OQ",
+                    "clientId": "XXXX"
+                  },
+                  "weight": 1,
+                  "posInfo": {}
+                }
+              ],
+              "metadata": {}
+            },
+            "benchmarkRef": {
+              "id": "BENCH-1",
+              "tag": "benchmark"
+            },
+            "metadata": {},
+            "fees": [
+              {
+                "category": "Client",
+                "subcategory": "Dues",
+                "startYear": 0,
+                "endYear": 15,
+                "minimumPositionMarketValue": 100,
+                "maximumPositionMarketValue": 200,
+                "amount": 4.5,
+                "paymentMethod": "P",
+                "percentMethod": "P",
+                "eventType": "E"
+              }
+            ]
+          }
+        ]
+      },
+      "protfolios": {
+        "id": "ACCT-1",
+        "name": "My Proposql",
+        "asOf": "2024-06-27T05:39:00Z",
+        "currency": "USD",
+        "position": [
+          {
+            "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+            "identifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "NVDA.OQ",
+              "clientId": "XXXX"
+            },
+            "proxyIdentifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "NVDS.OQ",
+              "clientId": "XXXX"
+            },
+            "quantity": 250,
+            "marketValue": 22728.09,
+            "notionalMaketValue": 29768.27,
+            "posInfo": {}
+          }
+        ],
+        "openLots": [
+          {
+            "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+            "positionId": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+            "purchaseDate": "2020-03-22",
+            "quantity": 250,
+            "costBasis": 20000,
+            "lotInfo": {}
+          }
+        ],
+        "closedLots": [
+          {
+            "id": "AC2E21||2024-05-06||916",
+            "identifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "NVDA.OQ",
+              "clientId": "XXXX"
+            },
+            "proxyIdentifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "VNDA.OQ",
+              "clientId": "XXXX"
+            },
+            "purchaseDate": "2020-03-22",
+            "closedDate": "2020-03-22",
+            "realizedGainOrLoss": 3417.22,
+            "lotInfo": {}
+          }
+        ],
+        "benchmark": {
+          "id": "BENCH-1",
+          "currency": "USD",
+          "components": [
+            {
+              "id": "SP-500",
+              "identifiers": {
+                "cusip": "67066G104",
+                "sedol": "2379504",
+                "isin": "US67066G1040",
+                "ric": "NVDA.OQ",
+                "clientId": "XXXX"
+              },
+              "proxyIdentifiers": {
+                "cusip": "67066G104",
+                "sedol": "2379504",
+                "isin": "US67066G1040",
+                "ric": "VNDA.OQ",
+                "clientId": "XXXX"
+              },
+              "weight": 1,
+              "posInfo": {}
+            }
+          ],
+          "metadata": {}
+        },
+        "benchmarkRef": {
+          "id": "BENCH-1",
+          "tag": "benchmark"
+        },
+        "metadata": {},
+        "supplement": {
+          "sleeveInfo": [
+            {
+              "tag": "SMA_ID",
+              "value": "BLK123",
+              "benchmark": {
+                "id": "BENCH-1",
+                "currency": "USD",
+                "components": [
+                  {
+                    "id": "SP-500",
+                    "identifiers": {
+                      "cusip": "67066G104",
+                      "sedol": "2379504",
+                      "isin": "US67066G1040",
+                      "ric": "NVDA.OQ",
+                      "clientId": "XXX"
+                    },
+                    "proxyIdentifiers": {
+                      "cusip": "67066G104",
+                      "sedol": "2379504",
+                      "isin": "US67066G1040",
+                      "ric": "NVDA.OQ",
+                      "clientId": "XXXX"
+                    },
+                    "weight": 1,
+                    "posInfo": {}
+                  }
+                ],
+                "metadata": {}
+              },
+              "benchmarkRef": {
+                "id": "BENCH-1",
+                "tag": "benchmark"
+              },
+              "metadata": {},
+              "fees": [
+                {
+                  "category": "Client",
+                  "subcategory": "Dues",
+                  "startYear": 0,
+                  "endYear": 15,
+                  "minimumPositionMarketValue": 100,
+                  "maximumPositionMarketValue": 200,
+                  "amount": 4.5,
+                  "paymentMethod": "P",
+                  "percentMethod": "P",
+                  "eventType": "E"
+                }
+              ]
+            }
+          ]
+        },
+        "origin": "SYSTEM"
+      },
+      "childAggregates": [],
+      "origin": "SYSTEM"
+    },
+    "changes": [],
+    "metadata": {},
+    "sleeveTags": [
+      "SMA_ID","CONTRACT_ID"
+    ],
+    "linkedEntitySelections": [
+      {
+        "id": "XA-2387-42",
+        "tag": "client",
+        "selectionType": "primary",
+        "metadata": {}
+      }
+    ],
+    "simulatedPerformanceUserInputs": {
+      "feeOverride": 0.01
+    },
+    "lastUpdatedBy": "apiuser",
+    "lastUpdatedTimestamp": "2019-08-24T14:15:22Z",
+    "createdBy": "apiuser",
+    "creationTimestamp": "2019-08-24T14:15:22Z"
+  },
+  "analysis": {
+    "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+    "date": "2020-02-02",
+    "original": {
+      "aggregate": {
+        "portfolio": {
+          "id": "PORTFOLIO-1",
+          "date": "2018-03-31",
+          "proxiedPositions": [
+            "bf90c797-edef-4509-8c13-c1aee6d6dc11"
+          ],
+          "risk": {
+            "totalRisk": 0.231656,
+            "totalIdioContribution": 0.108843,
+            "totalStandaloneRisk": 0.231656,
+            "totalIdioStandloneRisk": 0.108843,
+            "positionContributors": [
+              {
+                "id":"bf90c797-edef-4509-8c13-c1aee6d6dc11",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "factorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": null,
+                    "contribution": null,
+                    "standalone": null,
+                    "diversification": null,
+                    "securityStandalone": null,
+                    "securityCorrelation": null
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "fxFactorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": null,
+                    "contribution": null,
+                    "standalone": null,
+                    "diversification": null,
+                    "securityStandalone": null,
+                    "securityCorrelation": null
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "idioPositionContributors": [
+              {
+                "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandlone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "beta": 0,
+            "correlation": 0
+          },
+          "tailRisk": {
+            "hvar": {
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id":"asdfsd-1234-asdfk-1234klsdf",
+                  "contributon": "0.024969",
+                  "type": "INTEREST"
+                }
+              ]
+            },
+            "expectedShortfall": {
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id":"asdfsd-1234-asdfk-1234klsdf",
+                  "contributon": "0.024969",
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          },
+          "creditRisk": {
+            "expectedLoss": 0.000253,
+            "unexpectedLoss": 0.007035,
+            "positionContributors": [
+              {
+                "id": "asdfsd-asdfsadfq2-asdflds-q3rlsadf",
+                "expectLossContribution": 0.000112,
+                "expectLossContributionPercent": 0.441097,
+                "unexpectedLossContribution": 0.003104,
+                "unexpectedLossContributionPercent": 0.4411839
+              }
+            ]
+          },
+          "scenarios": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id":"asdfsd-1234-asdfk-1234klsdf",
+                  "contributon": "0.024969"
+                }
+              ],
+              "factorContributors": [
+                {
+                  "blockName": "Rates",
+                  "contribution": 3.708406
+                }
+              ]
+            }
+          ],
+          "breakdowns": [
+            {
+              "id": "string",
+              "name": "assetClass",
+              "displayName": "Asset Class",
+              "sectors": [
+                {
+                  "name": "Equity",
+                  "displayName": "Equity",
+                  "contribution": 0.55,
+                  "positionContributors": [
+                    {
+                      "id":"asdfsd-1234-asdfk-1234klsdf",
+                      "contributon": "0.024969",
+                      "type": "INTEREST"
+                    }
+                  ],
+                  "children": [
+                    {}
+                  ]
+                }
+              ]
+            }
+          ],
+          "characteristics": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "total": 0
+            }
+          ],
+          "performance": {
+            "timeSeries": [
+              {
+                "periodReturn": 0,
+                "cumulativeReturn": 0,
+                "dateIntreval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ],
+            "expostMetrics": {
+              "numberOfMonths": 36,
+              "metrics": [
+                {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31",
+                  "exPostType": "TRR",
+                  "exPostPeriod": "ONE_YEAR",
+                  "displayName": "",
+                  "name": "",
+                  "value": 0
+                }
+              ],
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            },
+            "positionPerformanceDateRanges": [
+              {
+                "id":"asdf23-aesdfs-asdfsd-asdfsdf",
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
 
+            ]
+          },
+          "wealthProjection": {
+            "assumtions": {
+              "inflationAssumption": 0,
+              "netAlpha": 0,
+              "cashFlows": [
+                {
+                  "period": 3,
+                  "contribution": 10000
+                }
+              ]
+            },
+            "projection": {
+              "initialValue": 0,
+              "real": [
+                {
+                  "period": 0,
+                  "expectedReturn": 0,
+                  "volatility": 0,
+                  "mean": {
+                    "cumulativeReturn": 0,
+                    "annualizedReturn": 0,
+                    "portfolioValue": 0
+                  },
+                  "percentileReturns": [
+                    {
+                      "percentile": 0,
+                      "cumulativeReturn": 0,
+                      "annualizedReturn": 0,
+                      "portfolioValue": 0
+                    }
+                  ]
+                }
+              ],
+              "nominal": [
+                {
+                  "period": 0,
+                  "expectedReturn": 0,
+                  "volatility": 0,
+                  "mean": {
+                    "cumulativeReturn": 0,
+                    "annualizedReturn": 0,
+                    "portfolioValue": 0
+                  },
+                  "percentileReturns": [
+                    {
+                      "percentile": 0,
+                      "cumulativeReturn": 0,
+                      "annualizedReturn": 0,
+                      "portfolioValue": 0
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "cashFlowProjection": {
+            "total": 107.3,
+            "dateInterval": {
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            },
+            "noIncomeSecurities": [
+              "string"
+            ],
+            "cashFlows": [
+              {
+                "date": "2024-01-14",
+                "total": 107.3,
+                "positionContributors": [
+                  {
+                    "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                    "contribution": 0.024969,
+                    "type": "INTEREST"
+                  }
+                ]
+              }
+            ]
+          },
+          "nav": {
+            "accountBaseMarketValue": 100000,
+            "organizationalBaseMarketValue": 0,
+            "accountBaseNotionalMarketValue": 0,
+            "organizationalBaseNotionalMarketValue": 0
+          },
+          "leverage": {
+            "loanToValue": 1.048812
+          },
+          "liquidity": {
+            "daysToUnwind": [
+              {
+                "redemptionScenario": 0.2,
+                "total": 3.94,
+                "max": 0,
+                "positionContributors": [
+                  {
+                    "id": "sadfsdf-23423weq-sdfsadf-asdfds",
+                    "contribution": 0.02469,
+                    "type": "INTEREST"
+                  }
+                ]
+              }
+            ]
+          },
+          "sleeves": [
+            {
+              "name": "string",
+              "risk": {
+                "totalRisk": 0.231656,
+                "totalStandaloneRisk": 0.231656,
+                "positionContributors": [
+                  {
+                    "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+
+                ],
+                "factorContributors": [
+                  {
+                    "blockName": "rates",
+                    "contribution": 3.708406,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                        "contribution": 0.024969,
+                        "standalone": 0.024969,
+                        "diversification": 0.024969,
+                        "securityStandalone": 0.024969,
+                        "securityCorrelation": 0.024969
+                      }
+                    ],
+                    "exposure": 2.478438,
+                    "standalone": 0.013102
+                  }
+                ],
+                "fxFactorContributors": [
+                  {
+                    "blockName": "rates",
+                    "contribution": 3.708406,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                        "contribution": 0.024969,
+                        "standalone": 0.024969,
+                        "diversification": 0.024969,
+                        "securityStandalone": 0.024969,
+                        "securityCorrelation": 0.024969
+                      }
+                    ],
+                    "exposure": 2.478438,
+                    "standalone": 0.013102
+                  }
+                ],
+                "totalIdioContribution": 0.108843,
+                "totalIdioStandaloneRisk": 0.108843,
+                "idioPositionContributors": [
+                  {
+                    "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "beta": 0,
+                "correlation": 0
+              },
+              "tailRisk": {
+                "hvar": {
+                  "total": 0,
+                  "positionContributors": [
+                    {
+                      "id":"asdfsd-1234-asdfk-1234klsdf",
+                      "contributon": "0.024969",
+                      "type": "INTEREST"
+                    }
+                  ]
+                },
+                "expectedShortfall": {
+                  "total": 0,
+                  "positionContributors": [
+                    {
+                      "id":"asdfsd-1234-asdfk-1234klsdf",
+                      "contributon": "0.024969",
+                      "type": "INTEREST"
+                    }
+                  ]
+                }
+              },
+              "creditRisk": {
+                "expectedLoss": 0.000253,
+                "unexpectedLoss": 0.007035,
+                "positionContributors": [
+                  {
+                    "id": "asdfsd-asdfsadfq2-asdflds-q3rlsadf",
+                    "expectLossContribution": 0.000112,
+                    "expectLossContributionPercent": 0.441097,
+                    "unexpectedLossContribution": 0.003104,
+                    "unexpectedLossContributionPercent": 0.4411839
+                  }
+                ]
+              },
+              "scenarios": [
+                {
+                  "name": "string",
+                  "displayName": "string",
+                  "total": 0,
+                  "positionContributors": [
+                    {
+                      "id":"asdfsd-1234-asdfk-1234klsdf",
+                      "contributon": "0.024969",
+                      "type": "INTEREST"
+                    }
+                  ],
+                  "factorContributors": [
+                    {
+                      "blockName": "Rates",
+                      "contribution": 3.708406
+                    }
+                  ]
+                }
+              ],
+              "breakdowns": [
+                {
+                  "name": "string",
+                  "displayName": "string",
+                  "sectors": [
+                    {
+                      "name": "string",
+                      "displayName": "string",
+                      "contribution": 0,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-1234-asdfk-1234klsdf",
+                          "contributon": "0.024969",
+                          "type": "INTEREST"
+                        }
+                      ],
+                      "children": [
+                        {}
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "characteristics": [
+                {
+                  "name": "string",
+                  "displayName": "string",
+                  "total": 0
+                }
+              ],
+              "performance": {
+                "timeSeries": [],
+                "expostMetrics": {},
+                "positionPerformanceDateRanges": [
+                  {
+                    "id":"asdf23-aesdfs-asdfsd-asdfsdf",
+                    "dateInterval": {
+                      "startDate": "2017-01-01",
+                      "stopDate": "2019-12-31"
+                    }
+                  }
+
+                ],
+                "fee": 0,
+                "timeSeriesNet": [
+                  {
+                    "periodReturn": 0,
+                    "cumulativeReturn": 0,
+                    "dateInterval": {
+                      "startDate": "2017-01-01",
+                      "stopDate": "2019-12-31"
+                    }
+                  }
+                ],
+                "expostMetricsNet": {
+                  "numberOfMonth": 36,
+                  "metrics": [
+                    {
+                      "startDate": "2017-01-01",
+                      "stopDate": "2019-12-31",
+                      "exPostType": "TRR_ANN",
+                      "exPostPeriod": "ONE_YEAR",
+                      "displayName": "AAA",
+                      "name": "A desc for AAA",
+                      "value": 0.0003
+                    }
+                  ],
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              },
+              "wealthProjections": {
+                "assumtions": {
+                  "inflationAssumption": 0.021,
+                  "netAlpha": 0.00732,
+                  "cashFlows": [
+                    {
+                      "period": 3,
+                      "contribution": 10000
+                    }
+                  ],
+                  "yearsInProjection": 15
+                },
+                "projection": {
+                  "initialValue": 0,
+                  "real": [
+                    {
+                      "period": 0,
+                      "expectedReturn": 0,
+                      "volatility": 0,
+                      "mean": {
+                        "cumulativeReturn": 0,
+                        "annualizedReturn": 0,
+                        "portfolioValue": 0
+                      },
+                      "percentileReturns": [
+                        {
+                          "percentile": 0,
+                          "cumulativeReturn": 0,
+                          "annualizedReturn": 0,
+                          "portfolioValue": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "nominal": [
+                    {
+                      "period": 0,
+                      "expectedReturn": 0,
+                      "volatility": 0,
+                      "mean": {
+                        "cumulativeReturn": 0,
+                        "annualizedReturn": 0,
+                        "portfolioValue": 0
+                      },
+                      "percentileReturns": [
+                        {
+                          "percentile": 0,
+                          "cumulativeReturn": 0,
+                          "annualizedReturn": 0,
+                          "portfolioValue": 0
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "cashFlowProjection": {
+                "total": 107.3,
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                },
+                "noIncomeSecurities": [
+                  "string"
+                ],
+                "cashFlows": [
+                  {
+                    "date": "2024-01-14",
+                    "total": 107.3,
+                    "positionContributors": [
+                      {
+                        "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                        "contribution": 0.024969,
+                        "type": "INTEREST"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "nav": {
+                "accountBaseMarketValue": 100000,
+                "organizationalBaseMarketValue": 0,
+                "accountBaseNotionalMarketValue": 0,
+                "organizationalBaseNotionalMarketValue": 0
+              },
+              "leverage": {
+                "loanToValue": 1.048812
+              },
+              "esg": [
+                {
+                  "name": "string",
+                  "displayName": "string",
+                  "coverageThreshould": 0,
+                  "coverage": 0,
+                  "total": 0,
+                  "positionContributors": [null]
+                }
+              ],
+              "tax": {
+                "unrealized": {
+                  "totalGain": 2000,
+                  "totalLoss": -10081.0300000000028,
+                  "netGainLoss": -8081.030000000028,
+                  "taxLiability": 300,
+                  "taxGroups": [
+                    {
+                      "type": "SHORT_TERM",
+                      "gain": 2000,
+                      "loss": -10081.030000000028,
+                      "net": -100081.030000000028,
+                      "taxLiability": 300,
+                      "contributors": [
+                        {
+                          "lotId": "open-lot-2",
+                          "positionId": "3242234",
+                          "contribution": -100081.030000000028,
+                          "taxLiability": 300
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "realized": {
+                  "totalGain": 2000,
+                  "totalLoss": -10081.0300000000028,
+                  "netGainLoss": -8081.030000000028,
+                  "taxLiability": 300,
+                  "taxGroups": [
+                    {
+                      "type": "SHORT_TERM",
+                      "gain": 2000,
+                      "loss": -10081.030000000028,
+                      "net": -100081.030000000028,
+                      "taxLiability": 300,
+                      "contributors": [
+                        {
+                          "lotId": "open-lot-2",
+                          "positionId": "3242234",
+                          "contribution": -100081.030000000028,
+                          "taxLiability": 300
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "taxDate": "2022-05-31"
+              }
+            }
+          ],
+          "dynamicSleeves": [
+            {
+              "tag": "string",
+              "value": "string",
+              "portfolio": {
+                "risk": {
+                  "totalRisk": 0.231656,
+                  "totalStandaloneRisk": 0.231656,
+                  "positionContributors": [
+                    {
+                      "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+
+                  ],
+                  "factorContributors": [
+                    {
+                      "blockName": "rates",
+                      "contribution": 3.708406,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                          "contribution": 0.024969,
+                          "standalone": 0.024969,
+                          "diversification": 0.024969,
+                          "securityStandalone": 0.024969,
+                          "securityCorrelation": 0.024969
+                        }
+                      ],
+                      "exposure": 2.478438,
+                      "standalone": 0.013102
+                    }
+                  ],
+                  "fxFactorContributors": [
+                    {
+                      "blockName": "rates",
+                      "contribution": 3.708406,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                          "contribution": 0.024969,
+                          "standalone": 0.024969,
+                          "diversification": 0.024969,
+                          "securityStandalone": 0.024969,
+                          "securityCorrelation": 0.024969
+                        }
+                      ],
+                      "exposure": 2.478438,
+                      "standalone": 0.013102
+                    }
+                  ],
+                  "totalIdioContribution": 0.108843,
+                  "totalIdioStandaloneRisk": 0.108843,
+                  "idioPositionContributors": [
+                    {
+                      "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+                  ],
+                  "beta": 0,
+                  "correlation": 0
+                },
+                "tailRisk": {
+                  "hvar": {
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-1234-asdfk-1234klsdf",
+                        "contributon": "0.024969",
+                        "type": "INTEREST"
+                      }
+                    ]
+                  },
+                  "expectedShortfall": {
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-1234-asdfk-1234klsdf",
+                        "contributon": "0.024969",
+                        "type": "INTEREST"
+                      }
+                    ]
+                  }
+                },
+                "creditRisk": {
+                  "expectedLoss": 0.000253,
+                  "unexpectedLoss": 0.007035,
+                  "positionContributors": [
+                    {
+                      "id": "asdfsd-asdfsadfq2-asdflds-q3rlsadf",
+                      "expectLossContribution": 0.000112,
+                      "expectLossContributionPercent": 0.441097,
+                      "unexpectedLossContribution": 0.003104,
+                      "unexpectedLossContributionPercent": 0.4411839
+                    }
+                  ]
+                },
+                "scenarios": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-1234-asdfk-1234klsdf",
+                        "contributon": "0.024969",
+                        "type": "INTEREST"
+                      }
+                    ],
+                    "factorContributors": [
+                      {
+                        "blockName": "Rates",
+                        "contribution": 3.708406
+                      }
+                    ]
+                  }
+                ],
+                "breakdowns": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "sectors": [
+                      {
+                        "name": "string",
+                        "displayName": "string",
+                        "contribution": 0,
+                        "positionContributors": [
+                          {
+                            "id":"asdfsd-1234-asdfk-1234klsdf",
+                            "contributon": "0.024969",
+                            "type": "INTEREST"
+                          }
+                        ],
+                        "children": [
+                          {}
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "characteristics": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "total": 0
+                  }
+                ],
+                "performance": {
+                  "timeSeries": [],
+                  "expostMetrics": {},
+                  "positionPerformanceDateRanges": [
+                    {
+                      "id":"asdf23-aesdfs-asdfsd-asdfsdf",
+                      "dateInterval": {
+                        "startDate": "2017-01-01",
+                        "stopDate": "2019-12-31"
+                      }
+                    }
+
+                  ],
+                  "fee": 0,
+                  "timeSeriesNet": [
+                    {
+                      "periodReturn": 0,
+                      "cumulativeReturn": 0,
+                      "dateInterval": {
+                        "startDate": "2017-01-01",
+                        "stopDate": "2019-12-31"
+                      }
+                    }
+                  ],
+                  "expostMetricsNet": {
+                    "numberOfMonth": 36,
+                    "metrics": [
+                      {
+                        "startDate": "2017-01-01",
+                        "stopDate": "2019-12-31",
+                        "exPostType": "TRR_ANN",
+                        "exPostPeriod": "ONE_YEAR",
+                        "displayName": "AAA",
+                        "name": "A desc for AAA",
+                        "value": 0.0003
+                      }
+                    ],
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  }
+                },
+                "wealthProjections": {
+                  "assumtions": {
+                    "inflationAssumption": 0.021,
+                    "netAlpha": 0.00732,
+                    "cashFlows": [
+                      {
+                        "period": 3,
+                        "contribution": 10000
+                      }
+                    ],
+                    "yearsInProjection": 15
+                  },
+                  "projection": {
+                    "initialValue": 0,
+                    "real": [
+                      {
+                        "period": 0,
+                        "expectedReturn": 0,
+                        "volatility": 0,
+                        "mean": {
+                          "cumulativeReturn": 0,
+                          "annualizedReturn": 0,
+                          "portfolioValue": 0
+                        },
+                        "percentileReturns": [
+                          {
+                            "percentile": 0,
+                            "cumulativeReturn": 0,
+                            "annualizedReturn": 0,
+                            "portfolioValue": 0
+                          }
+                        ]
+                      }
+                    ],
+                    "nominal": [
+                      {
+                        "period": 0,
+                        "expectedReturn": 0,
+                        "volatility": 0,
+                        "mean": {
+                          "cumulativeReturn": 0,
+                          "annualizedReturn": 0,
+                          "portfolioValue": 0
+                        },
+                        "percentileReturns": [
+                          {
+                            "percentile": 0,
+                            "cumulativeReturn": 0,
+                            "annualizedReturn": 0,
+                            "portfolioValue": 0
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "cashFlowProjection": {
+                  "total": 107.3,
+                  "dateInterval": {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  },
+                  "noIncomeSecurities": [
+                    "string"
+                  ],
+                  "cashFlows": [
+                    {
+                      "date": "2024-01-14",
+                      "total": 107.3,
+                      "positionContributors": [
+                        {
+                          "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                          "contribution": 0.024969,
+                          "type": "INTEREST"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "nav": {
+                  "accountBaseMarketValue": 100000,
+                  "organizationalBaseMarketValue": 0,
+                  "accountBaseNotionalMarketValue": 0,
+                  "organizationalBaseNotionalMarketValue": 0
+                },
+                "leverage": {
+                  "loanToValue": 1.048812
+                },
+                "esg": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "coverageThreshold": 0,
+                    "coverage": 0,
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                        "contribution": 0.024969,
+                        "type": "INTEREST"
+                      }
+                    ]
+                  }
+                ],
+                "tax": {
+                  "unrealized": {
+                    "totalGain": 2000,
+                    "totalLoss": -10081.0300000000028,
+                    "netGainLoss": -8081.030000000028,
+                    "taxLiability": 300,
+                    "taxGroups": [
+                      {
+                        "type": "SHORT_TERM",
+                        "gain": 2000,
+                        "loss": -10081.030000000028,
+                        "net": -100081.030000000028,
+                        "taxLiability": 300,
+                        "contributors": [
+                          {
+                            "lotId": "open-lot-2",
+                            "positionId": "3242234",
+                            "contribution": -100081.030000000028,
+                            "taxLiability": 300
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "realized": {
+                    "totalGain": 2000,
+                    "totalLoss": -10081.0300000000028,
+                    "netGainLoss": -8081.030000000028,
+                    "taxLiability": 300,
+                    "taxGroups": [
+                      {
+                        "type": "SHORT_TERM",
+                        "gain": 2000,
+                        "loss": -10081.030000000028,
+                        "net": -100081.030000000028,
+                        "taxLiability": 300,
+                        "contributors": [
+                          {
+                            "lotId": "open-lot-2",
+                            "positionId": "3242234",
+                            "contribution": -100081.030000000028,
+                            "taxLiability": 300
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "taxDate": "2022-05-31"
+                }
+              },
+              "benchmark": {
+                "risk": {
+                  "totalRisk": 0.231656,
+                  "totalStandaloneRisk": 0.231656,
+                  "positionContributors": [
+                    {
+                      "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+
+                  ],
+                  "factorContributors": [
+                    {
+                      "blockName": "rates",
+                      "contribution": 3.708406,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                          "contribution": 0.024969,
+                          "standalone": 0.024969,
+                          "diversification": 0.024969,
+                          "securityStandalone": 0.024969,
+                          "securityCorrelation": 0.024969
+                        }
+                      ],
+                      "exposure": 2.478438,
+                      "standalone": 0.013102
+                    }
+                  ],
+                  "fxFactorContributors": [
+                    {
+                      "blockName": "rates",
+                      "contribution": 3.708406,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                          "contribution": 0.024969,
+                          "standalone": 0.024969,
+                          "diversification": 0.024969,
+                          "securityStandalone": 0.024969,
+                          "securityCorrelation": 0.024969
+                        }
+                      ],
+                      "exposure": 2.478438,
+                      "standalone": 0.013102
+                    }
+                  ],
+                  "totalIdioContribution": 0.108843,
+                  "totalIdioStandaloneRisk": 0.108843,
+                  "idioPositionContributors": [
+                    {
+                      "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+                  ],
+                  "beta": 0,
+                  "correlation": 0
+                },
+                "tailRisk": {
+                  "hvar": {
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-1234-asdfk-1234klsdf",
+                        "contributon": "0.024969",
+                        "type": "INTEREST"
+                      }
+                    ]
+                  },
+                  "expectedShortfall": {
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-1234-asdfk-1234klsdf",
+                        "contributon": "0.024969",
+                        "type": "INTEREST"
+                      }
+                    ]
+                  }
+                },
+                "creditRisk": {
+                  "expectedLoss": 0.000253,
+                  "unexpectedLoss": 0.007035,
+                  "positionContributors": [
+                    {
+                      "id": "asdfsd-asdfsadfq2-asdflds-q3rlsadf",
+                      "expectLossContribution": 0.000112,
+                      "expectLossContributionPercent": 0.441097,
+                      "unexpectedLossContribution": 0.003104,
+                      "unexpectedLossContributionPercent": 0.4411839
+                    }
+                  ]
+                },
+                "scenarios": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-1234-asdfk-1234klsdf",
+                        "contributon": "0.024969",
+                        "type": "INTEREST"
+                      }
+                    ],
+                    "factorContributors": [
+                      {
+                        "blockName": "Rates",
+                        "contribution": 3.708406
+                      }
+                    ]
+                  }
+                ],
+                "breakdowns": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "sectors": [
+                      {
+                        "name": "string",
+                        "displayName": "string",
+                        "contribution": 0,
+                        "positionContributors": [
+                          {
+                            "id":"asdfsd-1234-asdfk-1234klsdf",
+                            "contributon": "0.024969",
+                            "type": "INTEREST"
+                          }
+                        ],
+                        "children": [
+                          {}
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "characteristics": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "total": 0
+                  }
+                ],
+                "performance": {
+                  "timeSeries": [],
+                  "expostMetrics": {},
+                  "positionPerformanceDateRanges": [
+                    {
+                      "id":"asdf23-aesdfs-asdfsd-asdfsdf",
+                      "dateInterval": {
+                        "startDate": "2017-01-01",
+                        "stopDate": "2019-12-31"
+                      }
+                    }
+
+                  ],
+                  "fee": 0,
+                  "timeSeriesNet": [
+                    {
+                      "periodReturn": 0,
+                      "cumulativeReturn": 0,
+                      "dateInterval": {
+                        "startDate": "2017-01-01",
+                        "stopDate": "2019-12-31"
+                      }
+                    }
+                  ],
+                  "expostMetricsNet": {
+                    "numberOfMonth": 36,
+                    "metrics": [
+                      {
+                        "startDate": "2017-01-01",
+                        "stopDate": "2019-12-31",
+                        "exPostType": "TRR_ANN",
+                        "exPostPeriod": "ONE_YEAR",
+                        "displayName": "AAA",
+                        "name": "A desc for AAA",
+                        "value": 0.0003
+                      }
+                    ],
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  }
+                },
+                "wealthProjections": {
+                  "assumtions": {
+                    "inflationAssumption": 0.021,
+                    "netAlpha": 0.00732,
+                    "cashFlows": [
+                      {
+                        "period": 3,
+                        "contribution": 10000
+                      }
+                    ],
+                    "yearsInProjection": 15
+                  },
+                  "projection": {
+                    "initialValue": 0,
+                    "real": [
+                      {
+                        "period": 0,
+                        "expectedReturn": 0,
+                        "volatility": 0,
+                        "mean": {
+                          "cumulativeReturn": 0,
+                          "annualizedReturn": 0,
+                          "portfolioValue": 0
+                        },
+                        "percentileReturns": [
+                          {
+                            "percentile": 0,
+                            "cumulativeReturn": 0,
+                            "annualizedReturn": 0,
+                            "portfolioValue": 0
+                          }
+                        ]
+                      }
+                    ],
+                    "nominal": [
+                      {
+                        "period": 0,
+                        "expectedReturn": 0,
+                        "volatility": 0,
+                        "mean": {
+                          "cumulativeReturn": 0,
+                          "annualizedReturn": 0,
+                          "portfolioValue": 0
+                        },
+                        "percentileReturns": [
+                          {
+                            "percentile": 0,
+                            "cumulativeReturn": 0,
+                            "annualizedReturn": 0,
+                            "portfolioValue": 0
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "cashFlowProjection": {
+                  "total": 107.3,
+                  "dateInterval": {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  },
+                  "noIncomeSecurities": [
+                    "string"
+                  ],
+                  "cashFlows": [
+                    {
+                      "date": "2024-01-14",
+                      "total": 107.3,
+                      "positionContributors": [
+                        {
+                          "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                          "contribution": 0.024969,
+                          "type": "INTEREST"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "nav": {
+                  "accountBaseMarketValue": 100000,
+                  "organizationalBaseMarketValue": 0,
+                  "accountBaseNotionalMarketValue": 0,
+                  "organizationalBaseNotionalMarketValue": 0
+                },
+                "leverage": {
+                  "loanToValue": 1.048812
+                },
+                "esg": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "coverageThreshold": 0,
+                    "coverage": 0,
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                        "contribution": 0.024969,
+                        "type": "INTEREST"
+                      }
+                    ]
+                  }
+                ],
+                "tax": {
+                  "unrealized": {
+                    "totalGain": 2000,
+                    "totalLoss": -10081.0300000000028,
+                    "netGainLoss": -8081.030000000028,
+                    "taxLiability": 300,
+                    "taxGroups": [
+                      {
+                        "type": "SHORT_TERM",
+                        "gain": 2000,
+                        "loss": -10081.030000000028,
+                        "net": -100081.030000000028,
+                        "taxLiability": 300,
+                        "contributors": [
+                          {
+                            "lotId": "open-lot-2",
+                            "positionId": "3242234",
+                            "contribution": -100081.030000000028,
+                            "taxLiability": 300
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "realized": {
+                    "totalGain": 2000,
+                    "totalLoss": -10081.0300000000028,
+                    "netGainLoss": -8081.030000000028,
+                    "taxLiability": 300,
+                    "taxGroups": [
+                      {
+                        "type": "SHORT_TERM",
+                        "gain": 2000,
+                        "loss": -10081.030000000028,
+                        "net": -100081.030000000028,
+                        "taxLiability": 300,
+                        "contributors": [
+                          {
+                            "lotId": "open-lot-2",
+                            "positionId": "3242234",
+                            "contribution": -100081.030000000028,
+                            "taxLiability": 300
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "taxDate": "2022-05-31"
+                }
+              },
+              "sleeves": [
+                {
+                  "name": "string",
+                  "risk": {
+                    "totalRisk": 0.231656,
+                    "totalStandaloneRisk": 0.231656,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                        "contribution": 0.024969,
+                        "standalone": 0.024969,
+                        "diversification": 0.024969,
+                        "securityStandalone": 0.024969,
+                        "securityCorrelation": 0.024969
+                      }
+
+                    ],
+                    "factorContributors": [
+                      {
+                        "blockName": "rates",
+                        "contribution": 3.708406,
+                        "positionContributors": [
+                          {
+                            "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                            "contribution": 0.024969,
+                            "standalone": 0.024969,
+                            "diversification": 0.024969,
+                            "securityStandalone": 0.024969,
+                            "securityCorrelation": 0.024969
+                          }
+                        ],
+                        "exposure": 2.478438,
+                        "standalone": 0.013102
+                      }
+                    ],
+                    "fxFactorContributors": [
+                      {
+                        "blockName": "rates",
+                        "contribution": 3.708406,
+                        "positionContributors": [
+                          {
+                            "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                            "contribution": 0.024969,
+                            "standalone": 0.024969,
+                            "diversification": 0.024969,
+                            "securityStandalone": 0.024969,
+                            "securityCorrelation": 0.024969
+                          }
+                        ],
+                        "exposure": 2.478438,
+                        "standalone": 0.013102
+                      }
+                    ],
+                    "totalIdioContribution": 0.108843,
+                    "totalIdioStandaloneRisk": 0.108843,
+                    "idioPositionContributors": [
+                      {
+                        "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                        "contribution": 0.024969,
+                        "standalone": 0.024969,
+                        "diversification": 0.024969,
+                        "securityStandalone": 0.024969,
+                        "securityCorrelation": 0.024969
+                      }
+                    ],
+                    "beta": 0,
+                    "correlation": 0
+                  },
+                  "tailRisk": {
+                    "hvar": {
+                      "total": 0,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-1234-asdfk-1234klsdf",
+                          "contributon": "0.024969",
+                          "type": "INTEREST"
+                        }
+                      ]
+                    },
+                    "expectedShortfall": {
+                      "total": 0,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-1234-asdfk-1234klsdf",
+                          "contributon": "0.024969",
+                          "type": "INTEREST"
+                        }
+                      ]
+                    }
+                  },
+                  "creditRisk": {
+                    "expectedLoss": 0.000253,
+                    "unexpectedLoss": 0.007035,
+                    "positionContributors": [
+                      {
+                        "id": "asdfsd-asdfsadfq2-asdflds-q3rlsadf",
+                        "expectLossContribution": 0.000112,
+                        "expectLossContributionPercent": 0.441097,
+                        "unexpectedLossContribution": 0.003104,
+                        "unexpectedLossContributionPercent": 0.4411839
+                      }
+                    ]
+                  },
+                  "scenarios": [
+                    {
+                      "name": "string",
+                      "displayName": "string",
+                      "total": 0,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-1234-asdfk-1234klsdf",
+                          "contributon": "0.024969",
+                          "type": "INTEREST"
+                        }
+                      ],
+                      "factorContributors": [
+                        {
+                          "blockName": "Rates",
+                          "contribution": 3.708406
+                        }
+                      ]
+                    }
+                  ],
+                  "breakdowns": [
+                    {
+                      "name": "string",
+                      "displayName": "string",
+                      "sectors": [
+                        {
+                          "name": "string",
+                          "displayName": "string",
+                          "contribution": 0,
+                          "positionContributors": [
+                            {
+                              "id":"asdfsd-1234-asdfk-1234klsdf",
+                              "contributon": "0.024969",
+                              "type": "INTEREST"
+                            }
+                          ],
+                          "children": [
+                            {}
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "characteristics": [
+                    {
+                      "name": "string",
+                      "displayName": "string",
+                      "total": 0
+                    }
+                  ],
+                  "performance": {
+                    "timeSeries": [],
+                    "expostMetrics": {},
+                    "positionPerformanceDateRanges": [
+                      {
+                        "id":"asdf23-aesdfs-asdfsd-asdfsdf",
+                        "dateInterval": {
+                          "startDate": "2017-01-01",
+                          "stopDate": "2019-12-31"
+                        }
+                      }
+
+                    ],
+                    "fee": 0,
+                    "timeSeriesNet": [
+                      {
+                        "periodReturn": 0,
+                        "cumulativeReturn": 0,
+                        "dateInterval": {
+                          "startDate": "2017-01-01",
+                          "stopDate": "2019-12-31"
+                        }
+                      }
+                    ],
+                    "expostMetricsNet": {
+                      "numberOfMonth": 36,
+                      "metrics": [
+                        {
+                          "startDate": "2017-01-01",
+                          "stopDate": "2019-12-31",
+                          "exPostType": "TRR_ANN",
+                          "exPostPeriod": "ONE_YEAR",
+                          "displayName": "AAA",
+                          "name": "A desc for AAA",
+                          "value": 0.0003
+                        }
+                      ],
+                      "startDate": "2017-01-01",
+                      "stopDate": "2019-12-31"
+                    }
+                  },
+                  "wealthProjections": {
+                    "assumtions": {
+                      "inflationAssumption": 0.021,
+                      "netAlpha": 0.00732,
+                      "cashFlows": [
+                        {
+                          "period": 3,
+                          "contribution": 10000
+                        }
+                      ],
+                      "yearsInProjection": 15
+                    },
+                    "projection": {
+                      "initialValue": 0,
+                      "real": [
+                        {
+                          "period": 0,
+                          "expectedReturn": 0,
+                          "volatility": 0,
+                          "mean": {
+                            "cumulativeReturn": 0,
+                            "annualizedReturn": 0,
+                            "portfolioValue": 0
+                          },
+                          "percentileReturns": [
+                            {
+                              "percentile": 0,
+                              "cumulativeReturn": 0,
+                              "annualizedReturn": 0,
+                              "portfolioValue": 0
+                            }
+                          ]
+                        }
+                      ],
+                      "nominal": [
+                        {
+                          "period": 0,
+                          "expectedReturn": 0,
+                          "volatility": 0,
+                          "mean": {
+                            "cumulativeReturn": 0,
+                            "annualizedReturn": 0,
+                            "portfolioValue": 0
+                          },
+                          "percentileReturns": [
+                            {
+                              "percentile": 0,
+                              "cumulativeReturn": 0,
+                              "annualizedReturn": 0,
+                              "portfolioValue": 0
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "cashFlowProjection": {
+                    "total": 107.3,
+                    "dateInterval": {
+                      "startDate": "2017-01-01",
+                      "stopDate": "2019-12-31"
+                    },
+                    "noIncomeSecurities": [
+                      "string"
+                    ],
+                    "cashFlows": [
+                      {
+                        "date": "2024-01-14",
+                        "total": 107.3,
+                        "positionContributors": [
+                          {
+                            "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                            "contribution": 0.024969,
+                            "type": "INTEREST"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "nav": {
+                    "accountBaseMarketValue": 100000,
+                    "organizationalBaseMarketValue": 0,
+                    "accountBaseNotionalMarketValue": 0,
+                    "organizationalBaseNotionalMarketValue": 0
+                  },
+                  "leverage": {
+                    "loanToValue": 1.048812
+                  },
+                  "tax": {
+                    "unrealized": {
+                      "totalGain": 2000,
+                      "totalLoss": -10081.0300000000028,
+                      "netGainLoss": -8081.030000000028,
+                      "taxLiability": 300,
+                      "taxGroups": [
+                        {
+                          "type": "SHORT_TERM",
+                          "gain": 2000,
+                          "loss": -10081.030000000028,
+                          "net": -100081.030000000028,
+                          "taxLiability": 300,
+                          "contributors": [
+                            {
+                              "lotId": "open-lot-2",
+                              "positionId": "3242234",
+                              "contribution": -100081.030000000028,
+                              "taxLiability": 300
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "realized": {
+                      "totalGain": 2000,
+                      "totalLoss": -10081.0300000000028,
+                      "netGainLoss": -8081.030000000028,
+                      "taxLiability": 300,
+                      "taxGroups": [
+                        {
+                          "type": "SHORT_TERM",
+                          "gain": 2000,
+                          "loss": -10081.030000000028,
+                          "net": -100081.030000000028,
+                          "taxLiability": 300,
+                          "contributors": [
+                            {
+                              "lotId": "open-lot-2",
+                              "positionId": "3242234",
+                              "contribution": -100081.030000000028,
+                              "taxLiability": 300
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "taxDate": "2022-05-31"
+                  }
+                }
+              ],
+              "active": {
+                "risk": {
+                  "totalRisk": 0.231656,
+                  "totalStandaloneRisk": 0.231656,
+                  "positionContributors": [
+                    {
+                      "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+
+                  ],
+                  "factorContributors": [
+                    {
+                      "blockName": "rates",
+                      "contribution": 3.708406,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                          "contribution": 0.024969,
+                          "standalone": 0.024969,
+                          "diversification": 0.024969,
+                          "securityStandalone": 0.024969,
+                          "securityCorrelation": 0.024969
+                        }
+                      ],
+                      "exposure": 2.478438,
+                      "standalone": 0.013102
+                    }
+                  ],
+                  "fxFactorContributors": [
+                    {
+                      "blockName": "rates",
+                      "contribution": 3.708406,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                          "contribution": 0.024969,
+                          "standalone": 0.024969,
+                          "diversification": 0.024969,
+                          "securityStandalone": 0.024969,
+                          "securityCorrelation": 0.024969
+                        }
+                      ],
+                      "exposure": 2.478438,
+                      "standalone": 0.013102
+                    }
+                  ],
+                  "totalIdioContribution": 0.108843,
+                  "totalIdioStandaloneRisk": 0.108843,
+                  "idioPositionContributors": [
+                    {
+                      "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+                  ],
+                  "beta": 0,
+                  "correlation": 0
+                }
+              }
+            }
+          ],
+          "esg": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "coverageThreshould": 0,
+              "coverage": 0,
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          ],
+          "tax": {
+            "unrealized": {
+              "totalGain": 2000,
+              "totalLoss": -10081.0300000000028,
+              "netGainLoss": -8081.030000000028,
+              "taxLiability": 300,
+              "taxGroups": [
+                {
+                  "type": "SHORT_TERM",
+                  "gain": 2000,
+                  "loss": -10081.030000000028,
+                  "net": -100081.030000000028,
+                  "taxLiability": 300,
+                  "contributors": [
+                    {
+                      "lotId": "open-lot-2",
+                      "positionId": "3242234",
+                      "contribution": -100081.030000000028,
+                      "taxLiability": 300
+                    }
+                  ]
+                }
+              ]
+            },
+            "realized": {
+              "totalGain": 2000,
+              "totalLoss": -10081.0300000000028,
+              "netGainLoss": -8081.030000000028,
+              "taxLiability": 300,
+              "taxGroups": [
+                {
+                  "type": "SHORT_TERM",
+                  "gain": 2000,
+                  "loss": -10081.030000000028,
+                  "net": -100081.030000000028,
+                  "taxLiability": 300,
+                  "contributors": [
+                    {
+                      "lotId": "open-lot-2",
+                      "positionId": "3242234",
+                      "contribution": -100081.030000000028,
+                      "taxLiability": 300
+                    }
+                  ]
+                }
+              ]
+            },
+            "taxDate": "2022-05-31"
+          }
+        },
+        "benchmark": {
+          "id": "PORTFOLIO-1",
+          "date": "2018-03-31",
+          "proxiedPositions": [
+            "bf90c797-edef-4509-8c13-c1aee6d6dc11"
+          ],
+          "risk": {
+            "totalRisk": 0.231656,
+            "totalIdioContribution": 0.108843,
+            "totalStandaloneRisk": 0.231656,
+            "totalIdioStandaloneRisk": 0.108843,
+            "positionContributors": [
+              {
+                "id":"bf90c797-edef-4509-8c13-c1aee6d6dc11",
+               "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "factorContributors": [
+              {
+                "blockName":"rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id": null,
+                    "contribution": null,
+                    "standalone": null,
+                    "diversification": null,
+                    "securityStandalone": null,
+                    "securityCorrelation": null
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "fxFactorContributors": [
+              {
+                "blockName": "rates",
+                "contribution": 3.708406,
+                "positionContributors": [
+                  {
+                    "id":null,
+                    "contribution": null,
+                    "standalone": null,
+                    "diversification": null,
+                    "securityStandalone": null,
+                    "securityCorrelation": null
+                  }
+                ],
+                "exposure": 2.478438,
+                "standalone": 0.013102
+              }
+            ],
+            "idioPositionContributors": [
+              {
+                "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+                "contribution": 0.024969,
+                "standalone": 0.024969,
+                "diversification": 0.024969,
+                "securityStandalone": 0.024969,
+                "securityCorrelation": 0.024969
+              }
+            ],
+            "beta": 0,
+            "correlation": 0
+          },
+          "tailRisk": {
+            "hvar": {
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            },
+            "expectedShortfall": {
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          },
+          "creditRisk": {
+            "expectedLoss": 0.000253,
+            "unexpectedLoss": 0.007035,
+            "positionContributors": [
+              {
+                "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+                "expectedLossContribution": 0.000112,
+                "expectedLossContributionPercent": 0.441096,
+                "unexpectedLossContribution": 0.003104,
+                "unexpectedLossContributionPercent": 0.4411839
+              }
+            ]
+          },
+          "scenarios": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+                  "contribution": 0.024969
+                }
+              ],
+              "factorContributors": [
+                {
+                  "blockName": "Rates",
+                  "contribution": 3.708406
+                }
+              ]
+            }
+          ],
+          "breakdowns": [
+            {
+              "id": "string",
+              "name": "assetClass",
+              "displayName": "Asset Class",
+              "sectors": [
+                {
+                  "name": "Equity",
+                  "displayName": "Equity",
+                  "contribution": 0.55,
+                  "positionContributors": [
+                    null
+                  ],
+                  "children": [
+                    null
+                  ]
+                }
+              ]
+            }
+          ],
+          "characteristics": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "total": 0
+            }
+          ],
+          "performance": {
+            "timeSeries": [
+              {
+                "periodReturn": 0,
+                "cumulativeReturn": 0,
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDte": "2019-12-31"
+                }
+              }
+            ],
+            "expostMetrics": {
+              "numberOfMonths": 36,
+              "metrics": [
+                {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31",
+                  "exPostType": "TRR",
+                  "exPostPeriod": "ONE_YEAR",
+                  "displayName": "",
+                  "name": "",
+                  "value": 0
+                }
+              ],
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            },
+            "positionPerformanceDateRanges": [
+              {
+                "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+                "deteInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              }
+            ]
+          },
+          "wealthProjection": {
+            "assumtions": {
+              "inflationAssumption": 0,
+              "netAlpha": 0,
+              "cashFlows": [
+                {
+                  "period": 3,
+                  "contribution": 10000
+                }
+              ]
+            },
+            "projection": {
+              "initialValue": 0,
+              "real": [
+                {
+                  "period": 0,
+                  "expectedReturn": 0,
+                  "volatility": 0,
+                  "mean": {
+                    "cumulativeReturn": 0,
+                    "annualizedReturn": 0,
+                    "portfolioValue": 0
+                  },
+                  "percentileReturns": [
+                    {
+                      "percentile": 0,
+                      "cumulativeReturn": 0,
+                      "annualizedReturn": 0,
+                      "portfolioValue": 0
+                    }
+                  ]
+                }
+              ],
+              "nominal": [
+                {
+                  "period": 0,
+                  "expectedReturn": 0,
+                  "volatility": 0,
+                  "mean": {
+                    "cumulativeReturn": 0,
+                    "annualizedReturn": 0,
+                    "portfolioValue": 0
+                  },
+                  "percentileReturns": [
+                    {
+                      "percentile": 0,
+                      "cumulativeReturn": 0,
+                      "annualizedReturn": 0,
+                      "portfolioValue": 0
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "cashFlowProjection": {
+            "total": 107.3,
+            "dateInterval": {
+              "startDate": "2017-01-01",
+              "stopDate": "2019-12-31"
+            },
+            "noIncomeSecurities": [
+              "string"
+            ],
+            "cashFlows": [
+              {
+                "date": "2024-01-14",
+                "total": 107.3,
+                "positionContributors": [
+                  {
+                    "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                    "contribution": 0.024969,
+                    "type": "INTEREST"
+                  }
+                ]
+              }
+            ]
+          },
+          "nav": {
+            "accountBaseMarketValue": 0,
+            "accountBaseNotionalMarketValue": 0
+          },
+          "leverage": {
+            "loanToValue": 1.048812
+          },
+          "liquidity": {},
+          "sleeves": [
+            {
+              "name": "string",
+              "risk": {
+                "totalRisk": 0.231656,
+                "totalStandaloneRisk": 0.231656,
+                "positionContributors": [
+                  {
+                    "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+
+                ],
+                "factorContributors": [
+                  {
+                    "blockName": "rates",
+                    "contribution": 3.708406,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                        "contribution": 0.024969,
+                        "standalone": 0.024969,
+                        "diversification": 0.024969,
+                        "securityStandalone": 0.024969,
+                        "securityCorrelation": 0.024969
+                      }
+                    ],
+                    "exposure": 2.478438,
+                    "standalone": 0.013102
+                  }
+                ],
+                "fxFactorContributors": [
+                  {
+                    "blockName": "rates",
+                    "contribution": 3.708406,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                        "contribution": 0.024969,
+                        "standalone": 0.024969,
+                        "diversification": 0.024969,
+                        "securityStandalone": 0.024969,
+                        "securityCorrelation": 0.024969
+                      }
+                    ],
+                    "exposure": 2.478438,
+                    "standalone": 0.013102
+                  }
+                ],
+                "totalIdioContribution": 0.108843,
+                "totalIdioStandaloneRisk": 0.108843,
+                "idioPositionContributors": [
+                  {
+                    "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                    "contribution": 0.024969,
+                    "standalone": 0.024969,
+                    "diversification": 0.024969,
+                    "securityStandalone": 0.024969,
+                    "securityCorrelation": 0.024969
+                  }
+                ],
+                "beta": 0,
+                "correlation": 0
+              },
+              "tailRisk": {
+                "hvar": {
+                  "total": 0,
+                  "positionContributors": [
+                    {
+                      "id":"asdfsd-1234-asdfk-1234klsdf",
+                      "contributon": "0.024969",
+                      "type": "INTEREST"
+                    }
+                  ]
+                },
+                "expectedShortfall": {
+                  "total": 0,
+                  "positionContributors": [
+                    {
+                      "id":"asdfsd-1234-asdfk-1234klsdf",
+                      "contributon": "0.024969",
+                      "type": "INTEREST"
+                    }
+                  ]
+                }
+              },
+              "creditRisk": {
+                "expectedLoss": 0.000253,
+                "unexpectedLoss": 0.007035,
+                "positionContributors": [
+                  {
+                    "id": "asdfsd-asdfsadfq2-asdflds-q3rlsadf",
+                    "expectLossContribution": 0.000112,
+                    "expectLossContributionPercent": 0.441097,
+                    "unexpectedLossContribution": 0.003104,
+                    "unexpectedLossContributionPercent": 0.4411839
+                  }
+                ]
+              },
+              "scenarios": [
+                {
+                  "name": "string",
+                  "displayName": "string",
+                  "total": 0,
+                  "positionContributors": [
+                    {
+                      "id":"asdfsd-1234-asdfk-1234klsdf",
+                      "contributon": "0.024969",
+                      "type": "INTEREST"
+                    }
+                  ],
+                  "factorContributors": [
+                    {
+                      "blockName": "Rates",
+                      "contribution": 3.708406
+                    }
+                  ]
+                }
+              ],
+              "breakdowns": [
+                {
+                  "name": "string",
+                  "displayName": "string",
+                  "sectors": [
+                    {
+                      "name": "string",
+                      "displayName": "string",
+                      "contribution": 0,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-1234-asdfk-1234klsdf",
+                          "contributon": "0.024969",
+                          "type": "INTEREST"
+                        }
+                      ],
+                      "children": [
+                        {}
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "characteristics": [
+                {
+                  "name": "string",
+                  "displayName": "string",
+                  "total": 0
+                }
+              ],
+              "performance": {
+                "timeSeries": [],
+                "expostMetrics": {},
+                "positionPerformanceDateRanges": [
+                  {
+                    "id":"asdf23-aesdfs-asdfsd-asdfsdf",
+                    "dateInterval": {
+                      "startDate": "2017-01-01",
+                      "stopDate": "2019-12-31"
+                    }
+                  }
+
+                ],
+                "fee": 0,
+                "timeSeriesNet": [
+                  {
+                    "periodReturn": 0,
+                    "cumulativeReturn": 0,
+                    "dateInterval": {
+                      "startDate": "2017-01-01",
+                      "stopDate": "2019-12-31"
+                    }
+                  }
+                ],
+                "expostMetricsNet": {
+                  "numberOfMonth": 36,
+                  "metrics": [
+                    {
+                      "startDate": "2017-01-01",
+                      "stopDate": "2019-12-31",
+                      "exPostType": "TRR_ANN",
+                      "exPostPeriod": "ONE_YEAR",
+                      "displayName": "AAA",
+                      "name": "A desc for AAA",
+                      "value": 0.0003
+                    }
+                  ],
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                }
+              },
+              "wealthProjections": {
+                "assumtions": {
+                  "inflationAssumption": 0.021,
+                  "netAlpha": 0.00732,
+                  "cashFlows": [
+                    {
+                      "period": 3,
+                      "contribution": 10000
+                    }
+                  ],
+                  "yearsInProjection": 15
+                },
+                "projection": {
+                  "initialValue": 0,
+                  "real": [
+                    {
+                      "period": 0,
+                      "expectedReturn": 0,
+                      "volatility": 0,
+                      "mean": {
+                        "cumulativeReturn": 0,
+                        "annualizedReturn": 0,
+                        "portfolioValue": 0
+                      },
+                      "percentileReturns": [
+                        {
+                          "percentile": 0,
+                          "cumulativeReturn": 0,
+                          "annualizedReturn": 0,
+                          "portfolioValue": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "nominal": [
+                    {
+                      "period": 0,
+                      "expectedReturn": 0,
+                      "volatility": 0,
+                      "mean": {
+                        "cumulativeReturn": 0,
+                        "annualizedReturn": 0,
+                        "portfolioValue": 0
+                      },
+                      "percentileReturns": [
+                        {
+                          "percentile": 0,
+                          "cumulativeReturn": 0,
+                          "annualizedReturn": 0,
+                          "portfolioValue": 0
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "cashFlowProjection": {
+                "total": 107.3,
+                "dateInterval": {
+                  "startDate": "2017-01-01",
+                  "stopDate": "2019-12-31"
+                },
+                "noIncomeSecurities": [
+                  "string"
+                ],
+                "cashFlows": [
+                  {
+                    "date": "2024-01-14",
+                    "total": 107.3,
+                    "positionContributors": [
+                      {
+                        "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                        "contribution": 0.024969,
+                        "type": "INTEREST"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "nav": {
+                "accountBaseMarketValue": 100000,
+                "organizationalBaseMarketValue": 0,
+                "accountBaseNotionalMarketValue": 0,
+                "organizationalBaseNotionalMarketValue": 0
+              },
+              "leverage": {
+                "loanToValue": 1.048812
+              },
+              "tax": {
+                "unrealized": {
+                  "totalGain": 2000,
+                  "totalLoss": -10081.0300000000028,
+                  "netGainLoss": -8081.030000000028,
+                  "taxLiability": 300,
+                  "taxGroups": [
+                    {
+                      "type": "SHORT_TERM",
+                      "gain": 2000,
+                      "loss": -10081.030000000028,
+                      "net": -100081.030000000028,
+                      "taxLiability": 300,
+                      "contributors": [
+                        {
+                          "lotId": "open-lot-2",
+                          "positionId": "3242234",
+                          "contribution": -100081.030000000028,
+                          "taxLiability": 300
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "realized": {
+                  "totalGain": 2000,
+                  "totalLoss": -10081.0300000000028,
+                  "netGainLoss": -8081.030000000028,
+                  "taxLiability": 300,
+                  "taxGroups": [
+                    {
+                      "type": "SHORT_TERM",
+                      "gain": 2000,
+                      "loss": -10081.030000000028,
+                      "net": -100081.030000000028,
+                      "taxLiability": 300,
+                      "contributors": [
+                        {
+                          "lotId": "open-lot-2",
+                          "positionId": "3242234",
+                          "contribution": -100081.030000000028,
+                          "taxLiability": 300
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "taxDate": "2022-05-31"
+              }
+            }
+          ],
+          "dynamicSleeves": [
+            {
+              "tag": "string",
+              "value": "string",
+              "portfolio": {
+                "risk": {
+                  "totalRisk": 0.231656,
+                  "totalStandaloneRisk": 0.231656,
+                  "positionContributors": [
+                    {
+                      "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+
+                  ],
+                  "factorContributors": [
+                    {
+                      "blockName": "rates",
+                      "contribution": 3.708406,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                          "contribution": 0.024969,
+                          "standalone": 0.024969,
+                          "diversification": 0.024969,
+                          "securityStandalone": 0.024969,
+                          "securityCorrelation": 0.024969
+                        }
+                      ],
+                      "exposure": 2.478438,
+                      "standalone": 0.013102
+                    }
+                  ],
+                  "fxFactorContributors": [
+                    {
+                      "blockName": "rates",
+                      "contribution": 3.708406,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                          "contribution": 0.024969,
+                          "standalone": 0.024969,
+                          "diversification": 0.024969,
+                          "securityStandalone": 0.024969,
+                          "securityCorrelation": 0.024969
+                        }
+                      ],
+                      "exposure": 2.478438,
+                      "standalone": 0.013102
+                    }
+                  ],
+                  "totalIdioContribution": 0.108843,
+                  "totalIdioStandaloneRisk": 0.108843,
+                  "idioPositionContributors": [
+                    {
+                      "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+                  ],
+                  "beta": 0,
+                  "correlation": 0
+                },
+                "tailRisk": {
+                  "hvar": {
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-1234-asdfk-1234klsdf",
+                        "contributon": "0.024969",
+                        "type": "INTEREST"
+                      }
+                    ]
+                  },
+                  "expectedShortfall": {
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-1234-asdfk-1234klsdf",
+                        "contributon": "0.024969",
+                        "type": "INTEREST"
+                      }
+                    ]
+                  }
+                },
+                "creditRisk": {
+                  "expectedLoss": 0.000253,
+                  "unexpectedLoss": 0.007035,
+                  "positionContributors": [
+                    {
+                      "id": "asdfsd-asdfsadfq2-asdflds-q3rlsadf",
+                      "expectLossContribution": 0.000112,
+                      "expectLossContributionPercent": 0.441097,
+                      "unexpectedLossContribution": 0.003104,
+                      "unexpectedLossContributionPercent": 0.4411839
+                    }
+                  ]
+                },
+                "scenarios": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-1234-asdfk-1234klsdf",
+                        "contributon": "0.024969",
+                        "type": "INTEREST"
+                      }
+                    ],
+                    "factorContributors": [
+                      {
+                        "blockName": "Rates",
+                        "contribution": 3.708406
+                      }
+                    ]
+                  }
+                ],
+                "breakdowns": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "sectors": [
+                      {
+                        "name": "string",
+                        "displayName": "string",
+                        "contribution": 0,
+                        "positionContributors": [
+                          {
+                            "id":"asdfsd-1234-asdfk-1234klsdf",
+                            "contributon": "0.024969",
+                            "type": "INTEREST"
+                          }
+                        ],
+                        "children": [
+                          {}
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "characteristics": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "total": 0
+                  }
+                ],
+                "performance": {
+                  "timeSeries": [],
+                  "expostMetrics": {},
+                  "positionPerformanceDateRanges": [
+                    {
+                      "id":"asdf23-aesdfs-asdfsd-asdfsdf",
+                      "dateInterval": {
+                        "startDate": "2017-01-01",
+                        "stopDate": "2019-12-31"
+                      }
+                    }
+
+                  ],
+                  "fee": 0,
+                  "timeSeriesNet": [
+                    {
+                      "periodReturn": 0,
+                      "cumulativeReturn": 0,
+                      "dateInterval": {
+                        "startDate": "2017-01-01",
+                        "stopDate": "2019-12-31"
+                      }
+                    }
+                  ],
+                  "expostMetricsNet": {
+                    "numberOfMonth": 36,
+                    "metrics": [
+                      {
+                        "startDate": "2017-01-01",
+                        "stopDate": "2019-12-31",
+                        "exPostType": "TRR_ANN",
+                        "exPostPeriod": "ONE_YEAR",
+                        "displayName": "AAA",
+                        "name": "A desc for AAA",
+                        "value": 0.0003
+                      }
+                    ],
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  }
+                },
+                "wealthProjections": {
+                  "assumtions": {
+                    "inflationAssumption": 0.021,
+                    "netAlpha": 0.00732,
+                    "cashFlows": [
+                      {
+                        "period": 3,
+                        "contribution": 10000
+                      }
+                    ],
+                    "yearsInProjection": 15
+                  },
+                  "projection": {
+                    "initialValue": 0,
+                    "real": [
+                      {
+                        "period": 0,
+                        "expectedReturn": 0,
+                        "volatility": 0,
+                        "mean": {
+                          "cumulativeReturn": 0,
+                          "annualizedReturn": 0,
+                          "portfolioValue": 0
+                        },
+                        "percentileReturns": [
+                          {
+                            "percentile": 0,
+                            "cumulativeReturn": 0,
+                            "annualizedReturn": 0,
+                            "portfolioValue": 0
+                          }
+                        ]
+                      }
+                    ],
+                    "nominal": [
+                      {
+                        "period": 0,
+                        "expectedReturn": 0,
+                        "volatility": 0,
+                        "mean": {
+                          "cumulativeReturn": 0,
+                          "annualizedReturn": 0,
+                          "portfolioValue": 0
+                        },
+                        "percentileReturns": [
+                          {
+                            "percentile": 0,
+                            "cumulativeReturn": 0,
+                            "annualizedReturn": 0,
+                            "portfolioValue": 0
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "cashFlowProjection": {
+                  "total": 107.3,
+                  "dateInterval": {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  },
+                  "noIncomeSecurities": [
+                    "string"
+                  ],
+                  "cashFlows": [
+                    {
+                      "date": "2024-01-14",
+                      "total": 107.3,
+                      "positionContributors": [
+                        {
+                          "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                          "contribution": 0.024969,
+                          "type": "INTEREST"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "nav": {
+                  "accountBaseMarketValue": 100000,
+                  "organizationalBaseMarketValue": 0,
+                  "accountBaseNotionalMarketValue": 0,
+                  "organizationalBaseNotionalMarketValue": 0
+                },
+                "leverage": {
+                  "loanToValue": 1.048812
+                },
+                "esg": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "coverageThreshold": 0,
+                    "coverage": 0,
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                        "contribution": 0.024969,
+                        "type": "INTEREST"
+                      }
+                    ]
+                  }
+                ],
+                "tax": {
+                  "unrealized": {
+                    "totalGain": 2000,
+                    "totalLoss": -10081.0300000000028,
+                    "netGainLoss": -8081.030000000028,
+                    "taxLiability": 300,
+                    "taxGroups": [
+                      {
+                        "type": "SHORT_TERM",
+                        "gain": 2000,
+                        "loss": -10081.030000000028,
+                        "net": -100081.030000000028,
+                        "taxLiability": 300,
+                        "contributors": [
+                          {
+                            "lotId": "open-lot-2",
+                            "positionId": "3242234",
+                            "contribution": -100081.030000000028,
+                            "taxLiability": 300
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "realized": {
+                    "totalGain": 2000,
+                    "totalLoss": -10081.0300000000028,
+                    "netGainLoss": -8081.030000000028,
+                    "taxLiability": 300,
+                    "taxGroups": [
+                      {
+                        "type": "SHORT_TERM",
+                        "gain": 2000,
+                        "loss": -10081.030000000028,
+                        "net": -100081.030000000028,
+                        "taxLiability": 300,
+                        "contributors": [
+                          {
+                            "lotId": "open-lot-2",
+                            "positionId": "3242234",
+                            "contribution": -100081.030000000028,
+                            "taxLiability": 300
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "taxDate": "2022-05-31"
+                }
+              },
+              "benchmark": {
+                "risk": {
+                  "totalRisk": 0.231656,
+                  "totalStandaloneRisk": 0.231656,
+                  "positionContributors": [
+                    {
+                      "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+
+                  ],
+                  "factorContributors": [
+                    {
+                      "blockName": "rates",
+                      "contribution": 3.708406,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                          "contribution": 0.024969,
+                          "standalone": 0.024969,
+                          "diversification": 0.024969,
+                          "securityStandalone": 0.024969,
+                          "securityCorrelation": 0.024969
+                        }
+                      ],
+                      "exposure": 2.478438,
+                      "standalone": 0.013102
+                    }
+                  ],
+                  "fxFactorContributors": [
+                    {
+                      "blockName": "rates",
+                      "contribution": 3.708406,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                          "contribution": 0.024969,
+                          "standalone": 0.024969,
+                          "diversification": 0.024969,
+                          "securityStandalone": 0.024969,
+                          "securityCorrelation": 0.024969
+                        }
+                      ],
+                      "exposure": 2.478438,
+                      "standalone": 0.013102
+                    }
+                  ],
+                  "totalIdioContribution": 0.108843,
+                  "totalIdioStandaloneRisk": 0.108843,
+                  "idioPositionContributors": [
+                    {
+                      "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+                  ],
+                  "beta": 0,
+                  "correlation": 0
+                },
+                "tailRisk": {
+                  "hvar": {
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-1234-asdfk-1234klsdf",
+                        "contributon": "0.024969",
+                        "type": "INTEREST"
+                      }
+                    ]
+                  },
+                  "expectedShortfall": {
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-1234-asdfk-1234klsdf",
+                        "contributon": "0.024969",
+                        "type": "INTEREST"
+                      }
+                    ]
+                  }
+                },
+                "creditRisk": {
+                  "expectedLoss": 0.000253,
+                  "unexpectedLoss": 0.007035,
+                  "positionContributors": [
+                    {
+                      "id": "asdfsd-asdfsadfq2-asdflds-q3rlsadf",
+                      "expectLossContribution": 0.000112,
+                      "expectLossContributionPercent": 0.441097,
+                      "unexpectedLossContribution": 0.003104,
+                      "unexpectedLossContributionPercent": 0.4411839
+                    }
+                  ]
+                },
+                "scenarios": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-1234-asdfk-1234klsdf",
+                        "contributon": "0.024969",
+                        "type": "INTEREST"
+                      }
+                    ],
+                    "factorContributors": [
+                      {
+                        "blockName": "Rates",
+                        "contribution": 3.708406
+                      }
+                    ]
+                  }
+                ],
+                "breakdowns": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "sectors": [
+                      {
+                        "name": "string",
+                        "displayName": "string",
+                        "contribution": 0,
+                        "positionContributors": [
+                          {
+                            "id":"asdfsd-1234-asdfk-1234klsdf",
+                            "contributon": "0.024969",
+                            "type": "INTEREST"
+                          }
+                        ],
+                        "children": [
+                          {}
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "characteristics": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "total": 0
+                  }
+                ],
+                "performance": {
+                  "timeSeries": [],
+                  "expostMetrics": {},
+                  "positionPerformanceDateRanges": [
+                    {
+                      "id":"asdf23-aesdfs-asdfsd-asdfsdf",
+                      "dateInterval": {
+                        "startDate": "2017-01-01",
+                        "stopDate": "2019-12-31"
+                      }
+                    }
+
+                  ],
+                  "fee": 0,
+                  "timeSeriesNet": [
+                    {
+                      "periodReturn": 0,
+                      "cumulativeReturn": 0,
+                      "dateInterval": {
+                        "startDate": "2017-01-01",
+                        "stopDate": "2019-12-31"
+                      }
+                    }
+                  ],
+                  "expostMetricsNet": {
+                    "numberOfMonth": 36,
+                    "metrics": [
+                      {
+                        "startDate": "2017-01-01",
+                        "stopDate": "2019-12-31",
+                        "exPostType": "TRR_ANN",
+                        "exPostPeriod": "ONE_YEAR",
+                        "displayName": "AAA",
+                        "name": "A desc for AAA",
+                        "value": 0.0003
+                      }
+                    ],
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  }
+                },
+                "wealthProjections": {
+                  "assumtions": {
+                    "inflationAssumption": 0.021,
+                    "netAlpha": 0.00732,
+                    "cashFlows": [
+                      {
+                        "period": 3,
+                        "contribution": 10000
+                      }
+                    ],
+                    "yearsInProjection": 15
+                  },
+                  "projection": {
+                    "initialValue": 0,
+                    "real": [
+                      {
+                        "period": 0,
+                        "expectedReturn": 0,
+                        "volatility": 0,
+                        "mean": {
+                          "cumulativeReturn": 0,
+                          "annualizedReturn": 0,
+                          "portfolioValue": 0
+                        },
+                        "percentileReturns": [
+                          {
+                            "percentile": 0,
+                            "cumulativeReturn": 0,
+                            "annualizedReturn": 0,
+                            "portfolioValue": 0
+                          }
+                        ]
+                      }
+                    ],
+                    "nominal": [
+                      {
+                        "period": 0,
+                        "expectedReturn": 0,
+                        "volatility": 0,
+                        "mean": {
+                          "cumulativeReturn": 0,
+                          "annualizedReturn": 0,
+                          "portfolioValue": 0
+                        },
+                        "percentileReturns": [
+                          {
+                            "percentile": 0,
+                            "cumulativeReturn": 0,
+                            "annualizedReturn": 0,
+                            "portfolioValue": 0
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "cashFlowProjection": {
+                  "total": 107.3,
+                  "dateInterval": {
+                    "startDate": "2017-01-01",
+                    "stopDate": "2019-12-31"
+                  },
+                  "noIncomeSecurities": [
+                    "string"
+                  ],
+                  "cashFlows": [
+                    {
+                      "date": "2024-01-14",
+                      "total": 107.3,
+                      "positionContributors": [
+                        {
+                          "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                          "contribution": 0.024969,
+                          "type": "INTEREST"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "nav": {
+                  "accountBaseMarketValue": 100000,
+                  "organizationalBaseMarketValue": 0,
+                  "accountBaseNotionalMarketValue": 0,
+                  "organizationalBaseNotionalMarketValue": 0
+                },
+                "leverage": {
+                  "loanToValue": 1.048812
+                },
+                "esg": [
+                  {
+                    "name": "string",
+                    "displayName": "string",
+                    "coverageThreshold": 0,
+                    "coverage": 0,
+                    "total": 0,
+                    "positionContributors": [
+                      {
+                        "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                        "contribution": 0.024969,
+                        "type": "INTEREST"
+                      }
+                    ]
+                  }
+                ],
+                "tax": {
+                  "unrealized": {
+                    "totalGain": 2000,
+                    "totalLoss": -10081.0300000000028,
+                    "netGainLoss": -8081.030000000028,
+                    "taxLiability": 300,
+                    "taxGroups": [
+                      {
+                        "type": "SHORT_TERM",
+                        "gain": 2000,
+                        "loss": -10081.030000000028,
+                        "net": -100081.030000000028,
+                        "taxLiability": 300,
+                        "contributors": [
+                          {
+                            "lotId": "open-lot-2",
+                            "positionId": "3242234",
+                            "contribution": -100081.030000000028,
+                            "taxLiability": 300
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "realized": {
+                    "totalGain": 2000,
+                    "totalLoss": -10081.0300000000028,
+                    "netGainLoss": -8081.030000000028,
+                    "taxLiability": 300,
+                    "taxGroups": [
+                      {
+                        "type": "SHORT_TERM",
+                        "gain": 2000,
+                        "loss": -10081.030000000028,
+                        "net": -100081.030000000028,
+                        "taxLiability": 300,
+                        "contributors": [
+                          {
+                            "lotId": "open-lot-2",
+                            "positionId": "3242234",
+                            "contribution": -100081.030000000028,
+                            "taxLiability": 300
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "taxDate": "2022-05-31"
+                }
+              },
+              "sleeves": [
+                {
+                  "name": "string",
+                  "risk": {
+                    "totalRisk": 0.231656,
+                    "totalStandaloneRisk": 0.231656,
+                    "positionContributors": [
+                      {
+                        "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                        "contribution": 0.024969,
+                        "standalone": 0.024969,
+                        "diversification": 0.024969,
+                        "securityStandalone": 0.024969,
+                        "securityCorrelation": 0.024969
+                      }
+
+                    ],
+                    "factorContributors": [
+                      {
+                        "blockName": "rates",
+                        "contribution": 3.708406,
+                        "positionContributors": [
+                          {
+                            "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                            "contribution": 0.024969,
+                            "standalone": 0.024969,
+                            "diversification": 0.024969,
+                            "securityStandalone": 0.024969,
+                            "securityCorrelation": 0.024969
+                          }
+                        ],
+                        "exposure": 2.478438,
+                        "standalone": 0.013102
+                      }
+                    ],
+                    "fxFactorContributors": [
+                      {
+                        "blockName": "rates",
+                        "contribution": 3.708406,
+                        "positionContributors": [
+                          {
+                            "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                            "contribution": 0.024969,
+                            "standalone": 0.024969,
+                            "diversification": 0.024969,
+                            "securityStandalone": 0.024969,
+                            "securityCorrelation": 0.024969
+                          }
+                        ],
+                        "exposure": 2.478438,
+                        "standalone": 0.013102
+                      }
+                    ],
+                    "totalIdioContribution": 0.108843,
+                    "totalIdioStandaloneRisk": 0.108843,
+                    "idioPositionContributors": [
+                      {
+                        "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                        "contribution": 0.024969,
+                        "standalone": 0.024969,
+                        "diversification": 0.024969,
+                        "securityStandalone": 0.024969,
+                        "securityCorrelation": 0.024969
+                      }
+                    ],
+                    "beta": 0,
+                    "correlation": 0
+                  },
+                  "tailRisk": {
+                    "hvar": {
+                      "total": 0,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-1234-asdfk-1234klsdf",
+                          "contributon": "0.024969",
+                          "type": "INTEREST"
+                        }
+                      ]
+                    },
+                    "expectedShortfall": {
+                      "total": 0,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-1234-asdfk-1234klsdf",
+                          "contributon": "0.024969",
+                          "type": "INTEREST"
+                        }
+                      ]
+                    }
+                  },
+                  "creditRisk": {
+                    "expectedLoss": 0.000253,
+                    "unexpectedLoss": 0.007035,
+                    "positionContributors": [
+                      {
+                        "id": "asdfsd-asdfsadfq2-asdflds-q3rlsadf",
+                        "expectLossContribution": 0.000112,
+                        "expectLossContributionPercent": 0.441097,
+                        "unexpectedLossContribution": 0.003104,
+                        "unexpectedLossContributionPercent": 0.4411839
+                      }
+                    ]
+                  },
+                  "scenarios": [
+                    {
+                      "name": "string",
+                      "displayName": "string",
+                      "total": 0,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-1234-asdfk-1234klsdf",
+                          "contributon": "0.024969",
+                          "type": "INTEREST"
+                        }
+                      ],
+                      "factorContributors": [
+                        {
+                          "blockName": "Rates",
+                          "contribution": 3.708406
+                        }
+                      ]
+                    }
+                  ],
+                  "breakdowns": [
+                    {
+                      "name": "string",
+                      "displayName": "string",
+                      "sectors": [
+                        {
+                          "name": "string",
+                          "displayName": "string",
+                          "contribution": 0,
+                          "positionContributors": [
+                            {
+                              "id":"asdfsd-1234-asdfk-1234klsdf",
+                              "contributon": "0.024969",
+                              "type": "INTEREST"
+                            }
+                          ],
+                          "children": [
+                            {}
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "characteristics": [
+                    {
+                      "name": "string",
+                      "displayName": "string",
+                      "total": 0
+                    }
+                  ],
+                  "performance": {
+                    "timeSeries": [],
+                    "expostMetrics": {},
+                    "positionPerformanceDateRanges": [
+                      {
+                        "id":"asdf23-aesdfs-asdfsd-asdfsdf",
+                        "dateInterval": {
+                          "startDate": "2017-01-01",
+                          "stopDate": "2019-12-31"
+                        }
+                      }
+
+                    ],
+                    "fee": 0,
+                    "timeSeriesNet": [
+                      {
+                        "periodReturn": 0,
+                        "cumulativeReturn": 0,
+                        "dateInterval": {
+                          "startDate": "2017-01-01",
+                          "stopDate": "2019-12-31"
+                        }
+                      }
+                    ],
+                    "expostMetricsNet": {
+                      "numberOfMonth": 36,
+                      "metrics": [
+                        {
+                          "startDate": "2017-01-01",
+                          "stopDate": "2019-12-31",
+                          "exPostType": "TRR_ANN",
+                          "exPostPeriod": "ONE_YEAR",
+                          "displayName": "AAA",
+                          "name": "A desc for AAA",
+                          "value": 0.0003
+                        }
+                      ],
+                      "startDate": "2017-01-01",
+                      "stopDate": "2019-12-31"
+                    }
+                  },
+                  "wealthProjections": {
+                    "assumtions": {
+                      "inflationAssumption": 0.021,
+                      "netAlpha": 0.00732,
+                      "cashFlows": [
+                        {
+                          "period": 3,
+                          "contribution": 10000
+                        }
+                      ],
+                      "yearsInProjection": 15
+                    },
+                    "projection": {
+                      "initialValue": 0,
+                      "real": [
+                        {
+                          "period": 0,
+                          "expectedReturn": 0,
+                          "volatility": 0,
+                          "mean": {
+                            "cumulativeReturn": 0,
+                            "annualizedReturn": 0,
+                            "portfolioValue": 0
+                          },
+                          "percentileReturns": [
+                            {
+                              "percentile": 0,
+                              "cumulativeReturn": 0,
+                              "annualizedReturn": 0,
+                              "portfolioValue": 0
+                            }
+                          ]
+                        }
+                      ],
+                      "nominal": [
+                        {
+                          "period": 0,
+                          "expectedReturn": 0,
+                          "volatility": 0,
+                          "mean": {
+                            "cumulativeReturn": 0,
+                            "annualizedReturn": 0,
+                            "portfolioValue": 0
+                          },
+                          "percentileReturns": [
+                            {
+                              "percentile": 0,
+                              "cumulativeReturn": 0,
+                              "annualizedReturn": 0,
+                              "portfolioValue": 0
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "cashFlowProjection": {
+                    "total": 107.3,
+                    "dateInterval": {
+                      "startDate": "2017-01-01",
+                      "stopDate": "2019-12-31"
+                    },
+                    "noIncomeSecurities": [
+                      "string"
+                    ],
+                    "cashFlows": [
+                      {
+                        "date": "2024-01-14",
+                        "total": 107.3,
+                        "positionContributors": [
+                          {
+                            "id": "asdfsdaf-asdfasdf-wqerwqer-2134",
+                            "contribution": 0.024969,
+                            "type": "INTEREST"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "nav": {
+                    "accountBaseMarketValue": 100000,
+                    "organizationalBaseMarketValue": 0,
+                    "accountBaseNotionalMarketValue": 0,
+                    "organizationalBaseNotionalMarketValue": 0
+                  },
+                  "leverage": {
+                    "loanToValue": 1.048812
+                  },
+                  "tax": {
+                    "unrealized": {
+                      "totalGain": 2000,
+                      "totalLoss": -10081.0300000000028,
+                      "netGainLoss": -8081.030000000028,
+                      "taxLiability": 300,
+                      "taxGroups": [
+                        {
+                          "type": "SHORT_TERM",
+                          "gain": 2000,
+                          "loss": -10081.030000000028,
+                          "net": -100081.030000000028,
+                          "taxLiability": 300,
+                          "contributors": [
+                            {
+                              "lotId": "open-lot-2",
+                              "positionId": "3242234",
+                              "contribution": -100081.030000000028,
+                              "taxLiability": 300
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "realized": {
+                      "totalGain": 2000,
+                      "totalLoss": -10081.0300000000028,
+                      "netGainLoss": -8081.030000000028,
+                      "taxLiability": 300,
+                      "taxGroups": [
+                        {
+                          "type": "SHORT_TERM",
+                          "gain": 2000,
+                          "loss": -10081.030000000028,
+                          "net": -100081.030000000028,
+                          "taxLiability": 300,
+                          "contributors": [
+                            {
+                              "lotId": "open-lot-2",
+                              "positionId": "3242234",
+                              "contribution": -100081.030000000028,
+                              "taxLiability": 300
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "taxDate": "2022-05-31"
+                  }
+                }
+              ],
+              "active": {
+                "risk": {
+                  "totalRisk": 0.231656,
+                  "totalStandaloneRisk": 0.231656,
+                  "positionContributors": [
+                    {
+                      "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+
+                  ],
+                  "factorContributors": [
+                    {
+                      "blockName": "rates",
+                      "contribution": 3.708406,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                          "contribution": 0.024969,
+                          "standalone": 0.024969,
+                          "diversification": 0.024969,
+                          "securityStandalone": 0.024969,
+                          "securityCorrelation": 0.024969
+                        }
+                      ],
+                      "exposure": 2.478438,
+                      "standalone": 0.013102
+                    }
+                  ],
+                  "fxFactorContributors": [
+                    {
+                      "blockName": "rates",
+                      "contribution": 3.708406,
+                      "positionContributors": [
+                        {
+                          "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                          "contribution": 0.024969,
+                          "standalone": 0.024969,
+                          "diversification": 0.024969,
+                          "securityStandalone": 0.024969,
+                          "securityCorrelation": 0.024969
+                        }
+                      ],
+                      "exposure": 2.478438,
+                      "standalone": 0.013102
+                    }
+                  ],
+                  "totalIdioContribution": 0.108843,
+                  "totalIdioStandaloneRisk": 0.108843,
+                  "idioPositionContributors": [
+                    {
+                      "id":"asdfsd-asdfsadf-asdfsda-asdfasd",
+                      "contribution": 0.024969,
+                      "standalone": 0.024969,
+                      "diversification": 0.024969,
+                      "securityStandalone": 0.024969,
+                      "securityCorrelation": 0.024969
+                    }
+                  ],
+                  "beta": 0,
+                  "correlation": 0
+                }
+              }
+            }
+          ],
+          "esg": [
+            {
+              "name": "string",
+              "displayName": "string",
+              "coverageThreshould": 0,
+              "coverage": 0,
+              "total": 0,
+              "positionContributors": [
+                {
+                  "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+                  "contribution": 0.024969,
+                  "type": "INTEREST"
+                }
+              ]
+            }
+          ],
+          "tax": {
+            "unrealized": {
+              "totalGain": 2000,
+              "totalLoss": -10081.0300000000028,
+              "netGainLoss": -8081.030000000028,
+              "taxLiability": 300,
+              "taxGroups": [
+                {
+                  "type": "SHORT_TERM",
+                  "gain": 2000,
+                  "loss": -10081.030000000028,
+                  "net": -100081.030000000028,
+                  "taxLiability": 300,
+                  "contributors": [
+                    {
+                      "lotId": "open-lot-2",
+                      "positionId": "3242234",
+                      "contribution": -100081.030000000028,
+                      "taxLiability": 300
+                    }
+                  ]
+                }
+              ]
+            },
+            "realized": {
+              "totalGain": 2000,
+              "totalLoss": -10081.0300000000028,
+              "netGainLoss": -8081.030000000028,
+              "taxLiability": 300,
+              "taxGroups": [
+                {
+                  "type": "SHORT_TERM",
+                  "gain": 2000,
+                  "loss": -10081.030000000028,
+                  "net": -100081.030000000028,
+                  "taxLiability": 300,
+                  "contributors": [
+                    {
+                      "lotId": "open-lot-2",
+                      "positionId": "3242234",
+                      "contribution": -100081.030000000028,
+                      "taxLiability": 300
+                    }
+                  ]
+                }
+              ]
+            },
+            "taxDate": "2022-05-31"
+          }
+        },
+        "active": {
+          "id": "string",
+          "risk": {},
+          "sleeves": {}
+        },
+        "ruleEvaluations": [],
+        "scores": [],
+        "custom": {}
+      },
+      "portfolios": []
+    },
+    "proposed": {},
+    "customAnalytics": [],
+    "comments": [],
+    "taxAnalytics": {},
+    "proposalTaxAnalytics": {},
+    "ruleEvaluations": [],
+    "scores": [],
+    "status": {},
+    "changeAnalytics": []
+  }
 }
