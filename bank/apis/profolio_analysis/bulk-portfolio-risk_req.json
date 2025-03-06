@@ -1,0 +1,50 @@
+{
+  "securities": [
+    {
+      "identifiers": {
+        "cusip": "SBF7P0024",
+        "sedol": "BF7P002",
+        "isin": "AU0000013070",
+        "clientId": "B000000MMM"
+      },
+      "proxyIdentifiers": {
+        "cusip": "464287200"
+      }
+    },
+    {
+      "identifiers": {
+        "cusip": "SBF7P0024",
+        "sedol": "BF7P002",
+        "isin": "AU0000013070",
+        "clientId": "B000000MMM"
+      },
+      "proxyIdentifiers": {
+        "cusip": "464287200"
+      }
+    },
+    {
+      "identifiers": {
+        "cusip": "SBF7P0024",
+        "sedol": "BF7P002",
+        "isin": "AU0000013070",
+        "clientId": "B000000MMM"
+      },
+      "proxyIdentifiers": {
+        "cusip": "464287200"
+      }
+    }
+  ],
+  "weights": [
+    [0.4,0.3,0.3],
+    [0.4,0.3,0.3],
+    [0.4,0.3,0.3],
+    [0.4,0.3,0.3],
+    [0.4,0.3,0.3],
+    [0.4,0.3,0.3],
+    [0.4,0.3,0.3],
+    [0.4,0.3,0.3],
+    [0.4,0.3,0.3],
+    [0.4,0.3,0.3]
+  ],
+  "currency": "USD"
+}
