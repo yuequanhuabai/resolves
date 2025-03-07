@@ -1,0 +1,46 @@
+{
+  "analysis": {
+    "id": "bf90c797-edef-4509-8c13-c1aee6d6dc11",
+    "date": "2020-02-02",
+    "original": {},
+    "portfolios": [
+      {
+        "portfolio": {
+          "id": "PORTFOLIO-1",
+          "date": "2018-03-31",
+          "proxiedPositions": [],
+          "risk": {},
+          "tailRisk": {},
+          "creditRisk": {},
+          "scenarios": [],
+          "breakdowns": [],
+          "characteristics": [],
+          "performance": {},
+          "welthProjection": {},
+          "cashFlowProjection": {},
+          "nav": {},
+          "leverage": {},
+          "liquidity": {},
+          "sleeves": [],
+          "dynamicSleeves": [],
+          "esg": [],
+          "tax": {}
+        },
+        "benchmark": {},
+        "active": {},
+        "ruleEvaluations": [],
+        "scores": [],
+        "custom": {}
+      }
+    ]
+  },
+  "proposed": {},
+  "customAnalytics": [],
+  "comments": [],
+  "taxAnalytics": {},
+  "proposalTaxAnalytics": {},
+  "ruleEvaluations": [],
+  "scores": [],
+  "status": {},
+  "changeAnalytics": []
+}
