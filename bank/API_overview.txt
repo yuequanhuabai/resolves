@@ -1,0 +1,76 @@
+portfolio analytics
+analyze total portfolio:
+
+proposals
+analyze proposal:
+generate proposal:
+generate proposal review:
+retrieve proposal:
+proposal status:
+proposal supplement:
+
+portfolios
+intraday portfolio:
+
+securities
+intraday securities:
+structured products:
+
+//========================================================================================================================================
+
+
+portfolio analytics
+analyze total portfolio:
+
+    This stateless API takes in a complete portfolio, including positions and attributes, and returns full portfolio analysis,
+including exposure, asset allocation, volatility, risk decomposition,stress tests,tail metrics, alerts evaluations. To list
+a few sample use cases, the API can be used to return:
+
+a) Full portfolio analysis on the given portfolio as well the reference portfolio (model or SAA/TAA) to power third-party
+   applications.
+b) Alerts evaluation, such as the checks related to the suitability assessment real-time
+c) Risk analytics to feed third-party applications real-time
+
+
+proposals
+analyze proposal:
+    This stateless API takes in a proposal, incl. positions for both the current and proposed portfolios, and returns a
+proposal ananlysis. It allows third-applicates to call Aladdin's Proposal Analyst to analyse an investment proposal
+
+generate proposal:
+    This stateless API takes in a complete portfolio or household, including positions and other portfolioi and proposal
+attributes, and returns an optimized proposal with the option to return a proposal analysis. It allows third-party
+applications to call Aladdin's Proposal Generator to automatically generate an investment proposal
+
+generate proposal review:
+    This hybrid stateful/stateless API behaves the same as Generate Proposal but additionally persists the optimized
+proposal within Aladdin Wealth for use in Aladdin Wealth apps
+
+retrieve proposal:
+    This read-only API takes in an ID for a proposal created within Aladdin Wealth and returns the stored full proposal
+analysis results. This can be used to power third-party reporting systems and / or communicate proposed
+transactions  to the Bank's order management system
+
+proposal status:
+    This read/write API takes in an ID for a proposal created within Aladdin Wealth and status and changes the status of
+the proposal in Aladdin Wealth. The updated status will be visible to users with Aladdin Wealth frontend tools
+
+proposal supplement:
+    This read/write API takes in a proposal ID for a proposal created within Aladdin Wealth and pre-defined data structure
+to update the supplemental data of the proposal.
+
+portfolios
+intraday portfolio:
+    This read/write API takes in a complete portfolio, including positions and attributes and updates the portfoloio
+infromation (e.g. risk profile) and positions within Aladdin Wealth. The updated portfolio information will be visible
+in targeted areas within Aladdin Wealth applications, including the interactive proposal construction journey.
+
+securities
+intraday securities:
+    This API facilitates the creation of new securities intraday, allowing for the addition of new assets, such as FX Forwards,
+to client accounts within the same day. It also includes status monitoring to ensure the setup operation is
+completed within Aladdin Wealth.
+
+structured products:
+    This read/write API allows for the creation of new structured product securities intraday, including status
+onitoring as the setup operation is completed within Aladdin Wealth.

@@ -1,0 +1,11 @@
+Otherwise , sensitive data is only "needed" in order to provide a good user experience
+
+
+Such data may appear include tables and deep-dives in admin views (Aladdin Wealth "vision"), proposals and portfolios in
+client views (Aladdin Wealth "Focus"),and in client reports generated through Aladdin Wealth. For a more detailed demo of
+where sensitive data may appear, please contact your Aladdin Wealth Relationship Manager.
+
+Figure 1. Example of personal data in the Aladdin Wealth front end
+
+
+encryption-at-rest

@@ -1,0 +1,13 @@
+Sensitive data APIs: By implementing sensitive data API endpoints, Aladdin Wealth's front end can make requests
+directly from the browser to display sensitive data without it leaving your network
+
+
+ß@ƒÉ‚€apiÓÐÊ²÷á…^„e£¿
+
+ClientDataAPI: an API to retrieve sensitive client(or advisor) data, generally in tables or individual account views, and
+				to update metadata(e.g. comments based on a recent meeting or conversation)
+ClientDataSearchAPI£º an API to unmask results when searching for individuals or households(e.g. from a search bar)
+
+Send BRS sensitive data [BRS uses encryption-at-rest]   Yes
+
+decrypted  on-the-fly

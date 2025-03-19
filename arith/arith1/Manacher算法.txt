@@ -1,0 +1,14 @@
+Manacher 算法
+
+論文：
+A New Linear-Time 'On-Line' Algorithm for Finding the Smallest Initial Palindrome of a String
+
+
+
+依賴算法：
+
+Knuth-Morris-Pratt (KMP) 字符串匹配算法
+Weiner 的算法
+
+
+Cook 的线性时间模拟算法 --》 两向（two-way）确定性下推自动机（DPDA）
