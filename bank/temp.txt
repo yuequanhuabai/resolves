@@ -11,3 +11,19 @@ ClientDataSearchAPI£º an API to unmask results when searching for individuals or
 Send BRS sensitive data [BRS uses encryption-at-rest]   Yes
 
 decrypted  on-the-fly
+
+
+
+1. a formal suggestion or plan; the act of making a suggestion: to submit/present/put forward a proposal
+to consider/discuss a proposal     to consider/discuss a proposal   to accept/approve/support/reject a proposal
+ ~ to do sth a proposal to build more office accommodation   ~that... His proposal that the system
+ should be changed was rejected   ~for sth The proposal for a new high-speed railway met with strong oppsition
+ for a new high-speed railway met with strong opposition.
+ ~on sth When will the minister publish his proposals on reform of the health service?
+ ~by/from sb two recent proposal by Vancouver City Council
+ under a ~  Under these proposals, the Commission will be significantly strenthened.
+ The Republicans in Congress will vote for the president's budget proposal  =>wordfinder note at deal
+
+
+2.an act of formally asking sb to marry you
+

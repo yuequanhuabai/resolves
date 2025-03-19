@@ -1,4 +1,12 @@
 portfolio analytics
+proposals
+portfolios
+securities
+
+//===========================================================================================================================================
+
+
+portfolio analytics
 analyze total portfolio:
 
 proposals
