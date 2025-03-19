@@ -1,0 +1,102 @@
+Aladdin by BlackRock
+
+Proposal generation & analysis api
+
+//==============================================================================================================================================================================
+
+Contents
+
+getting started
+
+features
+
+asset resolution
+
+request headers
+
+generate proposal
+
+generate proposal review
+
+analyze proposal
+
+retrieve proposal with analysis
+
+update proposal status
+
+endpoint testing
+
+//==============================================================================================================================================================================
+
+
+1. getting started
+
+This document serves as a user or developer guide for Aladdin Wealth's Proposal Generation & Analysis API. The
+API enables a caller to send a complete portfolio or household, including positions and other portfolio and
+proposal attributes, and returns an optimized proposal(optionally analyzed). It allows third-party applications
+to call Aladdin's Proposal Generator to automatically generate an investment proposal. Please note that, while
+this document covers the comprehensive suite of capabilities supported by the Proposal Generation & Analysis
+API, your firm's specific API integration requirements/access will be reviewed by your Aladdin Wealth
+Relationship Manager during the implementation process.
+
+
+
+
+2. change management
+
+Backward compatibility
+
+Aladdin will not:
+
+- remove, rename or change the type of existing fields that are returned in a response.
+- remove or rename an existing API endpint.
+
+Aladdin may:
+
+- add new API endpoints. Any newly added endpoint will not change the behavior of the existing endpoints.
+- add new optional request parameters or add fileds to objects in the body of a request for existing API
+endpoints. If not included, your requests will continue to perform as before. We will use sensible defaults
+when optioanal fields are note present.
+- add new fileds in API responses. Any newly added fields will not change the meaning of any existing field.
+- return new values for existing primitive fields in API responses, including additional enum values.
+
+All such changes are considered "Non-Breaking Changes" and will not increment the API version. The user
+should ensure their code handles changes of this nature without the need for a software or configuration
+change. All fields in responses should be treated as optianal unless explicitly documented as always present.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
