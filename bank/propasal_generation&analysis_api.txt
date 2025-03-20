@@ -65,6 +65,239 @@ should ensure their code handles changes of this nature without the need for a s
 change. All fields in responses should be treated as optianal unless explicitly documented as always present.
 
 
+3. proposal generation & analysis features
+
+    Investment Proposals(or Proposals) are a critival componnet of Aladdin Wealth. The Proposal API offers a range
+of functionalities centered around the creation, analysis, and management of investment proposals
+
+This API suite allows for:
+
+- Stateless portfolio submission to receive an optimized Proposal and its analysis, with an optional
+   persistence feature in Aladdin Wealth.
+- Stateless Proposal submission (pre-generated) to receive its analysis.
+- Retrieval of Proposals and their analysis, previously created the Aladdin Wealth front-end (or via this API)
+- Proposal status updates and commentary additions.
+
+This collection comprises of six endpoint which have been covered in detail in the upcoming sections.
+
+1. Generate Proposal (stateless)
+2. Generate Proposal Review(stateful)
+3. Analyze Proposal (stateless)
+4. Get Proposal (stateful)
+5. Update Proposal Status (stateful)
+6. Get Proposal Latest/Snapshot (with Analysis)(stateful)
+7. Update Proposal Supplement (stateful)
+
+Asset Resolution
+
+Before performing analysis on a protfolio or a proposal, its positions must be reconciled against securities in
+Aladdin. A single clientId may be used for each position (see Example 1). A clientId is an id provided by the
+client as a part of the overnight security master batch process. Alternatively, a set of public security identifiers
+may also be used in lieu of a clientId (see Example 2).  Both clientIds and public identifiers may be provided
+to maximize the likelihood a match is found.
+
+The API request must provide at least one of the following security identifiers to use for reconciling against
+Aladdin. If multiple ids are provided in the request, only one is used for asset resolution. The default order as
+shown below and can be configured with the help of your Aladdin Relationship Manager to determine what an
+appropriate set of proxies would be.
+
+1. clientId
+2. cusip
+3. sedol
+4. isin
+5. ric
+6  morningstarSecId
+7. wkn
+8. valoren
+
+Fallback, "proxy identifiers" may also be provided for any position in the portfolio. These proxy security
+identifiers will attempt to match against Aladdin if matching against the primary identifiers was unsucdcessful.
+A proxy should have similar characteristics and high correlation with the primary identifiers (i.e. identifiers=
+Facebook,proxyIdentifiers=US Tech ETF).
+
+Proposal Generation & Analysis Request and Response headers
+
+Please refer to hte interactive ProposalAPI.v1.html document to see request and response headers.
+
+
+4. generate proposal
+
+The Generate Proposal endpoint creates an investment proposal given a portfolio using the client specific
+guidelines. The request consists of a required aggregate object, which represents a parent entity that consists
+of either a single portfolio or a collection of portfolios, optional optimization parameters such as optimization
+reason, buy list, and optional analysis settings such as sleeve information and wealth projection settings. This
+endpoint returns the original portfolio, proposed portfolio, list of changes and optionally the proposal analysis.
+This API is purely stateless, any generated proposals and their analysis will not be persisted within Aladdin Wealth.
+
+Proposal generation is the core function for this endpoint, however, as convenience feature, it offers optional
+proposal analysis based on the generated proposal.
+
+Example:
+- Generate Proposal Request:
+    https://<client>.blackrock.com/api/aladdinwealth/proposal/v1/generate-proposal
+- Generate Proposal Request with Analysis:
+    https://<client>.blackrock.com/api/aladdinwealth/proposal/v1/generate-proposal?includeAnalysis=true
+
+Note: The preferred approach is for clients to send supplement.  sleeveInfo at the aggregate-level because the
+endpint will cascade the data down to be avalable for underlying accounts. However, clients can also pass
+supplement. sleeveInfo at the account-level, but that data has to be complete because it will NOT be merged
+from sleeveInfo at the aggregate account level. Additionally, directly passed account sleeveInfo will NEVER
+be available when analyzing the aggregate.
+
+Samples
+
+For sample requests and responses please refer to the interactive ProposalAPI.v1.html document.
+
+
+
+5. analyze proposal
+
+The analyze proposal endpint accepts an Investment Proposal, which is a comprised of an original portfolio. a
+proposed portfolio and changes details (like which tax lots are disposed in a sell trade). The output is a
+complete analysis
+
+Example:
+    https://<client>.blackrock.com/api/aladdinwealth/proposal/v1/analyze-proposal
+
+Note: The preferred approach is for clients to send supplement.sleeveInfo at the aggregate-level because the
+endpoint will cascade the data down to be available for underlying accounts. However, clients can also pass
+supplement.sleeveInfo at the account-level, but that data has to be complete because it will NOT be merged
+from sleeveInfo at the aggregate and account level. Additionally, directly passed account sleeveInfo will NEVER
+be available when analyzing the aggregate.
+
+Samples
+
+For sample requests and responses please refer to the interactive ProposalAPI.v1.html document.
+
+
+6. retrieve proposal
+
+The retreve proposal GET endpoint accepts a proposal id and returns a proposal, its workflow status and
+optionally its analysis.
+
+Example:
+
+- https://<client>.blackrock.com/api/aladdinwealth/proposal/v1/proposals/{id}
+- https://<client>.blackrock.com/api/aladdinwealth/proposal/v1/proposals/{id}?includeAnalysis=true
+
+
+Samples
+
+For sample requests and responses please refer to the interactive ProposalAPI.v1.html document.
+
+
+
+7. retrieve proposal with analysis
+
+The retrieve proposal GET endpoint accepts a proposal id and analysisId and returns a proposal, and its
+analysis. The response is returned ONLY for the most recent analysisId and failed for all others.
+
+Example:
+
+- https://<client>.blackrock.com/api/aladdinwealth/proposal/v1/proposals/{id}/analysis/{analysisId}
+
+
+Samples
+
+- For sample requests and responses please refer to the interactive ProposalAPI.v1.html document.
+
+
+8. update proposal status
+
+The update proposal status POST endpoint accepts a proposal id and request body to update the status of the proposal.
+
+Example:
+
+- https://<client>.blackrock.com/api/aladdinwealth/proposal/v1/{proposals/{id}/status
+
+Samples
+
+For sample requests and responses please refer to the interactive ProposalAPI.v1.html document.
+
+
+9. update proposal supplement
+
+The update Proposal Supplement PUT endpoint accepts a proposal id and request body to update the
+supplemental data of the proposal.
+
+Example:
+
+- https://<client>.blackrock.com/api/aladdinwealth/proposal/v1/proposals/{id}/supplement
+
+
+Samples
+
+For sample request and responses pelase refer to the interactive ProposalAPI.v1.html document.
+
+
+=================================================
+endpoint testing
+
+Any of the above end points can be tested by using the appropriate request body and valid authentication.
+Authentication details will be provided by your Aladdin Wealth Relationship Manager once the initial setup is
+complete. A sample post body will also be provided which can be tested using the Postman app.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
