@@ -1,0 +1,300 @@
+Aladdin by BlackRock
+
+Portfolio analytics API
+
+
+1.Contents
+
+2.getting started
+
+3.change management
+
+4.portfolio analytics features
+    Asset Resolution
+    Portfolio Analytics Headers
+
+5.total portfolio analysis
+    Portfolio Analytics Parmmeters
+
+6.total portfolios Analysis
+
+7.bulk portfolio risk
+
+8.sample portfolio analytics test code
+
+
+//=======================================================================================================================================================================
+
+2.getting started
+
+This document serves as a user or developer guide for Aladdin Wealth's Portfolio API. The API enables
+a caller to perform a complete analysis of a portfolio using BlackRock's proprietary Aladdin technology and risk
+models. Please note that, while this document covers the comprehensive suite of capabilities supported by the
+Portfolio Analytics API, your firm's specific API integration requirements/access will be reviewed by your Aladdin
+Wealth Relationship Manager during the implementation process.
+
+
+
+
+
+3. change management
+
+Backward compatibility
+
+Aladdin will not:
+
+- remove ,rename or change the type of existing fields that are returned in a response.
+- remove or rename an existing API endpoint.
+
+Aladdin may:
+
+- add new API endpoint. Any newly added endpoint will not change the behavior of the existing endpoints.
+- add new optional request parameters or add fields to objects in the body of a request for existing API
+  endpoints. If not included, your requests will continue to perform as before. We will use sensible
+  defaults when optional field are not present.
+- add new fields in API responses. Any newly added fields will not change the meaning of any existing field.
+- return new values for existing primitive fields in API responses, inluding additional enum values.
+
+
+All such changes are considered "Non-Breaking Changes" and will not increment the API version. The user
+should ensure their code handles changes of this nature without the need for a software or configuration
+change. All fields in responses should be treated as optional unless explicitly documented as always present.
+
+
+
+4. portfolio analytics features
+
+The capability to provide a wide-ranging, deep analysis on a portfolio is a primary Aladdin Wealth feature. The
+Portfolio Analytics API enables a business partner to provide a stateless portfolio, consisting of a representative
+set of minimal data points (e.g. positions, currency,optinal portfolio attributes,etc.) and to receive back a set of
+rich analytics for the portfolio. This collection comprises of two endpoints which have been covered in detail in
+the upcoming sections.
+
+1. Total Portfolio Analysis
+2. Bulk Portfolio Risk
+
+
+Asset Resolution
+
+Before performing analysis on a portfolio, its positions must be reconciled against securities in Aladdin. A
+single clientId may be used for each position (see Example 1). A clientId is an id provided by the client as a
+part of the overnight security master batch process. Alternatively, a set of public security identifiers may also
+be used in lieu of a clientId (see Example 2). Both clientIds and public identifiers may be provided to maximize
+the likelihood a match is found.
+
+The API request must provide at least one of the following security identifiers to use for reconciling against
+Aladdin. If multiple ids are provided in the reqeust, only one is used for asset resolution. The default order as
+shown below and can be configured with the help of your Aladdin Relationship Manager to determine what an
+appropriate set of proxies would be.
+
+1. clientId
+2. cusip
+3. sedol
+4. isin
+5. ric
+6. morningstarSecId
+7. wkn
+8. valoren
+
+FAllback, "proxy identifiers" may also be provided for any opsition in the portfolio. These proxy security
+identifiers will attemp to match against Aladdin if matching against the primary identifiers was unsuccesssful.
+A proxy should have similar characteristics and high correlation with the primary identifiers(i.e. identifiers=
+Facebook, proxyIdentiers=US Tech ETF).
+
+
+Protfolio Analytics Headers
+
+Pelase refer to the interactive PortfolioAnalyticsAPI.v1.html document to see reqeust and response header.
+
+
+
+5.total portfolio analysis
+
+The Total Portfolio Analysis endpoint analyzes a portfolio and , optionally, its benchmark. This endpoint returns
+the complete set of portfolio, benchmark and active analytics. Apartner can reqeust a single portfolio analytic
+or a collection of analytics defined in the next section. There is also the ability to request analytics for multiple
+portfolios at once.
+
+Example:
+- Reqeust all analytics:
+    https://<client>.blackrock.com/api/aladdinwealth/analysis/v1/total-portfolio?analytics-ALL
+- Request a subset of analytics:
+    https://<client>.blackrock.com/api/aladdinwealth/analysis/v1/total-portfolio?analytics-RISK,POSITION_RISK_CONTRIB,TAIL_RISK
+- Request analytics for multiple portfolios(up to 5):
+    https://<client>.blackrock.com/api/aladdinwealth/analysis/v1/total-portfolios?analytics-ALL
+
+Portfolio Analytics Parammeters
+
+The total portfolio endpoints accept the following analytic enums but are enabled on a case-by-case basis.
+Discuss with your Alddin Wealth Relationship Manager which analytics may be required.
+
+ALL - Returns all available analytics for the business partner.
+RISK - REturns total portfolio risk
+POSITION_RISK_CONTRIB - Returns position contributors to risk
+FACTOR_RISK-CONTRIB - Returns factor contributors to risk
+TAIL_RISK - Returns portfolio expected shortfall and HVaR
+LEVERAGE - Returns leverage analytics
+SCENARIOS - Returns portfolio PNL during pre-configured breakdown sectors
+BREAKDOWNS - Returns portfolio exposures to pre-configured breakdown sectors
+CHARACTERISTICS - Returns portfolio characteristics like duration and yield
+SIMULATED_PERFORMANCE - Returns performance analytics based on simulated portfolio returns
+WEALTH_PROJECTIONS - Returns projected future portfolio values based on client-defined capital market assumptions
+RULES - Evaluates and returns client-defined portfolio suitability rules
+SCORES - Returns the client-defined Portfolio Quality Score based on Aladdin analytics
+CERDIT_RISK - Returns calcalated security level and portfolio level credit risk
+ESG - Returns ESG metrics
+CUSTOM_ANALYTICS -Returns configured custom calculations or analytics against the portfolio
+LIQUIDITY - Returns liquidity analytics.
+
+
+Samples
+
+For sample requests and responses please refer to the interactive PortfolioAnalyticsAPI.v1.html document.
+
+
+
+
+5.total portfolio analysis
+
+The Total Portfolios Analysis endpoint analyzes a list of portfolios (the limit is currently set to 5) and has the
+same functionalities as the Total Portfolio Analysis endpoint. This endpoint returns a list of complete set of
+portfolio, benchmark and active analytics in the same order as they are sent.
+
+Example:
+
+- Reqeust all analytics:
+    https://<client>.blackrock.com/api/aladdinwealth/analysis/v1/total-portfolios?analytics-ALL
+
+- Request a subset of analytics:
+    https://<client>.blackrock.com/api/aladdinwealth/analysis/v1/total-portfolios?analytics-RISK,POSITION_RISK_CONTRIB,TAIL_RISK
+
+Samples
+
+For sample reqeust and responses please refer to the interactive PortfolioAnalyticsAPI.v1.html document.
+
+
+6. bulk portfolio risk
+
+The bulk portfolio risk endpoint is a stateless endpoint that takes a set of portfolios and their positions and
+returns each portfolio's total risk only. It is optimized to handle a large set of portfolios that have similar holdings.
+The typical usage is to simulate a model rebalance case across all the client accounts tracking that model.
+
+The user will have to be aware of the boundaries when using this API to avoid failed calls. For example, if the total
+number of securities increases, the suer may have to break the reqeust into multiple batches.
+
+The limitations of this endpoint are  as listed below:
+
+1. It will return the total risk of each portfolio only. No other analytics are returned, nor can it be configured to return them.
+2. It only takes weights for holdings (marketValues are not accepted).
+3. It will not be enhanced and no new input or analytic will be supported. Should the client initially use
+    this endpoint only to experience a change of requirements that demanded, for example, more analytics,
+    the only solution would be to entirely abandon its usage in favor of one of the other endpoints.
+
+This endpoint also has a higher latency compared to other endpoints. For the most common request type
+consisting of 500 cusips, 2500 portfolios the average latency is around 25 seconds. The guideline to use the bulk
+portfolio risk for a range of securities/portfolios are as laid out below
+
+Number of securities               Numbe of portfolios
+0- 500                              <= 2500
+500-1500                            <=250
+
+
+Example:
+
+- https://<client>.blackrock.com/api/aladdinwealth/analysis/v1/bulk-portfolio-risk
+
+Simples
+
+For sample requests and responses please refer to the interactive PortfolioAnalyticsAPI.v1.html document
+
+
+
+8.sample portfolio analytics test code
+
+The sample curl code below can be used by adding valid auth details and post body to test the regular portfolio
+analytics test endpoint. Valid auth details will be provided by your Aladdin Wealth Relationship Manager once
+the initial setup is complete.
+
+
+curl -X POST 'https://<client>.blackrock.com/api/aladdinwealth/analysis/v1/total-portfolio?analytics=RISK,POSITION_RISK_CONTRIB'
+    -H 'accept: application/json'
+    -H 'cache-control: no-cache'
+    -H 'content-type: application/json'
+    -H 'vnd.com.blackrock.origin-timestamp: Toe, 26 May 2020 19:38:58 GMT'
+    -H 'vnd.com.blackrock.request-id: 1a77ca5f-855b-4fee-aca3-fff963102db2'
+    -d '{"id":"TEST-1", "currency":"USD","positions":[{"id": "Al", "identifiers":{ "cusip":"169588100"  }, "weight":0.10   },
+       {"id":"A1", "identifiers":{"cusip":"172967GT2"}, "weight":0.9 }  ]  }'
+
+       (Auth detials have been hidden above)
+
+
+
+
+2024 BlackRock, Inc. All Rights Reserved. BlackRock, BlackRock Solutions and Aladdin are registered trademark of BlackRock,Inc. and its affiliates. All other
+trademarks are the property of their respective owners.
+
+This material is not to be construed as an offer or solicitation to by or sell securities, ro to engage in any trading or investment strategy. The views contained in this
+material are those of BlackRock as of the date of this report, may change as subsequent conditions vary. and are based on information obtained by BlackRock from
+sources that are believed to be generally reliable. BlackRock has no obligation to update this material or to notify you of changes. The information in this report is not
+all-inclusive and is not guaranteed as to accuracy. Model-based methodologies and calculations are based on assumptions and historical correlations between data
+and other factors and are not assured to predict future results. BackRock is not responsible for typograhical or clerical errors in this material or in the dissemination
+of its contents. Reliance upon this material is at the sole discretion of the reader. The analysis provided herein is for informational puropsed only and estimated in
+nature. This material is not intended for distribution to thirld parties without the prior written permission of BlackRock. The recipient of this reoprt undertakes sole
+responsibility and liability for investment or other decisions. For additional information on any of the descriptions contained in this document,please contact your
+Aladdin Relationship Management representative. BlackRock may modify or discontinue any funcitonality or sevice componnet described herein at any time without
+prior advance notice to you.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
