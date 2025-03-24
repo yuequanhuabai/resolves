@@ -27,3 +27,28 @@ to consider/discuss a proposal     to consider/discuss a proposal   to accept/ap
 
 2.an act of formally asking sb to marry you
 
+
+
+
+retrieve:
+
+1.to bring or get sth back, especially from a place where it should not be
+2.to find and get back data or information that has been stored in the memory of a computer
+3.to make a bad situation better; to get back sth that was lost: Your can only retrieve the situation by apologizing
+
+
+
+
+authentication                   身份验证
+authorization                    授权
+
+
+
+
+
+
+
+
+
+
+

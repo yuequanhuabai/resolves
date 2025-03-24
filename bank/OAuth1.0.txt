@@ -1,0 +1,122 @@
+1. 客戶端注冊： 第三方應用（客戶端）服務提供者處注冊，獲取客戶端標識符（Consumer Key）和客戶端密鑰（Consumer Secret）
+2. 獲取請求令牌：客戶端使用上標識符和密鑰，向服務提供者請求一個未授權的請求令牌（Request Token）
+3. 用戶授權： 客戶端引用用戶到服務提供者的授權頁面，用戶在此頁面登錄并授權客戶端使用請求令牌
+4. 交換訪問令牌： 客戶端使用已授權的請求令牌，向服務提供者交換為訪問令牌（Access Token）
+5. 訪問受保護資源：客戶端使用訪問令牌，訪問用戶在服務提供者處的受保護資源
+
+
+客戶端標識符（Consumer Key）和客戶端密鑰（Consumer Secret）的作用：
+客戶端標識表明身份，使用密鑰來簽名請求，以證明其身份的合法性。
+服務端通過驗證簽名，確保請求的完整性和真實性，防止未經授權的訪問。
+
+OAth1.0 的簽名過程通常使用對稱加密算法（如HMAC-SHA1）來生成簽名
+
+簽名機制：
+
+簽名的生成步驟：
+1. 構建簽名基礎字符串：將HTTP請求方法（如GET，POST），請求URL和請求參數按照特定格式拼接成一個字符串；
+2. 生成簽名密鑰： 將客戶端密鑰（Consumer Secret）與令牌密鑰（Token Secret）進行URL編碼，并用“&”符號鏈接，形成簽名密鑰
+3. 計算簽名值： 使用指定的簽名方法（如HMAC-SHA1）將簽名基礎字符串和簽名密鑰進行加密，生成簽名值
+4. 添加簽名到請求： 將生成的簽名值進行Base64編碼和URL編碼后，作爲“oauth_signature"參數添加到請求中。
+
+
+令牌密鑰（Token Secret）
+
+在oauth1.0中，如果請求涉及訪問令牌（Access Token），則每個訪問令牌都會有一個與之關聯的令牌密鑰。該密鑰用於在生成請求簽名時，與客戶端密鑰一起確保
+請求的完整性和安全性。具體而言，簽名密鑰是由客戶端密鑰和令牌密鑰組成的。
+
+客戶端密鑰（Consumer Secret）和令牌密鑰（Token Secret）共同參與簽名的生成過程，確保每個請求的簽名具有唯一性和安全性。
+這種設計增强了OAuth1.0的安全性，放置了請求被篡改或者僞造。
+
+
+令牌密鑰(Token Secret)的生成：
+
+1. 令牌密鑰的（Token Secret）生成
+令牌密鑰是在用戶授權後由服務提供者（Authorization Server）生成并與訪問令牌（Access Token）綁定的：
+
+1. 客戶端申請授權：客戶端應用程序（如Web應用、移動應用等）向服務者的授權服務器請求授權，
+通常通過使用消費者密鑰（Consumer Key）和消費者密鑰（Consumer Secret）來進行身份驗證。
+請求授權時，客戶端還會請求一些必要的權限。
+2. 用戶授權： 用戶通過授權頁面進行身份驗證，并授權客戶端訪問其資源。當用戶同意授權后，授權服務器
+會生成一個臨時的請求令牌（Request Token），并將其返回給客戶端。
+3. 請求令牌交換： 客戶端使用收到的臨時請求令牌向授權服務器請求訪問令牌。在這個過程中，客戶端還要提供消費者密鑰（Cunsumer Key）和消費者密鑰（Consumer Secret）
+以進行身份驗證。
+4. 生成令牌密鑰： 儅授權服務器驗證了客戶端身份后，它會生成一個唯一的訪問令牌（Access Token）和一個對應的令牌密鑰（Token Secret），然後將這些信息返回給客戶端。
+訪問令牌（Access Token）： 這個令牌允許客戶端訪問特定用戶的受保護資源。
+令牌密鑰（Token Secret）： 這是與訪問令牌關聯的密鑰，用於驗證請求的完整性和身份。
+5. 保存令牌密鑰： 客戶端將訪問令牌和令牌密鑰一同保存在本地，以後每次發起請求時會使用它來生成簽名。
+
+2. 令牌密鑰（Token Secret）在請求中的使用
+
+當客戶端需要訪問資源時，會通過以下過程來利用令牌密鑰和消費者密鑰（Consumer Secret）來簽署請求：
+1. 構造簽名基礎字符串： 客戶端再發起請求時，會將請求的HTTP方法（如GET，POST），請求的URL和請求的參數等信息
+    組合成一個簽名基礎字符串（Signature Base String）
+2. 生成簽名密鑰： 客戶端使用自己的消費者密鑰（Cunsumer Secret）和訪問令牌密鑰（Access Token）
+    組合成簽名密鑰。簽名密鑰的格式如下：
+
+    Signature key = Consumer Secret + ”&“ + Token Secret
+
+3. 計算簽名： 客戶端使用簽名密鑰和簽名基礎字符串，通過指定的簽名算法（如 HMAC-SHA1）生成
+    一個簽名值（auth_signature）.這個簽名值確保請求在傳輸過程中沒有被篡改，并且能被服務提供者驗證
+4. 發送請求： 客戶端將生成的簽名（oauth_signature）添加到請求中，然後將請求發送給服務提供者。
+    請求中還會包含其他的OAuth參數，如oauth_consumer_key(消費者密鑰)， oauth_token(訪問令牌)，
+    oauth_signature_method(簽名方法等)。
+
+3. 令牌米喲啊的結束（撤銷）
+令牌密鑰 一旦生成，并與訪問令牌（Access Token）關聯后，通常會在以下情況發生變化或結束：
+1.令牌過期或撤銷： 服務提供者可以通過某些機制（如令牌過期或用戶撤銷授權）撤銷訪問令牌和對應的令牌密鑰。
+    儅令牌被撤銷時，令牌密鑰不在有效。
+2. 訪問令牌更新： 某些OAuth流程中，訪問令牌是短期有效的。如果訪問令牌過期，客戶端可能需要通過刷新令牌（Refresh Token）
+    來過去新的訪問令牌和令牌密鑰。
+3. 用戶撤銷授權： 如果用戶撤銷了客戶端的授權，那麽服務提供者會撤銷相應的訪問令牌和令牌密鑰。
+    此時，客戶端將無法再使用這個令牌密鑰訪問用戶的資源
+4. 簽名驗證失敗： 每次客戶端使用訪問令牌和令牌密鑰生成簽名時，服務提供者都會驗證簽名的有效性。
+    如果簽名無效，服務提供者會拒絕請求。因此，只有有效的令牌密鑰才能用於生成合法的簽名，
+    保證了請求的安全性。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
