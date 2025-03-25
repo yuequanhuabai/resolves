@@ -1,0 +1,14 @@
+This specification was obsoleted by OAuth Core 1.0 REvision A on June 24th, 2009 to address a session fixation attack. The OAuth Core 1.0
+Revision A specification is being obsoleted by the proposed IETF draft draft-hammer-oauth. The draft is currently pending IESG approval before
+publication as an RFC.
+
+Implementers should use RFC 6749: The OAuth 2.0 Authorization Framework insted of this specification.
+
+obsolete:  syn : out of date
+        no longer used because sth new has been invented
+
+
+convention:
+1. the way in which sth is donw that most people in a society expect and consider to be polite or the right way to do it;
+2. a large meeting of the members of a profession, a political party,etc.
+3. an officail aggrement between countries or leaders
