@@ -136,7 +136,7 @@ Client is responsible for building ,operating, and scaling a sensitive data API 
 Sending Data to BackRock
 
 Sensitive data can be sent to BlackRock in an encrypted format, and many consumers of the Aladdin Wealth platform
-choose this option. Under this solution, dta is stored encrypted in the Aladdin database and BlackRock's system account
+choose this option. Under this solution, data is stored encrypted in the Aladdin database and BlackRock's system account
 has access to a private key. Data is retrieved and decrypted on-the-fly only when client user with appropriate permissions
 access accounts in Aladdin.
 
