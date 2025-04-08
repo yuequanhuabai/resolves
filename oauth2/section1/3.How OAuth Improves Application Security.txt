@@ -1,0 +1,61 @@
+In this lesson, we're going to look at some of the previous ways applications handled authentication before OAuth.
+
+We'll learn the risks that are present when applications handle passwords directly, and set the groundwork to learn
+about the problems that OAuth set out to solve.
+
+We'll introduce these topics in this lesson and go into them in more detail in future lessons as well. One of the most
+common ways applications handle authentication is with a simple username and password prompt within the app, the application
+will ask the user to enter their password and then exchange that password for most part, and by simple systems
+I mean the case of building a web app that has its own built in authentication.
+
+Of course you still have to make sure your website is storing password hashes properly,
+never logging passwords accidentally and so forth.
+
+But the problem is , as soon as you want to add a mobile app or create multiple apps that share a user
+database with single sign on, this starts to be very limiting.
+
+It's the single sign on case that really gets to the core of why OAuth was created, especially once
+you consider that you may want multiple apps by different companies to be able to share the same user
+database. Think Sign In with Apple, or creating apps to manage files in your Google Drive.
+
+Without OAuth, these applications would have to collect the user's password and send it to the API.
+And in the case of third party apps, this is clearly a problem, as we saw in the last lesson. But even
+for first party apps, it's also not a good idea.
+
+Let's talk about some of the specific problems with this approach.
+
+We'll split this the user cares about and problems that the API cates about.
+
+First, put yourself in the shoes of the user for now.
+
+If you're using an app and it asks you to enter your Google password, how do you know you can trust it?
+Actually, it's trick question, because specifically with Google, legitimate applications will never ask for your
+Google password.
+
+Even Google's own applications don't ask for your password, but we're getting a little bit ahead of ourselves there.
+
+We'll come back to that when we talk about mobile apps.
+
+Back to the question, though. Can you ever really be sure what an application is going to do with your
+password when you enter it?
+
+You hope it's just going to exchange it for some sort of session cookie and forget it.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
