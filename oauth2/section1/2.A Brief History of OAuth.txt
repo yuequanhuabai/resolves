@@ -1,0 +1,92 @@
+In this lesson, we're going to cover what API security was like before OAuth and learn why OAuth is important.
+Before OAuth it was actually very common for API is to use HTTP Basic Auth.
+
+That's just an application sending a username and password to the API.
+Now, of course, in order for this to work, application had to ask the user for their password,
+store that password and then use that password in API requests.
+
+So that means when third party apps, like using third party Twitter clients want to do this,
+they would have to ask the user for their password and then store it and use it at the API.
+
+Now, if you saw this prompt now, would you give your Google password to this application?
+Many services quickly realized there were a lot of problems with this approach and started creating alternatives.
+And a lot of this work was driven by the need to have third party apps connect to platforms, and wanting to avoid
+having users give their passwords to random applications.
+
+So in the mid 2000s, as many websites started building public APIs, they all started solving this problem.
+But everybody did it slightly differently and everyone use different names  for things.
+
+So Flickr's API was called FlickrAuth and it used "frobs" and "tokens".
+Google created AuthSub. Facebook just use MD5 signed requests, which is a terrible idea.
+Yahoo! Created BBAuth, which is showrt for a browser based auth.
+
+These all worked quite differently, but all shared the same goal, which was to allow applications to access data
+from third party apps without the users sharing their password. And even though these all worked differently,
+there wrer a lot of similarities in the general structure of these different mechanisms.
+
+So developers at these companies realized that they were all attempting to solve the same problem and that problem
+actually had nothing to do with their core business.
+
+So they actually started working together.
+
+By 2007, the first draft of OAuth 1 was published and it was deployed at several companies, including Twitter.
+So over the next few years, especially a mobile apps started to become popular, the industry started reaching
+sereral limitations with OAuth 1.
+
+It was, for one, really confusing to developers, but it also required using API keys in a way that just
+isn't safe in mobile phones.
+
+So it was very clear that this was not going to work in the long term with this sudden surge of mobile
+apps at the time.
+
+Shortly after OAuth 1 was brought into the IETF under a new working group, the group started working on a
+new version, OAuth 2, to fix up the problems with OAuth 1 and make it mroe useful in a wider variety of
+situations.
+
+Some of the things that OAuth 2 set out to solve were making it easier for developers to understand,
+so that involved things like dropping the signature requirements and using Bearer tokens instead, but also
+wanting to make sure that it's possible to use securely in mobile apps as well as single-page apps in a browser.
+
+Also, as larger companies started looking at adopting OAuth for their own APIs, they also needed to
+make sure that would work at a larger scale.
+
+And that's where you start to get the separation between the authorization server and the API server,
+whereas in OAuth 1, those entities share a lot more information.
+
+All of these things were taken into consideration when designing the spec, and things are in a much
+better place today because of it.
+
+We'll get into the specifics of how OAuth works and talk more about the roles of the authorization server
+and the API server in these later sections.
+
+So the OAuth 2.0 Spec was finalized in 2012, but the work hasn't stopped there since then. The IETF Working Group
+has continued to make progress on the specs, filling in some of the missing functionality and making OAuth more
+useful or more secure in even more situations.
+
+So now we're got everything form specs like the OAuth 2.0 For Native Apps extension to the Device Grant for using
+OAuth on smart TVs, and the OAuth Security Best Current Practice, which describes the most secure
+way to build OAuth systems today.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
