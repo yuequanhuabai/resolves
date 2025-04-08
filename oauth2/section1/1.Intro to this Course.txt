@@ -1,0 +1,91 @@
+Hi, I'm Aaron Parecki, and I'll be your instructor for this course,
+I want to take a minute to introduce myself and share a little bit
+about why I created this course and give you an idea of what this course will cover.
+
+I've been working in the web standard space for quite some time now,
+most recently at the IETF in the OAuth Working Group.
+That's where the OAuth specs are actually developed and written.
+
+I also maintain the website OAuth.net, which is a great starting point to find
+links to blog posts and tutorials and videos.
+
+By the way, that website is open source. So if you ever come across resources you'd like to
+add there, please do.
+
+There's a link at the bottom of every page to edit. So this is the spec.
+
+This is the OAuth2.0 Authorization framework. It's 84 pages long.
+
+And if you're ever tried to read this, I apologize, because specs are't really to
+be tutorials. This is really more of a reference, more like a legal contract.
+
+Every word in the spec is very carefully chosen and often uses terms are defined in other specs
+
+And the worst part about OAuth is that it's not even just one spec.
+
+It's actually a collection of dozens of specs and extensions, some of which aren't even made by the same groups
+
+And I realized that that can often feel like you're lost in a maze trying to understand this stuff.
+
+So my goal with this course is to help you wade through these specs and help give you a path to getting
+out of the maze that is OAuth and OpenID Connect.
+
+This is the course I wish had existed when I was first starting OAuth.
+
+This is not going to be just a quick how to get up and running.
+
+I really want to make sure that you have an understanding of the fundamental security concepts behind
+OAuth so that you know how to apply them to your own work.
+
+This course is broken up into two main sections.
+
+After some initial background on the security concepts and learning the different roles in OAuth,
+we focus on OAuth from the perspective of building OAuth applications and accessing APIs. which is
+protecting APIs with OAuth. We'll talk about the basics of  building OAuth application in serveral
+different environments, starting with server side environments like .NET or Java.
+
+And then we'll talk about the differences when doing OAuth in mobile apps as well as  single page apps in the browser.
+
+We'll also touch on how to use OpenId Connect to learn information about the user.
+In the second section we'll focus on OAuth from the point of view of protecting APIs.
+
+We'll cover things like understanding the tradeoffs between different access token lifetimes.
+
+You'll learn how to validate access tokens, how to deal with revoked access tokens or deleted applications,
+and how to design scopes for your API.
+
+So with all that said, let's get started.
+
+I will see you in the next lession.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
