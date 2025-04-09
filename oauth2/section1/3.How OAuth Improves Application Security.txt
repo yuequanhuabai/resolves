@@ -24,7 +24,8 @@ for first party apps, it's also not a good idea.
 
 Let's talk about some of the specific problems with this approach.
 
-We'll split this the user cares about and problems that the API cates about.
+We'll split this into two sections.
+Problems that the user cares about and problems that the API cares about.
 
 First, put yourself in the shoes of the user for now.
 
@@ -40,6 +41,172 @@ Back to the question, though. Can you ever really be sure what an application is
 password when you enter it?
 
 You hope it's just going to exchange it for some sort of session cookie and forget it.
+
+But you don't know if it might be accidentally logging the password somewhere or even intentionally storing it.
+
+For third party apps, this is a serious problem.
+
+If some photo editing app tries to save a photo to your Dropbox account and ask for your
+Dropbox password, that's a huge red flag, right, imagine what that app could do if you give it your
+password. All that app is trying to do is to upload a photo, but if you give it your password. All that app
+is trying to do is to upload a photo, but if you give it your Dropbox password, then the app can do a lot
+more than just upload a photo.
+
+It can read any files in your account.
+
+It could even go change your password if it wanted to.
+
+Handing your password to the app is like giving the app the keys to your account.
+
+Now, let's say you did this .
+
+Let's say you used a photo editor and uploaded the photo.
+
+It can read any files in your account.
+
+It could even go change your password if it wanted to.
+
+Handing your password to the app is like giving the app the keys to your account.
+
+Now, let's say you did this.
+
+Let's say you used a photo editor and uploaded the photo.
+
+Then you want to revoke that access to your account so that, you know it can't upload
+
+anything in the future. Well, really, the only way to do that is to go change your password so that
+if the app had saved your password, the old one wouldn't work anymore. And that's clearly not ideal,
+since it would also revoke every other app's access.
+
+And that's clearly not ideal, since it would also revoke every other app's access.
+
+And you have to log back in to everything again.
+
+Now, you might be thinking, oh, this is only a problem with third party apps, but I'm building
+apps for my own API so this doesn't apply.
+
+Well, let's take a closer look.
+
+Now, it's true that there isn't really the trust issue for users in the case of first
+party apps. Like if the Twitter app asks if your Twitter password, that's not really
+suspicious to you as a user.
+
+But let's take a look at what this looks like form the API perspective.
+
+If you're building the API and you have a separate app development team, your job is to
+make sure the API is secure and it's only accessed by real users and returns some sort of
+session ID or token, and you let all your app developers use that to log users in, well,
+you can't really tell the difference between which apps are using the API.
+
+That request looks the same from every app, but even worse, how do you know that it's
+actually your app at all?
+
+An attacker might take a password dump from some other service and start trying passwords at
+your API. So you can't really be sure that it's even actually the user making that request.
+And then you're likely going to want to add some sort of multifactor authentication to the login
+flow, whether that's email, SMS, push notification, hardware security key, whatever.
+
+So you pick one or more of those and add them to the API and now you have to go around to
+every app development team and get them to add support for your new MFA mechanism.
+
+And this just doesn't scale well.
+
+It ends up slowing down the development lifecycle.
+
+The next time you want to go out a new MFA type, you have to go through that whole process again
+fo getting each app development team to add support for it.
+
+So let's talk about how OAuth solves this.
+We're going to look at this in detail in later sections of this course.
+
+But what OAuth does at a high level is requires that every application sends the user out
+to the OAuth server to log in there, and then redirects them back to the app so the app can
+get tokens. And the key thing here is this redirect step.
+
+It means the user actually leaves the application and they go type in their password at the
+OAuth server instead of ever giving their password to the application.
+
+So as soon as we avoid the application ever seeing the user's password, it solves all of
+these worries and uncertainties we have before.
+
+It provides security against untrusted third party apps and also makes first party apps
+much more flexible.
+
+This way, if you wanted to add MFA, you don't need to make any changes to the apps at all,
+since you just turn it on at your OAuth server and it would immediately be enabled across
+all of your applications.
+
+So that is just a few ways that OAuth improves the security of a system by reducing the
+number of places users enter passwords and gives you much more flexibility in the future.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
