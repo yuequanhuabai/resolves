@@ -1,0 +1,134 @@
+OAuth and OpenID Connect are often used together, but they are different things,
+and most importantly, they have very different security considerations.
+
+We're going to get into the detials of this in a later section.
+
+But for now, I want to just focus on the high level differences between the two.
+
+So OAuth itself was originally designed for applications to get access to APIs.
+
+That means all they need is the ability to access the API.
+
+The application doesn't actually need to know who the user is that's using that application.
+And I know this is a weird distinction to make, but if you bear with me for a second,
+I want to give you this analogy of an OAuth like system in the real world, and that is checking
+into a hotel.
+
+So when you go to a hotel and you check in, your show the person at the front desk your ID
+and your credit card, and they give you back a hotel key.
+
+Now, this key card is what you use to go access rooms in the hotel.
+
+So you might take it to the door of your room, swipe it on the door and the door opens up and lets you in.
+Now, in order for that system to work, the door doesn't actually need to know who you are, right?
+
+The person at the front desk knows who you are. They're the ones that checked your ID, but they give you
+back this key card which represents access to that room.
+
+You might then also take that keycard and access the hotel gym or the pool or other resources in the hotel.
+
+And this is exactly analogous to OAuth, where the person at the front desk is like the OAuth authorization server.
+
+They're the one checking ID cards and authenticating the user.
+
+They hand out these key cards which represent access tokens.
+
+And then the doors of the rooms are the resources -- or in OAuth terms --the resource server.
+
+So when that door goes to validate the key card, to see if that person is allowed to open the door,
+they don't actually care who the person is who's using the card.
+
+They just care whether the card is encoded with data that says it's allowed.
+
+And now you might imagine that in the system, you don't actually encode user data into
+that key card at all because there's no need for it.
+
+You really just need to encode which doors this key card can open so that key card might
+contain a list of doors and an expiration date, and then it'll open up all the doors
+listed until it expires.
+
+So using this analogy, you can see that it's possible that even without the ability for
+the application to know who the user is, it's still possible that the application can do
+things. So if we now take this into the software world, you might imagine there's an
+application which is trying to upload a file to the user's Google Drive.
+
+Now, that application really just needs to present an interface to upload a file,
+and it would then go get an access token from Google and then it can make API calls
+to upload a file to that user's Google Drive.
+
+Now, that application doesn't actually need to know who the user is in order for this
+to work. On the other hand, if the application does need to know who the user is, for example,
+if it wants to show their name in the interface or show their profile photo in the corner,
+that's where we need something besides OAuth, because OAuth doesn't actually give us that information.
+
+There's nothing in OAuth that communicates user information, that's all added externally.
+
+Now, the main way that's added is using OpenID Connect.
+
+So OpenId Connect takes OAuth as a foundation and it adds in user identity information on top.
+So you can imagine the same framework we're going to learn about --of how data moves around and who
+the players are in the OAuth transaction -- that's all the same with OpenID Connect. We've just now
+added the concept of user information into the flow as well.
+
+So OpenID Connect is an extension of OAuth and that extension provides a mechanism where the OAuth server
+can actually communicate data about the user back to the application.
+
+And the main way it does that is with a new kind of token.
+
+So OAuth issues access tokens to apps, OpenID Connect issure ID tokens to apps.
+
+And the ID Token is a statement about the user.
+
+We'll see the details of how this works and what an ID token actually looks like in a later section.
+
+But the important thing to remember for now is that OAuth is always about accessing APIs and OpenID
+Connect is about identifying the user.
+
+Sometimes you hear these called authorization versus authentication, but I don't actually like these
+terms very much. They feel too confusing, especially for non-native English speakers.
+
+They're almost the same word. It's nonsense. Don't worry about it, just think about accessing APIs
+and identifying users. And that is the high level difference between OAuth and OpenID Connect.
+
+Again, we'll cover the details of the differences in these protocols in a later section.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
