@@ -1,0 +1,76 @@
+In OAuth we talk about a client type as a shorthand for several security properties about the application.
+
+OAuth 2.0 defines two client types , confidential clients and public clients.
+
+These are based  on whether the client has credentials that it can use as authentication during the OAuth flow.
+
+Let's break this down.
+
+The difference between these two types of application is whether the application has some sort of credentials.
+Confidential clients have credentials, typically a client secret, and public clients don't.
+
+The idea with the client secret is that that is not visible to users of the application.
+
+This is a pretty normal thing for apps running on a web server.
+
+Apps are written in a server side language like Java or DotNet or PHP.
+
+I'm sure you're used to putting API keys in your application config or environment variables and expecting them
+to stay secret.
+
+Users of the app can't access the source code of your app, so those things stay secret.
+
+This, however, is not true for public clients.
+
+If you're writing a mobile app or a single page app, then you don't have the ability to include secrets into
+the app because users of the app would be able to see the secrets.
+
+It's most obvious in the case of single-page apps, since users of the app can always click on the view source
+button in the browser and then just start poking around the source code
+There's no way to ship a secret in the source code and have it remain secret.
+
+It's a little bit less obvious, but it's also true for mobile apps.
+
+While there's no view source button, there are still plenty of tools available for people to extract strings out of
+the binary files.
+
+Essentially, the difference is any time the application will be running on a device that the user controls, you can't
+include a secret in that application.
+
+And this is true of any kind of application running on a user's device, including things like an Apple TV or even Internet of
+Things devices.
+
+All right. So we know how to determine what kind of app something is, but what does this have to do with OAuth?
+
+In OAuth, the application will be communicating with the authorization server, and if the application has credentials,
+then the application can user those credentials to authenticate the requests it makes.
+
+That means the server will know that only the real application can make requests if it includes the application's credentials.
+
+Without credentials, the authorization server never really knows if it's the real application making requests or something
+pretending to be the real application.
+
+The reason this distinction matters is that the authorization server might have policies that make it act differently depending
+on the type of client making the request.
+
+For example, a confidential client that is also a first party client might skip the sonsent screen.
+
+And that's because the authorization server can be sure that only the real application could end up with the access token
+after the flow is complete.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

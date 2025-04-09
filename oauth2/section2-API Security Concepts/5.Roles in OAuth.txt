@@ -1,0 +1,144 @@
+In the previous few lessons, we look at a few different solutions for API authentication that were common before OAuth.
+In this lession, we're going to introduce the role of the authorization server and show how OAuth exchange works and solves some of
+these problems.
+
+In a typical scenario of a user trying to access some data in an API, we have four roles.
+First, the user, they are the person with the account. Secondly, there's the device.
+They are using this device like their mobile phone or their browser,
+And that device is either running an application or accessing an application.
+
+And that application is the third role. So if it's a mobile phone, for example, the app is running on the
+device and if it's a browser, then the device is accessing the application is making requests to.
+
+The API is where the data lives. Now, in the OAuth spec, you'll see these more specific terms.
+So instead of the user, the spec calls it the Resource Owner.
+And instead of device it's actually the User Agent. And instead of the application, it's called the OAuth Client.
+
+And lastly, instead of the API, it's called the Resource Server.
+Now, the spec uses these terms because they're technically mroe precise, even if these
+aren't the words we use in a conversation. Don't worry too much about it , though.
+
+For the most part, it's fine to use them interchangeably.
+
+The one thing I will say is that the term application is a little bit of a confusing term to use
+when we do talk about OAuth because we like to call all sorts of things applications. So if you're
+building a mobile app, you'll call that an application.
+
+But if someone's building an API, they might also call that an application as well.
+
+But from the point of view of the OAuth spec, "application" refers specifically to the thing in the
+middle, the client, the one that is going to be accessing data at the API.
+
+So the previous methods we talked about involve moving data around directly between these four roles.
+For example, cookie based authentication works by the user typing in the password into their device,
+which then sends it to the Web application, which returns a session cookie. And then the device can
+hold on to that session cookie and use it in future requests.
+
+And that's certainly better than the application holding on to the user's password and using it in every request.
+But we can do even better. Remember, one of the original goals of OAuth was to enable third party apps to
+access a user's data, while as we saw, we definitely don't want to hand our passwords out to random apps.
+
+So we need some way for the app to get something like that session cookie without giving the app the user's password.
+
+And this is where the role of the authorization server comes into play.
+So in addition to the four roles, we add a new role, the authorization server.
+
+And this authorization server is the key to making all of this work.
+
+The job of the authorization server is to manage access to the API that it's protecting.
+
+And the way it will do that is by getting the user to log in at the authorization server and
+then creating an access token and giving that access token to the app.
+
+That way, the app is never going to see the user's password.
+
+The app will then user the access token to make an API request, which means the API is going to need
+some way to validate that access token.
+
+And that's a lot better than having APIs trying to validate passwords directly.
+
+Don't worry about the details of these steps yet, the lessons in the rest of this course will go into
+the details of each step.
+
+For now, the key thing to remember is that the user will only ever type in their password at the
+authorization server so the application will never see the user's password.
+
+That means the application will have to send the user over to the server to log in and then will get
+back an access token it can use at the API.
+
+The last thing I want to say about this is that in OAuth these are roles, not necessarily distinct components.
+
+That means that depending on the overall arcitecture of your system, things may look a little bit different than
+in this picture.
+
+For example, in smaller systems, you might have an API with a built in OAuth server, all part of the same code
+base and all deploy on a single server.
+
+But even though that might look like it's all one thing, we still talk about the two roles that that one piece
+of software plays in OAuth.
+So in that case, the software is playing the role of both the authorization server and the resource server.
+
+And in other architecture, you might have an external authorization server , but then a whole bunch of microservices
+that make up your various APIs.
+
+And in that case, your microservices are all part of the role of the resource server.
+It's a little bit easier to picture that if you also have an API gateway out in front of them, then everything
+behind the gateway is clearly a resource server.
+
+So just remember that if you have a question about how some token is supposed to move around or
+whether it's okay for this thing to do this thing, try to frame your question in terms of these
+OAuth roles and then the answer will become a lot more clear.
+
+So now the complete picture we have is these five roles.
+There's the user using some device to access a client.
+
+That client gets the user to log in at the authorization server by directing their browser there,
+and the client can go use the access token at the resource server.
+
+So with these roles in mind, let's continue on and talk about the different types of applications.
+
+I will see you in the next lesson.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
