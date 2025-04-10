@@ -1,0 +1,287 @@
+Before we dive in to how a secure OAuth flow works, I want to introduce the concept of the front channel
+versus the back channel.
+
+These terms describe two different ways that data moves around between systems.
+
+The back channel is the "normal" way or the secure way.
+
+It's a client-to-server connection.
+
+There's a bunch of properties of a back channel connection that we often take for granted.
+It's over HTTPS, so we know what server we're talking to because we can validate that certificate. Once
+the connection is established, the data is then encrypted in transit so we know nobody can modify it.
+
+It also means that the response you get back you can trust, because your know where it came from and
+you know it can't be tampered with.
+
+I like to think of this as hand delivering a package.
+
+You can walk up to somebody and hand them a package.
+
+You can see who they are. They can see who you are.
+
+You can see that nobody stole the package because you handed it to them directly.
+
+This is a very useful delivery mechanism and we should use it whenever we can.
+
+So the other way data moves around in OAuth is the front channel.
+
+Sending data in the front channel is literally using the address bar of the user's browser to
+move data between two systems.
+
+So I like to think of the browser's address bar as using a package deliverry service instead of
+hand delivering a package.
+
+You package up a message, you hand it to a delivery company and then they deliver the message for you.
+
+So there's no direct link between the sender of the package and the recipient, just like there's no
+direct link between the application and the OAuth server, when using the front channel.
+
+There are a few pretty significant problems with using the front channel, which make a lot of sense if
+we think about the package delivery analogy.
+
+When you send a package, you generally trust the delivery service to get your package to the destination
+because this is their job and you're paying them.
+
+But as the sender, you never really know if you package arrived.
+
+You might have tracking info on the package, but all that says is whether the delivery company claims the
+package was delivered.
+
+And even if the package does arrive, you can't really be sure that it wasn't opened up in transit or had the
+contents copied or stolen.
+
+So as much as you want to believe you trust the delivery service, or in the OAuth case,
+the browser, you never can be really sure.
+
+And there's a similar problem at the other end for the party receiving data in the front channel.
+When you receive a package, it might have a return addres on it, but you can't really be sure it's
+actually form the person at that address because it's too easy to fake a return address label.
+
+And that means you can't really be sure that the thing you received is legitimate either.
+So let's bring this back into the world of OAuth.
+So in OAuth, the end goal is for the application to get an access token form the OAuth server.
+
+The most secure way to deliver that would be via the back channel.
+
+But as we talked about in the previous lesson, we also want to make sure that the user has given
+their permission for an access token to be delivered to the application.
+
+So even though the password grant does use the back channel, we can't use it because there's no way
+to confirm the user actually consented to that request.
+
+And that's the reason we use the fornt channel at all.
+
+It's a way to insert the user into the negotiation between the client and the authorization server.
+
+That way, the authorization server knows the user is actually present and has given their permission.
+
+And of course, it's also how we can easily add multifactor authentication, isnce only the authorization
+server needs to worry about that.
+
+So with the front channel in mind, let's imagine building out a flow.
+
+The application needs to first tell the authorization server what it's trying to do.
+
+So that's the first step and that's the first package being sent.
+
+This request will include things like the application's identifier, what scope it's requesting,
+things like that.
+
+And it's usually fine to send this in the front channel because nothing in this request is particularly sentive.
+
+So the application redirects the user to the authorization server with all of these bits of information in the
+query string of a URL.
+
+Once the user logs in and approves the request, the authorization server is ready to send an access
+token back to the application.
+
+If it were to send the access token back in the redirect, that would be like sending an access token in the mail.
+
+The authorization server wouldn't really have any guarantee that it was actually delivered back to the application.
+
+And the application also wouldn't really have any guarantee that the access token is really from the authorization server.
+So this is clearly not a good option. But it turns out that this method is actually described in the core OAuth spec,
+but it's not recommended any more because of the security of this flow.
+
+And this is called the Implicit flow. So if this is so bad, you might be wondering why it was included in OAuth at all.
+
+And the answer is that it used to be the case that browsers had no other option.
+
+As we'll see in a later section, the solution is to deliver the access token in the back channel instead.
+But remember that the back channel is an HTTPS request from a client to a server.
+So if you're in a pure JavaScript app doing this flow, your JavaScript would need the ability to make a POST
+request to the OAuth server.
+
+And it used to be the case that cross-origin requests weren't possible until browsers built in support for
+Cross Origin Resource Sharing or CORS.
+Of course on the modern web, CORS is a part of everyday life, we don't even think about it anymore. So now
+that it's widely available, it's not a problem at all to use a more secure flow that keeps access tokens out
+of the front channel.
+
+One more thing I want to clarify about the back channel, especially in the context of JavaScript apps.
+The back channel does not mean a back end server.
+It means a client-to-server connection.
+So a JavaScript app can absolutely use the back channel.
+
+What that means is the back channel would be JavaScript making a request from JavaScript code like an AJAX
+or a Fetch request.
+
+Making a backchannel request from JavaScript does have the same security properties as making it backchannel
+request from a backend server.
+
+And that's because when you do a back channel request from the JavaScript code, you still get certificate
+verification and an encrypted connection.
+And that's very different from sending data in the front channel, which is again literally using the
+address bar to move data, where there's more opportunities for things to fail or be intercepted.
+
+So at this point, there's really no point in going over the details of the Implicit flow
+other than pointing out that the way it works is by delivering the access token in the front channel.
+The latest guidance from the OAuth working group is phasing out the Implicit flow by including language
+in the latest Security BCP or Best Current Practice,
+
+saying not to use the Implicit flow.
+
+And a future update of the OAuth spec will leave it out entirely.
+
+But now that you understand the difference between the front channel and the back channel
+and understand the security implications of using each of chose methods, you'll be better albe to evaluate
+the security properties of the different flows available.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
