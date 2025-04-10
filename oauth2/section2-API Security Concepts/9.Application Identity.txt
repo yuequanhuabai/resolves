@@ -1,0 +1,269 @@
+The last concept I want to introduce before we dive into the details of an OAuth flow is the idea of application identity.
+
+Applications -- or in OAuth terms, more specifically, clients -- they are their own entity. You'll see this when you go to log
+in to an app and you're presented with the authorization screen that says "this application would like to access your account".
+
+Which application? This application.
+And importantly, you might grant one applciation, different kinds of access than another application.
+Each application has its own identifier called a client ID, and the application uses that to identify itself throughout
+the OAuth flow.
+
+Now, this is closely related to the revious discussion about bpulic versus confidential clients, In that lesson, we learned
+about which kinds of apps can use a client secret,
+which is really just another name for the application password.
+So without a password, or without a client secret, there isn't really ever the assurance that the application using the
+client ID really is that application.
+
+So let's walk through a summary of doing the steps of an Authorization Code flow.
+And as we've seen, this is an improvement over the Implicit flow since the access token will be delivered in the back channel.
+So this flow starts out with the application building up a URL to redirect the user's browser to the authorization server.
+
+In this URL will be a cunch of parameters that describe the request the app is making,
+things like the scope of the request, the redirect URI telling the authorization server where to send the user back to,
+also the client ID to identify which app is making this request.
+The app builds this link and then redirects the user's browser there, which takes them to the authorization server.
+They log in at the authorization server, approve the request the app makes, and the
+authorization server needs to redirect them back to the app.
+Now, remember , these redirect steps are front channel requests, which means ideally it shouldn't matter if something
+can intercept or modify the request.
+
+Everything should still work out fine and still be secure.
+
+So if the server returned the access token in that redirect step, that would be like sending the access token in the mail,
+opening it up to a bunch of different possible attacks.
+So what if instead the server sent back something more like a one time use coupon with a short expiration date?
+
+And that coupon could be exchanged for an access token, but only once and only within a short time period.
+Using that coupon will require that the application go use the back channel to redeem it. Ok, so we're going to call this
+coupon the authorization code and the OAuth server can return that back in the redirect to the application.
+
+Now, keep in mind that it's possible that that authorization code might be stolen or copied, which means the server can't
+really ever be sure whoever is redeeming that code is the real application.
+
+So we need some way to verify that.
+And that is with a client secret is for.
+
+Remember, the client secret is like the application's password.
+So if the application redeems this authorization code and proves it's the real application by authorization server
+knows it's being redeemed by the real application and it hasn't been stolen.
+
+And this works because the application uses its client secret to prove its identity at the authorization server when
+
+it makes that request for an access token.
+
+But what happens if the app can't prove its identity?
+
+And that would be the case for mobile apps or a single page apps which can't be deployed with a client secret since
+these kinds of application don't have a client secret.
+
+If they were to try to use the authorization code flow, the OAuth server would effectively be letting any application
+that could steal the code get an access token.
+
+So we need some sort of solution to this, which it turns out is the PKCE extension, short for Proof Key for Code Exchange.
+
+We'll look at the details of that mechanism in the next couple of sections.
+
+But a high level summary of how it works is this: Before the app makes that first request to start the flow,
+it actually makes up a unique secret for each request.
+
+And it uses that secret to start the flow, and again when it redeems the authorization code.
+And that lets the authorization server know that the thing redeeming the code is the same thing that started the flow
+preventing authorization codes from being used if they are stolen.
+
+Now, that's great, but I chose my words carefully there because what this does not do is actually prove this app's
+identity or authenticate the app.
+
+All it does is make sure that the authorization code is used only by the same app that started it.
+But it doesn't stop an attacker from impersonating an application without a client secret.
+
+The OAuth flow is perfomed with information that's entirely public.
+
+So if someone really wanted to, they could start an OAuth flow with the public client of some other app.
+And if they were then able to steal the authorization code, they could also then get an access token.
+
+And that takes us to the last aspect of application identity, which is the redirect URI,
+the redirect URI is the location of the client where the authorization server is going to send the user
+back to after they log in.
+
+And that's where the authorization code will be delivered in the front channel.
+
+For web apps and single apge apps, it'll be a URL like https://example-app.com.
+
+For native apps and mobiel apps and desktop, it might be a custom URL scheme instead, like myapp://redirect.
+
+And there's an important distinction between there two, closely related to the concept of application identity.
+
+The URLs are considered to be globally unique.
+If I'm running a website  example-app.com, that means nobody else can run a website at that address.
+And that's because I've registered that domain and I own the DNS entry for it,
+
+but there isn't any global registration for custom URL schemes, which means even if my app claiming the same scheme.
+
+Now, different mobile platforms handle it differently if someone installs two apps that handle the same scheme, but it
+means a custom URL scheme can't be used as any form of application identity.
+
+Now, in recent years, mobile platforms have also started to allow native apps to take over handling URL patterns for URLs.
+
+And in those cases, the app developer does have to prove they control the real domain.
+
+So Apple and Google won't let you publish an app into their stores using my domain.
+
+Only I can do that. So in that sense, the app's redirect URL -- if it's an HTTPS redirect URL -- is part of the app's identity.
+
+And in the case of mobile apps and single page apps without a client secret, this is the only part of an app's identity
+that we can rely on. But even then, this isn't anywhere near as reliable as a client secret for proving the app's
+identity. It's better than nothing, but it's still potentially  problematic.
+
+And the unfortunate thing here is that there isn't really a proper solution for mobile apps and single page apps.
+
+This is the best we have today.
+
+And this might change in the future if mobile platforms add new APIs that could be used to authenticate apps  from
+their app stores.
+
+But today, this is the best we've got.
+
+Basically what it means is that if you don't have a client secret, if you're building a public client,
+
+you need to be aware of this limitation when deciding policies around things like token lifetimes and whether to
+skip the content screen.
+
+But the fact that this redirect URL is the only hint of confirming the app's identity without a client secret makes it
+that much more important that there redirect URLs are actually registered at the server.
+
+That ensures that the authorization server will only redirect to registered URLs for a given client ID.
+
+We'll talk more about registration and how that works in the next section.
+
+All right. So that covers application identity.
+
+In the next few sections will take a closer look at how the OAuth flow works step by step and will look at how
+PKCE works in more detail.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
