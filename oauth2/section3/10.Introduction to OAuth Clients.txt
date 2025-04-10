@@ -1,0 +1,50 @@
+In the next two lessons, we're going to focus on OAuth from the point of view of creating
+OAuth clients. Remember, client is a spec term for application, but specifically it's the
+application, but specifically it's the application that's going to be getting and using an
+access Token to make API requests.
+
+We'll cover the different kinds of environments applications might be running in, such as
+web server apps, or apps on a mobile phone, single-page JavaScript apps, or apps running
+on devices that don't have a borwser like an Apple TV, as well as apps they don't even have
+an end user.
+
+We'll end the section by touching on some OpenID Connect concepts, highlighting the differences
+between OAuth and OpenID Connect. Each section will start with some background on the issues unique
+to that particular kind of application. And we'll walk through then a complete example of how to use
+the appropriate flow for the situation.
+
+There will also be an exercise or demo so you can see a real example in action.
+
+What I do want to point out about these next few sections is that we'll be focusing on the things
+relevant to client developers, mostly ignoring things that only the OAuth server needs to worry
+about.
+
+For example, we won't be talking much about access token lifetimes, since as a client developer,
+your don't really get any choice in that matter.
+
+The OAuth server makes those decisions for you and you have to take what you get.
+
+Once we get into later sections we'll move in to talking about things from the point of view of
+building APIs where we will get into things like the details of token formats and all the
+concerns of backend API implementations.
+
+So that out of the way.
+
+Let's get started and I will see you in the next lesson.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

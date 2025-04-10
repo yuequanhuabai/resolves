@@ -1,0 +1,176 @@
+If you are ready to build an OAuth client, before you can even start an Auth
+flow, you're going to register the client at that OAuth server.
+
+Client registration is a step of registering the app's identity at the server,
+which does a few very important things.
+
+So typically, the way this works is you're going to go to the developer website of the
+service you're writing an app for, register as a developer, and then go create
+application. That's how it works for consumer APIs like Twitter,Google,GitHub and
+these  kinds of services with public APIs.
+
+You go sign up as a developer, then you can create applications within their platforms.
+
+And registering application will give you credentials that you can use with the OAuth flow.
+Now, if you're using a company or enterprise OAuth server, then the registration step might
+not be self-service like that.
+
+And you'll need to get an administrator to go register the app for you.
+
+But in any case, registering the app will require entering a few pieces of information
+about the app, and then you're going to get back an identifier for the app, the client ID,
+and you may or may not get back to a client secret as well, which would be the password.
+When you go to register the app, the server will ask for some information about your app.
+Every server is going to do this slightly defferently, but you'll usually see at least
+a place to enter the name of the app and a place to enter one or more redirect URLs for the app.
+
+The name of the app might be shown to users if they're asked for permission before continuing.
+
+Some servers might also ask for a description of the app or a logo for the app.
+
+And if it's a public API, there might also be a place to link to the app's terms of service
+or privacy policy.
+
+All of these things are properties of the app that might be needed because they'll be shown
+to users or visivle in logs.
+
+Another variation you might see, depending on the OAuth server you're using, is the
+server may ask you which type of app you're building.
+
+Depending on what you choose, it may decide different policies around whether refresh
+tokens are issued or might enable CORS headers for JavaScript apps, for example.
+
+Entering the redirect URI is one of the most important steps in the registration step.
+
+Some servers might let you register more than one, but it's important that you always
+register at least one.
+
+By including an explicit list of redirect URLs associated with this application, it
+ensures that attackers can't start off with your app's client ID and then have users
+sent back to the attacker's website.
+
+OAuth servers that support the latest recommendations will also prevent you from registering
+redirect URLs with wildcards in them, becuase that's another vector that attackers  have to
+try to trick users into getting sent to the attacker's website.
+
+Wildcard or partial matching of redirect URLs is a great way to open yourself up to open
+redirect attacks. This is a type of attack that's not unique to OAuth, but it's often used
+in conjunction with other vulnerabilities to do unexpected things.
+
+And as we talked about previously with public clients, the redirect URL is really the only
+hope the authorization has of ensuring attackers aren't impersonating real OAuth clients.
+
+All right.
+So once you're entered all this info, your app is registered and you're ready to start an
+OAuth flow. The client ID is considered public information, so it's used to identify the
+app throughtout the OAuthe flow, and it's ok to put that in your source code and things like that.
+
+So, for example, when you start a flow, you'll include the app's client ID in the URL.
+That way the server knows which app to show in the consent screen, and also to know which
+token lifetime policies should apply to the access token that eventually is given to the app.
+The client secret on the other hand is actually the app's password, and that is how the app
+will authenticate with the token endpoint to get access tokens.
+
+If the registration step asked you what type of app you're building and if you chose a
+mobile app or native app or a JavaScript app, then achances are the registration process
+gave you back only a client ID and no client secret.
+
+Since mobile apps and JavaScript apps can't protect a client secret, there's no point in
+even creating one. So this is a nice way to help developers do the right thing.
+
+If you did get back a client secret and you're building a mobile app or JavaScript app,
+then don't put the client secret into the app becuase it just wouldn't be secret anymore,
+because someone could come along and just extract it.
+
+It's important to remember the client secret is the password, so it should be treated like
+a password. Don't share it with anybody and make sure it's protected at all times.
+
+The only apps that can use a client secret are apps that can deploy the client secret and
+be sure it will remain secret.
+
+So if you're building a server isde app, then you absolutely an deploy the secret in the
+apps environment variables or put into a config file because users of the app won't be able
+to access it there.
+
+All right with your client ID and client secret if you're building a server side app,
+you are ready to start the OAuthe flow .
+
+I will see you in the next lesson where we walk through step by step how to do the
+authorization code flow for server side apps.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
