@@ -1,0 +1,233 @@
+In this lesson, we'll walk step by step through a complete authorization code flow for web applications.
+In this example will be demonstrating with sample URLs, and we'll talk about some differences you may
+encounter with OAuth servers in the wild.
+
+At the end of this section, you'll get a chance to try this out on your with a real OAuth server.
+So once you've registered an application with the OAuth server and have a client ID and secret, you're
+ready to begin the flow.
+
+We'll first walk through a summary of the flow and then go step by step showing the details.
+So across the top we have the roles we defined earlier.
+
+The user is using their browser to access the application, which needs an access token from the OAuth server
+so that it can go make API requests to the API.
+
+Now, remember, the end goal here is to deliver an access token from the server to the application.
+And ideally we should have the application receive the access token via the back channel, that way it stays out
+of the browser.
+In this case, we're talking about an app running on a web server, which means if the access token is delivered
+via the back channel, then the browser really never even needs to see the access token at all, which
+is the most secure option.
+
+So let's walk throught this.
+
+The flow starts out with the user clicking the login button.
+
+That's like the user saying, I would like to use this application.
+
+Before the app redirects the user, it makes up a new secret for this particular flow.
+
+This is not the client secret.
+
+This is a random string the app generates and it's different every time it starts to flow.
+This is called the PKCE Code Verifier.
+
+So it holds onto that code verifier in the app's server and then calculates a hash of it called the
+Code Challenge.
+
+And a hash, of course, is a one way operation.
+
+So somebody knows the hashed value.
+They can't reverse engineer it and figure out the secret.
+
+So it takes that hash and includes it in that URL, which it builds to send the browser over to the server.
+
+It'll redirect the user to the server with a bunch of stuff in the query string,
+including that hash, the client ID, redirect URL, and scope.
+So the user ends up at the server delivering the message the app sent.
+
+Now, if you look at what's going on here, this is the first message sent in the front channel.
+
+We talked about the front channel in the previous section, but the key takeaway.
+is that the front channel is using the browser's address bar to send a message between two other computers.
+
+So what's really happening here is ther app is trying to request some stuff from the server, but instead of
+requesting it directly, it handles the request to the user to deliver to the OAuth server.
+
+So because this is a fornt channel request where we can never be sure that the request isn't being snooped on,
+that's why the app only  sends the hash of the secret rather than the secret itself. All right.
+
+So the user is now at the OAuth server and the server asks them to log in, they log in,
+they do any sort of multifactor auth necessary, and then that server asks them to confirm if they really are
+trying to log into the app.
+If they say, yes the server needs to send the user back to the app and also deliver this temporary one time
+use authorization code.
+
+So it takes the app's redirect URI, adds the authorization code in the query string and then sends
+the user's browser there to deliver that back to the app.
+This is the second message passed in the front channel.
+
+This isn't really two steps here.
+
+It's actually the OAuth  server delivering the authorization code to the application by going through
+the user's browser.
+And again. because this is a front channel request, the server can't reall yknow for sure that the code
+was receive by the application.
+So this authorization code is valid for only one use and it has to be redeemed within a short period of time,
+typically under a minute. So now that the application has the authorization code from the request the user's
+browser made, it can now go make a back channel reqeust to exchange that for an access token. So this request.
+is made form the app's server to the OAuth server.
+
+So it never goes through ther browser or anything that the user can see.
+So this request includes the authorization code, the application's client ID and client secret, as well as
+the plaintext PKCE secret that the app generated at the start.
+
+So the server looks at this request and says, ok, cool, I see that I just issued this code.
+It hasn't been used yet and it was intended for this client.
+
+And here's the matching client secret.
+
+And when the request was started, I saw this hash, the code challenge.
+
+So I'm going to go calculate the hash of this code verifier and compare the hashes.
+
+And if they match, then I know that the thing redeeming this code is the same as the thing that started the flow.
+
+So the server generates the access token and returns it in the response.
+
+Now the flow is done and the app can go make API requests with the access token .
+
+So you might have notived that the Code Challenge and Code Verifier parameters are from the PKCE extension.
+
+But PKCE was originally developed for mobile apps and we're talking about here server side apps as well.
+
+As it turns out, the guidance form the OAuth working group is changing to recommend PKCE for all kinds of
+applications, even if you have a client secret.
+
+The reason is because even with a client secret, there's still a subtle attack that's possible to pull off
+where you could essentially  swap authorization codes and end up logged into somebody else's account with
+the real application.
+
+So it's not the same as stealing an access token, but it's potentially even worse because the application
+and the server wouldn't even know that this attack had happened.
+
+This attack is called the authorization code injection attack and it takes a while to expain it so we won't
+go into it in detail here.
+
+But just know that thankfully, PKCE solves that attack, which is the primary reason that PKCE is now being recommended
+even for confidential clients.
+
+So let's go through this flow again step by step.
+But this tiem we're going to look at the actual parameters and values used in the reqeusts. So before the app sends
+the user off to the OAuth server, it generates a random string called the code verifier.
+
+That will be a string between 43 and 128 characters long.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
