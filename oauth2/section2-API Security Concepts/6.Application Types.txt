@@ -58,6 +58,81 @@ For example, a confidential client that is also a first party client might skip 
 And that's because the authorization server can be sure that only the real application could end up with the access token
 after the flow is complete.
 
+However, for a first party public client, an attacker could miic the real application by copying its client ID and
+starting a flow.
+
+And if they can control the redirect URL, they could then end up with the access tokens that the authorization server
+thought were issue to the real application.
+
+Some of the other things the authorization server might do differently depending on the client is whether to include
+refresh tokens or changing the token lifetimes to mitigate risk.
+
+All these things are reasons to use client authentication whenever possible.
+
+One last nonte about confidential clients.
+
+By far, the most common type of credential used with confidential clients is a client secret.
+
+This is basically the same as an API key or password.
+
+It is a string of characters that is shared between the server and the client.
+
+This is the most common because it is the easiest to use, but it is not the most secure.
+
+A more secure form of client authentication involves using a public/private key pair in some form.
+
+There are a few different standard options for this, including Mutual TLS and using a private key to sign a JWT.
+
+We won't go into the details of these other methods in this course since they are far less common and are really used
+only when you need a higher level of security.
+
+If you are interested in learning more about these alternative forms of client authentication, you can visit
+https://oauth.net/2/client-authentication/ to find links to additianl resources.
+
+So in summary, confidential clients are apps running on a server that can be deployed with a client secret or other credentials.
+
+Public clients can't be deployed with credentials, so the authorization server can't be sure that reqeusts made from
+public clients are geniune or being made from someone mimicking the application.
+
+In any case, as a client developer, the best you can do is make sure you choose the appropriate type when you're
+registering the application at the OAuth server and always make sure to safeguard your client credentials if you have them.
+
+And remember, never put a client secret into a mobile application or a single page application because then it
+wouldn't be secret anymore.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
