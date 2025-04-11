@@ -123,6 +123,252 @@ the user off to the OAuth server, it generates a random string called the code v
 
 That will be a string between 43 and 128 characters long.
 
+Then it's going to take that string, calculate the SHA256 hash of it, and then base64 URL
+
+encode that result. Base64 URL encoding is just Base64 encode function, you can easily
+turn that into a base64-URL-encode function.
+
+Ok, so now you're ready to build the link to send the user over to the OAuth server,
+you'll need to find the authorization endpoint either by looking at the documentation for
+the OAuth server or by using the server's metadata URL to find it programmatically.
+
+So you take that URL and you add a bunch of query string components, starting with
+response type=code.
+
+That tells the server that you're doing the authorization code flow.
+Next, add your client ID to tell the OAuth server which app is making this request.
+
+You'll need to also include the app's redirect URL.
+But it has to match one of the redirect URLs you added when you registered the app.
+
+You'll need to find the scope values to request based on the API that you're trying to
+access. Let's just say, for example, it's photos.
+
+The state parameter was originally used for CSRF protection, but PKCE provides that
+protection as well, so you can use it for storing application specific state now,
+such as which page to redirect the user to after they log in, like cart or checkout.
+
+But a side note here.
+This is only safe to use this way if you are sure the OAuth server supports PKCE.
+
+If the server doesn't support PKCE, then you will need to make this a random value.
+Lastly, include the code challenge, which is that hash of the code verifier, as well as
+the hash method you used S256 for SHA256.
+
+So you turn all those parameters into a URL and you're ready to send the user off to the
+server to go log in.
+
+Your app won't see the user again until they come back to the redirect URL with the
+authorization code. All right.
+So the user goes and logs and approves the request and then the OAuth server generates
+that one time use authorization code and sends them back to your application.
+
+Another possibility is that there was some sort of error and the server redirects back to
+your app with an error code in the URL instead of the authorization code.
+
+But if it worked, the user will be back at your app at the redirect URL, and there will
+be an authorization code in the query string as well as that state value.
+
+You should double check the state value matches the value you used in the request.
+
+That's for CSRF protection, and then you're ready to exchange that authorization code for
+an access token. So in this step, you're going to be making a backchannel HTTPS request
+from your application server to the servers token point.
+
+That's a separate endpoint that you'll need to look up as well.
+
+This's a separate endpoint that you'll need to look up as well.
+
+This will be a post request using a traditional form-encoded POST body.
+
+The parameters in this request will be grant_type=authorization_code.
+
+This tells the server that you're doing the authorization code grant.
+
+You'll include that authorization code you got in the query string
+as well as the redirect URI used in the request.
+
+And since you are using PKCE, you'll also need to include the code verifier, which is the
+plain text secret that your app made up at the beginning.
+
+You'll also need to include the application's credentials.
+
+That's the client ID and client secret.
+
+Now, different servers may expect this either in the post body or as in basic OAuth header.
+So double check your servers docs for that one.
+
+Assuming everthing works, the authorization server will reply back with an access token,
+the expiration time of the token and possibly also a refresh token.
+
+And now your app is done with the OAuth flow and it can use that access token to make API
+requests. If you got back a refresh token, then when the current access token expires,
+you can use the refresh token to get a new access token without going through that whole
+flow again. Using the refresh token is a lot like using the authorization code.
+
+You make a post request to the token endpoint, but this time you say grant type is refresh
+token and you include the refresh token in the post body as well.
+
+You'll also still have to use the client and client secret.
+
+That way the OAuthe server knows it's really this app making the request.
+
+This is of course, a back channel request from your web server to the OAuth server,
+and assuming the refresh token is still valid, you'll get back a new access token and
+possibly a new refresh token.
+
+Again, every OAuth server is going to do something slightly different here.
+
+Sometimes you may get back a new refresh token and sometimes you won't.
+
+If you don't get a new one, it means the one you have should probably keep working.
+
+But do keep in mind that there is no guarantee a refresh token will work when you go to
+use it, because there are actually a lot of reasons it might expire.
+
+The user could be deleted, the user could have revoked the permissions and admin may have
+deleted an application.
+
+But regardless of the reason, the request to use the refresh token would fail.
+
+The only thing your app can do at that point is attempt a new flow form the beginning.
+
+So that's the authorization code flow for confidential clients.
+
+In this lesson we also demonstrated using the PKCE extension to protect against
+authorization code injection attacks.
+PKCE for confidential clients is relatively new guidance form the OAuth group.
+
+It's included in the Security Best Practice as well as OAuth2.1.
+
+In practice, you may find OAuth servers in the wild that don't support PKCE for
+confidential clients yet since that advice is still relatively new.
+
+And in that case you should definitely recommend that they add PKCE support.
+
+But in the meantime, you'll need to make sure you are using a random state value to
+protect against CSRF attacks.
+
+At the very least, the good news is you can still include PKCE parameters in the request,
+even if the server doesn't support PKCE, because servers have to ignore parameters they
+don't recognize. And that means you can actually code your OAuth clients with PKCE today.
+
+And then when the server finally does add support, you won't have to go back and rebuild
+your applications. In the next lesson, we will try out the authorization code flow with a
+real OAuth server. So I will see you there.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
