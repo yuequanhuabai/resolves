@@ -1,0 +1,49 @@
+In this lesson, we'll take a look at some of the unique challenges that the browser
+environment poses when dealing with OAuth for single-page apps.
+
+Single-page apps are a common pattern for building applications on the web today.
+
+There are serveral variations of these specific architectures, but they all share one thing in common: the browser.
+
+Your single-page app might be deployed on a static web hosts like S3, but you might also be using a single-page app
+framework that's served from a dynamic web server like. Net or Java. One of the more straight forward limitations of
+JavaScript apps is that there's no way to ship any sort of credentials in the app.
+
+This means JavaScript apps are considered public clients in OAuth terms.
+
+If you imagine trying to put in API key into a JavaScript app, it's trivial for anybody using the app
+to click View Source and the browser and then poke around the source code
+and they'd be able to find the key.
+
+And there's nothing you can do to hide it.
+
+Any attempts you make to try to hide the key will be able to be reverse engineered.
+
+Now, that said, if you do have a dynamic server backend hosting your single page app,
+then that back end piece might be a confidential client.
+
+But we'll talk more about that later in this section.
+Just remember that there's no way to include any API keys or client secrets in the
+JavaScript part of an app if you want those to remain secret.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
