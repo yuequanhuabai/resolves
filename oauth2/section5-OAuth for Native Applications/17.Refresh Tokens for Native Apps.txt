@@ -1,0 +1,229 @@
+In this lesson, we'll talk about how you can use a refresh token to create a better user
+experience for mobile apps.
+
+Refresh tokens are special tokens whose only job is to get new access tokens.
+
+The thing that makes them special is the app is able to use them without geting the
+user involved. Essentially, these are used to keep the user logged in while also letting
+access tokens last for a shorter time.
+You can imagine if the server wanted to have access tokens last at most an hour, it would
+be really annoying if the user had to log into the app every hour.
+
+But with refresh tokens, the access token might last only an hour.
+
+But then the app can go use the refresh token in the background to get new access tokens and
+it won't have to interrupt the user.
+
+If you're talking about web server apps, then it's actually not a huge deal to have to redirect the
+user to the server to start a flow again.
+
+It happens very quick, often so quickly that you won't even notice the redict happening.
+But on mobile, getting the user to visit the server, it means popping up the in-app browser,
+which is definitely going to be visible to the user.
+There's no way around that.
+
+Even if the user is still logged into the OAuth server and might not have to type their
+password in, they would still see it as an interruption having this pop up even momentarily.
+
+So the refresh token is there so ther application can use it behind the scenes to go get a new
+access toke nwithout involving the user.
+
+So how does the app request a refresh token?
+
+Well, there is some room for interpreration in the spec here, so different servers might do things
+slightly differently.
+
+Sometimes the app has to explicitly request a refresh token, but other times the server might
+be configured to always return refresh tokens automatically.
+
+If the app does have to request one, there's a convention of using the scope offline_access in
+the initial authorization request.
+
+At the end of the day, though, it's not really the app's decision about whether it should get
+a refresh token. The server may have policies around which apps or even which users are allowed to
+get refresh tokens. So the app has to be able to handle whatever it's given.
+
+Let's now take a look at what it looks like to actually use the refresh token.
+
+If the app receives a refresh token, it will be at the same tiem it gets the access token.
+
+If the app sees the access token is about to expire, it can go sue the refresh token to get a
+new one first.
+
+Using the refresh token is actually a very simple POST request to the OAuth server's
+token endpoint. This is the same endpoint  that the app requested the first access token from
+using the first access token from using the authorization code.
+
+The post includes grant_type=refresh_token, the refresh token itself and the app's client ID.
+
+There's no client secret here because native apps don't get client secrets.
+
+Now you might notice that the lack of a client secret is a bit dangerous.
+
+Essentially, it means that the refresh token is now the only thing needed to get new
+access tokens. And if someone were able to seal a refresh token, they cloud get new access
+tokens with it, just like the real app could.
+
+So it's super important that your application protect the refresh token.
+
+Thankfully, most of this is already taken care of by the native app platforms, isolating apps
+from each other and things like that.
+
+There's also a particularly useful API on mobile to better keep your refresh token safe,
+
+which also ties into the user experience aspect of this.
+
+Let's walk through an example.
+
+When the app first launches, it has no tokens.
+It'll show a sign-in prompt to the user, starting the flow.
+
+The suer will log in at the OAuth server and then the app will get an access token and a
+refresh token. It'll use the access token for API requests and it will store the refresh
+OpenID using a secure storage API available on the device.
+
+This secure storage API is so secure that even the app's code can't access it anymore.
+
+So the user uses the app for a few minutes, then put that phone away.
+
+The next day they launch the app again.
+
+The app sees the access token expired yesterday, so it's going to show the sign-in prompt
+again when the user taps sign in.
+
+The app can see that there's a refresh token stored, but it can't access it yet.
+
+So it prompts the user for boimetrics, which is going to unlock that secure storage,
+
+making the refresh token available to the app.
+
+It then makes that request using the refresh token and it gets a new access token back,
+
+and the user is logged in.
+
+And in the sequence, the user didn't have to even see a web browser and didn't have to type
+in a password. It just looks like a seamless FaceID or thumbprint authentication.
+
+So this is a great option for your apps since it means even your own code can't accidentally
+extract the refresh token since you'll only be accessing at the exact time it's needed.
+It'll also procide the best user experience since you won't have to interrupt users with password
+dialogs all the time.
+
+So that is a summary of how to use refresh tokens in mobile apps.
+
+In the next lesson will walk through step by step how to do the authorization code flow on a mobile device.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
