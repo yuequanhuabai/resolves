@@ -1,0 +1,151 @@
+One of the most important parts about thesecurity of doing OAuth in a mobile environment is how the mobile app
+lauches the browser to the OAuth server to start the flow .
+
+Now, it used to be the case that the user experience of doing OAuth in a mobile app wasn't that great.
+And that's mainly because the most secure way to do it was to launch the actual native browser on the phone.
+So that would be Safari on iOS or Chrome and Android.
+
+And what that would look like to the user was they would be in the native app, they would click a button, the
+native app would go to the background, Safari would launch in front, they would log in there and then they
+would switch back.
+
+And that's arguably not the best experience having to actually leave the app.
+And it's more fragile since they do actually leave the context of the app.
+But the good news is that's all old news and things have gotten a lot better.
+So as OAuth became more mature and was more widely adopted, the mobile platforms actually built special APIs
+to do this in a much better way.
+
+So what we actually used to see a lot of back when that was the only other way to do it was mobile apps would then
+embed a web view into the apps that the user never left the app, but that has a bunch of problems as well.
+Let me give you a short list of the problems of embedding a web view.
+
+For one, it's not actually a real browser, so the user doesn't see an address bar.
+
+In that case, they just see the web page framed into the app.
+
+The problem with that is that if the user can't see the address bar, the user can't see the address bar, the suer can't
+actually verify that what they're looking at is atually the authorization server.
+
+It could just as well be an attacker's website cloned to look like the authorization server, and they'd be typing in
+their password into the attackers website.
+
+And there's no way to verify that, really.
+
+Another problem is that because this isn't actually a browser, it's just the web view, the mobile phones actually don't
+let that share cookies with the system.
+
+That's because the application has full control over the web view, and if it did share cookies with the system
+browser or other applications, data would link between application.
+
+So the mobile platforms just isolated those, making them their own little container, which means that
+if you were logged into the authorization server in Safari,
+for example, and then you launch an app and it's got the web view to that authorization server, you
+wouldn't be logged in the app because it doesn't share cookies with the system.
+So that actually ends up meaning that the user experience is kind of worse in a way because the user
+is going to have to type in their password every time that opens up.
+
+Using the full redirect flow might be a little bit more disruptive during the flow, but at least they
+would already be able to share the session with the authorization server since they're already logged
+in  Safari on their phone.
+
+And lastly, even if the user is looking at the real OAuth server framed into the web view. the problem
+is that the application has full control over that web view.
+
+So if the user types in their password, then the application can actually reach into that web view
+because it's not real browser.
+
+So the good news here is that this is all old news and things have gotten a lot better.
+
+The mobile platforms have actually been building and proper support for doing this kind of thing now.
+
+So we now have these APIs which are able to launch a browser in a secure way within the application,
+which means the user never actually leaves the app.
+
+So this is what it looks like in iOS, where the user is inside of the application.
+They click a button, the web view pops up in front of the application.
+
+They can log in there and then it goes away and they're still within the application.
+
+The nice thing about this is that the user never leaves the app.
+
+The other thing is that the application doesn't have access to that browser.
+
+And because it doesn't have access to that browser, it can't inspect any of the contents,
+which means it's safe to then have that share cookies with a system, which means if the user
+is already logged in Safari, then the user is also already logged in within this pop up
+web browser so they can avoid typing in their password.
+
+So this improves the user experience quite a bit.
+It saves a user from typing in their password all the time.
+They don't ever leave the application, but we still get the security benefits of the application
+not being able to touch the user's password while they're logging in.
+
+So on iOS, this is the SFSafariView Controller.
+And on Andriod there's a similar thing called Chrome Custom Tabs.
+
+These are the best way to do an OAuth flow from within mobile apps.
+
+This is the best balance between security and user experience.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

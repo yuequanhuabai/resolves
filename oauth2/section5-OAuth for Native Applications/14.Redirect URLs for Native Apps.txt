@@ -1,0 +1,136 @@
+One of the things unique to mobile apps in terms of the security of the OAuth flow is how the
+mobile platforms like iOS and Android handle redirect URLs.
+
+So the redirect URL is where the authorization server is going go send the user back to after they log
+in and authorize the app at the authorization server.
+
+Now, in web apps, this entire interaction happens within the browser.
+
+In the same browser tab you started the app, you get sent over to the authorization.
+
+So in the case of the web browser, that's generally considered pretty secure because the browser
+ is going to do things like check the DNS, validate HTTPS, and we generally consider that's relatively secure.
+
+ The problem is that in mobile apps, we lose a lot of those protections that are built into the browser.
+ So in a mobile app, you start in the app.
+
+ The app launches an in-app browser to the authorization server sends a redirect back to the app.
+
+ But in that case, there's a chance that redirect could be intercepted depending on how it works.
+ So there's generally two ways redirect URLs can happen withn mobile app environments.
+ It used to be a lot mroe common that applciations would be able to just define a custom URL scheme.
+
+ And any time anything in the phone launched a URL matching that scheme, that app would launch instead.
+So you can imagine just making up a word that is the same as your app name or using a reverse DNS kind
+of scheme for it.
+
+But there's no registry of these.
+So actually any app can just claim any RUL scheme.
+So if you're making a to do app and it's just called to do and you use the URL schemetodo://,
+as soon as you install that app, then anything on the phone that launches a URL
+matching that pattern will lauch your app instead.
+
+But there's no way to register this, so anybody can use that URL scheme.
+So if someone figures out which scheme your app is using, they can make a competing app that
+claims the same URL scheme.
+
+And now those are going to fight for catching the redirect.
+
+And in most cases, the mobile paltforms don't actually have a well-defined vehavior for which app is
+going to catch that redirect. So this opens up an opportunity for a mobile app to steal authorization
+codes in that redirect step. Now, the other, more mmodern way.
+that apps can claim redirect URL is by claiming URL patterns.
+
+This is also known as deep linking.
+
+So this is actually where your mobile app can claim a URL pattern, including a full domain name or even path.
+And then again, once that's registered, any time any URL is visited from another app or even from a mobile
+browser, your app will launch instead.
+
+And this is how you get things like when you click on a link to Amazon, you get taken to the Amazon app
+with that product loaded or linking to an Instagram photo where you get dropped right into the Instagram
+app instead of the website.
+
+What makes this more secure, though, is that in order for an application to claim a URL pattern,
+the app developer has to actually prove that they control that domain name.
+
+And that's where you get a lot more of the security around that.
+
+Now, it's still, of course, not perfect and there are ways this can fail.
+
+So we still don't trust the redirect URLs in mobile apps quite as much as we do in a
+browser environment. So you can imagine if you're the OAuth server and you're about to
+generate this authorization code and send a redirect back to the mobile app, you don't
+actually know whether that redirect is going to make it back to the app because there are
+many ways that can fail.
+
+You kind of just hope it does, but there's no real guarantees.
+
+And that's really why PKCE is so impartant.
+
+So in general, when you're building a mobile app, it's usually a better idea to use app-claimed
+URL patterns because those can actually be verified by the mobile platforms and you run less risk
+of other applciations being able to steal and clobber your redirect URL handling.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

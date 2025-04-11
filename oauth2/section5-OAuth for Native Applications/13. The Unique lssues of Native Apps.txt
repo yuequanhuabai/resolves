@@ -1,0 +1,46 @@
+In this lesson, we're going to talk about the specific things that are
+unique to mobile apps that make it different from the web server
+apps that we looked at before.
+
+In the previous section, we learned about the authorization code flow
+in OAuth and how it works in a web server environment.
+
+And if you remember back to that section, one of the last parts in that
+step was using a client secret to exchange the authorization code for an access token.
+
+Now, in a mobile app, you might be wondering, well, why can't we just do the same thing?
+
+It turns out that it's actually not safe to include client secrets in mobile apps.
+
+If you were to include a client in a mobile app, you would be incuding in the source code,
+compiling it, putting that into the App Store, and then everybody would be downloading it.
+
+That means everybody would have a copy of the client secret.
+
+And there are plenty of tools available to decompliled binaries that are shipped on the App Store,
+and then that client secret, so it's not really secret anymore. So why do we have it at all?
+
+And it turns out that's exactly how we're going to fix this with mobile apps.
+
+We're just going to not use a client secret.
+
+There are a few other things unique to the mobile app environment, which we're going to
+cover in the next two lessons.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
