@@ -1,0 +1,374 @@
+In this lesson, we'll walk step by step through a complete authorization ocde flow for single-page
+applications running in a browser.
+In this example will be using sample URLs instead of a real server.
+
+And we'll talk about some of the differences you may encounter with OAuth servers in the wild.
+At the end of the section, you'll get a chance to try this out yourself with a real OAuth server.
+When you're building a JavaScript app, remember that you don't have a way to deploy any credentials
+like a client secret. So when you register the application at the OAuth server, if the server
+gives you the option of telling it what kind of app you're building, then it actually won't even
+bother giving you a client secret since it knows there's no way for you to use it.
+
+So with JavaScript apps, you'll be doing the flow with only a client ID and no client secret.
+We'll first walk through a summary of the flow, then go step by step showing the details.
+
+So across the top here we have the rols we defined earlier.
+
+In this case, the user is using their browser to access the application, which is running in the
+browser after downloading the source code.
+
+Now, even though this seems like it's completely different from an app running on a server,
+remember that we still talk about the roles each piece plays.
+
+So these roles are the same as the Web server app example we saw in the previous section.
+
+This app is running in the browser and needs an access token from the OAuth server, that
+way it can go make reqeusts to the API.
+
+Now remember, the end goal here is to deliver an access token from the server to the application.
+And ideally we should have the application. And ideally we should have the application. And ideally
+we should have the application receive the access token via the back channel.
+
+That way it stays out of the address bar.
+
+Now, even though we're talking about a JavaScript app in a browser, we still have a back channel.
+But in this case, it means that the code in the JavaScript app itself makes a request to the
+OAuth server, rather than passing data through the address bar.
+
+Feel free to go back and review the front channel vs back channel lesson for more background on
+the distinction between these two different ways of passing data.
+
+So let's walk through this. The flow starts out with the user clicking the login button,
+and that's like the user saying, I would like to use this application.
+
+Now before the app redirects the user, it first makes up a new secret for this particular flow.
+This is not a client secret.
+This is a random stirring the app generates and it has to be different every time it starts a flow.
+This is called the PKCE code verifier.
+So it holds on to that code verifier in the browser, usually by storing it in LocalStorage or
+SessionStorage and then it calculates a hash of it called the code challenge.
+
+A hash, of course, is a one way operation.
+
+So if somebody knows the hash value, they can't reverse engineer it and figure out the secret.
+It takes that hash and includes it in the URL that it goes and builds, which tells the browser
+to go over to the OAuth server.
+Now the app redirects the user to the server with a bunch of stuff in the query string,
+including that hash, the client ID, the redirect URL, and scope.
+
+Now the user ends up at the server delivering the message the app sent.
+So if you look at what's actually going on here, this is the first message sent in the front
+channel.
+We talked about the front channel in a previous section, but the key takeaway is that the front
+channel is using the browser's address bar to send a message between two things.
+
+So what's really happening here is the app is trying to request some stuff from the user,
+but instead of making a request directly, it actually hands that request to the user's
+browser to deliver to the OAuth server.
+
+So because this is a front channel request, that's why the app sends only the hash of the secret
+it made up rather than sending the secret itself.
+Ok, so the user is now at the OAuth server, and the OAuth server asks them to log in.
+
+They log in, they do any sort of mutifactor auth necessary.
+The server then asks them to confirm that they are trying to log into this application.
+If they say yes, the server needs to send the user back to the app and also deliver this temporary
+authorization code.
+
+So it takes the app's redirect URL.
+
+It adds the authorization code in the query string, sending the user's browser there to deliver
+that back to the app.
+
+Now, this is the second message passed in the front channel.
+
+This isn't really two steps here.
+It's actually the OAuth server delivering the authorization code to the application by going
+through the user's browser.
+And again, because this a front channel request, the OAuth server can't really know for sure
+that the code was received by the application.
+
+So this authorization code is valid for only one use and it has to be redeemed within a short
+period of time, typically like under a minute.
+So now that the app has the authorization code, it can go make a back channel request to
+exchange that for an access token.
+
+Now, this request is made form the app's JavaScript code to the server, which is why it's
+differrent from a front channel request.
+
+The app still doesn't have a client secret, but it does have the plaintext secret it generated
+at the beginning.
+
+So the server looks at that request and says, ok, I see this code was just issued, it hasn't been
+used yet, and it was intended for this certain client ID.
+And when the request started, I saw this hash, the code challenge.
+
+So the server calculates the hash of the code verifier in this request, compares the hashes,
+and if they match, then it knows the thing redeeming the authorization code is the same thing
+that started the flow.
+
+So the server generates the access token and then returns it in the response.
+
+Now the flow is done, and the app can go make API requests with the access token.
+
+So the step of doing that hash is the PKCE extention.
+PKCE was originally developed for mobile apps to protect the authorization code, since there
+is no client secret in mobile either.
+But it turns out PKCE also protects against some attacks even if you do have a client secret.
+And it also works fine in browsers as well from JavaScript.
+
+So let's go through this flow again step by step.
+But this time we will look at the actual parameters and values used in the request.
+Before the app sends of user off to the OAuth server, it generates this random string, the code
+verifier, and that's going to be a string between 43 and 128 characters long.
+It takes that string, it calculates the SHA256 hash of it, and then base64-URL-encodes
+that result.
+Now base64-URL-encoding is base64-encoding with a slightly different character set.
+
+So you can use a JavaScript base64 encode function and then turn it into a Base64-URL-encode
+function by just switching a few characters around.
+Ok, so you're ready to build that link to send the user over to the OAuth server.
+
+You're going to find the authorization endpiont either by looking at the docs for the OAuth server
+or by using the server's metadata URL to find it from your code.
+
+Then you take that URL, you add a bunch of query string componenets, starting with
+response_type=code, and this tells the server that you're doing the authorization code flow.
+Next, you add your client ID telling the OAuth server which app is making this request.
+You will also need to include the app's redirect URL, but it has to match one of the redirect
+URLs you added when you registered the application.
+You'll need to find the scope that you are trying to request from the API based on which API
+you're accessing.
+
+Let's just say, for example, photos.
+
+The state parameter was originally used for CSRF protection, but PKCE provides that protection as
+well, so you can actually use it for storing application-specific state now, such as which page
+to redirect the user to after they log in.
+
+Like "card" or "checkout".
+
+But side note here, this is only safe to use this way if you are sure the server supports PKCE,
+if the server doesn't support PKCE,then you will still need to make the state a random value.
+Of course if the server doesn't support PKCE then it probably also doesn't have a way for you
+to actually use the authorization code flow from a single page app.
+Lastly it includes the code challenge, which is the hash of this code verifier, as well as
+including the hash method you used, like S256 for SHA256.
+
+Ok, take all these parameters, turn them into a URL, and then you redirect the user to
+that URL. And now your app won't see the user until they come back to your redirect URL with
+the authorization code.
+So the user's at the OAuth server, they go log in and approve the request,and then the OAuth
+server generate that one-time-use authorization code, sending them back to your app.
+Now, there's another possibility, of course, which is that there was some sort of error and
+the server redirects back to your app with an error code in the URL instead of the authorization code.
+But if it worked, the user will be back at your app at the redirect URL, and there will also be an
+authorization code in the query string, as well as that same state value that you set.
+
+So double check the state value matches and then you're ready to exchange that authorization code
+for an access token.
+
+So in this step, it'll be making a back channel HTTPS request from your application's JavaScript
+to the server's token endpoint.
+And that's actually a separate endpoint that you'll need to look up as well.
+
+This will be a POST request using a traditional form-encoded POST body.
+
+It's also worth noting here that because this is a post request, if you're token endpoint is on
+a different domain than your app is running, then your OAuth server needs to have CORS headers
+configured properly to allow the request from  your application's domain.
+
+So the parameters in this request will be grant_type=authorization_code.
+And this tells the server that you're doing the authorization code flow.
+You'll use the authorization code you got in the query string as well as the redirect URI
+used in the request. Since you're using PKCE, you'll also need to include that code verifier,
+which is the plaintext string that your app made up at the geginning.
+You don't have a client secret, but you still do need to send the client ID.
+
+Now, assuming everthing works, the authorization server will reply back with an access token.
+It will also include the expiration time of the token and may or may not inlcude a refresh token.
+And then your app is done with the flow and it can use the access token to make API requests.
+
+So that's the authorization code flow for JavaScript apps, including the step of using PKCE
+to protect the flow.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

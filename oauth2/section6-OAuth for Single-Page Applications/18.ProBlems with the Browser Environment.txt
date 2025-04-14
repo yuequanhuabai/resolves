@@ -26,6 +26,173 @@ But we'll talk more about that later in this section.
 Just remember that there's no way to include any API keys or client secrets in the
 JavaScript part of an app if you want those to remain secret.
 
+So without a client secret, we have to be able to do an OAuth flow that doesn't require a secret,
+which thankfully is exactly what the PKCE extension provides.
+
+One of the other challenges of a browser environment is the sheer number of attacks browsers are vulnerable to.
+
+One of the most dangerous attacks is a cross-site scripting attack, also known as XSS.
+
+If an attacker can pull off a cross-site scripting attack on your application, it means
+they're able to run code within your application that looks just like legitimate code.
+
+Cross-site scripting vulnerabilities are extremely dangerous because the attacker may be able to get
+access to any data the app is storing itself, like a user's data or an access token, and they
+might also be able to make API requests using the access token, even if they can't see the access token.
+
+One of the best ways to protest against cross-site scripting attacks is to have a strong Content Security
+Policy.
+
+This tells the browsers which domains are allowed to load JavaScript from.
+
+But even then, it can be challenging to create a Content Security Policy strong enough,
+
+which also continuing to allow things like your analytics or ad networks to function.
+
+And that's kind of the challenge here, which is that many app developers today rely on third party
+JavaScript code, whether that's for advertising or analytics or exception reporting or analytics
+or exception reporting or even your CSS framework that requires some JavaScript to enable fancy animations.
+All of those third party scripts are potential attack vectors waiting to happen. You might be hotlinking
+those JavaScripts from other domains or it might be part of your build process to pull them in and
+compile it into a single JavaScript.
+
+But either way, that third code that may end up being attacked and compromise your application.
+So this isn't to say that you shouldn't ever use third party JavaScript,
+just keep in mind the potential risks if you do.
+
+Closely related to cross-site scripting is the face that your users may have installed any number of
+browser extensions which also get access to the page.
+
+And this is a really tricky thing because it basically means that you can never actually be really
+sure what code is even running in your application.
+
+Even if you're got a tight Content Security Policy and you aren't loading in any external JavaScript
+into your application, the user might be doing that themselves by using an extension that injects
+JavaScript into the page anyway.
+
+So that ends up meaning that any extension that your users have installed might also be able to
+snoop on your application's data.
+Which takes us to this last point.
+One of the other serious limitations of browsers is that there isn't really any sort of secure storage API
+available.
+
+We already know there's no way to ship a client secret in a browser app, but even if there were,
+there wouldn't be anywhere for the browser to store it.
+
+And this is also a problem for the browser trying to store the access token or a refresh token.
+
+Anywhere that JavaScript code can access is also then potentially exposed if there's a cross site
+scripting lulnerability.
+
+There's a cross site scripting valnerability.
+
+There's only a few places a JavaScript app can store things, whether that's in a cookie or using
+LocalStorage or SessionStorage.
+
+And if your JavaScript is able to read this storage, then there's a chance that an attacker's a
+chance that an attacker's JavaScript can as well.
+
+Now, I just described a bunch of scary things about browsers, but I don't want that to scare you
+off from ever writing a single-page app again.
+
+That said, you do have to be aware of the potential risks because that is going to factor into
+other decisions they'll be making around this kind of application.
+
+Because of there inherent risks of the browser environment, you'll often see that OAuth servers
+have significantly different policies for single-page apps compared to other kinds of apps.
+
+For example, refresh tokens might be disabled completely or refresh tokens might be disabled completely
+or refresh tokens might be one time use.
+
+Token lifetimes might be shorter than for other apps in order to reduce the risk if tokens are leaked.
+These are the kinds of tools available to the server to reduce the overall risk when apps are running
+in a browser.
+In the following lessons in the section, we will take a look at how to do an OAuth flow from
+JavaScript, as well as take a deeper dive into the tools you have available to protect tokens
+in the browser.
+We'll also talk about the option of keeping the access tokens out of the browser entirely.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
