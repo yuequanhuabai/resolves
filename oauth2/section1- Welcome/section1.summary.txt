@@ -1,0 +1,12 @@
+課程的總體分兩個部分：
+
+1. 基礎的安全概念，OAuth中的不同角色；構建OAuth應用和利用OAuth保護API的訪問的講解基礎；
+2. 實戰OAuth保護API，詳細討論不同環境構建OAuth應用程序（移動應用程序和單頁面）
+
+
+OAuth2.0角色                   OpenID Connect 對應角色                説明
+
+Resource Owner                 End-User                        資源的擁有者，通常是最終的使用者
+Client                         Relying Party(RP)               請求資源的應用程式
+Authorization Server           OpenID Provider(OP)             負責驗證使用者身份并簽發令牌的伺服器
+Resource Server                UserInfo Endpoint               提供使用者咨詢的API端點
