@@ -10,3 +10,15 @@ Resource Owner                 End-User                        ыYт╢╣д⌠Мспуъё╛м╗Ё
 Client                         Relying Party(RP)               у┬гСыYт╢╣д▒╙сцЁлй╫
 Authorization Server           OpenID Provider(OP)             ь⌠ь÷Р·вCй╧сцуъиМ╥щ╡╒╨·╟lаНеф╣дке╥ЧфВ
 Resource Server                UserInfo Endpoint               лА╧╘й╧сцуъвит┐╣дAPI╤кЭc
+
+
+
+
+
+
+
+
+
+й╧сцуъ  тз  ©м▒Т╤к▒╙сцЁлй╫  ио  ъx⌠Я   й╧сц  ль╤╗╣диМ╥щлА╧╘уъ ╣гхК
+
+уJвC╣джВН}▄╕оСйгдд▌в┌─ё© йгуl▄╕уlуJвCё© ╝■г╟й╧сцуъ╨мйз≥Ю╥Ч└ум╗ъ^йз≥Ю╣дсц▒Тпео╒ъMппуJвCйг╥Яр╩жб├Аё©
