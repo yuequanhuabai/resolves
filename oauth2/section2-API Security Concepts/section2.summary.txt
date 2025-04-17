@@ -1,0 +1,16 @@
+roles:
+========================================================
+User,
+Device,
+Application,
+API
+
+∏≈ƒÓ”≥…‰===============================================
+
+User,               Resource Owner,
+Device,             User Agent,
+Application,        OAuth Client
+API                 Resource Server
+
+=====================================================
+
