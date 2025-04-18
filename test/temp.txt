@@ -1,0 +1,247 @@
+開發檢查點，測試要點（開發者填寫）
+請上傳checklist附件，或增加checklist表格
+
+
+任務描述：
+稍後提供SMP現使用Java的文檔供研閲
+HTTP方案簡介見以下文檔： WebApplicationGuidelineV1.07_HTTP_Approach_.doc
+
+1.UMS Authentication Mechanism
+1.1 Scenario: Users Not Yet Logged On
+1.2 Scenario: Users Already Logged On
+
+2 Required  HTTP Interface
+2.1 Interface UserSignOn
+2.1.1 Overview
+2.1.2 Purpose
+2.1.3 Form
+2.1.4 Input
+2.1.5 Output
+
+2.2 Interface AuthCallback
+2.2.1 Overview
+2.2.2 Purpose
+2.2.3 Form
+2.2.4 Input
+2.2.5 Output
+
+Remark
+
+Appendix
+
+
+
+
+
+
+
+
+======================================================================================================================================
+
+1.UMS Authentication Mechanism
+This section describes the sequences of authentication mechanism between UMS and other BOCHK applications(BOCHK APP)
+
+1.1 Scenario: Users Not Yet Logged On
+Client Browser、 BOCHK APP Server 、  UMS Web Server
+step1:  Client Browser-->BOCHK APP Server: Access BOCHK APP Resource
+step2: BOCHK APP Server: Check BOCHK APP Session
+step3: Not Signed On Redirected to UMS Sign On
+step4: Client Browser-->UMS Web Server: Load Sign on(new UMS Session)
+step5: UMS Web Server: Check UMS Session
+step6: Prompt Sign On Credentials
+step7: Submit Credentials
+step8: Perform Sign On
+step9: Redirect to BOCHK APP
+step10: Access BOCHK APP Resource
+step11: Authentication Callback Page
+step12: Authenticated for BOCHK APP
+step13: Authorize Session
+step14: Return BOCHK APP Resource
+
+1.2 Scenario: Users Already Logged On
+
+2 Required  HTTP Interface
+2.1 Interface UserSignOn
+2.1.1 Overview
+2.1.2 Purpose
+2.1.3 Form
+2.1.4 Input
+2.1.5 Output
+
+2.2 Interface AuthCallback
+2.2.1 Overview
+2.2.2 Purpose
+2.2.3 Form
+2.2.4 Input
+2.2.5 Output
+
+Remark
+
+Appendix
+
+
+
+
+
+Scenario: Users Already Logged On
+
+When the user is already logon to UMS through BOCHK APP, further accesses to BOCHK APP
+other resources will be checked against the BOCHK APP session but not by UMS.
+
+Client Browser, BOCHK Web Server , UMS Web Server
+
+step1: Access BOCHK APP Resource
+step2: Check BOCHK APP Session
+step3: Authorize Session
+step4: Return BOCHK APP Resource
+
+
+
+Interface UserSignOn
+
+This user interface is accessed by browser to perform the sign on
+
+Overview
+
+The user signs on the UMS system by passing the credentials(i.e. username and password). On successful sign on,
+UMS redirects the browser to the BOCHK APP page.
+
+Purpose
+The user sign on the UMS system by passing the credentials(i.e. username and password). On successful sign on,
+UMS redirects the browser to the BOCHK APP main page
+
+Purpose
+
+This interface is mandatory for users to input their credentials in UMS. The public information of user(e.g. usename)
+should be passed back to BOCHK APP for identification purpose.
+
+Form
+
+HTTP GET
+
+INPUT
+
+URL: https://[UMS_Server]/[Path_to_UserSignOn]
+
+Output
+
+A sign on page will be loaded and UMS authentication will be performed. The client browser will be redirected
+to main page of BOCHK APP
+
+URL:
+http://[BOCHK_Server]/[Path_to_Mainpage]?[Result_Query]
+Format of Result_Query:
+
+Case1: eip.bochk.com
+empnum=[UMS_UserID]&umssessionid=[UMS_Sessionid]
+where empnum=UMS User ID (Char 11) e.g. "50123"
+      umssessionid=UMS Session ID
+
+Case2: neip.bochk.com
+
+empnum=[UMS_UserID]&umssessionid=[UMS_Sessionid]&ssolink=ews
+where    empnum=UMS User ID (Char 11) e.g. "50123"
+        umssessionid=UMS Session ID
+        ssolink=ews(Indicator of neip.bochk.com)
+
+Case3: oeip.bochk.com
+
+empnum=[UMS_UserID]&umssessionid=[UMS_Sessionid]&ssolink=ewo
+where empnum=UMS User ID (Char 11) e.g. "50123"
+    umssessionid=UMS Session ID
+    ssolink=ewo(Indicator of oeip.bochk.com)
+
+Case4: eip.ncb.com.hk
+
+empnum=[UMS_UserID]&umssessionid=[UMS_Sessionid]&ssolink=ewpny
+where empnum=UMS User ID (Char 11) e.g. "50123"
+      umssessionid=UMS Session ID
+      ssolink=ewpny(Indicator of eip.ncb.com.hk)
+
+Interface AuthCallback
+
+This system interface is accessed by BOCHK APP to confirm that the user is signed on.
+
+Overview
+
+On access of protected resources by browser, BOCHK APP calls back UMS to confirm that the user is already sighned on.
+
+Purpose
+
+This interface is mandatory for BOCHK APP to check that the user is already signed on UMS.
+BOCHK APP will identify a specific client in terms of :
+UMS username
+UMS session ID
+
+Form
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
