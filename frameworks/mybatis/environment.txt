@@ -1,0 +1,11 @@
+Environment
+它代表了一个完整的数据库运行环境 （DataSource和TransactionFactory）
+
+一个Mybatis的SqlSessionFactory可以包含多个Environment
+
+
+DataSource (数据源)： 负责提供数据库连接。MyBatis 支持多种数据源类型，例如：
+    UNPOOLED： 每次请求时创建和关闭连接。
+    POOLED： 使用连接池管理连接，提高性能。
+    JNDI： 从 JNDI 容器中查找数据源，通常用于应用服务器环境。
+    也可以集成第三方数据源（如 HikariCP, Druid, DBCP 等）。
