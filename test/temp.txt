@@ -1,10 +1,10 @@
-é_°l™z²éüc£¬œyÔ‡Òªüc£¨é_°lÕßÌîŒ‘£©
-ÕˆÉÏ‚÷checklist¸½¼þ£¬»òÔö¼Óchecklist±í¸ñ
+é–‹ç™¼æª¢æŸ¥é»žï¼Œæ¸¬è©¦è¦é»žï¼ˆé–‹ç™¼è€…å¡«å¯«ï¼‰
+è«‹ä¸Šå‚³checklisté™„ä»¶ï¼Œæˆ–å¢žåŠ checklistè¡¨æ ¼
 
 
-ÈÎ„ÕÃèÊö£º
-ÉÔááÌá¹©SMP¬FÊ¹ÓÃJavaµÄÎÄ™n¹©ÑÐé‡
-HTTP·½°¸º†½éÒŠÒÔÏÂÎÄ™n£º WebApplicationGuidelineV1.07_HTTP_Approach_.doc
+ä»»å‹™æè¿°ï¼š
+ç¨å¾Œæä¾›SMPç¾ä½¿ç”¨Javaçš„æ–‡æª”ä¾›ç ”é–²
+HTTPæ–¹æ¡ˆç°¡ä»‹è¦‹ä»¥ä¸‹æ–‡æª”ï¼š WebApplicationGuidelineV1.07_HTTP_Approach_.doc
 
 1.UMS Authentication Mechanism
 1.1 Scenario: Users Not Yet Logged On
@@ -42,7 +42,7 @@ Appendix
 This section describes the sequences of authentication mechanism between UMS and other BOCHK applications(BOCHK APP)
 
 1.1 Scenario: Users Not Yet Logged On
-Client Browser¡¢ BOCHK APP Server ¡¢  UMS Web Server
+Client Browserã€ BOCHK APP Server ã€  UMS Web Server
 step1:  Client Browser-->BOCHK APP Server: Access BOCHK APP Resource
 step2: BOCHK APP Server: Check BOCHK APP Session
 step3: Not Signed On Redirected to UMS Sign On
@@ -179,7 +179,7 @@ Form
 
 
 
-·À·¶¿çÕ¾½Å±¾¹¥»÷µÄ×î¼Ñ·½·¨Ö®Ò»ÊÇÖÆ¶¨Ç¿´óµÄÄÚÈÝ°²È«²ßÂÔ¡£
+é˜²èŒƒè·¨ç«™è„šæœ¬æ”»å‡»çš„æœ€ä½³æ–¹æ³•ä¹‹ä¸€æ˜¯åˆ¶å®šå¼ºå¤§çš„å†…å®¹å®‰å…¨ç­–ç•¥ã€‚
 
 
 

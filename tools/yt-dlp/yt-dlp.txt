@@ -1,6 +1,6 @@
 yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=Ia82xrp8_i8"
 
-¸ñÊ½×ª»»£º
+æ ¼å¼è½¬æ¢ï¼š
 
 ffmpeg -i input.webm -c:v libx264 -c:a aac output.mp4
 
@@ -18,12 +18,12 @@ ffmpeg -i input.webm -c:a pcm_s16le output.wav
 https://www.youtube.com/watch?v=yrlNXCzQvoA
 
 
-ÊÓÆµ£º
+è§†é¢‘ï¼š
 yt-dlp -f bestvideo -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www
-ÊÓÆµºÍÒôÆµ£º
+è§†é¢‘å’ŒéŸ³é¢‘ï¼š
 yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.bilibili.com/video/BV1xxxxxx".youtube.com/watch?v=Ia82xrp8_i8"
 
-ÒôÆµ£º
+éŸ³é¢‘ï¼š
 yt-dlp -f bestaudio -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=Ia82xrp8_i8"
 
 
