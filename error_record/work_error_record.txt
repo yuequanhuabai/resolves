@@ -69,3 +69,15 @@ note:
 
 SpringDocSecurityConfiguration
 Knife4jSecurityConfiguration
+
+
+PathPatternMatchableHandlerMapping
+
+public ReqeustMatchResult match(HttpServletRequest request, String pattern){
+  this.pathPatternCache.computeIfAbsent( (pattern,value)->{
+             Assert.state(this.pathPatternCache.size() <MAX_PATTERNS,"Max size for pattern cache exceeded.");
+             return this.parser.parse(pattern);
+  });
+  PathContainer path =ServletRequestPathUtils.getParsedRequestPath(request).pathWithinApplication();
+  return (pathPattern.matches(path)? new RequestMatchResult(pathPattern):null);
+}
