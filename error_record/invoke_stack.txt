@@ -1,0 +1,17 @@
+org.springframework.web.util.pattern.PatternParseException: No more pattern data allowed after {*...} or ** pattern element
+at org.springframework.web.util.pattern.InternalPathPatternParser.peekDoubleWildcard(InternalPathPatternParser.java:250) ~[spring-web-6.1.5.jar:6.1.5]
+at org.springframework.web.util.pattern.InternalPathPatternParser.parse(InternalPathPatternParser.java:113)~[spring-web-6.1.5.jar:6.1.5]
+at org.springframework.web.util.pattern.PathPatternParser.parse(PathPatterParser.java:129)~[spring-web-6.1.5.jar:6.1.5]
+at org.springframework.web.servlet.handler.PathPatternMatchableHandlerMappeing.lambda$match$0(PathPatternMatchableHandlerMapping.java:64)~[spring-webmvc-6.1.5.jar:6.1.5]
+at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1708)~[na:na]
+at org.springframework.web.servlet.handler.PathPatternMatchableHandlerMapping.match(PathPatternMatchableHandlerMapping.java:62)~[spring-webmvc-6.1.5.jar:6.1.5]
+at org.springframework.web.servlet.handler.HandlerMappingIntrospector$LookupPathMatchableHandlerMapping.match(HandlerMappingIntrospector.java)~[spring-webmvc-6.1.5.jar:6.1.5]
+at org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher.matcher(MvcRequestMatcher.java:95)~[spring-security-web-6.2.3.jar:6.2.3]
+at org.springframework.security.web.access.intercept.RequestMatcherDelegatingAuthorizationManager.check(RequestMatcherDelegatingAuthorizationManager.java:79)~[spring-security-web-6.2.3.jar:6.2.3]
+at org.springframework.security.web.access.intercept.RequestMatcherDelegatingAuthorizationManager.check(RequestMatcherDelegatingAuthorizationManager.java:48)~[spring-security-web-6.2.3.jar:6.2.3]
+at org.springframework.security.authorization.ObservationAuthorizationManager.check(ObservationAuthorizationManager.java:63)~[spring-security-core-6.2.3.jar:6.2.3]
+at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:95)~[spring-security-web-6.2.3.jar:6.2.3]
+at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)~[spring-security-web-6.2.3.jar:6.2.3]
+at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)~[spring-security-web-6.2.3.jar:6.2.3]
+at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)~[spring-security-web-6.2.3.jar:6.2.3]
+
