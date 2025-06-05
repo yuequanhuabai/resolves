@@ -30,18 +30,28 @@ mappings
 /swagger-ui.html
 /swagger-resources/**
 /webjars/**
-/**/api-doc/**
+/**/api-docs/**
 /druid/**
 /actuator/prometheus/**
 any request(No fields to display)
 
 
 
-<dependency>
-  <groupId>org.springdoc</groupId>
-  <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-  <version>2.2.0</version>
-</dependency>
+  <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-common</artifactId>
+            <version>2.6.0</version>
+        </dependency>
 
 
 org.springdoc:springdoc-openapi-start-starter-webmvc-ui:jar:2.6.0:compile
@@ -53,3 +63,7 @@ mvn dependency:tree -Dincludes=org.springdoc
 com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:jar:4.4.0:compile
 
 SecurityFilterChain
+DefaultSecurityFilterChain
+
+SpringDocSecurityConfiguration
+Knife4jSecurityConfiguration
