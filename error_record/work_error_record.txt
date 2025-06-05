@@ -1,0 +1,55 @@
+org.springframework.web.util.pattern.PatternParseException: No more pattern data allowed after {*...} or ** pattern element
+org.springframework.web.util.pattern.InternalPathPatternParser.peekDoubleWildcard(InternalPathPatternParse.java:250)
+org.springframework.web.util.pattern.internalPathPatternParser.parse(InternalPathPatternParser.java:113)
+org.springframework.web.util.pattern.PathPatternParser.parse(PathPatternParser.java:129)
+
+
+pattern: "/**/api-docs/**"
+
+http://localhost:8080/questionnaire/answer/page
+
+
+pathPattern="/**"
+
+springdoc:
+    api-docs:
+        path: /api-docs
+
+
+Caused by: org.springframework.beans.factory.NoUniquesBeanDefinitionException: No qualifying bean of type 'org.spring.framework.web.servlet.mvc.method.annotation.requestMappingHandlerMapping,controllerEndpointHandlerMapping'
+
+
+ReqeustMatcherDelegationAuthorizationManager
+mappings
+/login
+/
+/**.html
+/**/*.css
+/**/*.js
+/profile/**
+/swagger-ui.html
+/swagger-resources/**
+/webjars/**
+/**/api-doc/**
+/druid/**
+/actuator/prometheus/**
+any request(No fields to display)
+
+
+
+<dependency>
+  <groupId>org.springdoc</groupId>
+  <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+  <version>2.2.0</version>
+</dependency>
+
+
+org.springdoc:springdoc-openapi-start-starter-webmvc-ui:jar:2.6.0:compile
+
+基於依賴反查找項目：可以查詢到哪個項目引入了該依賴
+mvn dependency:tree -Dincludes=org.springdoc
+
+
+com.github.xiaoymin:knife4j-openapi3-jakarta-spring-boot-starter:jar:4.4.0:compile
+
+SecurityFilterChain
