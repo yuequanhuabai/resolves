@@ -81,3 +81,217 @@ public ReqeustMatchResult match(HttpServletRequest request, String pattern){
   PathContainer path =ServletRequestPathUtils.getParsedRequestPath(request).pathWithinApplication();
   return (pathPattern.matches(path)? new RequestMatchResult(pathPattern):null);
 }
+
+
+你昨天不是用让打印所有的Path吗
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+@Component
+public class RequestMappingPrinter implements ApplicationListener<ContextRefreshedEvent> {
+
+    @Resource(name="requestMappingHandlerMapping")
+    private RequestMappingHandlerMapping handlerMapping;
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        handlerMapping.getHandlerMethods().forEach((mapping, method) -> {
+            System.out.println("Mapped pattern: " + mapping.getPatternValues() + " => " + method);
+        });
+    }
+}
+
+
+我打印了所有的Path：但是发现没有/**/api-docs/**
+
+有点相似的只有
+/api-docs.yaml
+Handler: org.springdoc.webmvc.api.OpenApiWebMvcResource#openapiYaml(HttpServletRequest,String,Locale)
+/api-docs/wagger-config
+Handler: org.springdoc.webmvc.ui.SwaggerConfigResource#openapiJson(HttpServeltRequest)
+/api-docs/
+Handler: org.springdoc.webmvc.api.OpenApiWebMvcResource#openapiJson(HttpServletRequest, String Locale)
+
+
+####
+很奇怪chains只有一个，就是DefaultSecurityFilterChain
+它的requestMatcher属性 在调试状态下显示： no fields to display   该对象则显示 any  request ？
+这是怎么回事，没有找到/**/api-docs/**
+
+
+
+####
+报错了，我在调试的时候发现执行到：
+                Field amField = securityFilterChain.getClass().getDeclaredField("authorizationManager");
+这一行的时候就报错了，
+异常信息：
+java.lang.NoSuchFieldException: authorizationManager
+
+我查了一下，SecurityFilterChain是个接口，就只有两个方法
+boolean matches(HttpServletRequest request);
+	List<Filter> getFilters();，
+	没有authorizationManager字段，你这个代码如何写出来的？
+
+
+	你的代码又有问题了，我调试的时候，managerObj 是ObservationAuthorizationManager 的类型，不是RequestMatcherDelegatingAuthorizationManager，后面的代码没有走了
+	                            if (managerObj instanceof RequestMatcherDelegatingAuthorizationManager) {
+
+
+import org.springframework.security.web.access.intercept.RequestMatcherDelegatingAuthorizationManager.Mappings;
+执行到这句报错了：
+                           Mappings mappings = (Mappings) mappingsField.get(delegatingManager);
+
+                           我找了一下： RequestMatcherDelegatingAuthorizationManager没有Mappings的内部类，
+                           只有一个字段：
+private final List<RequestMatcherEntry<AuthorizationManager<RequestAuthorizationContext>>> mappings;
+
+
+#####
+
+找到了，打印的日志如下：
+Matcher: Mvc [pattern='/login']
+AuthorizationManager: AuthorizeHttpRequestsConfigurer$$Lambda$1059/0x0000000801279ff8
+Matcher: Mvc [pattern='/',GET]
+AuthorizationManager: AuthorizeHttpRequestsConfigurer$$Lambda$1059/0x0000000801279ff8
+Matcher: Mvc [pattern='/**.html',GET]
+AuthorizationManager: AuthorizeHttpRequestsConfigurer$$Lambda$1059/0x0000000801279ff8
+Matcher: Mvc [pattern='/**/*.css',GET]
+AuthorizationManager: AuthorizeHttpRequestsConfigurer$$Lambda$1059/0x0000000801279ff8
+Matcher: Mvc [pattern='/**/*.js',GET]
+AuthorizationManager: AuthorizeHttpRequestsConfigurer$$Lambda$1059/0x0000000801279ff8
+Matcher: Mvc [pattern='/profile/**',GET]
+AuthorizationManager: AuthorizeHttpRequestsConfigurer$$Lambda$1059/0x0000000801279ff8
+Matcher: Mvc [pattern='/swagger-ui.html']
+AuthorizationManager: AuthorizeHttpRequestsConfigurer$$Lambda$1059/0x0000000801279ff8
+Matcher: Mvc [pattern='/swagger-resource/**']
+AuthorizationManager: AuthorizeHttpRequestsConfigurer$$Lambda$1059/0x0000000801279ff8
+Matcher: Mvc [pattern='/webjars/**']
+AuthorizationManager: AuthorizeHttpRequestsConfigurer$$Lambda$1059/0x0000000801279ff8
+Matcher: Mvc [pattern='/**/api-docs/**']
+AuthorizationManager: AuthorizeHttpRequestsConfigurer$$Lambda$1059/0x0000000801279ff8
+Matcher: Mvc [pattern='/druid/**']
+AuthorizationManager: AuthorizeHttpRequestsConfigurer$$Lambda$1059/0x0000000801279ff8
+Matcher: Mvc [pattern='/actuator/prometheus/**']
+AuthorizationManager: AuthorizeHttpRequestsConfigurer$$Lambda$1059/0x0000000801279ff8
+Matcher: any request
+AuthorizationManager: AuthenticateAuthorizationManager
+
+
+
+####
+
+我现在想用你的那个重写SecurityConfig的方式，没有用反射删除 /**/api-docs/**  的方式，因为这样会有401认证的问题
+我想通过重写SecurityConfig放行我的正常controller的pattern，这种方式可行吗？
+
+
+
+
+#####
+我加上了，但是现在又报错了，这个看起来是已经有配置过SecurityConfig了，这个该怎么解决？
+
+Cuased by: org.springframework.context.annotation.ConflictingBeanDefinitionException: Annotation-sepecified bean name 'securityConfig' for bean class[com.bo.ewacl.comlibpermmgtframework.config.SecurityConfig]
+conflicts with existing, non-compatible bean definition of same name and class [com.bo.questionnaire.rest.controller.SecurityConfig]
+
+修改我的SecurityConfig类的类名为 MyCustomSecurityConfig;  成功了；
+
+
+
+没有成功的方式：
+
+启动类排除；
+======这个是适用于springboot自动配置的类，不适用于手动注入的配置bean,该排除语法会失效，对于手动注入的bean;
+单个：
+@SpringBootApplication(
+    excludeName = "com.bo.ewacl.comlibpermmgtframework.config.SecurityConfig"
+)
+
+多个：
+@SpringBootApplication(exclude = {
+    org.springdoc.core.SwaggerUiConfigProperties.class,
+    org.springdoc.core.SwaggerUiConfig.class
+})
+
+
+
+
+######
+
+你先给我说说造成401的原因吧，为什么会有401,认证失败，你通过上面的代码修改了什么逻辑，能够通过认证，先讲原理
+
+#####
+
+我已经改名了我自己的SecurityConfig为MyCustomSecurityConfig,已经没有类冲突报错了，但是我用postman请求，它返回了前端的登录html，现在要求我登录
+这个登录可以绕过吗？
+
+####
+postman 请求：
+http://localhost:8080/questionnaire/answer/page
+
+请求体：空json
+{}
+
+请求的Controller有
+public CommonResult pageQuestionnaire(@ParameterObject QuestionnairePageQuery pageQuery){
+   return CommonResult.success(questionnaireService.queryQuestionnaire(pageQuery));
+}
+
+@EqualsAndHashCode(callSuper=true)
+@Data
+@SuperBuilder
+public class QuestionnairePageQuery extend PageParam implements Serializable{
+
+private static final long serialVersionUID=1L;
+
+@Schema(description="名称")
+private String name;
+
+@Schema(description="状态")
+private Integer status;
+
+@Schema(description="类型")
+private Integer questionType;
+
+}
+
+
+报错:
+com.fasterxml.jackson.databind.exc.InvalidDefinitionException:Cannot construct instance of `com.bo.questionnaire.dto.AnswerPageQuery`
+(no Creators, like default constructor,exist): cannot deserialize from Object value (no delegate- or property-based Creator)
+
+#####
+我在AnswerPageQuery类上加了@NoArgsConstructor注解，
+现在我的请求请求能够打到controller里面了，但是现在我想彻底了解下详情，为啥刚才出现了401，我改了SecurityConfig的类名为MyCustomSecurityConfig，
+又把我的请求http://localhost:8080/questionnaire/answer/page
+里的/questionnaire 加到了security的配置里面了，
+@Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/questionnaire/**").permitAll()
+
+#####
+
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/doc.html").permitAll()
+                        .requestMatchers("/test/update").permitAll()
+                        .requestMatchers("/test/").denyAll()
+                        .requestMatchers("/test/query").denyAll()
+                        .anyRequest().authenticated()
+                ).csrf(csrf->csrf.disable())
+//                .formLogin(form->form.disable())
+                .formLogin(Customizer.withDefaults());
+        return http.build();
+    }
+}
+
+#####
