@@ -1,0 +1,7 @@
+mybatis的這四個文集那有啥用？
+
+mybatis-3-config.dtd
+mybatis-3-mapper.dtd
+mybatis-3-config.xsd
+mybatis-3-mapper.xsd
+
