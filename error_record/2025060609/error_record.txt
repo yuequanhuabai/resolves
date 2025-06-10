@@ -1,0 +1,28 @@
+
+按照我之前反射的代碼調試，發現
+RequestMatcherDelegatingAuthorizationManager的mapping
+的數據只有/questionnaire/**
+和any request
+
+POST 請求：
+http://localhost:8080/questionnaire/answer/page
+
+代碼是這樣的
+@Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(
+                auth -> {
+                    auth.requestMatchers("/questionnaire/**").permitAll()
+                            .anyRequest().authenticated();
+                }
+        ).formLogin(Customizer.withDefaults());
+        return http.build();
+    }
+
+#####
+緩存問題：
+
+草，浪費了我一上午在排查問題；
+
+
+

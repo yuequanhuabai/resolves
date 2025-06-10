@@ -1,0 +1,26 @@
+spring.factories
+可以手动添加，但是路径必须是： src/main/resources/META-INF/
+
+否则不会生效;
+
+
+#####
+
+Can't generate mapping method with primitive return type
+Can't generate mapping method from iterable type from java stdlib to non-iterable type
+Can't generate mapping method with return type void
+Can't generate mapping method from non-iterable type to iterable type from java stdlib
+
+
+#####
+
+Connections using insecure transport are prohibited
+while --require_secure_transport=ON
+
+####
+git stash save "保存代码"
+
+git stash list
+
+git stash apply stash{0}   释放代码;
+
