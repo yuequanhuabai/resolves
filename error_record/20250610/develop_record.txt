@@ -23,3 +23,148 @@ git stash save "保存代码"
 git stash list
 
 git stash apply stash{0}   释放代码;
+
+#####
+git查詢
+git config --global --list
+
+設置
+git config --global user.name "張三"
+git config --global user.email "aa@qq.com"
+
+#####
+14error, 11warnings
+
+@Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not
+supposed to be settable during building, make the field final :36
+...
+
+Can't generate mapping method with primitive return type
+Can't generate mapping method from iterable type from java stdlib to non-iterable type
+Can't generate mapping method with return type void
+Can't generate mapping method from non-iterable type to iterable type from java stdlib
+
+build failed
+Can't map parameter "Serializable id" to "String id". Consider to decare/implement a mapping method "String map(Serializable value) ". Occured at 'T selectById(Serializable id)'in 'BaseMapper':9
+
+寫多了一些Mapper，數據庫沒有與之對應的表
+
+####
+這個報錯什麽原因？
+Error: Could not find or load main class com.bo.questionnaire.QuestionnaireApplication
+Caused by: java.lang.ClassNotFoundException: com.bo.questionnaire.QuestionnaireApplication
+
+沒有了，就是上面的那個原因，這個估計是緩存；
+
+#####
+
+mybatis-plus 的條件查詢語法：
+
+cnName，hkName，enName 只會有其中一個；
+
+// 構建 LambdaQueryWrapper
+        LambdaQueryWrapper<TableA> queryWrapper = Wrappers.lambdaQuery(TableA.class);
+
+        // 動態添加條件
+        if (StringUtils.isNotBlank(cnName) || StringUtils.isNotBlank(hkName) || StringUtils.isNotBlank(enName)) {
+            queryWrapper.and(wrapper -> {
+                if (StringUtils.isNotBlank(cnName)) {
+                    wrapper.eq(TableA::getCnName, cnName);
+                }
+                if (StringUtils.isNotBlank(hkName)) {
+                    wrapper.or().eq(TableA::getHkName, hkName);
+                }
+                if (StringUtils.isNotBlank(enName)) {
+                    wrapper.or().eq(TableA::getEnName, enName);
+                }
+            });
+        }
+
+
+#####
+mybatis-plus的更新操作：
+update(Wrapper<Entity> updateWrapper);
+updateById(Entity entity);
+update(Entity entity, Wrapper<Entity> updateWrapper);
+
+
+LambdaUpdataChainWrapper<T>
+LambdaUpdateWrapper<T>
+這樣個的有什麽本質區別，它們的應用場景分別是什麽？
+
+
+
+
+
+public int updateByName(String cnName, String hkName, String enName, String newEnName) {
+        // 構建 LambdaUpdateWrapper
+        LambdaUpdateWrapper<TableA> updateWrapper = Wrappers.lambdaUpdate(TableA.class);
+        // 設置更新欄位
+        updateWrapper.set(TableA::getEnName, newEnName);
+        // 動態構建 WHERE 條件
+        if (StringUtils.isNotBlank(cnName) || StringUtils.isNotBlank(hkName) || StringUtils.isNotBlank(enName)) {
+            updateWrapper.and(wrapper -> {
+                if (StringUtils.isNotBlank(cnName)) {
+                    wrapper.like(TableA::getCnName, cnName);
+                }
+                if (StringUtils.isNotBlank(hkName)) {
+                    wrapper.or().like(TableA::getHkName, hkName);
+                }
+                if (StringUtils.isNotBlank(enName)) {
+                    wrapper.or().like(TableA::getEnName, enName);
+                }
+            });
+        } else {
+            // 防止更新整個表
+            return 0;
+        }
+
+        // 中間處理：例如記錄日誌
+        log.info("Executing update with SQL: {}", updateWrapper.getSqlSegment());
+
+        // 執行更新
+        return tableAMapper.update(null, updateWrapper);
+
+
+        這個寫法可以改爲下面這種嗎？ 把條件和要修改的參數分開來，別混在一起，Entity的參數別傳null
+
+public int updateByName(String cnName, String hkName, String enName, String newEnName) {
+        // 構建 LambdaUpdateWrapper
+        LambdaUpdateWrapper<TableA> updateWrapper = Wrappers.lambdaUpdate(TableA.class);
+        // 設置更新欄位
+        TableA tableA =new TableA();
+        tableA.setEnName(newEnName);
+
+        // 動態構建 WHERE 條件
+        if (StringUtils.isNotBlank(cnName) || StringUtils.isNotBlank(hkName) || StringUtils.isNotBlank(enName)) {
+            updateWrapper.and(wrapper -> {
+                if (StringUtils.isNotBlank(cnName)) {
+                    wrapper.like(TableA::getCnName, cnName);
+                }
+                if (StringUtils.isNotBlank(hkName)) {
+                    wrapper.or().like(TableA::getHkName, hkName);
+                }
+                if (StringUtils.isNotBlank(enName)) {
+                    wrapper.or().like(TableA::getEnName, enName);
+                }
+            });
+        } else {
+            // 防止更新整個表
+            return 0;
+        }
+
+        // 中間處理：例如記錄日誌
+        log.info("Executing update with SQL: {}", updateWrapper.getSqlSegment());
+
+        // 執行更新
+        return tableAMapper.update(tableA, updateWrapper);
+
+
+
+
+
+
+
+
+
+

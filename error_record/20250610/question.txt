@@ -1,0 +1,5 @@
+
+lombok.extern.slf4j.@Slf4j注解
+和
+   private static final Logger logger = LoggerFactory.getLogger(StudentController.class);
+有什麽區別？
