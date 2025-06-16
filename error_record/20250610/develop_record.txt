@@ -160,9 +160,68 @@ public int updateByName(String cnName, String hkName, String enName, String newE
         return tableAMapper.update(tableA, updateWrapper);
 
 
+#######################
+利用curl發起請求：
+
+curl --location --request POST '/manange/query' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "questionType": "",
+  "cnName": "",
+  "hkName": "",
+  "enName": "",
+  "status": 1,
+  "rowBound":{
+    "pageSize": 1,
+    "pageNo": 10
+  }
+}'
 
 
 
+#####
+後端接受參數
+ @RequestMapping("query")
+    public List<Student> getStudent(@RequestBody Map<String, Object> requestParam) {
+
+    }
+
+postman傳參是：
+
+body選json格式
+{
+"status":""
+}
+
+還是這樣格式：
+{
+"requestParam":{
+ "status":"0"
+}
+}
+}
+
+第一種情況：
+
+
+####
+9223 3720 6854 7758 07
+
+
+#####
+查詢當前數據源用戶的權限;
+
+select current_user();
+
+test@%
+
+當前用戶擁有所有的權限；
+
+show grants for current_user();
+
+
+
+可以使用jdbc執行存儲過程的創建和調用嗎？
 
 
 

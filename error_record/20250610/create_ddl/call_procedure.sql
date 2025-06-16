@@ -61,3 +61,10 @@ select count(*) from t_answer_socre;
 
 -- 示例：生成500条记录，答案ID范围1-1000，用户数量50个，题目数量20个
 CALL sp_init_answer_score_data(500, 1, 1000, 50, 20);
+
+
+select rand();
+
+show procedure status;
+
+SHOW PROCEDURE STATUS WHERE Db = DATABASE();
