@@ -68,3 +68,7 @@ the last packet sent successfully to the server was 0 milliseconds ago. The driv
 ......
 
 Caused by: com.mysql.cj.exceptions.CJCommunication: Communication link failure
+
+
+##############
+npm install -g @anthropic-ai/claude-code
