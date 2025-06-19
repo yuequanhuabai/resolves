@@ -71,6 +71,9 @@ Caused by: com.mysql.cj.exceptions.CJCommunication: Communication link failure
 
 
 ##############
+npm install -g @anthropic-ai/claude-code
+
+##############
 
 Connection using insecure transport are prohibited while --require_secure_transport=ON.
 
