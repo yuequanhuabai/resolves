@@ -68,3 +68,11 @@ the last packet sent successfully to the server was 0 milliseconds ago. The driv
 ......
 
 Caused by: com.mysql.cj.exceptions.CJCommunication: Communication link failure
+
+
+##############
+
+Connection using insecure transport are prohibited while --require_secure_transport=ON.
+
+
+Received fatal alert: protocal version
