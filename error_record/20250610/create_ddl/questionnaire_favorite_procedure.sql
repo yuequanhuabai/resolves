@@ -1,10 +1,10 @@
 DELIMITER //
 
 CREATE PROCEDURE `sp_init_questionnaire_favorite`(
-    IN p_record_count INT,          -- 要生成的記錄數量
-    IN p_question_id_start BIGINT,  -- 起始問卷ID
-    IN p_question_id_end BIGINT,    -- 結束問卷ID
-    IN p_user_count INT            -- 用戶數量範圍
+    IN p_record_count INT, -- 要生成的記錄數量
+    IN p_question_id_start BIGINT, -- 起始問卷ID
+    IN p_question_id_end BIGINT, -- 結束問卷ID
+    IN p_user_count INT -- 用戶數量範圍
 )
 BEGIN
     DECLARE i INT DEFAULT 0;
@@ -31,7 +31,8 @@ BEGIN
     SELECT IFNULL(MAX(id), 0) + 1 INTO v_base_id FROM `t_questionnaire_favorite`;
 
     -- 生成隨機數據
-    WHILE i < p_record_count DO
+    WHILE i < p_record_count
+        DO
             -- 生成唯一ID
             SET v_id = v_base_id + i;
 
@@ -43,23 +44,23 @@ BEGIN
 
             SET v_user_name = CONCAT(
                     ELT(FLOOR(1 + RAND() * 100) % 10 + 1, '王', '李', '張', '劉', '陳', '楊', '趙', '黃', '周', '吳'),
-                    ELT(FLOOR(1 + RAND() * 100) % 10 + 1, '小明', '大華', '小美', '麗麗', '建國', '淑芬', '志強', '美麗', '建軍', '淑惠')
+                    ELT(FLOOR(1 + RAND() * 100) % 10 + 1, '小明', '大華', '小美', '麗麗', '建國', '淑芬', '志強',
+                        '美麗', '建軍', '淑惠')
                               );
 
             -- 動態插入數據
             INSERT INTO `t_questionnaire_favorite`
-            (`id`, `question_id`, `user_id`, `user_name`, `create_time`)
-            VALUES (
-                       v_id,
-                       v_question_id,
-                       v_user_id,
-                       v_user_name,
-                       DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 365) DAY)  -- 隨機創建時間（過去一年內）
+                (`id`, `question_id`, `collect`, `user_id`, `user_name`, `create_time`)
+            VALUES (v_id,
+                    v_question_id,
+                    1,
+                    v_user_id,
+                    v_user_name,
+                    DATE_SUB(NOW(), INTERVAL FLOOR(RAND() * 365) DAY) -- 隨機創建時間（過去一年內）
                    );
 
             SET i = i + 1;
         END WHILE;
-
     COMMIT;
 
     -- 返回結果

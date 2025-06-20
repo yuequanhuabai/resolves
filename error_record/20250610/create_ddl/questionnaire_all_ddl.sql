@@ -55,10 +55,13 @@ drop table if exists `t_questionnaire_favorite`;
 create table `t_questionnaire_favorite` (
     id bigint primary key ,
     question_id bigint ,
+    collect int default 0 comment '1為收藏，0為取消收藏',
     user_id varchar(16),
     user_name varchar(32),
     create_time datetime default current_timestamp
 );
+
+show create table t_questionnaire_favorite;
 
 ##################################   t_questionnaire_notice   ##################################################################################################
 drop table if exists `t_questionnaire_notice`;
