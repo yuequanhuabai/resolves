@@ -31,6 +31,7 @@ select count(*) from t_questionnaire_favorite;
 -- 示例：生成100條記錄，問卷ID範圍1001-1005，用戶數量50個
 CALL sp_init_questionnaire_favorite(100, 1001, 1005, 50);
 
+drop procedure if exists sp_init_questionnaire_favorite;
 
 ##t_questionnaire_notice
 
@@ -40,6 +41,7 @@ select count(*) from t_questionnaire_notice;
 
 -- 示例：生成50條記錄，問卷ID範圍1001-1005
 CALL sp_init_questionnaire_notice(50, 1001, 1005);
+
 
 
 
