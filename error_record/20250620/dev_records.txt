@@ -1,0 +1,14 @@
+
+####
+TODO
+本地端口：6666 無法訪問：
+
+chatgpt: https://chatgpt.com/c/68551023-49f4-800e-9a80-83b394923ed6
+
+端口安全列表：
+Chromium source - unsafe ports list
+
+
+#####
+POST，GET，PUT，DELETE，OPTIONS，HEAD，PATCH
+這些請求有什麽本質區別；
