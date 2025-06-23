@@ -12,3 +12,9 @@ Chromium source - unsafe ports list
 #####
 POST，GET，PUT，DELETE，OPTIONS，HEAD，PATCH
 這些請求有什麽本質區別；
+
+
+謝謝，3.5.6版本有，最新的版本沒有，但是我現在又遇到一個問題了：
+The bean 'mybatisPlusInterceptor',defined in class path resource [.../MyBatisPlusConfig.class],could not be registered . A bean with that name has already been defined in class path resource
+
+mybatisPlus 的分頁攔截器上需要指定@MapperScanner注解進行掃描嗎
