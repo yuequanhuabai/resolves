@@ -55,3 +55,24 @@ SecurityContextHolder.getContext().getAuthentication();
 
 RequestContextHolder.currentRequestAttributes();
 
+####
+AbstractFlowableEngineEventListener
+FlowableEventListener
+
+
+
+#########
+Springboot的默認文件上傳的限制： MultipartProperties
+在這個類的：
+	/**
+	 * Max file size.
+	 */
+	private DataSize maxFileSize = DataSize.ofMegabytes(1);
+
+	/**
+	 * Max request size.
+	 */
+	private DataSize maxRequestSize = DataSize.ofMegabytes(10);
+
+	這兩個屬性裏配置；
+
