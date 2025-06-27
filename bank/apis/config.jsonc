@@ -1,0 +1,12 @@
+{
+  "id": "string",
+  // an optional identifier that will be applied to the generated
+  // Proposal for tracking. Must be unique. if not provided,
+  // a randomly-generated UUID identifier will be assigned
+  // to the generated Proposal
+  "reason": "string",
+  "aggregate": {
+    //"object(Aggregate Composition)",Representation for a aggregate collection of investment portfolios
+    "id": ""
+  }
+}

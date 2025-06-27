@@ -76,3 +76,27 @@ Springboot的默認文件上傳的限制： MultipartProperties
 
 	這兩個屬性裏配置；
 
+
+
+#####
+java.io.UnsupportedEncodingException: The character encoding [utf-8''] is not supported
+
+
+
+
+
+
+#####
+com.fasterxml.jsckson.databind.exc.MismatchedInputException: Cannot deserialize value of type
+'java.util.ArrayList<com.h.questionnaire.entity.Subject>' from Object value (token `JsonToken.START_OBJECT`)
+
+
+
+
+
+
+
+
+
+
+
