@@ -1,0 +1,110 @@
+## Spring IoC 從「啟動」到「Bean 可用」的大順序圖
+
+```
+SpringApplication.run()
+    │
+    └─▶ ① 建立 ApplicationContext
+              │
+              ├─ prepareRefresh()         // 初始環境、日誌、系統屬性
+              ├─ obtainFreshBeanFactory() // 取得/建立 BeanFactory
+              ├─ loadBeanDefinitions()    // 讀取並註冊 BeanDefinition
+              │     ├─ XML / Groovy
+              │     ├─ @Configuration + @Bean
+              │     ├─ @ComponentScan 掃描
+              │     └─ registerBeanDefinition(...)
+              ├─ invokeBeanFactoryPostProcessors()
+              │     // 動態修改 BeanDefinition
+              ├─ registerBeanPostProcessors()
+              │     // 為後續「實體化的 Bean」掛鉤
+              ├─ initMessageSource(), initEventMulticaster() …
+              ├─ finishBeanFactoryInitialization()
+              │     └─ createSingletons() ─┐
+              │           (依需求也可 lazy) │
+              │                            ▼
+              │                ② Bean 實體化流水線
+              │                       ├─ Instantiation (建構子 / 工廠方法)
+              │                       ├─ Dependency Injection (Populate)
+              │                       ├─ Aware 回調
+              │                       ├─ BeanPostProcessor ▸ beforeInit
+              │                       ├─ init-method / @PostConstruct
+              │                       └─ BeanPostProcessor ▸ afterInit
+              └─ finishRefresh()       // 發佈 ContextRefreshed 事件
+```
+
+---
+
+### ① BeanDefinition 來源（“哪裡宣告 Bean”）
+
+| 來源                                           | 何時被載入                                               | 適用場景                             |
+| -------------------------------------------- | --------------------------------------------------- | -------------------------------- |
+| **XML / Groovy DSL**                         | `loadBeanDefinitions()` 階段                          | 舊專案、整合第三方框架                      |
+| **Java Config (`@Configuration` + `@Bean`)** | 同上                                                  | 明確控制、可用 Java 語言特性                |
+| **組件掃描 (`@Component`, `@Service`…)**         | 同上                                                  | 大量 POJO、自動裝配                     |
+| **程式碼註冊 (`BeanDefinitionRegistry`)**         | 在 `BeanDefinitionRegistryPostProcessor` 裡           | 動態掃描外部 JAR、多租戶隔離                 |
+| **外部容器（如 Spring Cloud）**                     | 以 `ImportBeanDefinitionRegistrar` 或 `@EnableXxx` 插入 | 啟用自定義 Starter、Auto-configuration |
+
+> **結論**：所有來源最終都轉成 `BeanDefinition` 放進 **BeanFactory**。
+
+---
+
+### ② Bean 實體化流水線（“怎麼建、怎麼注入”）
+
+1. **Instantiation**
+
+   * 預設用反射 `new`；若標註 `@Configuration` → CGLIB 代理保證單例；
+   * 也可以指定 **靜態工廠方法** 或 **FactoryBean**。
+
+2. **Populate (DI)**
+
+   * 解析建構子 / `@Autowired` / `@Value` / `@Inject` / `@Resource`；
+   * 從 BeanFactory 取依賴並塞進欄位或 setter。
+
+3. **Aware 回調**（可選）
+
+   * `BeanNameAware`, `ApplicationContextAware`, `EnvironmentAware` …
+
+4. **BeanPostProcessor**（兩段式鉤子）
+
+   * `postProcessBeforeInitialization`
+   * `postProcessAfterInitialization`（常用來生成 AOP 代理）。
+
+5. **Init 方法**
+
+   * `@PostConstruct` 或 `InitializingBean#afterPropertiesSet()` 或 XML `init-method`。
+
+6. **Singleton 緩存**
+
+   * 三層 Map（`singletonObjects`、`earlySingletonObjects`、`singletonFactories`）處理循環依賴與延遲代理。
+
+---
+
+### 特殊「插隊」渠道 & 插入時機
+
+| 插隊點                                       | 類型          | 何時執行                       | 用途                                                                               |
+| ----------------------------------------- | ----------- | -------------------------- | -------------------------------------------------------------------------------- |
+| **BeanFactoryPostProcessor**              | 介面          | *在任何 Bean 實體化之前*           | 修改/新增 `BeanDefinition`（例如 MyBatis - MapperScanner、PropertyPlaceholderConfigurer） |
+| **BeanDefinitionRegistryPostProcessor** ⬆ | (BFPP 的子介面) | 更早，可直接註冊新 `BeanDefinition` | Spring Cloud、Spring Boot Auto-config 常用                                          |
+| **BeanPostProcessor**                     | 介面          | *每個 Bean 實體化之後*            | AOP 代理、參數校驗、動態注入                                                                 |
+| **FactoryBean**                           | 特殊 Bean     | 被請求時才 `getObject()`        | 延遲創建複雜資源，例如 SqlSessionFactory                                                    |
+| **ApplicationListener / @EventListener**  | 事件          | 隨 Context 釋出事件觸發           | 解耦邏輯、外掛式邏輯擴充                                                                     |
+
+> 它們把關鍵邏輯“插”進 **refresh 流程**早期（Post-Processor）或實體化後期（Post-Processor / FactoryBean）。
+
+---
+
+### 宏觀記憶法：**「三段九步」**
+
+1. **讀定義（Build）**
+   *load → Post-Process 定義*
+2. **造實體（Create）**
+   *實體化 → 依賴注入 → 初始化 → Post-Processors*
+3. **上線可用（Expose）**
+   *放入單例快取 → 釋出事件 → 進入運行期*
+
+有了這張“時序地圖”，日後遇到：
+
+* **Bean 注入失敗** → 看 DI 階段是否缺依賴。
+* **AOP 不生效** → 檢查 BPP 是否在 *afterInitialization* 替換成功。
+* **動態註冊 Bean** → 用 BFPP / BDRPP，位置最早。
+
+細節如 CGLIB 代理、循環依賴三級快取、延遲初始化等，等你需要深入時再聚焦即可。

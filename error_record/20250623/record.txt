@@ -92,11 +92,38 @@ com.fasterxml.jsckson.databind.exc.MismatchedInputException: Cannot deserialize 
 
 
 
+####
+Caused by: org.apache.ibatis.executor.result.ResultMapException:Error attempting to get column 'subject' from result set.
+Caused: com.google.gson.JsonSyntaxException: java.lang.IllegalStateException: Expected BEGIN_ARRAY but was BEGIN_OBJECT at line 1 column 2 path $
+
+#####
+
+{
+"code":E1IAF9990001,
+"msg": "UnkownException未知異常：Required part ‘file' is not present.",
+"status":500,
+"timestamp":1751339608737
+}
+
+######
+curl -X POST "你的API端點" -H "Authorization: Bearer 你的token" -F "file=@/path/to/your/file.csv"
+
+org.springframework.web.multipart.support.MissingServletRequestPartException: Required part 'file' is not present.
+
+#######
+
+java.io.UncheckedIDException: java.io.IOException: Invalid char between encapsulated token and delimiter at line: 2 position: 282
+
+#####
+
+com.alibaba.excel.exception.ExcelDAtaConvertException: Convert data com.alibaba.excel.metadata.dataReadCellData@c1811f66 to interface java.util.List error
+
+幫我分析一下這個報錯： 背景是導入csv文件，有一個字段為json字符串，數據庫也是json數據結構，
+pojo類裏面對應的是List<Subject> subjects 的一個集合，但是用了@TableField(typeHandler=JacksonTypeHandler.class),
+
+com.alibaba.excel.exception.ExcelDataConvertException: Convert data com.alibaba.excel.metadata.data.ReadCellData@dc488aee to class java.time.LocalDateTime error
+好像除了json轉換，時間轉換也有問題，但是在pojo類上加了@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 
 
-
-
-
-
-
+####
 
