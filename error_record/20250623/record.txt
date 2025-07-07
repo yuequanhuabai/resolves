@@ -127,3 +127,17 @@ com.alibaba.excel.exception.ExcelDataConvertException: Convert data com.alibaba.
 
 ####
 
+部分日志如下：
+你帮我看看这些日志
+
+2025-07-03T16:59:50.705+08:00 INFO 9224 ---[    main] com.alibaba.druid.pool.DruidDataSource:{dataSource-1} inited
+
+...
+2025-07-03T17:04:55.893+08:00 INFO 9224 ---[    main] o.s.s.web.DefaultSecurityFilterChain : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@761f1a28,...后面全部是这些bean]
+...
+2025-07-03T17:12:07.021+08:00 INFO 9224 ---[    main] o.s.b.w.embedded.tomcat.TomcatWebServer: Tocmat started on port 8080 (http) with context path ''
+...
+2025-07-03T17:12:14.141+08:00 INFO 9224 ---[    main] c.b.q.QuestionnaireApplication   :   Started QuestionnaireApplication in 761.606 seconds (prcess running for 764.233)
+...
+
+

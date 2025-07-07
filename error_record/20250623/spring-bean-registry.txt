@@ -1,0 +1,29 @@
+下面把 **把一個類／對象變成 Spring Bean** 的管道歸納成 6 大類 22 種常見做法，並標註它們「誰幫你註冊 BeanDefinition」、是否依賴 **組件掃描**。
+
+| #      | 類型                                                        | 典型寫法                                                                                        | -> 放進 Registry 的角色                                                   | 要靠 `@ComponentScan`？ | 備註                                              |
+| ------ | --------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------- | ----------------------------------------------- |
+| **A**  | **註解元件掃描**                                                | `@Component / @Service / @Repository / @Controller / @Configuration`                        | `ClassPathBeanDefinitionScanner`                                     | **✔ 必須在掃描包**         | Spring 最常用；`@Configuration` 內的 `@Bean` 方法會在後續解析 |
+| **B1** | **Java-Config 顯式註冊**                                      | `new AnnotationConfigApplicationContext(AppConfig.class)`<br/>`context.register(Foo.class)` | `AnnotatedBeanDefinitionReader`                                      | ✖                    | 手動/程式化傳入類                                       |
+| **B2** | **`@Bean` 方法**                                            | `@Configuration class C { @Bean Bar bar(){…} }`                                             | `ConfigurationClassPostProcessor`                                    | 取決於 C 如何進容器          | 只要 C 已在 Registry，方法就會被解析                        |
+| **B3** | **`@Import` 直接導入類**                                       | `@Import(Bar.class)`                                                                        | `ConfigurationClassParser`                                           | ✖                    | 等同顯式註冊 (`imported as config class`)             |
+| **B4** | **`@Import(ImportSelector)`**                             | `@EnableFeignClients`                                                                       | 你的 `selectImports()` 回傳類名陣列                                          | ✖                    | 大量框架採用                                          |
+| **B5** | **`@Import(ImportBeanDefinitionRegistrar)`**              | MyBatis、Dubbo 等                                                                             | 你在 `registerBeanDefinitions()` 裏手動塞                                  | ✖                    | 可自由生成任意 BD                                      |
+| **C1** | **XML `<bean>`**                                          | `<bean id="foo" class="com.x.Foo"/>`                                                        | `XmlBeanDefinitionReader`                                            | ✖                    | 經典 XML 配置                                       |
+| **C2** | **XML `<context:component-scan>`**                        | `<context:component-scan base-package="com.x"/>`                                            | 同 A                                                                  | ✔                    | 舊專案等同註解掃描                                       |
+| **D1** | **Spring Boot Auto-Configuration**                        | `DataSourceAutoConfiguration`                                                               | `AutoConfigurationImportSelector` 透過 `spring.factories` / `.imports` | ✖                    | Boot 3 的核心                                      |
+| **D2** | **`@EnableAutoConfiguration` / `@SpringBootApplication`** | （啟動類）                                                                                       | 同上                                                                   | ✖                    | 其實是給 D1 開閘                                      |
+| **E1** | **FactoryBean**                                           | `class MyFactory implements FactoryBean<?>`                                                 | 先把 *FactoryBean* 本身註冊（任意方式），Spring 創建後調 `getObject()`                | 視註冊方式而定              | 產生任意型別 Bean                                     |
+| **E2** | **定義外部 Servlet/Filter/Listener**                          | `@WebServlet / @WebFilter` (`@ServletComponentScan`)                                        | `ServletComponentScanRegistrar`                                      | ✔ （對應 servlet 掃描包）   | Boot 對 web-xml 的替代                              |
+| **F1** | **程式化 SPI**                                               | `BeanDefinitionRegistryPostProcessor`                                                       | 你的程式碼 `registry.registerBeanDefinition()`                            | ✖                    | 最自由也最底層                                         |
+| **F2** | **Functional Bean Definition (Spring 5)**                 | `context.registerBean(Foo.class, Foo::new)`                                                 | 直接操作 `GenericApplicationContext`                                     | ✖                    | Kotlin DSL / GraalVM 常用                         |
+| **F3** | **`ApplicationContextInitializer`**                       | 在 `initialize()` 增加 BD                                                                      | 你自己                                                                  | ✖                    | 啟動引導期                                           |
+
+> ### 一句話記牢
+>
+> **只要在 `BeanDefinitionRegistry` 裏成功放了一條 BeanDefinition，Spring 就會在後續生命週期實例化並註入——至於它是透過掃描、XML、`@Import` 還是程式化完成註冊，對容器本身並無差別。**
+
+把這張表當作「地圖」，你就能快速判斷：
+
+* **我要的 Bean** 該用哪種管道最合適？
+* **包路徑到底要不要對掃描？**
+* **出現重複 / 沒生效** 時往哪個註冊入口去排查。
