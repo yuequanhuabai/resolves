@@ -54,6 +54,8 @@ yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://1258712167.vod2
 
 yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=XToK00VcBI8"
 
+yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=GPnymcrXgX0"
+
 
 
 do you know
