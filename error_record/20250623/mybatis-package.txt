@@ -1,0 +1,99 @@
+ MyBatis 核心功能包概览
+
+
+   1. `annotations`
+       * 功能：提供了一套注解，如 @Select, @Insert, @Update, @Delete, @Result 等。它们是 XML
+         映射的替代方案，允许你直接在 Mapper 接口的方法上编写 SQL 语句和映射规则。
+
+
+   2. `binding`
+       * 功能：（极其核心） 这是实现 Mapper 接口动态代理的地方。它包含了 MapperProxy 和
+         MapperRegistry 等关键类，能将接口方法调用“绑定”到具体的 MappedStatement 上。
+
+
+   3. `builder`
+       * 功能：（极其核心） 负责解析和构建。它包含了解析 mybatis-config.xml 和 Mapper XML 文件的所有
+         Builder 类，如 XMLConfigBuilder 和 XMLMapperBuilder，最终构建出全局的 Configuration 对象。
+
+
+   4. `cache`
+       * 功能：提供了 MyBatis 的缓存机制。包括一级缓存（Session 级别，默认开启）和二级缓存（Mapper
+         命名空间级别，可配置）的实现。Cache 接口和 PerpetualCache 是其核心。
+
+
+   5. `cursor`
+       * 功能：提供了对游标（Cursor）的支持。当查询返回大量数据时，可以使用游标来逐条处理，避免一次
+         性将所有数据加载到内存中，从而防止内存溢出。
+
+
+   6. `datasource`
+       * 功能：提供了数据源的实现。包括了对池化数据源 (PooledDataSource) 和非池化数据源
+         (UnpooledDataSource) 的支持，以及与 JNDI 集成的 JndiDataSourceFactory。
+
+
+   7. `exceptions`
+       * 功能：定义了 MyBatis 框架自身的异常体系。所有 MyBatis 相关的异常都继承自
+         PersistenceException。
+
+
+   8. `executor`
+       * 功能：（极其核心） SQL 执行器。它是 MyBatis
+         的执行引擎，负责所有数据库操作的内部流程，包括管理 Statement、处理参数、执行 SQL、处理
+         ResultSet、管理事务和缓存等。
+
+
+   9. `io`
+       * 功能：一个轻量级的 I/O 工具包。主要用于从类路径、文件系统或 URL
+         加载资源（如配置文件），最常用的就是 Resources 工具类。
+
+   10. `jdbc`
+       * 功能：提供了 JDBC 相关的辅助工具。例如，SqlRunner 类可以方便地执行任意 SQL
+         语句，ScriptRunner 可以执行 SQL 脚本文件。
+
+
+   11. `logging`
+       * 功能：提供了一个通用的日志记录门面（Facade）。它能自动适配多种日志框架（如 SLF4J, Log4j,
+         Commons Logging 等），让 MyBatis 的日志可以无缝集成到你的应用中。
+
+
+   12. `mapping`
+       * 功能：（极其核心） 定义了 MyBatis 中最重要的配置信息对象。包含了 MappedStatement（封装一条
+         SQL 语句的所有信息）、ResultMap（结果集映射规则）、ParameterMap（参数映射）、SqlSource（SQL
+         来源）等核心模型。
+
+
+   13. `parsing`
+       * 功能：提供了通用的解析工具。包括 XPathParser（用于解析 XML）、GenericTokenParser（用于解析
+         ${} 和 #{} 占位符）等，是 builder 包的基础。
+
+
+   14. `plugin`
+       * 功能：提供了 MyBatis 的插件（拦截器）机制。通过 Interceptor 接口，你可以在 MyBatis
+         核心组件（如 Executor, StatementHandler
+         等）的关键方法执行前后插入自己的逻辑，实现像分页、监控、加解密等功能。
+
+
+   15. `reflection`
+       * 功能：提供了一套强大的反射工具集。MyBatis 大量使用反射来处理 Java对象的属性、调用
+         getter/setter 方法等，这个包里的 MetaObject 是其核心，它统一了对普通对象和 Map
+         等不同类型对象的属性访问方式。
+
+   16. `scripting`
+       * 功能：负责处理动态 SQL。它定义了如何解析和执行 XML 中定义的 <if>, <choose>, <foreach>
+         等动态 SQL 标签，最终生成可执行的 SQL 语句。
+
+
+   17. `session`
+       * 功能：（极其核心） 这是 MyBatis 提供给外部使用的主要 API 所在。包含了
+         SqlSession（执行数据库操作的核心接口）、SqlSessionFactory（创建 SqlSession
+         的工厂）以及它们的默认实现。
+
+
+   18. `transaction`
+       * 功能：提供了事务管理的抽象。定义了 Transaction 接口，并提供了基于 JDBC 的 JdbcTransaction
+         和交由容器管理的 ManagedTransaction 两种实现。
+
+
+   19. `type`
+       * 功能：提供了 Java 类型与 JDBC 类型之间的转换器。TypeHandler 是其核心接口，负责在设置
+         PreparedStatement 参数和从 ResultSet 获取结果时，正确地处理各种数据类型。
