@@ -1,0 +1,31 @@
+下面把 **到 2025 年仍在活跃维护、最常被企业工程实际采用** 的 MyBatis 插件按“功能赛道”整理一张总览表，并挑代表性插件做简要说明。你可以据此快速判断自己需要哪一类，再去看对应的 GitHub / 官网文档。
+
+| 赛道              | 代表插件 & 最新版                                                                                                                                         | 典型场景 / 亮点                                           | 维护方                 |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ------------------- |
+| **分页**          | **PageHelper 6.0.x**([github.com][1])                                                                                                              | 最广泛使用的通用分页；支持单/多表、自动识别数据库方言；Spring Boot Starter 已集成 | 开源作者：@abel533       |
+| **通用 CRUD**     | **tk-mybatis Mapper 5.0.x**([github.com][2])                                                                                                       | 基于 Example/Condition 自动生成增删改查；配合 PageHelper 常用      | 同上                  |
+| **增强框架**        | **MyBatis-Plus**（Starter 3.5.12）核心插件组：分页、乐观锁、租户线、动态表名、Block-Attack 等([baomidou.com][3], [javadoc.io][4])                                           | “零侵入”扩展 MyBatis；一行注解开关插件；大量内置注解/Wrapper             | Baomidou 团队         |
+| **缓存**          | *官方缓存扩展*<!-- -->：<br>• **Redis Cache** (1.0.0)([github.com][5], [mybatis.org][6])<br>• EHCache、Hazelcast、Memcached、Ignite 等([blog.mybatis.org][7]) | 基于二级缓存接口（Cache）实现，开箱即用替换默认 PerpetualCache           | MyBatis 官方 & 社区     |
+| **动态数据源**       | **dynamic-datasource-spring-boot-starter 4.x**                                                                                                     | 读写分离、多库分片，自动切换 DataSource；内部用 Interceptor 重写路由      | baomidou 生态         |
+| **SQL 日志 / 审计** | MyBatis-LogPlugin、MyBatis-SQL-Printer 等                                                                                                            | 彩色输出、慢 SQL 告警、脱敏打印                                  | 社区                  |
+| **代码生成**        | **MyBatis Generator (MBG) 1.5.0**                                                                                                                  | 根据数据库元数据生成 XML/Mapper/Model；支持插件化自定义模板              | MyBatis 官方          |
+| **多租户 / 数据权限**  | ① MyBatis-Plus TenantLineInnerInterceptor<br>② Sa-Token DataScope + 自定义 Interceptor                                                                | 自动拼接租户条件 / 数据隔离                                     | Baomidou / Sa-Token |
+| **其他扩展**        | • **Mapper-Helper**（多表联合主键处理）<br>• **flex-search**（可插拔全文搜索映射）                                                                                      | 特定业务痛点                                              | 社区                  |
+
+> **使用规律总结**
+>
+> 1. **单点能力 ➜ PageHelper / tk-Mapper**：只想在原生 MyBatis 上“加分页、简化 CRUD”，这俩组合就够。
+> 2. **一站式增强 ➜ MyBatis-Plus**：想要分页 + 乐观锁 + 多租户 + 自动填充等，直接引入 MP，核心插件通过 `MybatisPlusInterceptor` 链式注入。
+> 3. **跨进程缓存 ➜ RedisCache**：只需 Maven 坐标 + `<cache type="org.mybatis.caches.redis.RedisCache"/>` 即可把二级缓存落进 Redis。
+> 4. **金融/政企合规 ➜ 自定义 Interceptor**：审计字段、列级权限、SQL 审计通常写成内部插件，挂到 `InterceptorChain`。
+> 5. **需要模块化/多人团队** ➜ 先把插件按“责任”拆分在不同 Starter，再通过 Spring 配置顺序显式排好执行链，避免条件串改互相打架。
+
+这样，你就可以 **根据功能→选型→定位 GitHub**，快速落地所需插件，且知道它们在 MyBatis 执行链中的插入点。祝开发顺利！
+
+[1]: https://github.com/pagehelper/Mybatis-PageHelper?utm_source=chatgpt.com "pagehelper/Mybatis-PageHelper: Mybatis通用分页插件 - GitHub"
+[2]: https://github.com/abel533/Mapper?utm_source=chatgpt.com "abel533/Mapper: Mybatis Common Mapper - Easy to use - GitHub"
+[3]: https://baomidou.com/en/plugins/?utm_source=chatgpt.com "Plugin Core - MyBatis-Plus"
+[4]: https://javadoc.io/doc/com.baomidou/mybatis-plus-extension/3.3.0/com/baomidou/mybatisplus/extension/plugins/OptimisticLockerInterceptor.html?utm_source=chatgpt.com "OptimisticLockerInterceptor (mybatis-plus-extension 3.3.0 API)"
+[5]: https://github.com/mybatis/redis-cache?utm_source=chatgpt.com "MyBatis Redis Cache adapter - GitHub"
+[6]: https://mybatis.org/redis-cache/summary.html?utm_source=chatgpt.com "Project Summary – mybatis-redis"
+[7]: https://blog.mybatis.org/p/products.html?utm_source=chatgpt.com "Products - The MyBatis Blog"
