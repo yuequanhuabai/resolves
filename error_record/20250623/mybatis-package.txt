@@ -26,6 +26,7 @@
          性将所有数据加载到内存中，从而防止内存溢出。
 
 
+
    6. `datasource`
        * 功能：提供了数据源的实现。包括了对池化数据源 (PooledDataSource) 和非池化数据源
          (UnpooledDataSource) 的支持，以及与 JNDI 集成的 JndiDataSourceFactory。
