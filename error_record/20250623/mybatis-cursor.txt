@@ -1,0 +1,60 @@
+ 這是一個非常關鍵的問題。答案是：不能。
+
+
+  使用 Cursor 的數據遷移方式是一種批處理（Batch Processing）模式，而不是實時流處理（Real-time Stream Processing）模式。它不具備實時同步數據的能力。
+
+
+  讓我為您詳細解釋一下它們之間的根本區別，以及為什麼 Cursor 模式無法實現實時同步。
+
+  Cursor 模式的工作機制（批處理）
+
+
+   1. 基於快照（Snapshot-based）：當 Cursor 被創建時（即 yourMapper.scanUsers() 被調用時），數據庫會為這個查詢生成一個結果集的“快照”。Cursor
+      遍歷的是這個查詢開始那一刻的數據狀態。
+
+
+   2. 一次性任務（One-time Task）：整個遷移過程是一個有起點、有終點的任務。它從表的第一行開始讀取，直到讀完最後一行結束。任務結束後，這個過程就停止了。
+
+
+   3. 無法感知後續變化：如果在 Cursor 遍歷的過程中，或者在整個遷移任務完成之後，源數據庫的表中發生了新的 INSERT、UPDATE 或 DELETE 操作，Cursor
+      模式是完全無法感知到這些變化的。它不會自動去捕獲這些增量數據。
+
+
+  簡單來說，`Cursor` 模式做的是“全量數據的搬家”，而不是“實時動態的同步”。
+
+  實現實時數據同步需要什麼？
+
+
+  要實現實時數據同步，需要採用完全不同的技術和架構，其核心是變更數據捕獲（Change Data Capture, CDC）。CDC
+  是一種能夠識別和捕獲數據庫中數據變更（增、刪、改）的技術，並將這些變更以事件的形式提供給下游系統。
+
+  實現 CDC 的常見方式有：
+
+
+   1. 基於日誌的 CDC（Log-based CDC）：
+       * 工作原理：這是目前最流行、性能最好的方式。它通過讀取數據庫的事務日誌（如 MySQL 的 Binlog、PostgreSQL 的 WAL、Oracle 的 Redo
+         Log）來捕-獲數據變更。因為只是讀取日誌文件，所以對源數據庫的性能影響極小。
+       * 優點：實時性高（毫秒級延遲）、性能好、數據無侵入（不需要修改業務表）。
+       * 常用工具：
+           * Debezium: 一個開源的分佈式 CDC 平台，可以與 Kafka、Pulsar 等消息隊列完美集成。
+           * Canal: 阿里巴巴開源的項目，專注於 MySQL 的 Binlog 解析和同步。
+           * Flink CDC: Apache Flink 的一個組件，可以直接從數據庫日誌讀取數據並進行實時流計算。
+
+
+   2. 基於觸發器的 CDC（Trigger-based CDC）：
+       * 工作原理：在需要監控的表上創建 INSERT, UPDATE, DELETE
+         觸發器。當表數據發生變化時，觸發器會被激活，將變更的數據寫入一個專門的“日誌表”或“事件表”。同步程序再從這個日誌表中讀取數據。
+       * 優點：實現相對簡單。
+       * 缺點：對源數據庫有侵入性（需要創建觸發器），並且觸發器會增加業務事務的開銷，對數據庫性能有一定影響。
+
+
+   3. 基於查詢的 CDC（Query-based CDC）：
+       * 工作原理：通過輪詢的方式反復查詢源數據庫的表。通常需要在表中增加一個 last_updated 時間戳字段或版本號字段。同步程序會定期查詢 last_updated
+         大于上次查詢時間的記錄。
+       * 優點：實現最簡單，無須修改數據庫底層配置。
+       * 缺點：
+           * 非實時：有延遲，延遲時間取決於輪詢間隔。
+           * 無法捕獲 `DELETE` 操作：記錄被物理刪除後，無法通過查詢來得知哪些記錄被刪了。
+           * 對數據庫壓力大：頻繁的輪詢會給數據庫帶來額外負擔。
+
+  結論

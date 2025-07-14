@@ -1,0 +1,13 @@
+
+
+###
+mybatis的二級緩存總開關默認是開啓的：
+
+總開關： mybatis-config.xml裏面：
+cacheEnabled=true;
+
+份開關： *Mapper.xml 裏面：
+<cache/>
+
+最後需要對應的pojo類必須序列化，實現Serializable接口:
+
