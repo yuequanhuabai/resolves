@@ -1,0 +1,43 @@
+好的，我們來分析 org.apache.ibatis.io 這個包。
+
+  io 包宏觀邏輯大綱
+
+  io 包的核心使命是 充當 MyBatis 框架的統一資源加載器 (Universal Resource Loader)。
+
+  您可以把它想象成 MyBatis 的 “後勤與採購部門”。
+
+  MyBatis 的構建器 (builder 包) 需要讀取各種配置文件，最核心的就是 mybatis-config.xml 和各種 Mapper 映射文件 (*.xml)。這些文件可能存放在不同的位置：
+   * 在項目的 classpath 路徑下。
+   * 在服務器的某個絕對文件路徑下。
+   * 通過一個網絡 URL 訪問。
+   * 甚至被打包在一個 .jar 文件內部。
+
+  builder 包並不想關心這些複雜的定位和讀取細節。它只想簡單地說：“我需要 org/apache/ibatis/builder/xml/mybatis-3-config.dtd 這個文件”，然後 io
+  包就能夠準確地把這個文件的內容（InputStream 或 Reader）遞給它。
+
+  因此，io 包的宏觀框架主要圍繞以下幾點展開：
+
+   1. 提供統一的資源訪問門面 (Facade)
+       * Resources 類是這個包對外的核心門面。它提供了一系列簡單的靜態方法，如 getResourceAsStream(String resource)、getResourceAsReader(String
+         resource)、classForName(String className) 等。
+       * 開發者或 MyBatis 內部其他模塊只需要與 Resources 類交互，屏蔽了底層複雜的查找邏輯。
+
+   2. 屏蔽不同環境的加載差異
+       * Resources 類內部會智能地判斷傳入的資源路徑是本地文件路徑、URL 還是 classpath 路徑，並選擇合適的方式去加載。
+       * 它會優先嘗試從 classpath 加載，這使得應用在不同環境（開發、測試、生產）中具有良好的一致性。它通過 ClassLoader 來完成這個任務。
+
+   3. 適應複雜的應用服務器環境 (VFS)
+       * 這是一個非常重要的特性。在某些應用服務器（特別是 JBoss）中，部署的應用程序（如 .war 或 .ear）其內部資源的訪問方式比較特殊，標準的 ClassLoader
+         API 可能無法正確地遍歷和獲取其中的資源（比如掃描某個包下所有的 Mapper 接口）。
+       * 為了應對這種情況，MyBatis 設計了一個 虛擬文件系統 (Virtual File System - VFS) 的抽象層。VFS 類定義了訪問這些特殊環境下資源的標準接口。
+       * io 包內置了針對不同環境的 VFS 實現，如 DefaultVFS 和 JBoss6VFS。MyBatis 在啟動時會自動檢測當前運行的環境，並選擇一個最合適的 VFS
+         實現來進行後續的資源掃描操作。
+
+   4. 提供字符集和 I/O 輔助
+       * io 包還包含一些輔助功能，比如 Resources.setCharset()，允許全局設定讀取文件時的默認字符編碼，以避免亂碼問題。
+
+  總結一下，`io` 包的設計哲學就是“抽象與適配”：
+   * 用 Resources 類 抽象 了資源的訪問方式，提供了一個簡單統一的接口。
+   * 用 VFS 機制去 適配 各種複雜的運行環境，保證了 MyBatis 的兼容性和健壯性。
+
+  接下來，您是想深入了解 Resources 類是如何實現統一加載的，還是想看看 VFS 是如何解決服務器兼容性問題的？
