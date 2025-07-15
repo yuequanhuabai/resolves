@@ -41,3 +41,147 @@
    * 用 VFS 機制去 適配 各種複雜的運行環境，保證了 MyBatis 的兼容性和健壯性。
 
   接下來，您是想深入了解 Resources 類是如何實現統一加載的，還是想看看 VFS 是如何解決服務器兼容性問題的？
+
+
+  ####
+  核心邏輯：
+  資源加載和VFS（Vitual File System）兩部分：
+
+  ####
+
+
+  好的，遵照您的要求，我們先來勾勒 io 包中 資源加載 這部分功能的宏觀輪廓。
+
+    您可以將 Resources 這個核心類理解為一把用於加載各種配置文件的
+    “瑞士軍刀”。它提供了一套非常簡單的靜態方法，但內部隱藏了一套健壯、有彈性的查找策略，以確保在任何環境下都能準確找到並讀取所需文件。
+
+    其宏觀框架主要建立在以下幾個設計原則之上：
+
+     1. 統一門面 (Facade Pattern)
+         * 整個 MyBatis 框架無需關心文件到底在哪裡。所有需要加載資源的地方（主要是 XMLConfigBuilder）都只通過 Resources.getResourceAsStream("path/to/file")
+           或 Resources.getResourceAsReader("path/to/file") 這幾個簡單的靜態方法來獲取資源。
+         * 這極大地簡化了上層代碼，使其不必處理複雜的 I/O 和路徑解析邏輯。
+
+     2. URL 優先識別
+         * 在進行任何複雜的查找之前，它會先做一個最簡單的判斷：傳入的資源路徑字符串本身是不是一個合法的 URL（比如 http://... 或 file:///...）？
+         * 如果是，它就直接通過標準的 URL 連接去獲取資源。這是最直接的路徑。
+
+     3. 多層次的類加載器查找策略 (Layered Search)
+         * 如果資源路徑不是一個 URL，那麼它就會被視為一個 classpath 路徑。這時，Resources 會啟動一套精心設計的、有先後順序的 查找流程，依次嘗試使用不同的
+           ClassLoader 來定位資源。這個順序至關重要：
+             1. 線程上下文類加載器 (Thread Context ClassLoader)：這是 最高優先級 的嘗試。在 Tomcat、JBoss 這樣的 Web 容器中，每個 Web 應用都有自己獨立的
+                ClassLoader，而這個 ClassLoader 通常就綁定在當前線程的上下文中。優先使用它，可以確保正確加載到當前 Web
+                應用的資源，而不是容器或其他應用的資源。
+             2. `Resources` 類自身的類加載器：如果線程上下文加載器找不到，它會嘗試使用加載 Resources.class 這個類本身的 ClassLoader。
+             3. 系統類加載器 (System ClassLoader)：作為最後的備用選項，它會嘗試使用系統 ClassLoader。
+
+         * 這種從“最特定”（線程上下文）到“最通用”（系統）的查找順序，極大地提高了 MyBatis 在各種複雜環境（尤其是 Web 容器）下的適應性和健壯性。
+
+     4. 可配置的字符集
+         * 它意識到文件讀取中一個常見的痛點是字符編碼問題。因此，它提供了一個全局靜態方法
+           Resources.setCharset()，允許用戶在加載任何資源之前，預先指定一個默認的字符集（如 UTF-8），從而從根本上避免亂碼問題。
+
+    總結一下，`Resources` 的宏觀設計就是：
+    通過一個 簡單的門面，提供了一套 優先級清晰、層次分明 的資源查找策略。它首先嘗試最直接的 URL 方式，如果不行，就利用 Java
+    的類加載器機制，按照從特定到通用的順序進行 “接力查找”，直到找到資源為止，同時還貼心地處理了字符編碼問題。
+
+    這個輪廓是否清晰？接下來您可以針對任何一點提出更細節的問題，比如“我想看看多層次類加載器查找的具體代碼實現”。
+
+
+##########
+
+
+? 好的，這就為您展示 Resources.java 中實現多層次類加載器查找的具體代碼。
+
+  這個策略的核心並不在一個單一的大方法裡，而是被巧妙地封裝在一個名為 ClassLoaderWrapper 的內部輔助類和幾個獲取資源的方法中。
+
+  首先，我們來讀取 Resources.java 的完整源碼。
+
+ ╭──────────────────────────────────────────────────╮
+ │ ?  ReadFile src\apache\ibatis\io\Resources.java  │
+ ╰──────────────────────────────────────────────────╯
+? 好的，源碼已經加載。現在，我們聚焦於實現多層次查找的關鍵部分。
+
+  這個邏輯的核心在於 ClassLoaderWrapper 這個類。雖然它沒有在 Resources.java 文件中被定義為一個 static class（它是一個獨立的類，位於同一個包下），但
+  Resources 類創建並持有了它的一個靜態實例：
+
+   1 private static final ClassLoaderWrapper classLoaderWrapper = new ClassLoaderWrapper();
+
+  所有 Resources 類的資源加載方法，比如 getResourceAsStream(ClassLoader loader, String resource)，最終都委託給了 classLoaderWrapper 的對應方法來執行。
+
+  現在，我們來讀取 ClassLoaderWrapper.java 的源碼，這裡面包含了我們最關心的查找順序邏輯。
+
+ ╭───────────────────────────────────────────────────────╮
+ │ ?  ReadFile ...src\ibatis\io\ClassLoaderWrapper.java  │
+ ╰───────────────────────────────────────────────────────╯
+? 源碼已經呈現，ClassLoaderWrapper.java 中的 getClassLoaders 方法就是我們尋找的 核心實現。
+
+  讓我們來詳細解讀這段代碼：
+
+   1 ClassLoader[] getClassLoaders(ClassLoader classLoader) {
+   2   return new ClassLoader[] {
+   3       classLoader,
+   4       defaultClassLoader,
+   5       Thread.currentThread().getContextClassLoader(),
+   6       getClass().getClassLoader(),
+   7       systemClassLoader
+   8   };
+   9 }
+
+  這個方法的作用是 構建一個類加載器的數組，並確定它們的查找優先級。
+
+   1. `classLoader`: 這是可以由外部調用者 手動傳入 的
+      ClassLoader。它排在第一位，具有最高優先級。這提供了一個靈活的擴展點，允許調用者強制指定一個特定的加載器。在 Resources
+      類的大多數公開方法中，這個參數通常是 null。
+
+   2. `defaultClassLoader`: 這是 Resources.setDefaultClassLoader() 方法設置的 全局默認類加載器。如果用戶顯式設置了它，它就成為第二優先級。
+
+   3. `Thread.currentThread().getContextClassLoader()`: 線程上下文類加載器。這是我們之前討論的，在 Web
+      容器環境下至關重要的一個加載器。它排在第三位，是常規查找中的 第一道防線。
+
+   4. `getClass().getClassLoader()`: 當前類 (`ClassLoaderWrapper`) 的類加載器。如果線程上下文加載器找不到，就使用加載 MyBatis
+      自身的加載器來嘗試。這是第二道防線。
+
+   5. `systemClassLoader`: 系統類加載器。這是 Java 應用啟動時默認的加載器，作為最後的備用選項。
+
+  查找流程
+
+  有了這個有序的數組後，getResourceAsStream、getResourceAsURL 和 classForName 這些方法的邏輯就非常清晰了：
+
+  它們會 遍歷 getClassLoaders 方法返回的這個數組，並依次使用每一個非 null 的 ClassLoader 去嘗試加載資源。
+
+  以 getResourceAsStream 為例：
+
+    1 InputStream getResourceAsStream(String resource, ClassLoader[] classLoader) {
+    2   for (ClassLoader cl : classLoader) {
+    3     if (null != cl) {
+    4       // 第一次嘗試：直接查找
+    5       InputStream returnValue = cl.getResourceAsStream(resource);
+    6
+    7       // 第二次嘗試：如果找不到，在路徑前加上 "/" 再試一次
+    8       // (因為有些類加載器需要絕對路徑)
+    9       if (null == returnValue) {
+   10         returnValue = cl.getResourceAsStream("/" + resource);
+   11       }
+   12
+   13       // 只要找到了，就立刻返回，不再繼續遍歷
+   14       if (null != returnValue) {
+   15         return returnValue;
+   16       }
+   17     }
+   18   }
+   19   return null; // 所有類加載器都試過了，還是找不到
+   20 }
+
+  總結
+
+  MyBatis 的多層次類加載器查找策略，其代碼實現可以總結為：
+
+   1. 構建一個有序的 `ClassLoader` 數組 (getClassLoaders 方法)，其順序為：手動指定 > 全局默認 > 線程上下文 > 當前類 > 系統。
+   2. 遍歷這個數組，依次使用每個 ClassLoader 去查找資源。
+   3. 為了提高兼容性，對每個 ClassLoader 都進行 兩次嘗試：一次使用原始路徑，一次在路徑前加上 /。
+   4. 一旦找到資源，立即停止遍歷並返回結果，從而確保了優先級順序的有效性。
+
+  這套實現既優雅又健壯，充分考慮了 Java 生態中各種複雜的運行環境。
+
+  您對這部分代碼還有什麼疑問嗎？
