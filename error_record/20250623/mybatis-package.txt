@@ -98,3 +98,64 @@
    19. `type`
        * 功能：提供了 Java 类型与 JDBC 类型之间的转换器。TypeHandler 是其核心接口，负责在设置
          PreparedStatement 参数和从 ResultSet 获取结果时，正确地处理各种数据类型。
+
+
+#############################################################################################################################
+
+
+
+ 好的，我们回到宏观视角来理解 MyBatis 的整体框架。
+
+  MyBatis 的核心目标是将开发者从繁琐的 JDBC 代码中解放出来，并以一种更优雅、更直观的方式将 Java 对象与数据库记录进行映射。
+
+  您可以将 MyBatis 的宏观框架理解为以下几个核心部分：
+
+   1. 配置层 (Configuration)
+       * 入口: mybatis-config.xml (或通过 Java API 进行配置)。
+       * 作用: 这是 MyBatis 启动的起点。它定义了数据库连接信息（数据源）、事务管理器、插件（Interceptors）、类型别名（Type
+         Aliases）、类型处理器（Type Handlers）以及 Mapper 映射文件的位置等全局设置。
+       * 核心对象: Configuration。这个类是 MyBatis 内部所有配置信息的“集大成者”，框架的所有其他部分都会依赖这个对象来获取配置。
+
+   2. SQL 映射层 (Mapping)
+       * 入口: Mapper XML 文件 (例如 UserMapper.xml) 或 Mapper 接口中的注解。
+       * 作用: 这是 MyBatis 最核心的部分之一。它定义了 SQL 语句本身、参数如何传入（parameterType）、以及结果如何映射回 Java 对象（resultType 或
+         resultMap）。它还支持强大的动态 SQL 功能，可以根据条件动态地生成 SQL 语句。
+       * 核心对象: MappedStatement。每个定义的 SQL 语句（无论是 XML 里的一个 <select> 标签还是一个 @Select 注解）在内部都会被解析成一个
+         MappedStatement 对象，其中包含了 SQL、参数映射、结果映射等所有信息。
+
+   3. API 接口层 (Session)
+       * 入口: SqlSessionFactory 和 SqlSession。
+       * 作用: 这是应用代码与 MyBatis 交互的主要接口。
+           * SqlSessionFactory: 它的职责是创建 SqlSession。它是一个重量级、线程安全的对象，通常在应用启动时创建一次即可。
+           * SqlSession: 这是执行 SQL 的主要接口。它提供了 select, insert, update, delete 等方法，并负责管理数据库连接和事务。它是一个轻量级、
+             非线程安全的对象，生命周期应该很短，每次数据库交互都应该获取一个新的实例，用完后必须关闭。
+
+   4. 执行层 (Executor)
+       * 入口: SqlSession 的方法调用最终会委托给 Executor。
+       * 作用: 这是 MyBatis 的“引擎”。它负责：
+           1. 根据 MappedStatement 获取 SQL。
+           2. 创建数据库连接 (Connection)。
+           3. 创建 PreparedStatement，并设置 SQL 参数。
+           4. 执行 SQL 语句。
+           5. 将 JDBC 的 ResultSet 映射成 Java 对象。
+           6. 管理事务和缓存。
+       * 核心对象: Executor。它有不同的实现，如 SimpleExecutor（默认）、ReuseExecutor（重用 PreparedStatement）、BatchExecutor（批量执行）。
+
+  整个流程串起来就是：
+
+   1. MyBatis 根据配置层的信息（mybatis-config.xml）创建一个 SqlSessionFactory。
+   2. 应用代码通过 SqlSessionFactory 获取一个 SqlSession。
+   3. 应用代码调用 SqlSession 的方法（例如 selectOne("com.example.UserMapper.selectUser", 1)）或直接调用 Mapper
+      接口的方法（userMapper.selectUser(1)）。
+   4. SqlSession 将请求转发给执行层的 Executor。
+   5. Executor 从SQL 映射层找到对应的 MappedStatement，然后执行 SQL，并将结果映射成 Java 对象返回。
+
+  这个宏观框架将复杂的数据库操作清晰地分成了几个层次，使得每一层都只关注自己的职责，大大提高了代码的可维护性和灵活性。
+
+  现在，基于这个宏观框架，您可以随时向我提问任何细节问题。
+
+
+
+#############################################################################################################################
+
+
