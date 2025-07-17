@@ -1,0 +1,90 @@
+
+####
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-pmd-plugin:3.16.0:check(default) on project comlib-questionnaire:You have 45 PMD violations. For more details see :
+/home/jenkins/workspace/k_iafhk-ms-questionnaire_develop/comlib-questionnaire/target/pnd.xml ->[Help 1]
+
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+
+After correcting the problems, you can resume the build with the command
+ mvn <args> -rf : comlib-questionnaire
+
+
+####
+com.e.hika.dto.pageParam.java: @SuperBuilder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settlable during building, make the field final.
+
+另外一个类：
+Unmapped target properties: "hkName, enName"
+
+org.mapstruct.Mapper
+
+Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentianal, add '@EqualsAndHashCode(callSuper=false)' to your type
+
+@Mappings(
+{
+@Mapping(target="updateTime", expression="java(java.time.LocalDateTime.now())")
+}
+)
+AnswerScore scoreConvert(AnswerScoreDTO answerScoreDTO);
+
+
+####
+Failed to execute goal org.apache.maven.plugins:maven-pmd-plugin:3.16.0:check (default) on project comlib-questionnaire: You have PMD violations.
+For more details see: /home/jenkins/workspace/k_iafhk-ms-questionnaire_develop/comlib-questionnaire/target/pmd.xml -> [HELP-1]
+
+To see the full stack trace of the errors, re-run Maven with the -e switch.
+Re-run Maven using the -X switch to enable full debug logging.
+
+For more information about the errors and possible solutions, please read the following articles:
+[Help 1] http://cwiki.apache.org/confluence/dispaly/MAVEN/MojoFailureException
+
+After correcting the problems, you can resume the build with the command
+mvn <args> -rf : comlib-questionnaire
+
+
+##########
+
+jenkins 報錯：
+[ERROR] /home/jenkins/.../QuestionnaireMapping.java
+[29,25] cannot find symbol
+symbol: class QuestionnaireDTOBuilder
+location: class com.a.questionnaire.dto.QuestionnaireDTO
+
+
+QuestionnaireDTO類如下：
+
+
+@Data
+@Builder
+public class QuestionnaireDTO implements Serializable{
+
+private static final long serialVersionUID=1L;
+
+private Long id;
+
+private String code;
+...
+
+}
+
+
+##############
+[WARNING] src/main/../QuestionnaireServiceImpl.java:[372,13] (indentation) Indentation: 'if' child has incorrect indentation
+level 12, expected level should be 6
+
+
+[WARNING] src/main/../QuestionnaireServiceImpl.java:[373,9] (indentation) Indentation: 'if rcurly' has incorrect indentation
+level 8, expected level should be 4
+
+
+
+
+
+
+
+
+
+
+
