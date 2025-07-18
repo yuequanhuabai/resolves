@@ -161,6 +161,81 @@ Module Dependencies
 [WARNING] src/main/java/com/.../AnswerCsvModel.java:[117,3] (javadoc)  InvalidJavadocPosition: javadoc comment is placed in the wrong location.
 
 
+################################################################################################################################################################################################
+[WARNING] src/main/java/com/.../JacksonHandler.java:[52] (javadoc)  NonEmptyAtclauseDescription: At-clause should have a non-empty description.
+
+
+[WARNING] src/main/java/com/.../JacksonHandler.java:[52] (javadoc)  AtclauseOrder: javadoc comment at column 0 has parse error. Detials: no viable alternative at input '   *' while parsing JAVADOC_TAG
+
+
+################################################################################################################################################################################################
+[WARNING] src/main/java/com/.../SubjectConverter.java:[14，1] (imports) CustomImportOrder: Extra separation in import group before 'java.util.Collection'
+[WARNING] src/main/java/com/.../SubjectConverter.java:[14，1] (imports) CustomImportOrder: Wrong lexicographical order for 'java.util.Collections' import. Should be before 'org.springframework.stereotype.Component'.
+[WARNING] src/main/java/com/.../SubjectConverter.java:[14，1] (imports) CustomImportOrder: Wrong lexicographical order for 'java.util.List' import. 'org.springframework.stereotype.Component'.
+
+
+
+
+################################################################################################################################################################################################
+[WARNING] src/main/java/com/.../ExtraField.java:[14，17] (imports) AvoidStarImport： Using the '.*' form of import should be avoided - java.util.*.
+
+
+################################################################################################################################################################################################
+[WARNING] src/main/java/com/.../AnswerMapping.java:[136] (javadoc) NonEnptyAtclauseDescription: At-clause should have a non-empty description.
+
+Naming, DefaultVisibility, Final Modifier, Comment Code, Override Method Signature , Lambda Body
+################################################################################################################################################################################################
+
+IDEA修改類名，全部引用生效，  Rename有幾個選項都是什麽意思？
+
+Search class comments and strings,
+Search for text occurrences,
+Rename tests ,
+Rename inheriors,
+Rename variables,
+
+Scope:
+Project Files
+################################################################################################################################################################################################
+[WARNING] src/main/java/com/.../AnswerMapping.java:[5,1] (imports) CustomImportOrder: 'io.swagger.v3.oas.annotations.Hidden' should be separated from
+previous import group by one line.
+
+################################################################################################################################################################################################
+[WARNING] src/main/java/com/.../AnswerMapping.java:[462,3] (coding) OverloadMethodsDeclarationOrder: All overloaded methods should be placed next to each other.
+Placing non-overloaded methods in between overloaded methods with the same type is a violation. Previous overloaded
+method located at line '426'.
+
+
+################################################################################################################################################################################################
+[WARNING] src/main/java/com/.../ApproveServiceImpl.java:[135,5] (coding) VariableDeclarationUsageDistance: Distance between variable 'name' declaration and its first usage is 4,
+but allowed 3. Consider making that variable final if you still need to store its value in advance (before method calls that might
+have side effects on the original value).
+
+################################################################################################################################################################################################
+[WARNING] src/main/java/com/.../ApproveServiceImpl.java:[4,1] (imports) CustomImportOrder: 'com.a.common.enums.ErrorCode' should be separated from previous import group by on line.
+
+################################################################################################################################################################################################
+[WARNING] src/main/java/com/.../ApproveServiceImpl.java:[6,1] (imports) AvoidStarImport: Using the '.*' form of import should be avoided -com.a.questionnaire.enums.AppErrorCode.*.
+
+################################################################################################################################################################################################
+[WARNING] src/main/java/com/.../ApproveServiceImpl.java:[12,47] (naming) ClassTypeParameterName: Class type name 'Request' must match pattern '(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)'.
+
+################################################################################################################################################################################################
+[WARNING] src/main/java/com/.../ApproveServiceImpl.java:[762,3] (coding) OverloadMethodsDeclarationOrder: All overloaded methods should be placed next to each other.
+Placing non-overloaded methods in between overloaded methods with the same type is a violation. Previous overloaded method located at line '646'
+
+################################################################################################################################################################################################
+
+################################################################################################################################################################################################
+
+################################################################################################################################################################################################
+
+################################################################################################################################################################################################
+
+
+
+
+
 
 
 
