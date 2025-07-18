@@ -1,0 +1,6 @@
+
+missing an end period
+È«¾ÖÌæ“Q£º
+(^\s*\*\s[^*\n]+[^.\s])(\s*\n)
+$1.$2
+

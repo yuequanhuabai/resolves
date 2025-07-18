@@ -15,7 +15,7 @@ After correcting the problems, you can resume the build with the command
 ####
 com.e.hika.dto.pageParam.java: @SuperBuilder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settlable during building, make the field final.
 
-ÁíÍâÒ»¸öÀà£º
+ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½à£º
 Unmapped target properties: "hkName, enName"
 
 org.mapstruct.Mapper
@@ -46,14 +46,14 @@ mvn <args> -rf : comlib-questionnaire
 
 ##########
 
-jenkins ˆóåe£º
+jenkins ï¿½ï¿½ï¿½eï¿½ï¿½
 [ERROR] /home/jenkins/.../QuestionnaireMapping.java
 [29,25] cannot find symbol
 symbol: class QuestionnaireDTOBuilder
 location: class com.a.questionnaire.dto.QuestionnaireDTO
 
 
-QuestionnaireDTOîÈçÏÂ£º
+QuestionnaireDTOï¿½ï¿½ï¿½ï¿½Â£ï¿½
 
 
 @Data
@@ -77,6 +77,91 @@ level 12, expected level should be 6
 
 [WARNING] src/main/../QuestionnaireServiceImpl.java:[373,9] (indentation) Indentation: 'if rcurly' has incorrect indentation
 level 8, expected level should be 4
+
+#######
+[WARNING] src/main/java/com/.../QuestionnaireImpl.java:[339,1] (indentation)  CommentsIndentation: Comment has incorrect indentation level 0,
+expected is 16, indentation should be the same level as line 340.
+
+#######
+
+[WARNING] src/main/java/com/.../QuestionnaireImpl.java:[340,1] (whitespaceAfter:) ';' is not followed by whitespace.
+
+#######
+[WARNING] src/main/java/com/.../QuestionnaireImpl.java:[347,15] (javadoc) SummaryJavadoc: First sentence of Javadoc is missing an ending period.
+
+
+#######
+
+[WARNING] src/main/java/com/.../QuestionnaireImpl.java:[350,54] (naming) AbbreviationAsWordInName: Abbreviation in name 'subjectDTOList'
+must contain no more than '1' consecutive capital letters.
+
+
+################################################
+
+[WARNING] src/main/java/com/.../EmailTaskImpl.java:[97,21] (indentation)
+Indentation: 'catch' child has incorrect indentation level 20,expected level should be 10.
+
+
+æ ¼å¼åŒ–çš„æ™‚å€™å¦‚ä½•é¸æ“‡ï¼š
+
+################################################
+Reformat Code
+
+OPtions
+
+Optimize imports
+Rearrange entries
+Only changes uncommitted to VCS
+Cleanup code
+
+Filters
+
+Scope
+File mask(s)
+
+################################################
+
+IDEAå³é”®çš„Analyzeé‡Œçš„é€‰é¡¹ï¼š
+Inspect Code...
+Code Cleanup...
+Silent Code Cleanup
+Run Inspection by Name...
+Configure Current File Analysis...
+Infer Nullity...
+Dependencies...
+Backward Dependencies...
+Module Dependencies
+
+################################################
+
+[WARNING] src/main/java/com/.../Ideation.java:[17,1] (imports) CustomImportOrder: Extra separation in import group before 'java.io.Serializable'
+
+[WARNING] src/main/java/com/.../Ideation.java:[17,1] (imports) CustomImportOrder: Wrong lexicographical order for 'java.io.Serializable' import. Should be before 'lombok.NoArgsConstructor'.
+
+################################################
+
+[WARNING] src/main/java/com/.../QuestionnaireImpl.java:[406] (sizes) LineLength: Line is longer than 100 characters (found 118).
+
+################################################
+
+[WARNING] src/main/java/com/.../QuestionnaireImpl.java:[508,1] (indentation) CommentsIndentation: Comment has incorrect indentation level 0, expected is 6,
+ indentation should be the same level as line 509.
+
+################################################
+
+[WARNING] src/main/java/com/.../QuestionnaireImpl.java:[6,1] (imports) CommentsImportOrder: Extra separation in import group before 'java.io.Serial'
+[WARNING] src/main/java/com/.../QuestionnaireImpl.java:[6,1] (imports) CommentsImportOrder: Wrong lexicographical order for 'java.io.Serial' import. Should be before 'lombok.Data'.
+[WARNING] src/main/java/com/.../QuestionnaireImpl.java:[6,1] (imports) CommentsImportOrder: Wrong lexicographical order for 'java.io.Serializable' import. Should be before 'lombok.Data'.
+
+
+################################################
+[WARNING] src/main/java/com/.../AnswerMapping.java:[109,95] (naming)  ParameterName: Parameter name 'tClass' must match pattern '^[a-z]([a-z0-9][a-zA-Z0-9]*)?$'.
+
+################################################
+[WARNING] src/main/java/com/.../AnswerCsvModel.java:[117,3] (javadoc)  InvalidJavadocPosition: javadoc comment is placed in the wrong location.
+
+
+
 
 
 
