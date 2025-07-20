@@ -75,6 +75,94 @@
   的“引擎室”是如何工作的。接下来，您可以选择深入了解某个具体的执行器，或者缓存的工作机制。
 
   ###########################################################################################################################################
+  > executor的子包keygen,loader,parameter,result,resultset,statement,這些包的定位和功能是啥？  │
+╰───────────────────────────────────────────────────────────────────────────────────────────────╯
+
+? 好的，我们来逐一解析 executor 下这些子包的定位和功能。
+
+  如果说 Executor 是“执行总厨”，那么这些子包就是它手下分工明确的“专业厨师团队”，每个团队都负责烹饪过程中的一个特定环节，比如备料（parameter）、烹饪（statement）
+  、摆盘（resultset）等。
+
+  它们共同构成了 Executor 执行 SQL 所需的全部辅助工具。
+
+  ---
+
+  1. keygen - 主键生成器
+
+   * 定位: 主键值处理专家。
+   * 功能: 负责在执行 INSERT 语句后，获取数据库生成的主键（比如自增 ID），并将其回写到传入的参数对象中。
+       * 当你定义 <insert ... useGeneratedKeys="true" keyProperty="id"> 时，这个包里的类就会被激活。
+       * 它支持多种主键生成方式，包括 JDBC 的 getGeneratedKeys() 方法（对应 Jdbc3KeyGenerator）和特定数据库（如 Oracle）通过 SELECT 序列获取主键的方式（对应
+         SelectKeyGenerator）。
+   * 核心类: KeyGenerator, Jdbc3KeyGenerator, SelectKeyGenerator。
+
+  ---
+
+  2. loader - 延迟加载器
+
+   * 定位: 懒加载功能实现者。
+   * 功能: 负责实现 MyBatis 强大的延迟加载（Lazy Loading）功能。
+       * 当你配置了关联对象的延迟加载（例如，查询一个 Order 对象，但希望只有在真正访问 order.getUser() 时才去查询关联的 User 对象），这个包就会发挥作用。
+       * 它通常会使用 CGLIB 或 Javassist 等字节码增强技术，为你的实体类动态生成一个代理对象。当你调用代理对象的某个方法（如
+         getUser()）时，代理逻辑会拦截这个调用，此时才去执行真正的数据库查询，加载所需的数据。
+   * 核心类: ResultLoader, CglibProxyFactory, JavassistProxyFactory。
+
+  ---
+
+  3. parameter - SQL 参数处理器
+
+   * 定位: SQL 参数“备料师”。
+   * 功能: 负责在执行 SQL 之前，将用户传入的 Java 对象（无论是简单类型、Map 还是 POJO）设置到 PreparedStatement 的参数占位符 (?) 上。
+       * 它会根据参数的 Java 类型和 JDBC 类型，选择合适的 TypeHandler（类型处理器）来进行转换。
+       * 例如，它会将一个 Java 的 Date 对象转换成 JDBC 的 TIMESTAMP 类型，并调用 preparedStatement.setTimestamp(...)。
+   * 核心类: ParameterHandler, DefaultParameterHandler。
+
+  ---
+
+  4. result - 结果映射信息
+
+   * 定位: 结果集“摆盘图纸”。
+   * 功能: 这个包里存放的主要是描述如何进行结果映射的元数据对象。
+       * 当 ResultSet 返回后，ResultSetHandler 需要知道哪一列对应哪个 Java
+         对象的哪个属性，以及它们之间需要什么样的类型转换。这些“指令”和“规则”就封装在这个包的类中。
+       * 它不执行映射动作，而是为执行映射的 ResultSetHandler 提供所需的信息。
+   * 核心类: ResultHandler, ResultContext, DefaultResultHandler, DefaultResultContext。
+
+  ---
+
+  5. resultset - 结果集处理器
+
+   * 定位: 结果集“摆盘大师”。
+   * 功能: 这是 executor 中最复杂、最核心的辅助包之一。它的职责是将 JDBC 的 `ResultSet`（一个二维数据表格）转换成用户期望的 Java 对象列表。
+       * 它会读取 result 包中的“图纸”，然后遍历 ResultSet 的每一行。
+       * 对于每一行，它会创建一个 Java 对象，并根据映射规则（ResultMap），将每一列的值通过 TypeHandler 转换后，设置到 Java 对象的相应属性上。
+       * 它还负责处理复杂的关联关系映射（一对一、一对多）。
+   * 核心类: ResultSetHandler, DefaultResultSetHandler。
+
+  ---
+
+  6. statement - Statement 处理器
+
+   * 定位: SQL“烹饪师”。
+   * 功能: 负责创建和执行 `java.sql.Statement`。它是 Executor 与 JDBC Statement 交互的直接代理。
+       * 它会根据 Executor 的类型（Simple, Reuse, Batch）创建不同类型的 Statement（PreparedStatement, CallableStatement 等）。
+       * 它调用 parameter 包的 ParameterHandler 来设置 SQL 参数。
+       * 它调用 java.sql.Statement 的 execute() 或 executeQuery() 方法来真正地向数据库发送 SQL。
+       * 执行完毕后，它会将结果（ResultSet 或更新计数）交给 ResultSetHandler 或 KeyGenerator 进行后续处理。
+   * 核心类: StatementHandler, SimpleStatementHandler, PreparedStatementHandler, CallableStatementHandler, RoutingStatementHandler (这是一个路由，会根据
+     MappedStatement 的配置创建上述不同类型的 Handler)。
+
+  总结
+
+  这六个子包与 Executor 的协作关系，构成了一个完整而清晰的 SQL 执行流水线：
+
+   1. Executor 接收到请求，首先委托 StatementHandler 准备一个 Statement。
+   2. StatementHandler 让 ParameterHandler 把参数设置好。
+   3. StatementHandler 执行 SQL。
+   4. 如果是 INSERT，KeyGenerator 负责取回主键。
+   5. 如果是 SELECT，ResultSetHandler 负责将 ResultSet 转换成 Java 对象。
+   6. 在这个过程中，如果需要延迟加载，loader 包会创建代理对象。
+   7. result 包则自始至终提供着映射所需的元数据信息。
 
 
 
