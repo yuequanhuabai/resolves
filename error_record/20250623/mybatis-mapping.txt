@@ -1,0 +1,57 @@
+ > 可以講講mybatis 3.5.17 版本的mapping包嗎，講講它的定位和角色，後面再講下它的功能，從宏觀角度講，無需具體到細節  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+? 好的，我们来宏观地解析 MyBatis 3.5.17 版本的 mapping 包。
+
+  在 MyBatis 框架中的定位和角色
+
+  mapping 包在 MyBatis 框架中扮演着“蓝图设计者”和“规则存储库”的角色。它是整个 SQL 映射层（Mapping Layer）的核心。
+
+  如果把 MyBatis 的执行过程比作一个复杂的生产线：
+
+   * builder 包是“设计院”，负责读取图纸（XML 或注解）。
+   * executor 包是“生产车间”，负责实际的生产（执行 SQL）。
+   * mapping 包就是“图纸本身”和“生产规范”。
+
+  它不负责读取图纸（那是 builder 的事），也不负责执行生产（那是 executor 的事），它的核心职责是：
+
+   1. 定义映射规则: 存储所有从 XML 映射文件或 Java 注解中解析出来的、关于“如何将 SQL 与 Java 对象进行映射”的规则。
+   2. 提供元数据: 作为其他模块（特别是 executor 包）执行 SQL 和处理结果时所需的所有元数据（即“生产规范”）的中央存储库。
+
+  简而言之，mapping 包是 MyBatis 内部表示 SQL 语句和其映射关系的核心数据结构集合。
+
+  mapping 包的功能（宏观角度）
+
+  从宏观角度看，mapping 包主要提供了以下功能：
+
+   1. SQL 语句的抽象表示:
+       * 它定义了 MappedStatement 这个核心对象。每一个在 Mapper XML 文件中定义的 <select>, <insert>, <update>, <delete> 标签，或者在 Mapper
+         接口中通过注解定义的 SQL 语句，最终都会被解析成一个 MappedStatement 对象。
+       * MappedStatement 包含了执行一条 SQL 所需的所有信息：SQL ID、SQL 文本（可能是动态的）、参数映射、结果映射、缓存配置、SQL
+         类型（SELECT/INSERT/UPDATE/DELETE）等。
+
+   2. 参数映射的定义:
+       * 它定义了 ParameterMapping 和 ParameterMap 等对象，用于描述 Java 方法的参数如何与 SQL 语句中的占位符（#{} 或 ${}）进行关联，以及参数的类型、JDBC
+         类型、模式等信息。
+
+   3. 结果映射的定义:
+       * 这是 mapping 包最复杂也最强大的功能之一。它定义了 ResultMap 这个核心对象。
+       * ResultMap 详细描述了如何将数据库查询返回的 ResultSet 中的列，映射到 Java 对象的属性上。这包括：
+           * 简单属性映射（列名到属性名）。
+           * 复杂类型映射（如嵌套对象 association）。
+           * 集合类型映射（如一对多 collection）。
+           * 鉴别器（discriminator）用于根据列值选择不同的 ResultMap。
+           * 延迟加载的配置信息。
+
+   4. SQL 源的抽象:
+       * 它定义了 SqlSource 接口及其实现（如 DynamicSqlSource, RawSqlSource）。SqlSource 负责在运行时根据传入的参数，生成最终可执行的 SQL 语句。这与 scripting
+         包紧密相关。
+
+   5. 缓存配置的存储:
+       * 它存储了与二级缓存相关的配置信息，例如是否启用缓存、缓存的刷新策略、缓存的淘汰算法等。这些信息最终会被 CachingExecutor 使用。
+
+   6. 主键生成策略的存储:
+       * 它包含了关于如何处理数据库生成的主键的信息，例如 useGeneratedKeys 属性和 keyProperty 属性等。
+
+  总而言之，mapping 包是 MyBatis 运行时所有映射规则和元数据的集中管理中心。它将外部的 XML 或注解配置，转化成 MyBatis 内部能够理解和操作的 Java 对象模型，为
+  executor 提供执行 SQL 和处理结果的“指令集”。

@@ -7,7 +7,6 @@
     <file url="file://$PROJECT_DIR$/error_record/20250610/create_ddl/questionnaire_notice_procedure.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/error_record/20250610/create_ddl/questionnaire_procedure.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/error_record/20250610/create_ddl/questionnaire_user_procedure.sql" dialect="MySQL" />
-    <file url="file://$PROJECT_DIR$/error_record/20250610/create_ddl/show_grant.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/error_record/20250610/create_ddl/t_answer_procedure.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/error_record/20250610/create_ddl/t_answer_score_procedure.sql" dialect="MySQL" />
     <file url="PROJECT" dialect="MySQL" />
