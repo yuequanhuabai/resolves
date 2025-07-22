@@ -29,3 +29,60 @@
 [5]: https://github.com/mybatis/redis-cache?utm_source=chatgpt.com "MyBatis Redis Cache adapter - GitHub"
 [6]: https://mybatis.org/redis-cache/summary.html?utm_source=chatgpt.com "Project Summary – mybatis-redis"
 [7]: https://blog.mybatis.org/p/products.html?utm_source=chatgpt.com "Products - The MyBatis Blog"
+
+
+
+#################################################################################################
+  > 可以再講講mybatis的plugin的子包嗎？ 只講宏觀架構，講講該包在mybatis框架中的定位和角色，稍微講下功能  │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+✦ 好的，我們來從宏觀架構的角度剖析一下 MyBatis 的 plugin 包。
+
+  1. 定位與角色 (Positioning and Role)
+
+  在 MyBatis 的框架中，plugin 包扮演著 “AOP 攔截器” 和 “核心功能擴展點” 的角色。
+
+  它的定位非常清晰和強大：在不修改 MyBatis 任何源代碼的前提下，允許開發者攔截並改變 MyBatis 核心組件的運行行為。
+
+  可以把 plugin 包理解為 MyBatis 官方提供的一個優雅的“後門”或“掛鉤 (Hook)”。MyBatis 在執行 SQL
+  的整個生命週期中，有幾個非常關鍵的節點（例如：準備 SQL、設置參數、執行 SQL、處理結果集）。plugin
+  機制就允許你像插件一樣，將自己的代碼精準地“掛”到這些節點上，在原始行為執行前後附加自定義的邏輯。
+
+  它在框架中的位置不是在啟動解析階段，而是在 運行時對象的創建階段。當 MyBatis 通過 Configuration
+  對象創建一個核心執行組件（如 Executor）時，它會檢查是否有註冊的插件（Interceptor）需要攔截這個組件。如果需要，MyBatis
+  不會直接返回原始的組件對象，而是返回一個被該插件層層包裹後的 代理對象
+  (Proxy)。後續的所有操作都將流經這個代理對象，從而給了插件介入的機會。
+
+  2. 核心思想與實現機制
+
+  plugin 包的核心思想是 攔截 (Interception)，其底層是通過 Java 的 動態代理 (Dynamic Proxy) 技術實現的。這意味著它可以在運
+  行時動態地創建一個實現了特定接口的代理類，並將所有對該接口方法的調用都轉發到一個統一的處理邏輯上，也就是你編寫的插件的
+  intercept 方法。
+
+  3. 主要功能 (Key Functions)
+
+  plugin 包的功能非常專一，就是提供攔截能力。它並非可以攔截任意對象的任意方法，而是精準地定義了 四個可以被攔截的核心接口：
+
+   1. `Executor` (執行器)
+       * 攔截點: 這是 MyBatis 執行 SQL 的最核心入口，負責調度 StatementHandler，並處理二級緩存、事務等。
+       * 功能/用途: 在這裡可以實現非常強大的功能，如數據庫讀寫分離、分庫分表的路由邏輯、或者對二級緩存進行更精細的控制。
+
+   2. `StatementHandler` (SQL 語法處理器)
+       * 攔截點: 負責與 JDBC 的 Statement（或 PreparedStatement）直接交互，包括創建 Statement、設置參數、執行 SQL。
+       * 功能/用途: 最常見的用途是實現物理分頁。插件可以在這裡攔截到即將執行的 SQL，對其進行重寫（例如，在末尾追加 LIMIT ?,
+         ?），並添加分頁參數。此外，也可以用於記錄 SQL 執行日誌。
+
+   3. `ParameterHandler` (參數處理器)
+       * 攔截點: 負責將用戶傳入的參數對象（如一個 User 對象）中的屬性值，精準地設置到 PreparedStatement 的 ? 佔位符上。
+       * 功能/用途: 可以在這裡對參數進行修改，例如對某些字段進行加密處理後再寫入數據庫。
+
+   4. `ResultSetHandler` (結果集處理器)
+       * 攔截點: 負責將 JDBC 返回的 ResultSet 轉換為用戶定義的 Java 對象列表。
+       * 功能/用途:
+         可以在這裡對查詢結果進行干預，例如對某些從數據庫讀取出的加密字段進行解密，或者進行數據脫敏處理後再返回給業務層。
+
+  總結
+
+  plugin 包是 MyBatis 框架靈活性和擴展性的集中體現。它通過一個設計優雅的 AOP 式攔截機制，賦予了開發者在不侵入源碼的情況下
+  ，對框架核心流程進行定制化改造的能力。無論是實現通用的分頁組件、數據加解密，還是復雜的分庫分表策略，plugin
+  包都是實現這些高級功能的官方標準路徑。

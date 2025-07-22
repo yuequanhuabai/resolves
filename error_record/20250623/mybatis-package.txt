@@ -232,7 +232,38 @@
    3. 关注点分离: 加载、查找、解析等不同职责被清晰地划分到不同的类中，使得代码易于理解和维护。
 
 #############################################################################################################################
+  > 你給我列舉一下它的子包有哪些  │
+╰──────────────────────────────────╯
 
+? 好的，我來列出 MyBatis 核心包 org.apache.ibatis 下的子包。
+ ╭───────────────────────────────────────────────────────────────────────────╮
+ │ ?  ReadFolder src\main\java\org\apache\ibatis                             │
+ │                                                                           │
+ │    Listed 20 item(s).                                                     │
+ ╰───────────────────────────────────────────────────────────────────────────╯
+? 好的，org.apache.ibatis 包下的子包列表如下：
+
+   * annotations: 包含用於定義 SQL 映射的 Java 註解，例如 @Select, @Insert, @Update,
+     @Delete 等。
+   * binding: 處理 Mapper 接口與 SQL 映射文件之間的綁定。
+   * builder: 負責解析配置文件和映射文件，並構建 MyBatis 的核心對象，例如
+     SqlSessionFactory。
+   * cache: 提供 SQL 查詢結果的緩存功能。
+   * cursor: 支持以游標的方式返回大量數據，避免一次性加載到內存中。
+   * datasource: 提供數據源的相關功能，包括數據源工廠和池化數據源的實現。
+   * exceptions: 定義了 MyBatis 框架中使用的各種異常類型。
+   * executor: 負責執行 SQL 語句，是 MyBatis 的核心執行引擎。
+   * io: 提供了一些 I/O 操作的工具類，用於加載資源文件。
+   * jdbc: 包含了與 JDBC 相關的工具類和實現。
+   * logging: 提供了日誌記錄的抽象層，可以對接各種日誌框架。
+   * mapping: 包含了 MyBatis 的核心映射對象，例如 MappedStatement 和 ResultMap。
+   * parsing: 負責解析 XML 文件和動態 SQL 語句中的佔位符。
+   * plugin: 提供了插件機制，允許用戶攔截和修改 MyBatis 的核心行為。
+   * reflection: 提供了一套用於 Java 反射操作的工具類。
+   * scripting: 負責處理動態 SQL 語句的解析和執行。
+   * session: 提供了與數據庫交互的核心接口，例如 SqlSession 和 SqlSessionFactory。
+   * transaction: 提供了事務管理的相關功能。
+   * type: 負責 Java 類型與 JDBC 類型之間的轉換。
 
 ###########################################################################################################################################
 
