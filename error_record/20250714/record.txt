@@ -226,26 +226,89 @@ Placing non-overloaded methods in between overloaded methods with the same type 
 
 
 ################################################################################################################################################################################################
+[WARNING] src/main/java/com/hah/questionnaire/service/AbstractServiceTemplate.java:[12,47] (naming) ClassTypeParameterName: Class type
+name 'Request' must match pattern '(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)'
+
+[WARNING] src/main/java/com/hah/questionnaire/service/AbstractServiceTemplate.java:[12,56] (naming) ClassTypeParameterName: Class type
+name 'Response' must match pattern '(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)'
+
+類是這樣的
+public abstract class AbstractServiceTemplate<Request,Response>{
+
+}
+################################################################################################################################################################################################
+Changes Detected
+
+Cannot  perform refactoring operation. There were changes in code after usages have been found.
+Please perform usage search again.
+################################################################################################################################################################################################
+爲啥我改成了Req和TRequest還是告警，像下面這樣，
+[WARNING] src/main/java/com/hah/questionnaire/service/AbstractServiceTemplate.java:[12,47] (naming) ClassTypeParameterName: Class type
+name 'TRequest' must match pattern '(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)'
+################################################################################################################################################################################################
+流水綫還是報錯,但是我本地的PMD執行被跳過了，可以幫我排查是什麽原因嗎？ 我想在本地查看PMD輸出信息
+--- maven-pmd-glugin:3.16.0:pmd (pmd) @comlib-question ---
+Skipping PMD execution
+
+################################################################################################################################################################################################
+<pmd xmlns="http://pmd.sourceforge.net/report/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pmd.sourceforge.net/report/2.0.0 http://pmd.sourceforge.net/report_2_0_0.xsd"  version="6.42.0" timestamp="2025-07-21T10:53:58.979">
+<file name="D:\Users\Work\code\iafhk-ms-questionnaire\comlib-questionnaire\src\main\java\com\bochk\questionnaire\common\exception\QuestionnaireException.java">
+<violation beginline="48" endline="48" begincolumn="25" endcolumn="61" rule ="UnusedPrivateMethod" ruleset="Best Practices"
+package="com.bochk.questionnaire.common.exception" class="QuestionnaireException" method="formatMsg" externalInfoUrl="https://pmd.github.io/pmd-6.42.0/pmd_rules_java_bestpractices.html#unusedprivatemethod"  priority="3">
+ Avoid unused private methods such as 'formatMsg(String,Object...)'
+</violation>
+</file>
 
 ################################################################################################################################################################################################
 
-################################################################################################################################################################################################
+<file name="D:\Users\Work\code\iafhk-ms-questionnaire\comlib-questionnaire\src\main\java\com\bochk\questionnaire\common\exception\PageUtils.java">
+<violation beginline="21" endline="21" begincolumn="20" endcolumn="57" rule ="UselessParentheses" ruleset="Code Style"
+package="com.bochk.questionnaire.common.util" class="PageUtils" method="getPageInfo" externalInfoUrl="https://pmd.github.io/pmd-6.42.0/pmd_rules_java_codestyle.html#uselessparentheses"  priority="4">
+ Useless parentheses.
+</violation>
+</file>
 
 ################################################################################################################################################################################################
+These nested if statements could be combined
+
+
+################################################################################################################################################################################################
+RedHat OpenShift
+
+Administrator
+Home
+Operators
+Workloads
+Networking
+Storage
+Builds
+User Management
+Administration
+
+################################################################################################################################################################################################
 
 
 
+################################################################################################################################################################################################
 
 
 
+################################################################################################################################################################################################
+
+
+################################################################################################################################################################################################
 
 
 
+################################################################################################################################################################################################
+
+
+################################################################################################################################################################################################
 
 
 
+################################################################################################################################################################################################
 
 
 
-
-
+################################################################################################################################################################################################
