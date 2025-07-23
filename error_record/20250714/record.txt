@@ -286,15 +286,27 @@ User Management
 Administration
 
 ################################################################################################################################################################################################
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
 
-
-
-################################################################################################################################################################################################
 
 
 
 ################################################################################################################################################################################################
+c.b.m.e.s.MybatisSqlSessionFactoryBean : Cannot load the 'file [D:\Users\aa\com\questionnaire\converter\AnswerConverter.class]'. Cause by java.lang.ExceptionInInitializerError
 
+
+################################################################################################################################################################################################
+org.springframework.beans.factory.NocushBeanDefinitionException: No qualifying bean of type 'com.aa.questionnaire.service.QuestionnaireUserService' available: expected at least 1 bean which qualifies
+as autowire candidate. Dependency annotations: {@jakarta.annotation.Resource(shareable=true,lookup="",name="",description="",authenticationType=CONTAINer,type=java.lang.Object.class,mappedName="")}
+    at org.springframework.beans.factory.support.DefaultListableBeanFactory.raiseNoMatchingBeanFound(DefaultListableBeanFactory.java:1880) ~[spring-beans-6.1.14.jar:6.1.14]
+    at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1406) ~[spring-beans-6.1.14.jar:6.1.14]
+......
+
+A component required a bean of type 'com.aa.questionnaire.service.QuestionnareUserService' that could not be found.
+
+Action:
+
+Consider defining a bean of type 'com.aa.questionnaire.service.QuestionnaireUserService' in your configuration.
 
 ################################################################################################################################################################################################
 
