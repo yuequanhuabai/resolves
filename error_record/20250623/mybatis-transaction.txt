@@ -1,0 +1,50 @@
+ 講講transation子包在mybatis中的角色定位，以及它的功能，只講宏觀框架，無需講細節  │
+╰─────────────────────────────────────────────────────────────────────────────────────╯
+
+? 好的，我们来宏观地看一下 transaction 子包。
+
+  角色定位：数据库事务的管理者
+
+  transaction 子包在 MyBatis 中的核心角色定位是事务管理器。它为 MyBatis 的上层（如 Executor 执行器）提供了一个统一、标准的事务管理接口，从而将 MyBatis
+  的数据操作与具体的事务实现技术解耦。
+
+  可以把它理解为 MyBatis 内部的“事务总管”。所有 SQL 操作的提交（commit）、回滚（rollback）和连接管理（connection management）都由它来负责。
+
+  ---
+
+  核心功能（宏观框架）
+
+  transaction 子包主要围绕 Transaction 这个核心接口来构建，其宏观功能可以概括为以下三点：
+
+   1. 定义标准事务接口 (`Transaction` interface)
+       * 这是整个子包的基石。它定义了一套标准的、必须的事务操作，主要包括：
+           * getConnection(): 从数据源获取一个数据库连接。这是所有 SQL 操作的基础。
+           * commit(): 提交当前连接上的所有数据变更。
+           * rollback(): 回滚当前连接上的所有数据变更。
+           * close(): 关闭连接，将其归还给数据源。
+       * 通过定义这个标准接口，MyBatis 的执行层（Executor）无需关心底层到底是如何管理事务的，它只需要面向这个标准接口编程即可。
+
+   2. 提供两种标准的事务管理实现
+       * MyBatis 开箱即用地提供了两种主流的事务管理实现，它们都实现了 Transaction 接口：
+           * `JdbcTransaction`: 这是最常用、最基本的实现。它直接利用 JDBC Connection 对象本身提供的 commit() 和 rollback()
+             方法来管理事务。适用于绝大多数不使用外部容器管理事务的简单场景。
+           * `ManagedTransaction`: 这种实现表示事务被“托管”了。它自己从不主动 commit 或 rollback，而是将事务的生命周期完全交由外部容器来管理，例如 Java EE
+             应用服务器（如 JBoss, WebSphere）或 Spring 框架。它只负责获取和关闭连接。
+
+   3. 提供一个创建事务实现的工厂 (`TransactionFactory`)
+       * 为了让用户能够方便地在 JdbcTransaction 和 ManagedTransaction 之间切换，或者提供自定义的事务实现，MyBatis 设计了 TransactionFactory 接口。
+       * 这个工厂的职责就是根据配置信息，创建出相应 Transaction 接口的实例。
+       * 在 MyBatis 的配置文件（mybatis-config.xml）中，你可以通过 <transactionManager type="JDBC|MANAGED"/> 来指定使用哪个工厂，从而决定最终的事务管理方式。
+
+  总结
+
+  总而言之，transaction 子包的框架设计思想是：
+
+   * 抽象化：通过 Transaction 接口定义一个标准的事务模型。
+   * 解耦合：将上层的 SQL 执行逻辑与底层的具体事务实现技术（是 JDBC 自己管，还是交给 Spring 管）分离开。
+   * 可扩展：通过 TransactionFactory 机制，允许用户轻松替换或扩展自己的事务管理策略。
+
+  它就像一个可插拔的“事务管理模块”，为 MyBatis 的数据持久化操作提供了可靠的事务保障。
+
+
+##########################################################################################################################

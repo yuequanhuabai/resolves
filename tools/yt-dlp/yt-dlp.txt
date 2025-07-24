@@ -57,6 +57,8 @@ yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com
 yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=GPnymcrXgX0"
 
 
+抖音下載：
+https://www.douyin.com/vedios/7511525028450684198
 
 do you know
 Breakthrough Prize ?
