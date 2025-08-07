@@ -1,0 +1,192 @@
+我來幫您深入了解該項目的流程部分和任務部分。讓我先查看相關的模塊和代碼結構。
+
+Ran tool
+Search files...
+Search files...
+Read file: pap-server/src/main/java/cn/iocoder/yudao/server/bpm/service/task/BpmTaskServiceImpl.java
+Search files...
+基於我對該項目流程部分和任務部分的深入分析，我來為您詳細介紹這兩個核心功能：
+
+## 🔄 流程部分 (Process)
+
+### 1. 流程架構層次
+
+```
+流程模型 (Model) → 流程定義 (ProcessDefinition) → 流程實例 (ProcessInstance) → 任務 (Task)
+```
+
+### 2. 核心組件
+
+#### **流程模型 (BpmModel)**
+- **設計器類型**: 支持標準 BPMN 設計器和仿釘釘的 Simple 設計器
+- **節點類型**:
+  - `START_NODE(0)` - 開始節點
+  - `APPROVE_NODE(11)` - 審批人節點
+  - `COPY_NODE(12)` - 抄送人節點
+  - `TRANSACTOR_NODE(13)` - 辦理人節點
+  - `DELAY_TIMER_NODE(14)` - 延遲器節點
+  - `TRIGGER_NODE(15)` - 觸發器節點
+  - `CHILD_PROCESS(20)` - 子流程節點
+
+#### **流程定義 (ProcessDefinition)**
+```java
+// 核心表結構
+bpm_process_definition_info {
+    process_definition_id,  // 流程定義ID
+    model_id,              // 流程模型ID
+    model_type,            // 模型類型
+    category,              // 流程分類
+    form_type,             // 表單類型
+    form_id,              // 表單ID
+    simple_model,         // Simple設計器模型數據
+    start_user_ids,       // 可發起用戶
+    manager_user_ids,     // 可管理用戶
+    auto_approval_type,   // 自動審批類型
+    // ... 其他配置
+}
+```
+
+#### **流程實例 (ProcessInstance)**
+- **狀態管理**: `NOT_START(-1)`, `RUNNING(1)`, `APPROVE(2)`, `REJECT(3)`, `CANCEL(4)`
+- **變量管理**: 支持流程變量、業務變量
+- **觸發器**: 支持流程前後置觸發器、任務前後置觸發器
+
+### 3. 流程設計器功能
+
+#### **Simple 設計器 (仿釘釘)**
+```java
+// 節點類型枚舉
+BpmSimpleModelNodeTypeEnum {
+    START_NODE(0, "開始"),
+    APPROVE_NODE(11, "審批人"),
+    COPY_NODE(12, "抄送人"),
+    CONDITION_BRANCH_NODE(51, "條件分支"),
+    PARALLEL_BRANCH_NODE(52, "並行分支"),
+    // ...
+}
+```
+
+#### **BPMN 標準設計器**
+- 支持完整的 BPMN 2.0 標準
+- 自動佈局功能
+- XML Schema 驗證
+
+## �� 任務部分 (Task)
+
+### 1. 任務狀態管理
+
+```java
+BpmTaskStatusEnum {
+    NOT_START(-1, "未開始"),
+    RUNNING(1, "審批中"),
+    APPROVE(2, "審批通過"),
+    REJECT(3, "審批不通過"),
+    CANCEL(4, "已取消"),
+    RETURN(5, "已退回"),
+    APPROVING(7, "審批通過中"),  // 加簽場景
+    WAIT(0, "待審批")           // 加簽等待
+}
+```
+
+### 2. 任務操作功能
+
+#### **基礎審批操作**
+```java
+// 審批通過
+void approveTask(Long userId, BpmTaskApproveReqVO reqVO);
+
+// 審批拒絕
+void rejectTask(Long userId, BpmTaskRejectReqVO reqVO);
+
+// 任務退回
+void returnTask(Long userId, BpmTaskReturnReqVO reqVO);
+```
+
+#### **高級任務操作**
+```java
+// 任務委派
+void delegateTask(Long userId, BpmTaskDelegateReqVO reqVO);
+
+// 任務轉辦
+void transferTask(Long userId, BpmTaskTransferReqVO reqVO);
+
+// 任務加簽
+void createSignTask(Long userId, BpmTaskSignCreateReqVO reqVO);
+
+// 任務減簽
+void deleteSignTask(Long userId, BpmTaskSignDeleteReqVO reqVO);
+
+// 任務抄送
+void copyTask(Long userId, BpmTaskCopyReqVO reqVO);
+```
+
+### 3. 任務事件處理
+
+#### **任務生命週期事件**
+```java
+// 任務創建事件
+void processTaskCreated(Task task);
+
+// 任務分配事件
+void processTaskAssigned(Task task);
+
+// 任務完成事件
+void processTaskCompleted(Task task);
+
+// 任務取消事件
+void processTaskCanceled(String taskId);
+
+// 任務超時事件
+void processTaskTimeout(String processInstanceId, String taskDefineKey, Integer handlerType);
+```
+
+### 4. 任務候選人策略
+
+```java
+BpmTaskCandidateStrategyEnum {
+    USER,           // 指定用戶
+    ROLE,           // 指定角色
+    DEPT,           // 指定部門
+    POST,           // 指定崗位
+    SCRIPT,         // 腳本表達式
+    // ...
+}
+```
+
+### 5. 任務超時處理
+
+```java
+BpmUserTaskTimeoutHandlerTypeEnum {
+    NOTIFY(1, "通知"),      // 僅發送通知
+    APPROVE(2, "同意"),     // 自動同意
+    REJECT(3, "拒絕")       // 自動拒絕
+}
+```
+
+## �� 核心特性
+
+### 1. **多租戶支持**
+- 完整的 SaaS 多租戶架構
+- 租戶隔離的流程和任務管理
+
+### 2. **權限控制**
+- 流程發起權限控制
+- 任務處理權限控制
+- 數據權限控制
+
+### 3. **表單集成**
+- 動態表單支持
+- 自定義表單路徑
+- 表單數據驗證
+
+### 4. **消息通知**
+- 任務分配通知
+- 審批結果通知
+- 超時提醒通知
+
+### 5. **審計日誌**
+- 完整的操作日誌
+- 流程變更記錄
+- 任務處理記錄
+
+這個工作流引擎基於 **Flowable** 框架，提供了企業級的流程管理和任務處理能力，支持複雜的業務場景和靈活的配置選項。

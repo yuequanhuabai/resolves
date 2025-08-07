@@ -1,0 +1,133 @@
+####
+1.發起流程
+http://localhost:48080/admin-api/bpm/process-instance/create
+http://localhost:48080/admin-api/system/notify-message/get-unread-count
+http://localhost:48080/admin-api/bpm/process-instance/my-page?pageNo=1&pageSize=10&name=
+http://localhost:48080/admin-api/system/notify-message/get-unread-count
+
+
+1. 控制层 (Controller)
+
+- BpmDefinitionController - 流程定义管理
+- BpmProcessInstanceController - 流程实例管理
+- BpmTaskController - 任务管理
+- BpmFormController - 表单管理
+
+2. 服务层 (Service)
+
+- BpmDefinitionService
+  - 流程定义的创建、部署、更新
+  - 流程图生成
+  - 流程表单配置
+
+- BpmProcessInstanceService
+  - 流程实例的启动、挂起、终止
+  - 流程变量管理
+  - 流程跟踪数据
+
+- BpmTaskService
+  - 任务查询、处理
+  - 任务分配
+  - 任务权限控制
+
+
+  3. 核心框架类
+- BpmUserContextHolder
+  - 用户上下文持有者
+  - 提供当前用户信息
+
+- BpmTaskAssignRuleBuilder
+  - 任务分配规则构建器
+  - 支持多种分配策略
+
+- BpmModelConverter
+  - 模型转换器
+  - BPMN与简单模型互转
+
+4. 监听器类
+
+- BpmTaskEventListener
+  - 任务创建、完成、分配事件
+  - 触发相关业务处理
+
+- BpmProcessInstanceEventListener
+  - 流程实例状态变更
+  - 业务集成处理
+
+5. 工具类
+
+- BpmnModelUtils
+  - BPMN模型操作
+  - 流程图生成
+
+- FlowableUtils
+  - Flowable引擎工具类
+  - 常用操作封装
+
+6. 数据对象类
+
+- BpmTaskDO
+  - 任务数据对象
+  - 包含任务基本信息
+
+- BpmProcessInstanceDO
+  - 流程实例数据对象
+  - 包含实例状态等信息
+
+- BpmFormDO
+  - 表单数据对象
+  - 存储表单配置
+
+
+
+ ###########################
+
+ 創建流程：
+
+ 流程创建主要涉及以下核心代码:
+ 1. 控制层入口
+@PostMapping("/create")
+@Operation(summary = "创建流程定义")
+public CommonResult<Long> createProcessDefinition(@Valid @RequestBody BpmProcessDefinitionCreateReqVO createReqVO) {
+    return success(processDefinitionService.createProcessDefinition(createReqVO));
+}
+ 2. 服务层实现
+@Override
+public Long createProcessDefinition(BpmProcessDefinitionCreateReqVO createReqVO) {
+    // 1. 校验流程定义
+    validateProcessDefinition(createReqVO);
+    // 2. 创建流程定义
+    BpmProcessDefinitionDO definition = BpmProcessDefinitionConvert.INSTANCE.convert(createReqVO);
+    definition.setStatus(BpmProcessDefinitionStatusEnum.INACTIVE.getStatus());
+    processDefinitionMapper.insert(definition);
+    // 3. 创建 BPMN 模型
+    createBpmnModel(definition);
+    return definition.getId();
+}
+ 3. 主要支持的创建方式
+ 通过设计器创建
+@PostMapping("/create-bpmn")
+@Operation(summary = "创建 BPMN 流程模型")
+public CommonResult<String> createBpmnModel(@Valid @RequestBody BpmModelCreateReqVO createReqVO) {
+    return success(modelService.createBpmnModel(createReqVO));
+}
+ 通过导入XML创建
+@PostMapping("/import")
+@Operation(summary = "导入流程模型")
+public CommonResult<String> importModel(@RequestParam("file") MultipartFile file) throws IOException {
+    return success(modelService.importBpmnModel(file.getInputStream()));
+}
+ 4. 流程创建的关键步骤
+ 基础数据校验
+ 创建流程定义记录
+ 生成BPMN模型
+ 部署流程定义
+ 关联表单(可选)
+ 设置任务分配规则
+ 完整的流程创建涉及多个模块的配合,建议按照以下顺序操作:
+
+ 设计流程图
+ 配置表单
+ 设置任务规则
+ 部署激活流程
+ 流程创建完成后,即可通过 BpmProcessInstanceController 发起流程实例。
