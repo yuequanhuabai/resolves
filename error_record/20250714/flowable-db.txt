@@ -1,0 +1,38 @@
+1.business service;
+singleResult();
+
+2. Query(org.flowable.common.engine.api.query.Query)  interface;
+singleResult();
+
+3.AbstractQuery(org.flowable.common.engine.impl.query.AastractQurty )
+singleResult();
+ ## commandExecutor.execute(this);
+executeList(commandContext);
+
+4.ModelQueryImpl(org.flowable.engine.impl.ModelQueryImpl)
+executeList(CommandContext commandContext);
+CommandContextUtil.getModelEntityManager(commandContext).findModelsByQueryCriteria(this)
+
+5.ModelEntityManger
+findModelsByQueryCriteria(ModelQueryImpl query);
+
+6.ModelEntityMangerImpl
+findModelsByQueryCriteria(ModelQueryImpl query);
+
+7.ModelDataManger
+findModelsByQueryCriteria(ModelQueryImpl query);
+
+8.MybatisModelDataManager
+findModelsByQueryCriteria(ModelQueryImpl query);
+getDbSession().selectList("selectModelsByQueryCriteria",query);
+
+9.Model.xml(flowable-engine-7.0.1.jar  org.flowable.db.mapping.entity.Model.xml)
+
+<!-- MODEL SELECT -->
+  <select id="selectModelsByQueryCriteria" parameterType="org.flowable.engine.impl.ModelQueryImpl" resultMap="modelResultMap">
+    <if test="needsPaging">${limitBefore}</if>
+    SELECT RES.* <if test="needsPaging">${limitBetween}</if>
+    <include refid="selectModelsByQueryCriteriaSql"/>
+    ${orderBy}
+    <if test="needsPaging">${limitAfter}</if>
+  </select>
