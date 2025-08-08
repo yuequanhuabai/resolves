@@ -79,6 +79,13 @@ ACT_RU_SUSPENDED_JOB:
 SUSPENDED_JOB: 觀其的作業，表示該表用於存儲因流程實例或作業被挂起而暫停執行的作業數據。
 
 
+ACT_DE_MODEL:
+
+ACT:
+DE: Designer  與Flowable的模型設計器相關
+MODEL: 表示模型，存儲設計器的模型定義
+
+
 
 
 
