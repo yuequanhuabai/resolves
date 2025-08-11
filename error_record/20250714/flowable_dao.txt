@@ -1,3 +1,223 @@
 BpmModelService:
 流程定義和部署
 modelService.createModel();
+
+DbSqlSessionFactory裏面的
+protected Map<Class<?>, String> insertStatements = new ConcurrentHashMap<>();
+    protected Map<Class<?>, String> updateStatements = new ConcurrentHashMap<>();
+    protected Map<Class<?>, String> deleteStatements = new ConcurrentHashMap<>();
+    protected Map<Class<?>, String> selectStatements = new ConcurrentHashMap<>();
+
+
+和
+DbSqlSession裏面的
+protected Map<Class<? extends Entity>, Map<String, Entity>> insertedObjects = new HashMap<>();
+    protected Map<Class<? extends Entity>, Map<String, Entity>> deletedObjects = new HashMap<>();
+    protected Map<Class<? extends Entity>, List<BulkDeleteOperation>> bulkDeleteOperations = new HashMap<>();
+    protected List<Entity> updatedObjects = new ArrayList<>();
+
+有什麽關聯嗎？
+
+
+AbstractQuery
+CommandExecutorImpl
+LogInterceptor
+SpringTransactionInterceptor
+CommandContextInterceptor
+TransactionContextInterceptor
+BpmnOverrideContextInterceptor
+CommandInvoker
+
+
+
+爲什麽 flush的時候：
+protected void flushSessions() {
+        for (Session session : sessions.values()) {
+            session.flush();
+        }
+    }
+session都有四個對象呢？
+{Class@13625}interface org.flowable.common.engine.impl.persistence.cache.EntityCache -> {EntityCacheImpl@19471}
+{Class@14743}interface org.flowable.engine.FlowableEngineAgenda -> {DefaultFlowableEngineAgenda@19526}
+{Class@13624}class org.flowable.common.engine.impl.db.DbSqlSession -> {DbSqlSession@19470}
+{Class@14791}class org.flowable.common.engine.impl.variablelistener.VariableListenerSession -> {VariableListenerSession@19528}
+
+###################33
+
+有個很奇怪的問題，flowable不是在session的flush操作時才去刷sql到數據庫服務器，然後commit嗎？
+我現在在調試的時候在session
+
+
+實例為DbSqlSession的
+ public void determineUpdatedObjects方法，flowable版本是7.0.1；
+
+執行到：
+Map<Class<?>, Map<String, CachedEntity>> cachedObjects = entityCache.getAllCachedEntities();
+這裏的時候，日志打印了sql：
+Closing JDBC Connection [Transaction-aware proxy for target Connection [ConnectionProxyImpl{connectedTime=2025-08-11 09:12:08.616, closeCount=0, lastValidateTimeMillis=2025-08-11 09:34:51.64}]]
+JDBC Connection [ConnectionProxyImpl{connectedTime=2025-08-11 09:44:32.958, closeCount=0, lastValidateTimeMillis=2025-08-11 09:52:42.53}] will not be managed by Spring
+==>  Preparing: SELECT id,access_token,refresh_token,user_id,user_type,user_info,client_id,scopes,expires_time,create_time,update_time,creator,updater,deleted FROM system_oauth2_access_token WHERE deleted=0 AND (access_token = ?)
+==> Parameters: 38b2ff91296a451580658ac933d4d129(String)
+
+我還沒有調試到mybatis中，它就執行sql了，這個是怎麽回事？
+
+########################################################################################################################################################
+我查看了一下：
+        Map<Class<?>, Map<String, CachedEntity>> cachedObjects = entityCache.getAllCachedEntities();
+這個代碼的調用流程：
+getAllCachedEntities方法是接口EntityCache裏面的
+他的實現類是EntityCacheImpl
+
+@Override
+    public Map<Class<?>, Map<String, CachedEntity>> getAllCachedEntities() {
+        return cachedObjects;
+    }
+到這裏就沒了，沒有數據庫的操作？ 它是如何實現查詢數據庫的？
+########################################################################################################################################################
+我想瞭解下DbSqlSession.flush這個方法裏面做了啥
+
+ @Override
+    public void flush() {
+        determineUpdatedObjects(); // Needs to be done before the removeUnnecessaryOperations, as removeUnnecessaryOperations will remove stuff from the cache
+        removeUnnecessaryOperations();
+
+        if (LOGGER.isDebugEnabled()) {
+            debugFlush();
+        }
+
+        flushInserts();
+        flushUpdates();
+        flushDeletes();
+    }
+
+########################################################################################################################################################
+你幫我解析一下DbSqlSession的這些方法的功能：
+
+flush()
+flushBulkDeletes(Class<? extends Entity,List<BulkDeleteOperation>)
+flushBulkInsert(Collection<Entity>,Class<? extends Entity>)
+flushDeleteEntities(Class<? extends Entity>,Collection<Entity>)
+flushDeletes()
+flushInsertEntities(Class<? extends Entity>,Collection<Entity>)
+flushInserts()
+flushRegularInsert(Entity,Class<? extends Entity>)
+flushUpdates()
+
+########################################################################################################################################################
+命令模式的Command，CommandExecutor，CommandContext的本質抽象分別是啥？
+
+這是我理解的東西：
+我把一個東西給別人去操作：
+第一，我要告訴它操作步驟;
+第二：該步驟需要哪些資源;
+第三：聲明一個操作的場景;
+第四：給出注意事項;
+
+我想命令模式應該也和這些差不多吧
+
+
+########################################################################################################################################################
+RepositoryServiceImpl.saveModel(Model model)
+commandExecutor.execute(new SaveModelCmd((ModelEntity)model));
+
+CommandExecutorImpl
+execute(Command<T> command)
+
+...
+DbSqlSession
+ public void insert(Entity entity, IdGenerator idGenerator)
+ 把要查詢的數據存入insertedObjects裏面;
+ 同時存入： entityCache
+
+########################################################################################################################################################
+cn.iocoder.yudao.server.system.dal.mysql.oauth2.OAuth2AccessTokenMapper.insert
+
+
+########################################################################################################################################################
+SimpleExecutor
+
+更新调用：
+ @Override
+  public int doUpdate(MappedStatement ms, Object parameter) throws SQLException {
+    Statement stmt = null;
+    try {
+      Configuration configuration = ms.getConfiguration();
+      StatementHandler handler = configuration.newStatementHandler(this, ms, parameter, RowBounds.DEFAULT, null, null);
+      stmt = prepareStatement(handler, ms.getStatementLog());
+      return handler.update(stmt);
+    } finally {
+      closeStatement(stmt);
+    }
+  }
+
+查询调用：
+
+  @Override
+  public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler,
+      BoundSql boundSql) throws SQLException {
+    Statement stmt = null;
+    try {
+      Configuration configuration = ms.getConfiguration();
+      StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler,
+          boundSql);
+      stmt = prepareStatement(handler, ms.getStatementLog());
+      return handler.query(stmt, resultHandler);
+    } finally {
+      closeStatement(stmt);
+    }
+  }
+
+
+########################################################################################################################################################
+BpmModelServiceImpl
+AbstractQuery
+CommandExecutorImpl
+LogInterceptor
+SpringTransactionInterceptor
+TransactionContextInterceptor
+BpmnOverrideContextInterceptor
+CommandInvoker
+AbstractQuery
+ModelQueryImpl
+ModelEntityManagerImpl
+MybatisModelDataManager
+DbSqlSession
+DefaultSqlSession
+CachingExecutor
+BaseExecutor
+SimpleExecutor
+RoutingStatementHandler
+BaseStatementHandler
+PreparedStatementHandler
+ConnectionLogger
+TransactionAwareDataSourceProxy
+DruidPooledConnection
+
+
+
+
+########################################################################################################################################################
+BpmModelServiceImpl
+AbstractQuery
+
+
+########################################################################################################################################################
+
+
+
+########################################################################################################################################################
+
+
+
+########################################################################################################################################################
+
+
+
+########################################################################################################################################################
+
+
+########################################################################################################################################################
+
+
+
+

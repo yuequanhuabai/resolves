@@ -1,0 +1,15 @@
+SimpleExecutor
+BaseExecutor
+Executor
+
+接下来熟悉这三个类:
+
+######################################################################################################
+什么时候SimpleExecutor会调用
+@Override
+public List<BatchResult> doFlushStatements(boolean isRollback) {
+    return Collections.emptyList();
+}
+
+
+#######################################################################################################

@@ -36,3 +36,7 @@ getDbSession().selectList("selectModelsByQueryCriteria",query);
     ${orderBy}
     <if test="needsPaging">${limitAfter}</if>
   </select>
+
+
+#####
+嬾加載會出發查詢數據庫;

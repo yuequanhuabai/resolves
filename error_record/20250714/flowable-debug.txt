@@ -1,0 +1,52 @@
+
+後端調用singleResult()方法的時候，
+調試發現：commandExecutor
+是由這兩個變量組成的：
+defaultConfig 類型[CommandConfig]
+first  類型[LogInterceptor]
+
+這個是爲什麽？
+
+
+數據庫操作時通過調用DbSqlSession實現的;
+
+DbSqlSession的這個屬性的作用是啥？
+protected EntityCache entityCache;
+
+
+CommandContextInterceptor類:
+public <T> T execute(CommandConfig config, Command<T> command, CommandExecutor commandExecutor)
+finally模塊中調用commandContext.close(); 的時候執行了sql;
+
+但是無法調試
+
+DefaultSqlSession
+update(String statement, Object parameter)
+
+CachingExecutor
+update(MappedStatement ms, Object parameterObject)
+
+BaseExecutor
+update(MappedStatement ms, Object parameter)
+doUpdate(ms,parameter);
+
+SimpleExcutor
+doUpdate(MappedStatement ms, Object parameter)
+
+RoutingStatementHandler
+update(Statement statement)
+delegate.update(statement);
+
+PrepareStatementHandler
+update(Statement statement)
+
+PreparedStatementLogger
+invoke(Object proxy, Method method, Object[] params)
+method.invoke(statement, params)
+
+DruidPooledPreparedStatement
+execute();
+
+DruidPooledPreparedStatement
+execute
+
