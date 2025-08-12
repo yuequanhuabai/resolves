@@ -197,9 +197,41 @@ DruidPooledConnection
 
 
 ########################################################################################################################################################
+我做了一個flowable的調試過程：
+你幫我劃分一下主題邏輯
+
+BpmModelController
 BpmModelServiceImpl
 AbstractQuery
-
+CommandExecutor.execute(Command<T> command)
+LogInterceptor.execute(CommandConfig config,Command<T> command, CommandExecutor commandExecutor)
+SpringTransactionInterceptor.execute(CommandConfig config,Command<T> command, CommandExecutor commandExecutor)
+CommandContextInterceptor.execute(CommandConfig config,Command<T> command, CommandExecutor commandExecutor)
+TransactionContextInterceptor.execute(CommandConfig config,Command<T> command,CommandExecutor commandExecutor)
+BpmnOverrideContextInterceptor.execute(CommandConfig config,Command<T> command, CommandExecutor commandExecutor)
+CommandInvoker.execute(CommandConfig config, Command<T> command,CommandExecutor commandExecutor)
+AbstractQuery.execute(CommandContext commandContext)
+ModelQueryImpl.executeList(CommandContext commandContext)
+ModelEntityManagerImpl.findModelsByQueryCriteria(ModelQueryImpl query)
+MybatisModelDataManager.findModelsByQueryCriteria(ModelQueryImpl query)
+DbSqlSession.selectList(String statement,ListQueryParameterObject parameter)
+DefaultSqlSession.selectList(String statement,Object parameter)
+CachingExecutor.query(MappedStatement ms,Object parameterObject,RowBounds rowBounds,ResultHandler resultHandler)
+BaseExecutor.query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler,CacheKey key,BoundSql boundSql)
+SimpleExecutor.doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler,BoundSql boundSql)
+RoutingStatementHandler.query(Statement statement, ResultHandler resultHandler)
+PreparedStatementHandler.query(Statement statement, ResultHandler resultHanlder)
+PreparedStatementLogger.invoke(Object proxy,Method method, Object[] params)
+Method.invoke(Object obj, Object... args)
+DelegatingMethodAccessorImpl.invoke(Object obj, Object[] args)
+DruidPooledPreparedStatement.execute()
+PreparedStatementProxyImpl.execute()
+FilterChainImpl.preparedStatement_execute(PreparedStatementProxy statement)
+SqlServerPreparedStatement.execute()
+SQLServerStatement.executeStatement(TDSCommand newStmtCmd)
+SQLServerConnection.executeCommand(TDSCommand newCommand)
+TDSCommand.execute(TDSWriter tdsWriter, TDSReader tdsReader)
+SQLServerPreparedStatement.doExecute()
 
 ########################################################################################################################################################
 
