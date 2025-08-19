@@ -1,0 +1,10 @@
+Login with Google
+
+Use Gemini API key
+
+Vertex AI
+
+
+
+set HTTP_PROXY=http://127.0.0.1:10808
+set HTTPS_PROXY=http://127.0.0.1:10808

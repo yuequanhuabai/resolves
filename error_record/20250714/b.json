@@ -1,0 +1,42 @@
+{
+  "code": 0,
+  "data": [
+    {
+      "id": 1,
+      "name": "business",
+      "code": "业务",
+      "description": null,
+      "status": null,
+      "sort": null,
+      "createTime": null
+    },
+    {
+      "id": 2,
+      "name": "基本流程",
+      "code": "基本流程",
+      "description": null,
+      "status": null,
+      "sort": null,
+      "createTime": null
+    },
+    {
+      "id": 4,
+      "name": "xs_test_name",
+      "code": "xs_test_notation",
+      "description": null,
+      "status": null,
+      "sort": null,
+      "createTime": null
+    },
+    {
+      "id": 3,
+      "name": "6666",
+      "code": "6666",
+      "description": null,
+      "status": null,
+      "sort": null,
+      "createTime": null
+    }
+  ],
+  "msg": ""
+}
