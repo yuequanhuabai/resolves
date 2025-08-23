@@ -1,0 +1,346 @@
+現象： 1.基於問題給出一個特別全面的方案；  正真的能夠推理的智能體
+      2.換個同樣複雜，但是略有不同的問題，給出一個錯的離譜的方案； 高級復讀機
+
+
+猜測： 智能涌現還是一種基於海量數據訓練出來的，更高級的“模式匹配”
+     它是進行邏輯推倒，還是在“模仿”它在網上看到的無數的接替步驟；
+
+推理能力的產生，如何穩定地，可靠地駕馭它
+
+Google   DeepMind： 丹尼-周（Denny Zhou）
+他和他的團隊：奠定了我們今天理解和使用大語言模型推理能力的基石
+
+提出：
+四維連提示（Chain-of-Thought Prompting）
+自恰性：(Self-Consistency)
+關鍵技術
+
+深度參與了Google  Gemini模型推理能力的構建
+
+
+斯坦福大學的講座：
+
+Question--》“Reasoning” Large Language Model  --> Thinking  Answer
+
+提出了一個清晰可操作的定義：
+
+Input  --》  Intermediate steps/tokens  (Reasoning)  --> Output
+
+本質是概率模型：
+
+artificial  interlligence    末尾字母拼接：
+1. 直接讓模型給出答案， 模型會基於語言的慣性直接猜測一個答案le （這個時候它只是在預測下一個最可能的字符，非邏輯操作）
+2. 引導模型先生成“中間步驟”，artificial的最後一個字母是l，interlligence的最後一個字母是e，則是le
+
+和斯坦福大學教授騰尚華（Shang-Hua Teng）
+Why “Intermediate Tokens” /  “Reasoning” Matters?
+
+For any problems solveble by boolean circuits of size T, constant-size transformers can solve it by
+generating O(T) intermediate tokens
+
+If directly generating final answers, either requires a huge depth or cannot solve at all
+
+結論：
+對於任何一個可以被大小爲T的布爾電路解決的問題，一個常數大小的transformer模型，
+可以通過生成O(T)長度的中間步驟來解決它
+
+任務拆解，分爲各個最小單元的任務，利用布爾電路去運算執行實現
+
+錯誤：
+Common Belief(WRONG)
+Pretrained LLMs cannot reason without further prompting engineering or finetuning
+
+推測：
+Pretrained LLMs are ready to reason
+All we need is decoding
+
+I have 3 apples. My dad has 2 more apples than me. How many apples do we have in total?
+
+5 apples。 （Greedy Decoding）
+
+Greedy Decoding(貪婪解碼)
+模型默認使用“Greedy Decoding”的方式，即訓練概率最高的回答
+
+還有其他的概率選項：
+5 apples
+I have 3 apples, my dad has 2 more apples than me, so he has 5 apples. 3+5=8
+We have 8 apples in total.
+You have 3 apples, your dad has 2 more apples than you , so he has 5 apples. 3+5=8.
+The answer is 5.
+
+
+Chain-of-Though Decoding
+1. Go beyond greedy decoding by checking more generation candidates
+2. Choose candidates which have the highest confidence on the final answer
+
+Xuezhi Wang and Denny Zhou. Chain-of-Thought Reasoning Without Prompting. NeurlPS 2024.
+
+如何選擇可信度高的答案：
+5 apples
+I have 3 apples, my dad has 2 more apples than me, so he has 5 apples. 3+5=8
+We have 8 apples in total.
+You have 3 apples, your dad has 2 more apples than you , so he has 5 apples. 3+5=8.
+The answer is 5.
+
+1.看長度
+2. Way higher confidence on reasoning-based answers!(答案置信度)
+
+對於一個擁有巨大詞彙表的模型來說，通常每個字的概率接近與0
+1.超越貪婪解碼，生成並且檢測更多的候選輸出
+2.選擇最後哪個置信度最高的候選
+
+這個過程需要寫代碼實現，對於普通用戶不友好；
+
+使用自然語言重塑模型的輸出概率分佈，讓那些帶有思考過程的優秀答案，置信度高的回答排在第一
+Can we reshape the model's output distribution so that thoughtful responses naturally rank 1st
+
+提示工程師的目的-->使用自然語言重塑模型的輸出概率分佈，讓那些帶有思考過程的優秀答案，置信度高的回答排在第一
+
+1.先提出類似的問題，引導其按照正確的四維邏輯步驟給出答案，然後再提出你要問的問題，它會模仿你前面答案的風格
+給出的例子給大概率的讓你的新問題走邏輯思考步驟，讓隱藏在模型中間的經過思考的回答排在了前面甚至是第一位。
+
+問題： 需要對不同場景的問題編寫各種示例，但是如果你自己知道了該問題的解決方案，即不會去問ai了
+
+通用解決方案：
+2.Let's Think Step by Step
+
+
+Pros and Cons of Prompting
+
+Prompting approaches are actually weird
+
+When asking someone a question --
+will you first show similar problems/solutions before asking?
+or, at the end of you question, will you have to say "let's think step by step"?
+
+
+
+Supervised Finetuning (SFT)
+
+step1: collect a set of problems and their step-by-step solutions from human annotators
+step2: maximize the likelihood of human solutions
+
+Then apply the model everywhere
+Ling et al. Program Induction by Rationale Generation: Learning to Solve and Explain Algebraic Word Problems.
+ACL 2017 Cobbe et al. Training Verifiers to Solve Math Word Problems. arXiv:2110.14168.2021
+Nve et al. Show Your Work: Scratchpads for Intermediate Computation with Language Models.arXiv:2112.00114,2021
+
+問題-->思考過程-->答案
+
+僱人基於問題寫出高質量的答案，基於答案去訓練.（最大自然估計） -->（泛化能力差，智能基於指定的問題）
+即使擴大規模也無濟於事
+##############################################################################################################################
+  爲什麼他會這麼愚蠢的想用這種方式去解決問題；理論上一看就無法泛化，還去花費時間精力去做這個事情
+##############################################################################################################################
+
+First Attempt: Self-Improve
+Step 1: collect a set of problems and their step-by-step
+solution generated from the model
+
+Step 2: maximize the likelihood of correct solutions
+
+Zelikman E, Wu Y, Mu J, Goodman N. Star: Bootstrapping reasoning with reasoning. NeurlPS 2022.
+Huang J. Gu SS, Hou L, Wu Y, Wang X, Yu H, Han J, Large language models can self-improve. arXiv:2210.11610.2022
+
+
+
+RL Finetuning
+
+Repeating this process:
+Step1: collect a set of problems and their step-by-step solutions generated from the model
+Step2: maximize the likelihood of correct solutions
+
+Luong TQ, Zhang X, Jie Z, Sun P, Jin X, Li H. ReFT: Reasoning with Reinforced Finetuning. arXiv:2401.08967. 2024 Jan 17.
+
+
+
+爲什麼模型自己生成的數據比人類專家給的數據更好？
+
+Why “generated from the model” instead of “from humans”？
+
+First principle in ML：
+Directly optimize what we want!
+
+
+So what do we want to optimize here?
+
+Optimize the metric of measuring generation quality
+
+Examples: correctness for solving math problems, BLUE
+score for machine translation,...
+
+All the rest is to compute gradients and do backpropagation!
+
+
+Scaling Reasoning Training: What to Scale?
+
+For any problems solvable by boolean circuits of size T,
+constant-size transformers can solve it by generating O(T)
+intermediate tokens --Scaling output length!
+
+If directly generating final answers, either requires a huge
+depth to solve or cannot solve at all -- Scaling model depth!
+
+Zhiyuan Li, Hong Liu, Denny Zhou, and Tengyu Ma. Chain of Thought Empowers Transformers to Solve Inherently Serial Prolems. ICLR 2024.
+
+
+驗證器： 驗證模型自動生成答案的驗證器，自我學習並且基於正確答案的優化
+
+
+A reliable verifier is the most crucial in RL
+finetuning, not the RL algorithm
+
+"Verification, the key to AI"
+-- Rich Sutton, 11/15/2001
+
+
+The Beauty of LLM Reasoning
+
+Human-like reasoning process emerges from token-to-token generation, rather than relying on
+exhaustive search as in classic AI
+
+"Deep Blue was only intelligent the way your programmable alarm clock is intelligent"
+   -- Garry Kasparov (after losing to Deep Blue in 1997)
+
+
+[Question] Using the numbers form 1 to 10 to make 2025. Using each number once and primary operations + and *
+
+[Answer] (10*4+5)*(9*3+8+7+2+1)
+
+Let's break it down:
+
+-- First part: 10*4+5=40+5=45
+-- Second part: 9*3+8+7+2+1=27+8+7+2+1=45
+-- Final Calculation: 45*45=2025
+
+Therefore, the expression(10*4+5)*(9*3+8+7+2+1) uses the numbers 1 through 10 exactly once and only the primary operations
+of addition(+) and multiplication(*) to equal 2025.
+
+Gemini 2.0 thinking mode (Dec, 2024)
+
+The target number is 2025. This is a relatively large numbers, suggesting multiplication will be heavily involved.
+It's also worth noting that 2025 is 45 squared (45*45). This might or might not be directly helpful, but it gives us
+a sense of scale. ** Prioritize Multiplication:** Since the target is large, stat thinking about how to get large
+intermediate products using multiplication. The largest numbers(10,9,8,7) are good candidates for multiplication early on ...
+This confirms multiplication is key , but simply multiplying everthing together is too much. We need to combine additions. ...
+Let's aim for products that get us closer to the square root of 2025(which is 45) ...
+
+
+"We want AI agents that can discover like we can, not which contain what we have discovered. Building in
+our discoveries only makes it harder to see how the discovering process can be done."
+
+-- Rich Sutton ("The Bitter Lesson")
+
+
+Further Great Improvement: Aggregation and Retrieval
+
+What LLM does in decoding:
+
+arg max P(reasoning, final answer|problem)
+##############################################################################
+What we want:
+arg max P(final answer|problem)    not align!
+
+
+Self-Consistency
+
+1. Generate multiple responses by randomly sampling
+2. Choose the answer that appears most frequently
+
+Xuezhi Wang, Jason Wei, Dale Schuurmans, Quoc Le, Ed Chi, Sharan Narang, Aakanksha Chowdhery, Denny Zhou.
+Self-Confistency Improves Chain of Thought Reasoning in Language Models. ICLR 2023.
+
+
+
+[Question] Janet's ducks lay 16 eggs per day. She eats three for breakfast every
+morning and bakes muffins for her friends every day with four. She sells the remainder
+for $2 per egg. How much does she make every day?
+
+Sampled responses:
+
+Response 1: She has 16-3-4=9 eggs left. So she makes $2*9=$18 per day.
+Response 2: This means she she sells the remainder for $2*(16-4-3)=$26 per day.
+Response 3: She eats 3 for breakfast, so she has 16-3=13 left. Then she bakes
+muffins, so she has 13-4=9 eggs left. So she has 9 eggs*$2=$18.
+
+Most frequent answer is : 18
+(Not most frequent reasoning path!)
+
+
+
+
+QUIZ
+
+[Q1] When the LLM outputs a direct answer without intermediate steps, will you still sample several times,
+and then choose the most common answer?
+
+[Q2] Change self-consistency by letting LLM generate multiple responses, instead of sampling multiple times,
+and then choosing the most common answer. Does this make sense ?
+
+arg max P (final answer | problem)
+
+
+How about free-from answers?
+Universal Self-Consistency(USC)
+
+Ask LLMs to self-select the most consistent answer
+
+Xinyun Chen, Renat Aksitov, Uri Alon, Jie Ren, Kefan Xiao, Pengcheng Yin, Sushant Prakash, Charles Sutton, Xuezhi Wang, Denny Zhou.
+Universal Self-Consistency for Large Language Model Generation. arXiv:2311.17311[cs.CL],2023.
+
+
+
+
+
+Retrieval or reasoning
+
+Do "retrieval + reasoning"!
+
+
+
+
+
+Genini Deep Research
+ChatGPT Deep research
+perplexity  Deep Research
+
+
+
+Summary:
+
+Reasoning > no reasoning
+
+RL finetuning > SFT
+
+Aggregating multiple answers  > one answer
+
+Retrieval + reasoning > reasoning only
+
+
+
+
+
+Next Big Breakthroughs
+
+Solve the tasks beyond unique verifiable answers
+
+Build real application rather than solving benchmarks
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

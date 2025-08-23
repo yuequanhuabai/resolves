@@ -8,3 +8,119 @@ Vertex AI
 
 set HTTP_PROXY=http://127.0.0.1:10808
 set HTTPS_PROXY=http://127.0.0.1:10808
+
+Advertisers    Price       Available/Order Limit      payment
+
+
+我看到了
+有個 Third-Party Wallet
+
+下面有
+Binance TR
+Tokocrypto
+Binance TH
+三個子目錄，是這裏嗎
+
+###########################################################################
+目標對象項目是flowable-demo ,flowable-demo-ui 這兩個項目，
+我的目標意圖是： 初步學習flowable框架，完成一個簡單的前後端的整體功能，實現發起流程，審批流程（同意或駁回），流程完結，生成代辦任務，處理代辦任務
+數據庫的信息是在後端項目：flowable-demo裏面的application.properties裏面，
+初始化的sql腳本在後端項目flowable-demo 下的resource下的schema.sql文件中
+
+要求：
+
+你先基於前端flowable-demo-ui，後端flowable-demo 兩個項目的代碼，對已有的項目進行改造實現我的目標
+
+###########################################################################
+目標對象項目是flowable-demo ,flowable-demo-ui 這兩個項目：
+
+用戶登錄這塊現在有問題，無法登錄，你可以幫我把這些代碼刪除，前後端的代碼，重新添加你最新的用戶登錄模塊，還是用spring security去實現
+我的核心是流程，用戶模塊只要實現基本的功能即可，讓用戶可以看到代辦任務，用戶可以審核（審批通過/駁回任務，完成任務）
+在one-task-process.bpmn20.xml文件裏面可以暫時用硬代碼固定指定用戶來發起流程，審批流程，結束流程
+
+###########################################################################
+
+Step 1: Employee Submits Leave Request
+4. Click "Submit Leave Request"
+
+我在測試提交請假流程失敗了：
+前端信息：
+Request URL
+http://localhost:5173/api/start-leave-request
+Request Method
+POST
+Status Code
+403 Forbidden
+Remote Address
+[::1]:5173
+Referrer Policy
+strict-origin-when-cross-origin
+
+請求體：
+{leaveType: "vacation", startDate: "2025-08-23", endDate: "2025-08-24", reason: "vocation leave",…}
+days
+:
+2
+endDate
+:
+"2025-08-24"
+leaveType
+:
+"vacation"
+reason
+:
+"vocation leave"
+startDate
+:
+"2025-08-23"
+
+瀏覽器彈窗信息： An error occurred while submitting the leave request.
+
+後端無日誌打印
+
+###########################################################################
+#### Step 2: Manager Reviews Request
+1. Logout and login as `manager` / `password`
+2. Go to "My Tasks" page
+
+執行到這步，但是沒有看到代辦任務，沒有user1的請求申請任務審批
+
+###########################################################################
+1.好像有不可以了，我敢剛試了是可以的，但是我又試了一筆提交流程，失敗了，
+前端：
+Request URL
+http://localhost:5173/api/start-leave-request
+Request Method
+POST
+Status Code
+401 Unauthorized
+Remote Address
+[::1]:5173
+Referrer Policy
+strict-origin-when-cross-origin
+
+後端日誌：
+SessionAuthenticationFilter - Path: /api/start-leave-request
+SessionAuthenticationFilter - Session: null
+SessionAuthenticationFilter - No valid session, returning 401
+
+2.另外你把之前的沒有用的前端接口的代碼全部刪除吧，/api/me這個接口我在後端屏蔽了，已經，前端也刪除吧，它會一直報錯
+
+3. 還有就是我之前已經提交的任務，應該在已辦裏面，無論是流程的發起者，還是審批者，處理完成了，或者已經提交了，應該在已辦裏面要看得到
+
+###########################################################################
+
+1. 在我登錄user1發起流程，通過manager完成審批，
+但是我在user1的 Current Process頁面還能看到 對應的任務， Status 還是 In progress
+理論上應該：完成狀態了吧，因爲manager已經完成審批了。 我認爲應該出現在個人的已辦任務列表裏面
+
+2. 可以加一個用來查看當前任務在整個流程中的流程進度的功能嗎？ 因爲現在無法查看，這樣流程發起這會很焦慮
+   這個功能可以在已經提交的任務點擊進入，可以查看當前任務的進度
+
+###########################################################################
+1.我想把需求改下，就是當流程節點的最後一個完成審批即整個流程結束，不需要發起人再確認一次，
+即，員工發起請假申請，領導完成審批了即可，整個歷程完畢了
+
+2. 員工發起請求提交後，當前任務因該在當前員工的已辦裏面可以查看到該任務；
+
+###########################################################################
