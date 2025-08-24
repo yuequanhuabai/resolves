@@ -530,22 +530,95 @@ Task: fa07904e-80b9-11f0-83d1-005056c00008 - Manager Review - Assignee: manager
 就是如果我在調試該Cmd的時候，我蓋在哪個變量裏面可以看到這些所有的操作集合
 
 ###########################################################################
-
+? ===== 开始调试Command: CompleteTaskCmd =====
+2025-08-24T21:29:30.388+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting CompleteTaskCmd --------------------------------------------------------
+2025-08-24T21:29:30.388+08:00 DEBUG 10188 --- [et-expired-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- FindExpiredJobsCmd finished --------------------------------------------------------
+2025-08-24T21:29:30.388+08:00 DEBUG 10188 --- [et-expired-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- FindExpiredJobsCmd finished --------------------------------------------------------
+2025-08-24T21:29:30.388+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.t.s.i.p.e.TaskEntityImpl.selectTask  : ==>  Preparing: select * from ACT_RU_TASK where ID_ = ?
+2025-08-24T21:29:30.388+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.t.s.i.p.e.TaskEntityImpl.selectTask  : ==> Parameters: 91784cc9-80ed-11f0-8b0c-005056c00008(String)
+2025-08-24T21:29:30.389+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.t.s.i.p.e.TaskEntityImpl.selectTask  : <==      Total: 1
+2025-08-24T21:29:30.389+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.E.selectExecution            : ==>  Preparing: select * from ACT_RU_EXECUTION where ID_ = ?
+2025-08-24T21:29:30.389+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.E.selectExecution            : ==> Parameters: 91758da5-80ed-11f0-8b0c-005056c00008(String)
+2025-08-24T21:29:30.390+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.E.selectExecution            : <==      Total: 1
+2025-08-24T21:29:30.397+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.E.selectExecution            : ==>  Preparing: select * from ACT_RU_EXECUTION where ID_ = ?
+2025-08-24T21:29:30.397+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.E.selectExecution            : ==> Parameters: 9175186d-80ed-11f0-8b0c-005056c00008(String)
+2025-08-24T21:29:30.398+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.E.selectExecution            : <==      Total: 1
+2025-08-24T21:29:30.402+08:00 DEBUG 10188 --- [nio-8081-exec-4] f.t.s.i.p.e.H.selectHistoricTaskInstance : ==>  Preparing: select * from ACT_HI_TASKINST where ID_ = ?
+2025-08-24T21:29:30.402+08:00 DEBUG 10188 --- [nio-8081-exec-4] f.t.s.i.p.e.H.selectHistoricTaskInstance : ==> Parameters: 91784cc9-80ed-11f0-8b0c-005056c00008(String)
+2025-08-24T21:29:30.402+08:00 DEBUG 10188 --- [nio-8081-exec-4] f.t.s.i.p.e.H.selectHistoricTaskInstance : <==      Total: 1
+2025-08-24T21:29:30.403+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.t.s.i.p.e.T.selectTasksByExecutionId : ==>  Preparing: select distinct T.* from ACT_RU_TASK T where T.EXECUTION_ID_ = ?
+2025-08-24T21:29:30.403+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.t.s.i.p.e.T.selectTasksByExecutionId : ==> Parameters: 91758da5-80ed-11f0-8b0c-005056c00008(String)
+2025-08-24T21:29:30.404+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.t.s.i.p.e.T.selectTasksByExecutionId : <==      Total: 1
+2025-08-24T21:29:30.404+08:00 DEBUG 10188 --- [nio-8081-exec-4] ActivityInstanceExecutionIdAndActivityId : ==>  Preparing: select * from ACT_RU_ACTINST RES where EXECUTION_ID_ = ? and ACT_ID_ = ? and END_TIME_ is null
+2025-08-24T21:29:30.404+08:00 DEBUG 10188 --- [nio-8081-exec-4] ActivityInstanceExecutionIdAndActivityId : ==> Parameters: 91758da5-80ed-11f0-8b0c-005056c00008(String), submitLeaveRequest(String)
+2025-08-24T21:29:30.404+08:00 DEBUG 10188 --- [nio-8081-exec-4] ActivityInstanceExecutionIdAndActivityId : <==      Total: 1
+2025-08-24T21:29:30.404+08:00 DEBUG 10188 --- [nio-8081-exec-4] e.i.p.e.H.selectHistoricActivityInstance : ==>  Preparing: select * from ACT_HI_ACTINST where ID_ =?
+2025-08-24T21:29:30.404+08:00 DEBUG 10188 --- [nio-8081-exec-4] e.i.p.e.H.selectHistoricActivityInstance : ==> Parameters: 917602d8-80ed-11f0-8b0c-005056c00008(String)
+2025-08-24T21:29:30.405+08:00 DEBUG 10188 --- [nio-8081-exec-4] e.i.p.e.H.selectHistoricActivityInstance : <==      Total: 1
+2025-08-24T21:29:30.405+08:00 DEBUG 10188 --- [nio-8081-exec-4] ActivityInstanceExecutionIdAndActivityId : ==>  Preparing: select * from ACT_RU_ACTINST RES where EXECUTION_ID_ = ? and ACT_ID_ = ? and END_TIME_ is null
+2025-08-24T21:29:30.405+08:00 DEBUG 10188 --- [nio-8081-exec-4] ActivityInstanceExecutionIdAndActivityId : ==> Parameters: 91758da5-80ed-11f0-8b0c-005056c00008(String), managerReview(String)
+2025-08-24T21:29:30.405+08:00 DEBUG 10188 --- [nio-8081-exec-4] ActivityInstanceExecutionIdAndActivityId : <==      Total: 0
+2025-08-24T21:29:30.407+08:00 DEBUG 10188 --- [nio-8081-exec-4] f.t.s.i.p.e.H.insertHistoricTaskInstance : ==>  Preparing: insert into ACT_HI_TASKINST ( ID_, REV_, TASK_DEF_ID_, PROC_DEF_ID_, PROC_INST_ID_, EXECUTION_ID_, SCOPE_ID_, SUB_SCOPE_ID_, SCOPE_TYPE_, SCOPE_DEFINITION_ID_, PROPAGATED_STAGE_INST_ID_, NAME_, PARENT_TASK_ID_, DESCRIPTION_, OWNER_, ASSIGNEE_, START_TIME_, CLAIM_TIME_, END_TIME_, DURATION_, DELETE_REASON_, TASK_DEF_KEY_, FORM_KEY_, PRIORITY_, DUE_DATE_, CATEGORY_, TENANT_ID_, LAST_UPDATED_TIME_ ) values ( ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+2025-08-24T21:29:30.408+08:00 DEBUG 10188 --- [nio-8081-exec-4] f.t.s.i.p.e.H.insertHistoricTaskInstance : ==> Parameters: 5d480cff-80ee-11f0-8b0c-005056c00008(String), null, simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), 9175186d-80ed-11f0-8b0c-005056c00008(String), 91758da5-80ed-11f0-8b0c-005056c00008(String), null, null, null, null, null, Manager Review(String), null, Manager reviews and approves/rejects leave request(String), null, manager(String), 2025-08-24 21:29:30.405(Timestamp), null, null, null, null, managerReview(String), null, 50(Integer), null, null, (String), 2025-08-24 21:29:30.406(Timestamp)
+2025-08-24T21:29:30.408+08:00 DEBUG 10188 --- [nio-8081-exec-4] f.t.s.i.p.e.H.insertHistoricTaskInstance : <==    Updates: 1
+2025-08-24T21:29:30.408+08:00 DEBUG 10188 --- [nio-8081-exec-4] p.e.H.bulkInsertHistoricActivityInstance : ==>  Preparing: insert into ACT_HI_ACTINST ( ID_, REV_, PROC_DEF_ID_, PROC_INST_ID_, EXECUTION_ID_, ACT_ID_, TASK_ID_, CALL_PROC_INST_ID_, ACT_NAME_, ACT_TYPE_, ASSIGNEE_, START_TIME_, END_TIME_, TRANSACTION_ORDER_, DURATION_, DELETE_REASON_, TENANT_ID_ ) values (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) , (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-08-24T21:29:30.409+08:00 DEBUG 10188 --- [nio-8081-exec-4] p.e.H.bulkInsertHistoricActivityInstance : ==> Parameters: 5d47e5ed-80ee-11f0-8b0c-005056c00008(String), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), 9175186d-80ed-11f0-8b0c-005056c00008(String), 91758da5-80ed-11f0-8b0c-005056c00008(String), _flow_submitLeaveRequest__managerReview(String), null, null, null, sequenceFlow(String), null, 2025-08-24 21:29:30.405(Timestamp), 2025-08-24 21:29:30.405(Timestamp), 1(Integer), 0(Long), null, (String), 5d47e5ee-80ee-11f0-8b0c-005056c00008(String), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), 9175186d-80ed-11f0-8b0c-005056c00008(String), 91758da5-80ed-11f0-8b0c-005056c00008(String), managerReview(String), 5d480cff-80ee-11f0-8b0c-005056c00008(String), null, Manager Review(String), userTask(String), manager(String), 2025-08-24 21:29:30.405(Timestamp), null, 2(Integer), null, null, (String)
+2025-08-24T21:29:30.409+08:00 DEBUG 10188 --- [nio-8081-exec-4] p.e.H.bulkInsertHistoricActivityInstance : <==    Updates: 2
+2025-08-24T21:29:30.410+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.A.bulkInsertActivityInstance : ==>  Preparing: insert into ACT_RU_ACTINST ( ID_, REV_, PROC_DEF_ID_, PROC_INST_ID_, EXECUTION_ID_, ACT_ID_, TASK_ID_, CALL_PROC_INST_ID_, ACT_NAME_, ACT_TYPE_, ASSIGNEE_, START_TIME_, END_TIME_, TRANSACTION_ORDER_, DURATION_, DELETE_REASON_, TENANT_ID_ ) values (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) , (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-08-24T21:29:30.410+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.A.bulkInsertActivityInstance : ==> Parameters: 5d47e5ed-80ee-11f0-8b0c-005056c00008(String), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), 9175186d-80ed-11f0-8b0c-005056c00008(String), 91758da5-80ed-11f0-8b0c-005056c00008(String), _flow_submitLeaveRequest__managerReview(String), null, null, null, sequenceFlow(String), null, 2025-08-24 21:29:30.405(Timestamp), 2025-08-24 21:29:30.405(Timestamp), 1(Integer), 0(Long), null, (String), 5d47e5ee-80ee-11f0-8b0c-005056c00008(String), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), 9175186d-80ed-11f0-8b0c-005056c00008(String), 91758da5-80ed-11f0-8b0c-005056c00008(String), managerReview(String), 5d480cff-80ee-11f0-8b0c-005056c00008(String), null, Manager Review(String), userTask(String), manager(String), 2025-08-24 21:29:30.405(Timestamp), null, 2(Integer), null, null, (String)
+2025-08-24T21:29:30.411+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.A.bulkInsertActivityInstance : <==    Updates: 2
+2025-08-24T21:29:30.411+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.t.s.i.p.e.TaskEntityImpl.insertTask  : ==>  Preparing: insert into ACT_RU_TASK (ID_, REV_, NAME_, PARENT_TASK_ID_, DESCRIPTION_, PRIORITY_, CREATE_TIME_, OWNER_, ASSIGNEE_, DELEGATION_, EXECUTION_ID_, PROC_INST_ID_, PROC_DEF_ID_, TASK_DEF_ID_, SCOPE_ID_, SUB_SCOPE_ID_, SCOPE_TYPE_, SCOPE_DEFINITION_ID_, PROPAGATED_STAGE_INST_ID_, TASK_DEF_KEY_, DUE_DATE_, CATEGORY_, SUSPENSION_STATE_, TENANT_ID_, FORM_KEY_, CLAIM_TIME_, IS_COUNT_ENABLED_, VAR_COUNT_, ID_LINK_COUNT_, SUB_TASK_COUNT_) values (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+2025-08-24T21:29:30.411+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.t.s.i.p.e.TaskEntityImpl.insertTask  : ==> Parameters: 5d480cff-80ee-11f0-8b0c-005056c00008(String), Manager Review(String), null, Manager reviews and approves/rejects leave request(String), 50(Integer), 2025-08-24 21:29:30.405(Timestamp), null, manager(String), null, 91758da5-80ed-11f0-8b0c-005056c00008(String), 9175186d-80ed-11f0-8b0c-005056c00008(String), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), null, null, null, null, null, null, managerReview(String), null, null, 1(Integer), (String), null, null, true(Boolean), 0(Integer), 0(Integer), 0(Integer)
+2025-08-24T21:29:30.412+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.t.s.i.p.e.TaskEntityImpl.insertTask  : <==    Updates: 1
+2025-08-24T21:29:30.416+08:00 DEBUG 10188 --- [nio-8081-exec-4] e.i.p.e.H.updateHistoricActivityInstance : ==>  Preparing: update ACT_HI_ACTINST SET REV_ = ?, PROC_DEF_ID_ = ?, END_TIME_ = ?, DURATION_ = ? where ID_ = ? and REV_ = ?
+2025-08-24T21:29:30.416+08:00 DEBUG 10188 --- [nio-8081-exec-4] e.i.p.e.H.updateHistoricActivityInstance : ==> Parameters: 2(Integer), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), 2025-08-24 21:29:30.404(Timestamp), 341952(Long), 917602d8-80ed-11f0-8b0c-005056c00008(String), 1(Integer)
+2025-08-24T21:29:30.416+08:00 DEBUG 10188 --- [nio-8081-exec-4] e.i.p.e.H.updateHistoricActivityInstance : <==    Updates: 1
+2025-08-24T21:29:30.421+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.E.updateExecution            : ==>  Preparing: update ACT_RU_EXECUTION SET REV_ = ?, ACT_ID_ = ? where ID_ = ? and REV_ = ?
+2025-08-24T21:29:30.422+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.E.updateExecution            : ==> Parameters: 2(Integer), managerReview(String), 91758da5-80ed-11f0-8b0c-005056c00008(String), 1(Integer)
+2025-08-24T21:29:30.422+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.E.updateExecution            : <==    Updates: 1
+2025-08-24T21:29:30.428+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.A.updateActivityInstance     : ==>  Preparing: update ACT_RU_ACTINST SET REV_ = ?, PROC_DEF_ID_ = ?, END_TIME_ = ?, DURATION_ = ? where ID_ = ? and REV_ = ?
+2025-08-24T21:29:30.428+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.A.updateActivityInstance     : ==> Parameters: 2(Integer), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), 2025-08-24 21:29:30.404(Timestamp), 341952(Long), 917602d8-80ed-11f0-8b0c-005056c00008(String), 1(Integer)
+2025-08-24T21:29:30.428+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.e.i.p.e.A.updateActivityInstance     : <==    Updates: 1
+2025-08-24T21:29:30.432+08:00 DEBUG 10188 --- [nio-8081-exec-4] f.t.s.i.p.e.H.updateHistoricTaskInstance : ==>  Preparing: update ACT_HI_TASKINST SET REV_ = ?, END_TIME_ = ?, DURATION_ = ?, LAST_UPDATED_TIME_ = ? where ID_ = ? and REV_ = ?
+2025-08-24T21:29:30.432+08:00 DEBUG 10188 --- [nio-8081-exec-4] f.t.s.i.p.e.H.updateHistoricTaskInstance : ==> Parameters: 2(Integer), 2025-08-24 21:29:30.402(Timestamp), 341950(Long), 2025-08-24 21:29:30.402(Timestamp), 91784cc9-80ed-11f0-8b0c-005056c00008(String), 1(Integer)
+2025-08-24T21:29:30.432+08:00 DEBUG 10188 --- [nio-8081-exec-4] f.t.s.i.p.e.H.updateHistoricTaskInstance : <==    Updates: 1
+2025-08-24T21:29:30.432+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.t.s.i.p.e.TaskEntityImpl.deleteTask  : ==>  Preparing: delete from ACT_RU_TASK where ID_ = ? and REV_ = ?
+2025-08-24T21:29:30.432+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.t.s.i.p.e.TaskEntityImpl.deleteTask  : ==> Parameters: 91784cc9-80ed-11f0-8b0c-005056c00008(String), 1(Integer)
+2025-08-24T21:29:30.433+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.t.s.i.p.e.TaskEntityImpl.deleteTask  : <==    Updates: 1
+2025-08-24T21:29:30.434+08:00 DEBUG 10188 --- [nio-8081-exec-4] o.f.c.e.impl.interceptor.LogInterceptor  : --- CompleteTaskCmd finished --------------------------------------------------------
+? ===== Command调试结束: CompleteTaskCmd =====
 
 
 ###########################################################################
 
+cmd的命令是不是全部在這個裏面執行了？
+ protected void executeOperations(final CommandContext commandContext) {
+        FlowableEngineAgenda agenda = CommandContextUtil.getAgenda(commandContext);
+        while (!agenda.isEmpty()) {
+            Runnable runnable = agenda.getNextOperation();
+            executeOperation(commandContext, runnable);
+        }
+    }
+是CommandInvoker類的方法
+###########################################################################
+CommandContext 類：
+
+protected void flushSessions() {
+        for (Session session : sessions.values()) {
+            session.flush();
+        }
+    }
+
+###########################################################################
+謝謝你給出的調試意見；
+我發現我犯了一個大忌，那就是在還沒有熟練使用該框架的時候去要弄懂它的原理；
+我現在的首要任務就是熟練的去調用它的api，燃聯使用它；然後纔是慢慢探索它的原理；
+我現在的目標應該放在，flowable的使用上：
+它的基本功能：發起流程，審批流程（同意/駁回），流程完結；發起代辦，完成代辦；把業務頁面和參數嵌入到流程中實現一個基本完整的流程功能
 
 
 ###########################################################################
-
-
-###########################################################################
-
-
-
-###########################################################################
-
+$ git push --set-upstream origin dev
 
 
 ###########################################################################
