@@ -200,65 +200,334 @@ startLeaveRequest 這個方法的功能就是發起歷程，自動提交發起人的任務到對應的下一個
 
 我這樣理解正確嗎？ 還有哪些侷限
 
+###########################################################################
+1. 我有想到了一個問題，就是
+taskService.createTaskQuery()  // 相当于 new QueryWrapper()
+      .processInstanceId(processInstance.getId())  // WHERE 条件
+      .taskAssignee(loggedInUser)                 // WHERE 条件
+      .taskName("Submit Leave Request")           // WHERE 条件
+      .list();
 
+它對應的pojo是哪個？ 我怎麼知道有哪些條件可以設置進入sql的where條件呢？
+你上面有taskAssignee，taskName,processInstanceId這些屬性是哪個pojo的？
+
+
+
+2. 還有這個：taskService.complete(submitTask.getId(), taskVariables);
+我理解應該是做一個數據庫的操作，發起人提交任務；
+它爲什麼用這麼抽象的模式去寫這個東西；好象是什麼cmd命令模式
+我目前的基礎是mybatis或者mybatis-plus操作數據庫；
+你可以給我講講它的誕生背景，發展歷史。以及如何從我目前的技術水平提升到cmd命令模式嗎
+###########################################################################
+我可以理解爲： Command模式的本質是把多個操作封裝爲一個原子操作，要麼全部成功，要麼全部失敗；
+是這個意思嗎？
+
+那我可以手動把這些操作放在事務內部嗎？ 就是執行數據庫操作，最後再調用commit操作
+
+上面的目的意圖是等價的嗎？
+
+###########################################################################
+
+還有一個問題，就是我想知道Command模式下，到底執行了哪些操作，或者說它把哪些操作全部封裝到了一起，
+這個可以在哪裏看到？
+以這個代碼爲例： taskService.complete(submitTask.getId(), taskVariables);
+它到底做了哪些操作
+###########################################################################
+謝謝你給出的內部操作詳情，可以直接在CompleteTaskCmd的execute方法內部查看具體執行步驟，
+我之前的理解應該也是你這樣的，但是我的flowable版本是7.0.0
+他的代碼如下：
+@Override
+    protected Void execute(CommandContext commandContext, TaskEntity task) {
+        if (StringUtils.isNotEmpty(task.getScopeId()) && ScopeTypes.CMMN.equals(task.getScopeType())) {
+            throw new FlowableException("The task instance is created by the cmmn engine and should be completed via the cmmn engine API");
+        }
+
+        // Backwards compatibility
+        if (task.getProcessDefinitionId() != null) {
+            if (Flowable5Util.isFlowable5ProcessDefinitionId(commandContext, task.getProcessDefinitionId())) {
+                Flowable5CompatibilityHandler compatibilityHandler = Flowable5Util.getFlowable5CompatibilityHandler();
+
+                if (transientVariables == null) {
+                    if (variablesLocal != null) {
+                        compatibilityHandler.completeTask(task, variablesLocal, true);
+                    } else {
+                        compatibilityHandler.completeTask(task, variables, false);
+                    }
+
+                } else {
+                    compatibilityHandler.completeTask(task, variables, transientVariables);
+                }
+                return null;
+            }
+        }
+
+        TaskHelper.completeTask(task, variables, variablesLocal, transientVariables, transientVariablesLocal, commandContext);
+        return null;
+    }
+已經完全沒有這些步驟了
+
+作爲一個開發者，對於自己的代碼做了什麼操作都不知道，這是一個很悲哀的事情
+
+你可以幫我看看flowable7.0.0 的版本可以在哪裏找到一個cmd的步驟嗎？
+
+###########################################################################
+你新加的代碼好像有些問題，
+LoggingCommandInterceptor和TaskEventListener類裏面都有報錯
+
+###########################################################################
+SimpleTaskEventListener類裏面還是有報錯
+我當前的flowable框架是7.0.0，你就基於該版本寫對應的類方法吧
+
+###########################################################################
+我需要的是cmd命令模式內部執行了哪些操作
+不是要監視任務，
+你要確認核心問題： 要確認這個語句 taskService.complete(submitTask.getId(), taskVariables);
+cmd模式內部執行了哪些操作，我要監控查看的是這個
+###########################################################################
+最新版的execute方法是有三個參數：
+    <T> T execute(CommandConfig config, Command<T> command, CommandExecutor commandExecutor);
+你的只有兩個參數：     public <T> T execute(CommandConfig config, Command<T> command)
+
+會報錯；
+
+你可以把你的CommandExecutionInterceptor方法的execute方法改下嗎？
+順便講講額外參數的意義是什麼？  CommandExecutor commandExecutor
+
+###########################################################################
+幫我看看，發起流程又失敗了：
+前端彈窗：
+Failed to submit leave request: Authentication required
+後端日誌：
+2025-08-24T14:49:00.986+08:00 DEBUG 3352 --- [nio-8081-exec-6] o.f.c.e.impl.interceptor.LogInterceptor  : --- HistoricVariableInstanceQueryImpl finished --------------------------------------------------------
+SessionAuthenticationFilter - Path: /api/process-history
+SessionAuthenticationFilter - Session: null
+SessionAuthenticationFilter - No valid session, returning 401
+2025-08-24T14:49:06.657+08:00 DEBUG 3352 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireJobsCmd --------------------------------------------------------
+2025-08-24T14:49:06.657+08:00 DEBUG 3352 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireTimerJobsCmd --------------------------------------------------------
+2025-08-24T14:49:06.657+08:00 DEBUG 3352 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireJobsCmd --------------------------------------------------------
+2025-08-24T14:49:06.657+08:00 DEBUG 3352 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireTimerJobsCmd --------------------------------------------------------
+2025-08-24T14:49:06.659+08:00 DEBUG 3352 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireJobsCmd finished --------------------------------------------------------
+2025-08-24T14:49:06.659+08:00 DEBUG 3352 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireJobsCmd finished --------------------------------------------------------
+2025-08-24T14:49:06.659+08:00 DEBUG 3352 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireTimerJobsCmd finished --------------------------------------------------------
+2025-08-24T14:49:06.659+08:00 DEBUG 3352 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireTimerJobsCmd finished --------------------------------------------------------
+SessionAuthenticationFilter - Path: /api/start-leave-request
+SessionAuthenticationFilter - Session: null
+SessionAuthenticationFilter - No valid session, returning 401
+2025-08-24T14:49:16.669+08:00 DEBUG 3352 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireJobsCmd --------------------------------------------------------
+2025-08-24T14:49:16.669+08:00 DEBUG 3352 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireTimerJobsCmd --------------------------------------------------------
+2025-08-24T14:49:16.669+08:00 DEBUG 3352 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireTimerJobsCmd --------------------------------------------------------
+2025-08-24T14:49:16.669+08:00 DEBUG 3352 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireJobsCmd --------------------------------------------------------
+2025-08-24T14:49:16.670+08:00 DEBUG 3352 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireJobsCmd finished --------------------------------------------------------
+2025-08-24T14:49:16.670+08:00 DEBUG 3352 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireJobsCmd finished --------------------------------------------------------
+2025-08-24T14:49:16.670+08:00 DEBUG 3352 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireTimerJobsCmd finished --------------------------------------------------------
+2025-08-24T14:49:16.670+08:00 DEBUG 3352 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireTimerJobsCmd finished --------------------------------------------------------
+2025-08-24T14:49:23.540+08:00 DEBUG 3352 --- [l-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Pool stats (total=10, active=0, idle=10, waiting=0)
+2025-08-24T14:49:23.540+08:00 DEBUG 3352 --- [l-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Fill pool skipped, pool has sufficient level or currently being filled (queueDepth=0).
 
 
 
 ###########################################################################
+還是無法發起流程：
+後端日誌：
+SessionAuthenticationFilter - Path: /api/start-leave-request
+SessionAuthenticationFilter - Session: null
+SessionAuthenticationFilter - Request Cookie: Hm_lvt_a1ff8825baa73c3a78eb96aa40325abc=1754577497,1754924827,1755007388,1755170739; JSESSIONID=5C4772E33EEA9D02D7B5EB8529AF81A9
+SessionAuthenticationFilter - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+SessionAuthenticationFilter - No valid session, returning 401
+SessionAuthenticationFilter - Available sessions: 5C4772E33EEA9D02D7B5EB8529AF81A9
+2025-08-24T14:58:16.616+08:00 DEBUG 26648 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireTimerJobsCmd --------------------------------------------------------
+2025-08-24T14:58:16.616+08:00 DEBUG 26648 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireJobsCmd --------------------------------------------------------
+2025-08-24T14:58:16.616+08:00 DEBUG 26648 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireTimerJobsCmd --------------------------------------------------------
+2025-08-24T14:58:16.616+08:00 DEBUG 26648 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireJobsCmd --------------------------------------------------------
+2025-08-24T14:58:16.618+08:00 DEBUG 26648 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireJobsCmd finished --------------------------------------------------------
+2025-08-24T14:58:16.618+08:00 DEBUG 26648 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireTimerJobsCmd finished --------------------------------------------------------
+2025-08-24T14:58:16.618+08:00 DEBUG 26648 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireJobsCmd finished --------------------------------------------------------
+2025-08-24T14:58:16.618+08:00 DEBUG 26648 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireTimerJobsCmd finished --------------------------------------------------------
+
+前端請求頭：
+Request URL
+http://localhost:5173/api/start-leave-request
+Request Method
+POST
+Status Code
+401 Unauthorized
+Remote Address
+[::1]:5173
+Referrer Policy
+strict-origin-when-cross-origin
+
+請求體：
+{leaveType: "vacation", startDate: "2025-08-24", endDate: "2025-08-25", reason: "1111", days: 2}
+days
+:
+2
+endDate
+:
+"2025-08-25"
+leaveType
+:
+"vacation"
+reason
+:
+"1111"
+startDate
+:
+"2025-08-24"
+###########################################################################
+後端啓動失敗了：
+
+2025-08-24T15:02:27.822+08:00  INFO 24176 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 899 ms
+2025-08-24T15:02:27.832+08:00 ERROR 24176 --- [           main] o.s.b.web.embedded.tomcat.TomcatStarter  : Error starting Tomcat context. Exception: org.springframework.beans.factory.UnsatisfiedDependencyException. Message: Error creating bean with name 'sessionRecoveryFilter': Unsatisfied dependency expressed through field 'userDetailsService': Error creating bean with name 'securityConfig': Unsatisfied dependency expressed through field 'sessionRecoveryFilter': Error creating bean with name 'sessionRecoveryFilter': Requested bean is currently in creation: Is there an unresolvable circular reference?
+2025-08-24T15:02:27.850+08:00  INFO 24176 --- [           main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+2025-08-24T15:02:27.857+08:00  WARN 24176 --- [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Unable to start web server
+2025-08-24T15:02:27.864+08:00  INFO 24176 --- [           main] .s.b.a.l.ConditionEvaluationReportLogger :
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-08-24T15:02:27.883+08:00 ERROR 24176 --- [           main] o.s.b.d.LoggingFailureAnalysisReporter   :
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+The dependencies of some of the beans in the application context form a cycle:
+
+┌─────┐
+|  sessionRecoveryFilter (field private org.springframework.security.core.userdetails.UserDetailsService com.example.flowabledemo.SessionRecoveryFilter.userDetailsService)
+↑     ↓
+|  securityConfig (field private com.example.flowabledemo.SessionRecoveryFilter com.example.flowabledemo.SecurityConfig.sessionRecoveryFilter)
+└─────┘
+
+
+Action:
+
+Relying upon circular references is discouraged and they are prohibited by default. Update your application to remove the dependency cycle between beans. As a last resort, it may be possible to break the cycle automatically by setting spring.main.allow-circular-references to true.
+
+Disconnected from the target VM, address: '127.0.0.1:7962', transport: 'socket'
+
+Process finished with exit code 1
 
 
 
 ###########################################################################
+日誌太多了：
+我就在這個代碼打了斷點：taskService.complete(submitTask.getId(), taskVariables);
+放開後，下面是後端的日誌
+
+2025-08-24T15:14:30.048+08:00 DEBUG 16332 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireTimerJobsCmd --------------------------------------------------------
+2025-08-24T15:14:30.048+08:00 DEBUG 16332 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireJobsCmd --------------------------------------------------------
+2025-08-24T15:14:30.048+08:00 DEBUG 16332 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireTimerJobsCmd --------------------------------------------------------
+2025-08-24T15:14:30.048+08:00 DEBUG 16332 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting AcquireJobsCmd --------------------------------------------------------
+2025-08-24T15:14:30.049+08:00 DEBUG 16332 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireJobsCmd finished --------------------------------------------------------
+2025-08-24T15:14:30.049+08:00 DEBUG 16332 --- [uire-async-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireJobsCmd finished --------------------------------------------------------
+2025-08-24T15:14:30.049+08:00 DEBUG 16332 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireTimerJobsCmd finished --------------------------------------------------------
+2025-08-24T15:14:30.049+08:00 DEBUG 16332 --- [uire-timer-jobs] o.f.c.e.impl.interceptor.LogInterceptor  : --- AcquireTimerJobsCmd finished --------------------------------------------------------
+? ===== Command执行监控开始 =====
+? 执行的命令类: CompleteTaskCmd
+??  命令完整类名: org.flowable.engine.impl.cmd.CompleteTaskCmd
+??  配置: org.flowable.common.engine.impl.interceptor.CommandConfig@10264cb0
+? CommandExecutor类型: CommandExecutorImpl
+? 开始执行Command内部逻辑...
+2025-08-24T15:14:30.050+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting CompleteTaskCmd --------------------------------------------------------
+2025-08-24T15:14:30.050+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.t.s.i.p.e.TaskEntityImpl.selectTask  : ==>  Preparing: select * from ACT_RU_TASK where ID_ = ?
+2025-08-24T15:14:30.050+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.t.s.i.p.e.TaskEntityImpl.selectTask  : ==> Parameters: f494c1f8-80b9-11f0-83d1-005056c00008(String)
+2025-08-24T15:14:30.051+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.t.s.i.p.e.TaskEntityImpl.selectTask  : <==      Total: 1
+2025-08-24T15:14:30.051+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.E.selectExecution            : ==>  Preparing: select * from ACT_RU_EXECUTION where ID_ = ?
+2025-08-24T15:14:30.051+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.E.selectExecution            : ==> Parameters: f4949ae4-80b9-11f0-83d1-005056c00008(String)
+2025-08-24T15:14:30.051+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.E.selectExecution            : <==      Total: 1
+2025-08-24T15:14:30.052+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.E.selectExecution            : ==>  Preparing: select * from ACT_RU_EXECUTION where ID_ = ?
+2025-08-24T15:14:30.052+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.E.selectExecution            : ==> Parameters: f4949adc-80b9-11f0-83d1-005056c00008(String)
+2025-08-24T15:14:30.054+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.E.selectExecution            : <==      Total: 1
+2025-08-24T15:14:30.057+08:00 DEBUG 16332 --- [nio-8081-exec-2] f.t.s.i.p.e.H.selectHistoricTaskInstance : ==>  Preparing: select * from ACT_HI_TASKINST where ID_ = ?
+2025-08-24T15:14:30.057+08:00 DEBUG 16332 --- [nio-8081-exec-2] f.t.s.i.p.e.H.selectHistoricTaskInstance : ==> Parameters: f494c1f8-80b9-11f0-83d1-005056c00008(String)
+2025-08-24T15:14:30.057+08:00 DEBUG 16332 --- [nio-8081-exec-2] f.t.s.i.p.e.H.selectHistoricTaskInstance : <==      Total: 1
+2025-08-24T15:14:30.057+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.t.s.i.p.e.T.selectTasksByExecutionId : ==>  Preparing: select distinct T.* from ACT_RU_TASK T where T.EXECUTION_ID_ = ?
+2025-08-24T15:14:30.057+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.t.s.i.p.e.T.selectTasksByExecutionId : ==> Parameters: f4949ae4-80b9-11f0-83d1-005056c00008(String)
+2025-08-24T15:14:30.058+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.t.s.i.p.e.T.selectTasksByExecutionId : <==      Total: 1
+2025-08-24T15:14:30.058+08:00 DEBUG 16332 --- [nio-8081-exec-2] ActivityInstanceExecutionIdAndActivityId : ==>  Preparing: select * from ACT_RU_ACTINST RES where EXECUTION_ID_ = ? and ACT_ID_ = ? and END_TIME_ is null
+2025-08-24T15:14:30.058+08:00 DEBUG 16332 --- [nio-8081-exec-2] ActivityInstanceExecutionIdAndActivityId : ==> Parameters: f4949ae4-80b9-11f0-83d1-005056c00008(String), submitLeaveRequest(String)
+2025-08-24T15:14:30.058+08:00 DEBUG 16332 --- [nio-8081-exec-2] ActivityInstanceExecutionIdAndActivityId : <==      Total: 1
+2025-08-24T15:14:30.058+08:00 DEBUG 16332 --- [nio-8081-exec-2] e.i.p.e.H.selectHistoricActivityInstance : ==>  Preparing: select * from ACT_HI_ACTINST where ID_ =?
+2025-08-24T15:14:30.058+08:00 DEBUG 16332 --- [nio-8081-exec-2] e.i.p.e.H.selectHistoricActivityInstance : ==> Parameters: f494c1f7-80b9-11f0-83d1-005056c00008(String)
+2025-08-24T15:14:30.058+08:00 DEBUG 16332 --- [nio-8081-exec-2] e.i.p.e.H.selectHistoricActivityInstance : <==      Total: 1
+2025-08-24T15:14:30.058+08:00 DEBUG 16332 --- [nio-8081-exec-2] ActivityInstanceExecutionIdAndActivityId : ==>  Preparing: select * from ACT_RU_ACTINST RES where EXECUTION_ID_ = ? and ACT_ID_ = ? and END_TIME_ is null
+2025-08-24T15:14:30.059+08:00 DEBUG 16332 --- [nio-8081-exec-2] ActivityInstanceExecutionIdAndActivityId : ==> Parameters: f4949ae4-80b9-11f0-83d1-005056c00008(String), managerReview(String)
+2025-08-24T15:14:30.059+08:00 DEBUG 16332 --- [nio-8081-exec-2] ActivityInstanceExecutionIdAndActivityId : <==      Total: 0
+2025-08-24T15:14:30.061+08:00 DEBUG 16332 --- [nio-8081-exec-2] f.t.s.i.p.e.H.insertHistoricTaskInstance : ==>  Preparing: insert into ACT_HI_TASKINST ( ID_, REV_, TASK_DEF_ID_, PROC_DEF_ID_, PROC_INST_ID_, EXECUTION_ID_, SCOPE_ID_, SUB_SCOPE_ID_, SCOPE_TYPE_, SCOPE_DEFINITION_ID_, PROPAGATED_STAGE_INST_ID_, NAME_, PARENT_TASK_ID_, DESCRIPTION_, OWNER_, ASSIGNEE_, START_TIME_, CLAIM_TIME_, END_TIME_, DURATION_, DELETE_REASON_, TASK_DEF_KEY_, FORM_KEY_, PRIORITY_, DUE_DATE_, CATEGORY_, TENANT_ID_, LAST_UPDATED_TIME_ ) values ( ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+2025-08-24T15:14:30.061+08:00 DEBUG 16332 --- [nio-8081-exec-2] f.t.s.i.p.e.H.insertHistoricTaskInstance : ==> Parameters: fa07904e-80b9-11f0-83d1-005056c00008(String), null, simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), f4949adc-80b9-11f0-83d1-005056c00008(String), f4949ae4-80b9-11f0-83d1-005056c00008(String), null, null, null, null, null, Manager Review(String), null, Manager reviews and approves/rejects leave request(String), null, manager(String), 2025-08-24 15:14:30.059(Timestamp), null, null, null, null, managerReview(String), null, 50(Integer), null, null, (String), 2025-08-24 15:14:30.059(Timestamp)
+2025-08-24T15:14:30.061+08:00 DEBUG 16332 --- [nio-8081-exec-2] f.t.s.i.p.e.H.insertHistoricTaskInstance : <==    Updates: 1
+2025-08-24T15:14:30.062+08:00 DEBUG 16332 --- [nio-8081-exec-2] p.e.H.bulkInsertHistoricActivityInstance : ==>  Preparing: insert into ACT_HI_ACTINST ( ID_, REV_, PROC_DEF_ID_, PROC_INST_ID_, EXECUTION_ID_, ACT_ID_, TASK_ID_, CALL_PROC_INST_ID_, ACT_NAME_, ACT_TYPE_, ASSIGNEE_, START_TIME_, END_TIME_, TRANSACTION_ORDER_, DURATION_, DELETE_REASON_, TENANT_ID_ ) values (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) , (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-08-24T15:14:30.062+08:00 DEBUG 16332 --- [nio-8081-exec-2] p.e.H.bulkInsertHistoricActivityInstance : ==> Parameters: fa07693c-80b9-11f0-83d1-005056c00008(String), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), f4949adc-80b9-11f0-83d1-005056c00008(String), f4949ae4-80b9-11f0-83d1-005056c00008(String), _flow_submitLeaveRequest__managerReview(String), null, null, null, sequenceFlow(String), null, 2025-08-24 15:14:30.058(Timestamp), 2025-08-24 15:14:30.058(Timestamp), 1(Integer), 0(Long), null, (String), fa07904d-80b9-11f0-83d1-005056c00008(String), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), f4949adc-80b9-11f0-83d1-005056c00008(String), f4949ae4-80b9-11f0-83d1-005056c00008(String), managerReview(String), fa07904e-80b9-11f0-83d1-005056c00008(String), null, Manager Review(String), userTask(String), manager(String), 2025-08-24 15:14:30.059(Timestamp), null, 2(Integer), null, null, (String)
+2025-08-24T15:14:30.062+08:00 DEBUG 16332 --- [nio-8081-exec-2] p.e.H.bulkInsertHistoricActivityInstance : <==    Updates: 2
+2025-08-24T15:14:30.063+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.A.bulkInsertActivityInstance : ==>  Preparing: insert into ACT_RU_ACTINST ( ID_, REV_, PROC_DEF_ID_, PROC_INST_ID_, EXECUTION_ID_, ACT_ID_, TASK_ID_, CALL_PROC_INST_ID_, ACT_NAME_, ACT_TYPE_, ASSIGNEE_, START_TIME_, END_TIME_, TRANSACTION_ORDER_, DURATION_, DELETE_REASON_, TENANT_ID_ ) values (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) , (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-08-24T15:14:30.064+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.A.bulkInsertActivityInstance : ==> Parameters: fa07693c-80b9-11f0-83d1-005056c00008(String), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), f4949adc-80b9-11f0-83d1-005056c00008(String), f4949ae4-80b9-11f0-83d1-005056c00008(String), _flow_submitLeaveRequest__managerReview(String), null, null, null, sequenceFlow(String), null, 2025-08-24 15:14:30.058(Timestamp), 2025-08-24 15:14:30.058(Timestamp), 1(Integer), 0(Long), null, (String), fa07904d-80b9-11f0-83d1-005056c00008(String), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), f4949adc-80b9-11f0-83d1-005056c00008(String), f4949ae4-80b9-11f0-83d1-005056c00008(String), managerReview(String), fa07904e-80b9-11f0-83d1-005056c00008(String), null, Manager Review(String), userTask(String), manager(String), 2025-08-24 15:14:30.059(Timestamp), null, 2(Integer), null, null, (String)
+2025-08-24T15:14:30.064+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.A.bulkInsertActivityInstance : <==    Updates: 2
+2025-08-24T15:14:30.064+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.t.s.i.p.e.TaskEntityImpl.insertTask  : ==>  Preparing: insert into ACT_RU_TASK (ID_, REV_, NAME_, PARENT_TASK_ID_, DESCRIPTION_, PRIORITY_, CREATE_TIME_, OWNER_, ASSIGNEE_, DELEGATION_, EXECUTION_ID_, PROC_INST_ID_, PROC_DEF_ID_, TASK_DEF_ID_, SCOPE_ID_, SUB_SCOPE_ID_, SCOPE_TYPE_, SCOPE_DEFINITION_ID_, PROPAGATED_STAGE_INST_ID_, TASK_DEF_KEY_, DUE_DATE_, CATEGORY_, SUSPENSION_STATE_, TENANT_ID_, FORM_KEY_, CLAIM_TIME_, IS_COUNT_ENABLED_, VAR_COUNT_, ID_LINK_COUNT_, SUB_TASK_COUNT_) values (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+2025-08-24T15:14:30.064+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.t.s.i.p.e.TaskEntityImpl.insertTask  : ==> Parameters: fa07904e-80b9-11f0-83d1-005056c00008(String), Manager Review(String), null, Manager reviews and approves/rejects leave request(String), 50(Integer), 2025-08-24 15:14:30.059(Timestamp), null, manager(String), null, f4949ae4-80b9-11f0-83d1-005056c00008(String), f4949adc-80b9-11f0-83d1-005056c00008(String), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), null, null, null, null, null, null, managerReview(String), null, null, 1(Integer), (String), null, null, true(Boolean), 0(Integer), 0(Integer), 0(Integer)
+2025-08-24T15:14:30.065+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.t.s.i.p.e.TaskEntityImpl.insertTask  : <==    Updates: 1
+2025-08-24T15:14:30.068+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.A.updateActivityInstance     : ==>  Preparing: update ACT_RU_ACTINST SET REV_ = ?, PROC_DEF_ID_ = ?, END_TIME_ = ?, DURATION_ = ? where ID_ = ? and REV_ = ?
+2025-08-24T15:14:30.068+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.A.updateActivityInstance     : ==> Parameters: 2(Integer), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), 2025-08-24 15:14:30.058(Timestamp), 9140(Long), f494c1f7-80b9-11f0-83d1-005056c00008(String), 1(Integer)
+2025-08-24T15:14:30.068+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.A.updateActivityInstance     : <==    Updates: 1
+2025-08-24T15:14:30.068+08:00 DEBUG 16332 --- [nio-8081-exec-2] f.t.s.i.p.e.H.updateHistoricTaskInstance : ==>  Preparing: update ACT_HI_TASKINST SET REV_ = ?, END_TIME_ = ?, DURATION_ = ?, LAST_UPDATED_TIME_ = ? where ID_ = ? and REV_ = ?
+2025-08-24T15:14:30.068+08:00 DEBUG 16332 --- [nio-8081-exec-2] f.t.s.i.p.e.H.updateHistoricTaskInstance : ==> Parameters: 2(Integer), 2025-08-24 15:14:30.057(Timestamp), 9139(Long), 2025-08-24 15:14:30.057(Timestamp), f494c1f8-80b9-11f0-83d1-005056c00008(String), 1(Integer)
+2025-08-24T15:14:30.068+08:00 DEBUG 16332 --- [nio-8081-exec-2] f.t.s.i.p.e.H.updateHistoricTaskInstance : <==    Updates: 1
+2025-08-24T15:14:30.069+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.E.updateExecution            : ==>  Preparing: update ACT_RU_EXECUTION SET REV_ = ?, ACT_ID_ = ? where ID_ = ? and REV_ = ?
+2025-08-24T15:14:30.069+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.E.updateExecution            : ==> Parameters: 2(Integer), managerReview(String), f4949ae4-80b9-11f0-83d1-005056c00008(String), 1(Integer)
+2025-08-24T15:14:30.069+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.e.i.p.e.E.updateExecution            : <==    Updates: 1
+2025-08-24T15:14:30.069+08:00 DEBUG 16332 --- [nio-8081-exec-2] e.i.p.e.H.updateHistoricActivityInstance : ==>  Preparing: update ACT_HI_ACTINST SET REV_ = ?, PROC_DEF_ID_ = ?, END_TIME_ = ?, DURATION_ = ? where ID_ = ? and REV_ = ?
+2025-08-24T15:14:30.069+08:00 DEBUG 16332 --- [nio-8081-exec-2] e.i.p.e.H.updateHistoricActivityInstance : ==> Parameters: 2(Integer), simpleLeaveProcess:2:f686465c-8027-11f0-a6b5-005056c00008(String), 2025-08-24 15:14:30.058(Timestamp), 9140(Long), f494c1f7-80b9-11f0-83d1-005056c00008(String), 1(Integer)
+2025-08-24T15:14:30.069+08:00 DEBUG 16332 --- [nio-8081-exec-2] e.i.p.e.H.updateHistoricActivityInstance : <==    Updates: 1
+2025-08-24T15:14:30.070+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.t.s.i.p.e.TaskEntityImpl.deleteTask  : ==>  Preparing: delete from ACT_RU_TASK where ID_ = ? and REV_ = ?
+2025-08-24T15:14:30.070+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.t.s.i.p.e.TaskEntityImpl.deleteTask  : ==> Parameters: f494c1f8-80b9-11f0-83d1-005056c00008(String), 1(Integer)
+2025-08-24T15:14:30.070+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.t.s.i.p.e.TaskEntityImpl.deleteTask  : <==    Updates: 1
+2025-08-24T15:14:30.072+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.c.e.impl.interceptor.LogInterceptor  : --- CompleteTaskCmd finished --------------------------------------------------------
+? Command执行成功!
+??  总耗时: 22ms
+? 返回结果类型: void
+? ===== Command执行监控结束 =====
+
+Completed submit task: f494c1f8-80b9-11f0-83d1-005056c00008
+
+? ===== Command执行监控开始 =====
+? 执行的命令类: TaskQueryImpl
+??  命令完整类名: org.flowable.task.service.impl.TaskQueryImpl
+??  配置: org.flowable.common.engine.impl.interceptor.CommandConfig@10264cb0
+? CommandExecutor类型: CommandExecutorImpl
+? 开始执行Command内部逻辑...
+2025-08-24T15:14:30.072+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.c.e.impl.interceptor.LogInterceptor  : --- starting TaskQueryImpl --------------------------------------------------------
+2025-08-24T15:14:30.073+08:00 DEBUG 16332 --- [nio-8081-exec-2] .f.t.s.i.p.e.T.selectTaskByQueryCriteria : ==>  Preparing: SELECT RES.* from ACT_RU_TASK RES WHERE RES.PROC_INST_ID_ = ? order by RES.ID_ asc
+2025-08-24T15:14:30.073+08:00 DEBUG 16332 --- [nio-8081-exec-2] .f.t.s.i.p.e.T.selectTaskByQueryCriteria : ==> Parameters: f4949adc-80b9-11f0-83d1-005056c00008(String)
+2025-08-24T15:14:30.073+08:00 DEBUG 16332 --- [nio-8081-exec-2] .f.t.s.i.p.e.T.selectTaskByQueryCriteria : <==      Total: 1
+2025-08-24T15:14:30.073+08:00 DEBUG 16332 --- [nio-8081-exec-2] o.f.c.e.impl.interceptor.LogInterceptor  : --- TaskQueryImpl finished --------------------------------------------------------
+? Command执行成功!
+??  总耗时: 1ms
+? 返回结果类型: ArrayList
+? ===== Command执行监控结束 =====
+
+Tasks after completing submit task: 1
+Task: fa07904e-80b9-11f0-83d1-005056c00008 - Manager Review - Assignee: manager
+2025-08-24T15:14:33.106+08:00 DEBUG 16332 --- [l-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Pool stats (total=10, active=0, idle=10, waiting=0)
 
 
 ###########################################################################
-
-
+現在我又有其他問題了：就是我知道了它執行了這些步驟，但是不知道它爲什麼要執行這些步驟，爲什麼要做這麼多的操作，
+做這些操作的目的又是什麼？
+如果是我自己寫一個最簡單的可用的流程審批和任務的話，流程流轉用一個狀態字段控制，任務發起基於傳入人員發起即可
+你可以基於這些操作，反向解析一下flwoable框架的流程架構嗎？
+###########################################################################
+你可以從簡單的狀態改變實現流程流轉到flowable框架的衍化過程嗎？也可以不是狀態改變，就是最簡單的流程審批功能實現到現在的flwoable框架
+經歷過了哪幾個宏觀階段（需要首先聲明清晰路線），然後講單個階段向前發展是基於什麼需求背景，從一個階段到另一個階段架構的核心變化是什麼
 
 ###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-###########################################################################
-
-
+前面記錄了一个简单的taskService.complete()调用实际执行了：
+  1. ? 4次查询操作 - 验证任务、执行实例、历史数据
+  2. ? 6次插入操作 - 创建历史记录、新任务、活动实例
+  3. ? 3次更新操作 - 更新时间、状态、执行位置
+  4. ? 1次删除操作 - 清理完成的任务
+  5. ? 1次验证查询 - 确认新任务创建成功
+這些操作全部封裝在了一個Command裏面，我這次想調試看看，這些操作都放在哪裏？
+就是如果我在調試該Cmd的時候，我蓋在哪個變量裏面可以看到這些所有的操作集合
 
 ###########################################################################
 
