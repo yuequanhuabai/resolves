@@ -7,36 +7,395 @@
 給出對應的代辦頁面和對應的最簡單的業務提交出發流程流轉。
 
 #############################################################################################
+問題：
+
+benchmark: 可以修改匯總數據；
+           數據未發生任何改動也可以保存發起流程；
+
+buy_list:  Asset Type 無需選擇也可以保存；
+            Product Code 應該需要規則和長度限制，應該找業務確認；
+            數據未發生任何改動也可以保存發起流程；
+
+Model Portfolio： 添加數據可以超過100%；
+                  數據未發生任何改動也可以保存發起流程；
+
+#############################################################################################
+In order to better learn and practice Chinese, all the questions I analyze will be asked in Chinese. You can reply in English or Chinese, but if the accuracy of the question is involved, your Chinese training is insufficient, or your English expression is not as accurate, you must insist on answering me in your native English. In other words, you can reply in your native language or Chinese, but if your native language is more accurate, you must reply in your native language. You must remember this rule, as it will be the premise for all future answers on this account.
+
+#############################################################################################
+你先基於當前目錄分析一下當前目錄的兩個項目：
+後端： flowable-demo
+前端： flowable-demo-ui
+
+必須講出你的分析步驟過程
 
 
 #############################################################################################
 
+我的需求暫時是關於後端項目pocpro，我想把它的包名修改一下，把原來的cn.iocoder.yudao,修改為bo.pap;
+但是我怕改不全，你有什麽好的方案嗎？你先講出方案，我看看再考慮要不要執行
+
+#############################################################################################
+我已經修改了，出現了報錯：
+Non-resolvable import POM: Failure to find cn.iocoder.boot:pap-dependencies:pom:2.6.0-SNAPSHOT in https://mirrors.huaweicloud.com/repository/maven/ was cached in the local repository, resolution will not be reattempted until the update interval of huaweicloud has elapsed or updates are forced
+
+#############################################################################################
+啓動報錯了，你幫我看看：
+
+Closing JDBC Connection [Transaction-aware proxy for target Connection [ConnectionProxyImpl{connectedTime=2025-08-25 17:29:28.263, closeCount=0, lastValidateTimeMillis=2025-08-25 17:29:28.574}]]
+JacksonTypeHandler(interface java.util.List)
+JacksonTypeHandler(class cn.bochk.pap.server.bpm.controller.admin.definition.vo.model.BpmModelMetaInfoVO$ProcessIdRule)
+JacksonTypeHandler(class cn.bochk.pap.server.bpm.controller.admin.definition.vo.model.BpmModelMetaInfoVO$TitleSetting)
+JacksonTypeHandler(class cn.bochk.pap.server.bpm.controller.admin.definition.vo.model.BpmModelMetaInfoVO$SummarySetting)
+JacksonTypeHandler(class cn.bochk.pap.server.bpm.controller.admin.definition.vo.model.BpmModelMetaInfoVO$HttpRequestSetting)
+JacksonTypeHandler(class cn.bochk.pap.server.bpm.controller.admin.definition.vo.model.BpmModelMetaInfoVO$HttpRequestSetting)
+JacksonTypeHandler(class cn.bochk.pap.server.bpm.controller.admin.definition.vo.model.BpmModelMetaInfoVO$HttpRequestSetting)
+JacksonTypeHandler(class cn.bochk.pap.server.bpm.controller.admin.definition.vo.model.BpmModelMetaInfoVO$HttpRequestSetting)
+JacksonTypeHandler(interface java.util.List)
+JacksonTypeHandler(interface java.util.Map)
+2025-08-25 17:29:59.410 |  WARN 8588 | main [] ConfigServletWebServerApplicationContext | Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'noticeController': Injection of resource dependencies failed
+Opening JDBC Connection
+==>  Preparing: update ACT_RU_EXECUTION set LOCK_TIME_ = null, LOCK_OWNER_ = null where LOCK_OWNER_ = ?
+==> Parameters: 5d493962-0ce9-41bc-94e0-f49f670f9e0e(String)
+<==    Updates: 0
+Closing JDBC Connection [Transaction-aware proxy for target Connection [ConnectionProxyImpl{connectedTime=2025-08-25 17:29:28.263, closeCount=0, lastValidateTimeMillis=2025-08-25 17:29:28.574}]]
+2025-08-25 17:29:59.971 |  INFO 8588 | main [] c.b.d.d.DynamicRoutingDataSource         | dynamic-datasource start closing ....
+2025-08-25 17:29:59.974 |  INFO 8588 | main [] com.alibaba.druid.pool.DruidDataSource   | {dataSource-1} closing ...
+2025-08-25 17:29:59.978 |  INFO 8588 | main [] com.alibaba.druid.pool.DruidDataSource   | {dataSource-1} closed
+2025-08-25 17:29:59.978 |  INFO 8588 | main [] c.b.d.d.d.DefaultDataSourceDestroyer     | dynamic-datasource close the datasource named [master] success,
+2025-08-25 17:29:59.978 |  INFO 8588 | main [] c.b.d.d.DynamicRoutingDataSource         | dynamic-datasource all closed success,bye
+2025-08-25 17:29:59.985 |  INFO 8588 | main [] o.apache.catalina.core.StandardService   | Stopping service [Tomcat]
+2025-08-25 17:29:59.989 |  WARN 8588 | main [] o.a.c.loader.WebappClassLoaderBase       | The web application [ROOT] appears to have started a thread named [Thread-2] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:
+ java.base@17.0.12/sun.net.dns.ResolverConfigurationImpl.notifyAddrChange0(Native Method)
+ java.base@17.0.12/sun.net.dns.ResolverConfigurationImpl$AddressChangeListener.run(ResolverConfigurationImpl.java:176)
+2025-08-25 17:30:00.025 |  INFO 8588 | main [] .s.b.a.l.ConditionEvaluationReportLogger |
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-08-25 17:30:00.072 | ERROR 8588 | main [] o.s.b.d.LoggingFailureAnalysisReporter   |
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+A component required a bean of type 'cn.bochk.pap.framework.common.webSocket.core.sender.WebSocketMessageSender' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'cn.bochk.pap.framework.common.webSocket.core.sender.WebSocketMessageSender' in your configuration.
 
 
 
 #############################################################################################
+再幫我看看這個日志：
+2025-08-25 17:40:10.255 | ERROR 15016 | http-nio-48080-exec-6 [] c.b.p.f.c.w.a.c.f.ApiAccessLogFilter     | [createApiAccessLog][url(/admin-api/system/notify-message/get-unread-count) log({"traceId":null,"userId":null,"userType":2,"applicationName":"yudao-server","requestMethod":"GET","requestUrl":"/admin-api/system/notify-message/get-unread-count","requestParams":"{\"query\":null,\"body\":null}","responseBody":null,"userIp":"0:0:0:0:0:0:0:1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36","operateModule":null,"operateName":null,"operateType":null,"beginTime":1756114808469,"endTime":1756114809977,"duration":1507,"resultCode":0,"resultMsg":""}) 发生异常]
+
+org.springframework.dao.DataIntegrityViolationException:
+### Error updating database.  Cause: com.microsoft.sqlserver.jdbc.SQLServerException: Cannot insert the value NULL into column 'id', table 'pap.dbo.infra_api_access_log'; column does not allow nulls. INSERT fails.
+### The error may exist in cn/bochk/pap/server/system/dal/mysql/logger/ApiAccessLogMapper.java (best guess)
+### The error may involve cn.bochk.pap.server.system.dal.mysql.logger.ApiAccessLogMapper.insert-Inline
+### The error occurred while setting parameters
+### SQL: INSERT INTO infra_api_access_log  ( user_type, application_name, request_method, request_url, request_params,  user_ip, user_agent,    begin_time, end_time, duration, result_code, result_msg, create_time, update_time, creator, updater )  VALUES (  ?, ?, ?, ?, ?,  ?, ?,    ?, ?, ?, ?, ?, ?, ?, ?, ?  )
+### Cause: com.microsoft.sqlserver.jdbc.SQLServerException: Cannot insert the value NULL into column 'id', table 'pap.dbo.infra_api_access_log'; column does not allow nulls. INSERT fails.
+; Cannot insert the value NULL into column 'id', table 'pap.dbo.infra_api_access_log'; column does not allow nulls. INSERT fails.
+	at org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:118)
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at org.mybatis.spring.MyBatisExceptionTranslator.translateExceptionIfPossible(MyBatisExceptionTranslator.java:93)
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:347)
+	at jdk.proxy2/jdk.proxy2.$Proxy130.insert(Unknown Source)
+	at org.mybatis.spring.SqlSessionTemplate.insert(SqlSessionTemplate.java:224)
+	at com.baomidou.mybatisplus.core.override.MybatisMapperMethod.execute(MybatisMapperMethod.java:59)
+	at com.baomidou.mybatisplus.core.override.MybatisMapperProxy$PlainMethodInvoker.invoke(MybatisMapperProxy.java:155)
+	at com.baomidou.mybatisplus.core.override.MybatisMapperProxy.invoke(MybatisMapperProxy.java:92)
+	at jdk.proxy2/jdk.proxy2.$Proxy138.insert(Unknown Source)
+	at cn.bochk.pap.server.system.service.logger.ApiAccessLogServiceImpl.createApiAccessLog(ApiAccessLogServiceImpl.java:41)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.validation.beanvalidation.MethodValidationInterceptor.invoke(MethodValidationInterceptor.java:174)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728)
+	at cn.bochk.pap.server.system.service.logger.ApiAccessLogServiceImpl$$SpringCGLIB$$0.createApiAccessLog(<generated>)
+	at cn.bochk.pap.server.system.api.logger.ApiAccessLogApiImpl.createApiAccessLog(ApiAccessLogApiImpl.java:24)
+	at cn.bochk.pap.framework.common.biz.infra.logger.ApiAccessLogCommonApi.createApiAccessLogAsync(ApiAccessLogCommonApi.java:28)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.validation.beanvalidation.MethodValidationInterceptor.invoke(MethodValidationInterceptor.java:174)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728)
+	at cn.bochk.pap.server.system.api.logger.ApiAccessLogApiImpl$$SpringCGLIB$$0.createApiAccessLogAsync(<generated>)
+	at cn.bochk.pap.framework.common.web.apilog.core.filter.ApiAccessLogFilter.createApiAccessLog(ApiAccessLogFilter.java:93)
+	at cn.bochk.pap.framework.common.web.apilog.core.filter.ApiAccessLogFilter.doFilterInternal(ApiAccessLogFilter.java:77)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:101)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:114)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1740)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: com.microsoft.sqlserver.jdbc.SQLServerException: Cannot insert the value NULL into column 'id', table 'pap.dbo.infra_api_access_log'; column does not allow nulls. INSERT fails.
+	at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDatabaseError(SQLServerException.java:270)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.getNextResult(SQLServerStatement.java:1735)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.doExecutePreparedStatement(SQLServerPreparedStatement.java:675)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement$PrepStmtExecCmd.doExecute(SQLServerPreparedStatement.java:594)
+	at com.microsoft.sqlserver.jdbc.TDSCommand.execute(IOBuffer.java:7745)
+	at com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(SQLServerConnection.java:4391)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeCommand(SQLServerStatement.java:276)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(SQLServerStatement.java:246)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.execute(SQLServerPreparedStatement.java:571)
+	at com.alibaba.druid.filter.FilterChainImpl.preparedStatement_execute(FilterChainImpl.java:3462)
+	at com.alibaba.druid.filter.FilterEventAdapter.preparedStatement_execute(FilterEventAdapter.java:434)
+	at com.alibaba.druid.filter.FilterChainImpl.preparedStatement_execute(FilterChainImpl.java:3460)
+	at com.alibaba.druid.proxy.jdbc.PreparedStatementProxyImpl.execute(PreparedStatementProxyImpl.java:158)
+	at com.alibaba.druid.pool.DruidPooledPreparedStatement.execute(DruidPooledPreparedStatement.java:483)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.apache.ibatis.logging.jdbc.PreparedStatementLogger.invoke(PreparedStatementLogger.java:58)
+	at jdk.proxy3/jdk.proxy3.$Proxy182.execute(Unknown Source)
+	at org.apache.ibatis.executor.statement.PreparedStatementHandler.update(PreparedStatementHandler.java:48)
+	at org.apache.ibatis.executor.statement.RoutingStatementHandler.update(RoutingStatementHandler.java:75)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.apache.ibatis.plugin.Plugin.invoke(Plugin.java:61)
+	at jdk.proxy2/jdk.proxy2.$Proxy227.update(Unknown Source)
+	at org.apache.ibatis.executor.SimpleExecutor.doUpdate(SimpleExecutor.java:50)
+	at org.apache.ibatis.executor.BaseExecutor.update(BaseExecutor.java:117)
+	at org.apache.ibatis.executor.CachingExecutor.update(CachingExecutor.java:76)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.apache.ibatis.plugin.Invocation.proceed(Invocation.java:61)
+	at com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor.intercept(MybatisPlusInterceptor.java:106)
+	at org.apache.ibatis.plugin.Plugin.invoke(Plugin.java:59)
+	at jdk.proxy2/jdk.proxy2.$Proxy226.update(Unknown Source)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.apache.ibatis.plugin.Plugin.invoke(Plugin.java:61)
+	at jdk.proxy2/jdk.proxy2.$Proxy226.update(Unknown Source)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.update(DefaultSqlSession.java:197)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.insert(DefaultSqlSession.java:184)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:333)
+	... 75 common frames omitted
+
+2025-08-25 17:40:10.263 | ERROR 15016 | http-nio-48080-exec-7 [] c.b.p.f.c.w.a.c.f.ApiAccessLogFilter     | [createApiAccessLog][url(/admin-api/system/notify-message/get-unread-count) log({"traceId":null,"userId":null,"userType":2,"applicationName":"yudao-server","requestMethod":"GET","requestUrl":"/admin-api/system/notify-message/get-unread-count","requestParams":"{\"query\":null,\"body\":null}","responseBody":null,"userIp":"0:0:0:0:0:0:0:1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0","operateModule":null,"operateName":null,"operateType":null,"beginTime":1756114808469,"endTime":1756114809936,"duration":1466,"resultCode":0,"resultMsg":""}) 发生异常]
+
+org.springframework.dao.DataIntegrityViolationException:
+### Error updating database.  Cause: com.microsoft.sqlserver.jdbc.SQLServerException: Cannot insert the value NULL into column 'id', table 'pap.dbo.infra_api_access_log'; column does not allow nulls. INSERT fails.
+### The error may exist in cn/bochk/pap/server/system/dal/mysql/logger/ApiAccessLogMapper.java (best guess)
+### The error may involve cn.bochk.pap.server.system.dal.mysql.logger.ApiAccessLogMapper.insert-Inline
+### The error occurred while setting parameters
+### SQL: INSERT INTO infra_api_access_log  ( user_type, application_name, request_method, request_url, request_params,  user_ip, user_agent,    begin_time, end_time, duration, result_code, result_msg, create_time, update_time, creator, updater )  VALUES (  ?, ?, ?, ?, ?,  ?, ?,    ?, ?, ?, ?, ?, ?, ?, ?, ?  )
+### Cause: com.microsoft.sqlserver.jdbc.SQLServerException: Cannot insert the value NULL into column 'id', table 'pap.dbo.infra_api_access_log'; column does not allow nulls. INSERT fails.
+; Cannot insert the value NULL into column 'id', table 'pap.dbo.infra_api_access_log'; column does not allow nulls. INSERT fails.
+	at org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:118)
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107)
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116)
+	at org.mybatis.spring.MyBatisExceptionTranslator.translateExceptionIfPossible(MyBatisExceptionTranslator.java:93)
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:347)
+	at jdk.proxy2/jdk.proxy2.$Proxy130.insert(Unknown Source)
+	at org.mybatis.spring.SqlSessionTemplate.insert(SqlSessionTemplate.java:224)
+	at com.baomidou.mybatisplus.core.override.MybatisMapperMethod.execute(MybatisMapperMethod.java:59)
+	at com.baomidou.mybatisplus.core.override.MybatisMapperProxy$PlainMethodInvoker.invoke(MybatisMapperProxy.java:155)
+	at com.baomidou.mybatisplus.core.override.MybatisMapperProxy.invoke(MybatisMapperProxy.java:92)
+	at jdk.proxy2/jdk.proxy2.$Proxy138.insert(Unknown Source)
+	at cn.bochk.pap.server.system.service.logger.ApiAccessLogServiceImpl.createApiAccessLog(ApiAccessLogServiceImpl.java:41)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.validation.beanvalidation.MethodValidationInterceptor.invoke(MethodValidationInterceptor.java:174)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728)
+	at cn.bochk.pap.server.system.service.logger.ApiAccessLogServiceImpl$$SpringCGLIB$$0.createApiAccessLog(<generated>)
+	at cn.bochk.pap.server.system.api.logger.ApiAccessLogApiImpl.createApiAccessLog(ApiAccessLogApiImpl.java:24)
+	at cn.bochk.pap.framework.common.biz.infra.logger.ApiAccessLogCommonApi.createApiAccessLogAsync(ApiAccessLogCommonApi.java:28)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:359)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.validation.beanvalidation.MethodValidationInterceptor.invoke(MethodValidationInterceptor.java:174)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:728)
+	at cn.bochk.pap.server.system.api.logger.ApiAccessLogApiImpl$$SpringCGLIB$$0.createApiAccessLogAsync(<generated>)
+	at cn.bochk.pap.framework.common.web.apilog.core.filter.ApiAccessLogFilter.createApiAccessLog(ApiAccessLogFilter.java:93)
+	at cn.bochk.pap.framework.common.web.apilog.core.filter.ApiAccessLogFilter.doFilterInternal(ApiAccessLogFilter.java:77)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:101)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:114)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:116)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:398)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1740)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1189)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:658)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: com.microsoft.sqlserver.jdbc.SQLServerException: Cannot insert the value NULL into column 'id', table 'pap.dbo.infra_api_access_log'; column does not allow nulls. INSERT fails.
+	at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDatabaseError(SQLServerException.java:270)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.getNextResult(SQLServerStatement.java:1735)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.doExecutePreparedStatement(SQLServerPreparedStatement.java:675)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement$PrepStmtExecCmd.doExecute(SQLServerPreparedStatement.java:594)
+	at com.microsoft.sqlserver.jdbc.TDSCommand.execute(IOBuffer.java:7745)
+	at com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(SQLServerConnection.java:4391)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeCommand(SQLServerStatement.java:276)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(SQLServerStatement.java:246)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.execute(SQLServerPreparedStatement.java:571)
+	at com.alibaba.druid.filter.FilterChainImpl.preparedStatement_execute(FilterChainImpl.java:3462)
+	at com.alibaba.druid.filter.FilterEventAdapter.preparedStatement_execute(FilterEventAdapter.java:434)
+	at com.alibaba.druid.filter.FilterChainImpl.preparedStatement_execute(FilterChainImpl.java:3460)
+	at com.alibaba.druid.proxy.jdbc.PreparedStatementProxyImpl.execute(PreparedStatementProxyImpl.java:158)
+	at com.alibaba.druid.pool.DruidPooledPreparedStatement.execute(DruidPooledPreparedStatement.java:483)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.apache.ibatis.logging.jdbc.PreparedStatementLogger.invoke(PreparedStatementLogger.java:58)
+	at jdk.proxy3/jdk.proxy3.$Proxy182.execute(Unknown Source)
+	at org.apache.ibatis.executor.statement.PreparedStatementHandler.update(PreparedStatementHandler.java:48)
+	at org.apache.ibatis.executor.statement.RoutingStatementHandler.update(RoutingStatementHandler.java:75)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.apache.ibatis.plugin.Plugin.invoke(Plugin.java:61)
+	at jdk.proxy2/jdk.proxy2.$Proxy227.update(Unknown Source)
+	at org.apache.ibatis.executor.SimpleExecutor.doUpdate(SimpleExecutor.java:50)
+	at org.apache.ibatis.executor.BaseExecutor.update(BaseExecutor.java:117)
+	at org.apache.ibatis.executor.CachingExecutor.update(CachingExecutor.java:76)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.apache.ibatis.plugin.Invocation.proceed(Invocation.java:61)
+	at com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor.intercept(MybatisPlusInterceptor.java:106)
+	at org.apache.ibatis.plugin.Plugin.invoke(Plugin.java:59)
+	at jdk.proxy2/jdk.proxy2.$Proxy226.update(Unknown Source)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.apache.ibatis.plugin.Plugin.invoke(Plugin.java:61)
+	at jdk.proxy2/jdk.proxy2.$Proxy226.update(Unknown Source)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.update(DefaultSqlSession.java:197)
+	at org.apache.ibatis.session.defaults.DefaultSqlSession.insert(DefaultSqlSession.java:184)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:333)
+	... 75 common frames omitted
+
+Closing JDBC Connection [Transaction-aware proxy for target Connection [ConnectionProxyImpl{connectedTime=2025-08-25 17:39:31.742, closeCount=0, lastValidateTimeMillis=2025-08-25 17:39:32.056}]]
+2025-08-25 17:40:10.299 |  INFO 15016 | http-nio-48080-exec-6 [] .b.p.f.c.w.a.c.i.ApiAccessLogInterceptor | [preHandle][开始请求 URL(/admin-api/system/auth/refresh-token) 参数({refreshToken=4df3841064594a93965240c834c8eaa9})]
+2025-08-25 17:40:10.299 |  INFO 15016 | http-nio-48080-exec-7 [] .b.p.f.c.w.a.c.i.ApiAccessLogInterceptor | [preHandle][开始请求 URL(/admin-api/system/auth/refresh-token) 参数({refreshToken=bfdc0a8a5ee14c6198e09ace1bb87373})]
+	Controller 方法路径：cn.bochk.pap.server.system.controller.admin.auth.AuthController(AuthController.java:84)
+	Controller 方法路径：cn.bochk.pap.server.system.controller.admin.auth.AuthController(AuthController.java:84)
+Creating a new SqlSession
+Creating a new SqlSession
+
 
 
 
 #############################################################################################
-
-
-
-#############################################################################################
-
-
-#############################################################################################
-
-
-
-#############################################################################################
-
-
-
-
-
-#############################################################################################
-
+Bash(cd "D:\software\developmentTools\Git\gitee\newpap\pap\pocpro" && find . -name "*.java" -exec grep -l
+      "@KeySequence" {} \;)
 
 #############################################################################################
 
