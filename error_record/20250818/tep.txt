@@ -695,18 +695,267 @@ ProcessController類的completeTask方法裏面的有個語句：
 
 
 ###########################################################################
+等下，我現在的情況是這樣的，在本地把前端項目的dist文件拿到指定節點上，
+在該節點上安裝nginx，配置nginx.conf,然後啓動，
+從我本地訪問該節點ip
+http://ip:80
+
+暫時不用什麼docker部署
+
 
 
 ###########################################################################
 
+1.服務器上的nginx.conf文件被我下載下來了，在這裏：D:\Users\yuequanhuabai\Desktop\tem2\nginx.conf
+
+2.這個是執行systemctl status nginx的結果：
+# systemctl status nginx
+● nginx.service - nginx - high performance web server
+   Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; vendor preset: disabled)
+   Active: active (running) since Wed 2025-08-27 23:00:04 CST; 3min 40s ago
+     Docs: http://nginx.org/en/docs/
+  Process: 162900 ExecStop=/bin/sh -c /bin/kill -s TERM $(/bin/cat /run/nginx.pid) (code=exited, status=0/SUCCESS)
+  Process: 161653 ExecReload=/bin/sh -c /bin/kill -s HUP $(/bin/cat /run/nginx.pid) (code=exited, status=0/SUCCESS)
+  Process: 162948 ExecStart=/usr/sbin/nginx -c ${conffile} (code=exited, status=0/SUCCESS)
+ Main PID: 162949 (nginx)
+    Tasks: 2 (limit: 23067)
+   Memory: 2.1M
+   CGroup: /system.slice/nginx.service
+           ├─162949 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf
+           └─162951 nginx: worker process
+
+Aug 27 23:00:04 iZ7xvaoxi2zzlhsf3fie9bZ systemd[1]: Starting nginx - high performance web server...
+Aug 27 23:00:04 iZ7xvaoxi2zzlhsf3fie9bZ systemd[1]: nginx.service: Can't open PID file /run/nginx.pid (yet?) after start: >
+Aug 27 23:00:04 iZ7xvaoxi2zzlhsf3fie9bZ systemd[1]: Started nginx - high performance web server.
+
+3.前端在服務器的地址：
+[root@iZ7xvaoxi2zzlhsf3fie9bZ dist]# ll
+total 44
+drwxr-xr-x 2 nginx nginx 20480 Aug 27 20:55 assets
+-rwxr-xr-x 1 nginx nginx  4286 Aug 27 20:55 favicon.ico
+-rwxr-xr-x 1 nginx nginx  3329 Aug 27 20:55 index.html
+-rwxr-xr-x 1 nginx nginx  6334 Aug 27 20:55 logo.gif
+[root@iZ7xvaoxi2zzlhsf3fie9bZ dist]# pwd
+/var/dev/front-end/dist
+[root@iZ7xvaoxi2zzlhsf3fie9bZ dist]#
+
+我該如何測試？
 
 
 ###########################################################################
+在服務器上curl有相應了，但是我在本地用http://ip:80 請求的時候沒有反應？
 
+# curl http://localhost:80
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PAP</title>
+    <script type="module" crossorigin src="/assets/index-DEwFXcEi.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/form-create-DsHKaGs8.js">
+    <link rel="modulepreload" crossorigin href="/assets/form-designer-BYIyBuGa.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-BNhxEomj.css">
+  </head>
+  <body>
+    <div id="app">
+      <style>
+        .app-loading {
+          display: flex;
+          width: 100%;
+          height: 100%;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+          background: #f0f2f5;
+        }
+
+        .app-loading .app-loading-wrap {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          display: flex;
+          transform: translate3d(-50%, -50%, 0);
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+        }
+
+        .app-loading .app-loading-title {
+          margin-bottom: 30px;
+          font-size: 20px;
+          font-weight: bold;
+          text-align: center;
+        }
+
+        .app-loading .app-loading-logo {
+          width: 100px;
+          margin: 0 auto 15px auto;
+        }
+
+        .app-loading .app-loading-item {
+          position: relative;
+          display: inline-block;
+          width: 60px;
+          height: 60px;
+          vertical-align: middle;
+          border-radius: 50%;
+        }
+
+        .app-loading .app-loading-outter {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          border: 4px solid #2d8cf0;
+          border-bottom: 0;
+          border-left-color: transparent;
+          border-radius: 50%;
+          animation: loader-outter 1s cubic-bezier(0.42, 0.61, 0.58, 0.41) infinite;
+        }
+
+        .app-loading .app-loading-inner {
+          position: absolute;
+          top: calc(50% - 20px);
+          left: calc(50% - 20px);
+          width: 40px;
+          height: 40px;
+          border: 4px solid #87bdff;
+          border-right: 0;
+          border-top-color: transparent;
+          border-radius: 50%;
+          animation: loader-inner 1s cubic-bezier(0.42, 0.61, 0.58, 0.41) infinite;
+        }
+
+        @keyframes loader-outter {
+          0% {
+            transform: rotate(0deg);
+          }
+
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+        @keyframes loader-inner {
+          0% {
+            transform: rotate(0deg);
+          }
+
+          100% {
+            transform: rotate(-360deg);
+          }
+        }
+      </style>
+      <div class="app-loading">
+        <div class="app-loading-wrap">
+          <div class="app-loading-title">
+            <img src="/logo.gif" class="app-loading-logo" alt="Logo" />
+            <div class="app-loading-title">PAP</div>
+          </div>
+          <div class="app-loading-item">
+            <div class="app-loading-outter"></div>
+            <div class="app-loading-inner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+
+本地請求對應的服務器：
+This page isn’t working
+8.138.252.225 is currently unable to handle this request.
+HTTP ERROR 503
 
 
 ###########################################################################
+D:\software\develop_tools\git\gitee\pap\pocpro>telnet 8.138.252.225 80                                                  Connecting To
+  8.138.252.225...Could not open connection to the host, on port 80: Connect failed
 
+● telnet连接失败确认了问题确实在云服务器的安全组配置上。让我详细指导您如何在阿里云ECS中配置安全组：
+
+  阿里云ECS安全组配置详细步骤
+
+  1. 登录阿里云控制台
+
+  - 访问 https://ecs.console.aliyun.com
+  - 登录您的阿里云账号
+
+  2. 找到您的ECS实例
+
+  - 在左侧菜单选择"实例与镜像" → "实例"
+  - 找到IP为 8.138.252.225 的实例
+  - 点击实例ID进入实例详情页
+
+  3. 配置安全组
+
+  - 在实例详情页，点击"安全组"选项卡
+  - 点击安全组ID（通常格式为 sg-xxxxxxxxx）
+  - 进入安全组详情页面
+
+  4. 添加入站规则
+
+  - 点击"入方向"选项卡
+  - 点击"添加安全组规则"按钮
+  - 填写规则信息：
+  规则方向：入方向
+  授权策略：允许
+  协议类型：TCP
+  端口范围：80/80
+  授权类型：IPv4地址段访问
+  授权对象：0.0.0.0/0
+  优先级：1
+  描述：允许HTTP访问
+  - 点击"确定"保存
+
+  5. 验证规则是否生效
+
+  规则添加后，等待1-2分钟让配置生效，然后测试：
+
+  # 在本地重新测试telnet
+  telnet 8.138.252.225 80
+
+  如果telnet能连接成功，会看到类似：
+  Connecting To 8.138.252.225...
+  Connected to 8.138.252.225.
+
+  截图参考位置
+
+  如果您需要更详细的界面指导，安全组配置界面通常如下路径：
+  1. ECS控制台首页
+  2. 实例列表 → 点击实例ID
+  3. 实例详情 → "安全组"选项卡
+  4. 安全组列表 → 点击安全组ID
+  5. 安全组详情 → "入方向"选项卡 → "添加安全组规则"
+
+  常见问题排查
+
+  如果添加规则后仍无法访问：
+
+  1. 检查是否选择了正确的安全组
+  2. 确认规则配置：
+    - 协议类型：TCP
+    - 端口范围：80/80（不是80-80）
+    - 授权对象：0.0.0.0/0
+    - 授权策略：允许
+  3. 检查是否有拒绝规则：
+    - 在安全组规则列表中，查看是否有优先级更高的"拒绝"规则
+    - 如果有，需要删除或修改优先级
+
+  快速测试命令
+
+  配置完成后，使用以下命令测试：
+
+  # Windows PowerShell
+  Test-NetConnection -ComputerName 8.138.252.225 -Port 80
+
+  # 或直接在浏览器访问
+  http://8.138.252.225
+
+  安全组规则生效后，您就能正常从本地访问服务器上的nginx了！
 
 
 ###########################################################################
