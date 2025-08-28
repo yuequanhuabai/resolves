@@ -1,0 +1,50 @@
+🔹 Nginx 常用内置变量对照表
+1. 客户端相关
+变量	含义	示例
+$remote_addr	客户端 IP 地址（直连到 Nginx 的 IP）	192.168.1.10
+$remote_port	客户端端口号	53210
+$http_x_forwarded_for	请求头里的 X-Forwarded-For（可能有多个 IP）	203.0.113.1, 10.0.0.1
+$proxy_add_x_forwarded_for	$http_x_forwarded_for + $remote_addr（自动追加当前 IP）	203.0.113.1, 10.0.0.1, 192.168.1.10
+$http_user_agent	客户端浏览器标识	Mozilla/5.0 ... Chrome/116.0
+$http_referer	来源页面 URL	https://google.com/
+2. 请求相关
+变量	含义	示例
+$request	原始请求行	GET /index.html HTTP/1.1
+$request_uri	请求的完整 URI（包含参数）	/index.html?foo=bar
+$uri	请求路径（去掉参数，可能被 rewrite 修改过）	/index.html
+$args	请求参数（query string）	foo=bar&x=1
+$scheme	请求协议	http 或 https
+$request_method	请求方法	GET / POST / PUT / DELETE
+$is_args	如果有参数则为 ?，否则为空	?
+$query_string	同 $args	foo=bar&x=1
+3. 服务器相关
+变量	含义	示例
+$host	请求的 Host（可能来自 Host 请求头，或 server_name）	example.com
+$http_host	请求头中的 Host（优先于 $host）	example.com:8080
+$server_addr	Nginx 服务器本机 IP	10.0.0.5
+$server_port	Nginx 监听的端口	80
+$server_name	命中的 server_name 配置值	example.com
+4. 代理 & 上游相关
+变量	含义	示例
+$upstream_addr	上游服务器地址	127.0.0.1:8080
+$upstream_response_time	上游响应时间	0.045
+$upstream_status	上游返回的状态码	200
+$proxy_host	proxy_pass 里的主机名	backend.local
+$proxy_port	proxy_pass 的端口	8080
+5. 其他常用
+变量	含义	示例
+$status	返回给客户端的 HTTP 状态码	200
+$body_bytes_sent	已发送给客户端的响应体大小（字节）	15432
+$time_local	本地时间	28/Aug/2025:14:32:11 +0800
+$msec	当前时间戳（毫秒）	1693216331.123
+$request_time	处理请求耗时（秒）	0.123
+
+✅ 总结
+
+$http_xxx 系列：取请求头字段，例如 $http_user_agent、$http_cookie。
+
+$proxy_add_x_forwarded_for 常用在反向代理，确保能拿到用户真实 IP。
+
+$request_uri vs $uri：前者带参数，后者不带参数。
+
+$host vs $http_host：大部分场景差不多，但 $http_host 直接取请求头，更精确。
