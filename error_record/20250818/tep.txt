@@ -983,7 +983,13 @@ redis-server   3761095   papuser  Su  Ipv4  12078658  0t0  TCP   *:redis(LISTEN)
 
 
 ###########################################################################
-
+at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSinggletonBeanRegistry.java:371)
+at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337)
+at org.springframework.beans.factory.support.AbtractAutowireCapableBeanFactory.resolveBeanByName(AbstractAutowireCapbleBeanFactory.java:468)
+at org.springframework.context.annotation.CommonAnnotationBeanPostProcessor.autowireResource(CommonAnnotationBeanPostrocessor.java:606)
+at org.springframework.context.annotation.CommonAnnotationBeanPostProcessor.getResource(CommonAnnotationBeanPostProcesor.java:577)
+at org.springframework.context.annotation.CommonAnnotationBeanPostProcessor$ResourceElement.inject(InjectionMetadata.java:272)
+at org.springframework.
 
 
 ###########################################################################
