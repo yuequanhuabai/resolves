@@ -939,14 +939,47 @@ D:\software\develop_tools\git\gitee\pap\pocpro>telnet 8.138.252.225 80          
 
 
 ###########################################################################
+这个报错是什么意思？
+CAused by: java.net.BindException: Address already in use
+
+端口占用了吗
+
+###########################################################################
+[main] INFO org.reflections.Reflections -- Reflections took 58 ms to scan 1 urls, producing 39 keys and 336 values
+Exception in thread "main" java.lang.reflect.InvocationTargetException
+at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:102)
+at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:64)
+at org.springframework.boot.loader.launch.PropertiesLauncher.main(PropertiesLauncher.java:580)
+Caused by: java.lang.RuntimeException: java.net.BindException: Address already in use
+at cn.bochk.pap.server.PapServerApplication.main(PapServerApplication.java:28)
+...7 more
+
+Caused by: java.net.BindException: Address already in use
+at java.base/sun.nio.ch.Net.bind0(Netive Method)
+at java.base/sun.nio.ch.Net.bind(Net.java:555)
+at java.base/sun.nio.ch.Net.bind(Net.java:544)
+at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:648)
+at java.base/java.net.ServerSocket.bind(ServerSocket.java:388)
+at java.base/java.net.ServerSocket.<init>(ServerSocket.java:274)
+at com.github.fppt.jedismock.server.RedisService.<init>(RedisSErvice.java:33)
+at com.github.fppt.jedismock.RedisServer.start(RedisServer.java:71)
+atcn.bochk.pap.server.PapServerApplication.main(PapServerApplication.java:26)
+... 7 more
+
+
+
 
 
 ###########################################################################
+执行下面命令
+$lsof -i:6379
+COMMAND  PID   USER  FD   TYPE  DEVICE   SIZE/OFF  NODE      NAME
+redis-server   3761095   papuser  Su  Ipv4  12078658  0t0  TCP   *:redis(LISTEN)
 
-
-
-###########################################################################
-
+这个是有还是没有redis服务？
 
 
 ###########################################################################
