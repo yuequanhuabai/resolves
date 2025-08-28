@@ -638,7 +638,9 @@ ProcessController類的completeTask方法裏面的有個語句：
 後端只保留一個啓動類，把配置文件改爲yml方式，沒必要的配置先全部去掉
 我現在已經切到了dev分支了，保留了之前的所有代碼，前後端都是dev分支，你就快點刪除吧
 
+D://software//developmentTools//apache-maven//apache-maven-3.8.9//bin//mvn clean package -DskipTests
 
+D://software//developmentTools//apache-maven//apache-maven-3.8.9//bin//mvn --version
 ###########################################################################
   - Node.js: npx http-server
   - PHP: php -S localhost:3000
@@ -647,6 +649,10 @@ ProcessController類的completeTask方法裏面的有個語句：
 
   你剛下說的這些，報錯node的原生服務器，它們的本質是創建一個基於http協議的web服務器的轉發器嗎？
   後端是做http協議的web服務器來解析http協議，並且處理解析後的業務傳參？
+中間 129-131 這三行代碼的作用是啥？ 可以刪除嗎？
+<configuration>
+                    <layout>ZIP</layout>
+                </configuration>
 
 
 ###########################################################################
@@ -654,9 +660,35 @@ ProcessController類的completeTask方法裏面的有個語句：
 我只能勉強感覺到一點，這些東西好像都是要基於瀏覽器才行？ 纔可以稱謂靜態服務器嗎？
 還是說只要是可以發起http請求的，能夠可視化發起請求的抽象就是靜態服務器？
 
+
+java -Dloader.path="./lib" -jar pap-server-thin.jar
+
+
 ###########################################################################
 如何理解靜態服務器的啓動？ 就像剛纔的原生node啓動一樣？
 它的本質又是什麼？ 我現在理解爲： 靜態資源+可發起http請求+接受web服務器後端返回的http數據
+<parent>
+        <groupId>cn.bochk.boot</groupId>
+        <artifactId>pap</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>pap-server</artifactId>
+    <packaging>jar</packaging>
+
+    <name>${project.artifactId}</name>
+    <description>pap-server</description>
+
+
+這裏面的
+<parent>
+        <groupId>cn.bochk.boot</groupId>
+        <artifactId>pap</artifactId>
+        <version>${revision}</version>
+    </parent>
+    是啥意思？
+
 
 ###########################################################################
 我還是不是很理解靜態服務器這個概念？ 它的本質是一個可以訪問文件資源的socket嗎？
@@ -664,6 +696,10 @@ ProcessController類的completeTask方法裏面的有個語句：
 ###########################################################################
 它是一個用死循環控制的socket的客戶端+靜態文件資源，在監聽服務端發來基於http協議發來的消息？
 我可以這樣理解嗎？ 更接近本質了嗎？
+Cannot resolve symbol 'copy-dependencies'
+
+我把項目移植到了其他地方，maven版本是3.8.2，但是在package的時候報錯了：
+Could not find goal 'copy-dependencies' in plugin org.apache.maven.plugins:maven-surefire-plugin:3.2.2 among available goals help, test --> [Help 1]
 
 ###########################################################################
 那瀏覽器是web服務器的代理？（監聽靜態服務器的行爲）；還是靜態服務器的代理（代理靜態服務器和web服務器的後端交互）
@@ -671,6 +707,75 @@ ProcessController類的completeTask方法裏面的有個語句：
 
 ###########################################################################
 你知道靜態服務器嗎？ 可以講講它的誕生背景？發展歷史，它的本質是啥嗎？
+
+###########################################################################
+可以幫我拆解一下這個pom文件的build，
+先總體宏觀拆解，然後每個元素拆解解析
+
+<build>
+        <!-- 设置构建的 jar 包名 -->
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <!-- 复制依赖到指定目录 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 打包应用jar，但排除依赖 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
+                <configuration>
+                    <layout>ZIP</layout>
+                </configuration>
+                <executions>
+                    <!-- 创建只包含应用代码的thin jar -->
+                    <execution>
+                        <id>repackage-thin</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>thin</classifier>
+                            <layout>ZIP</layout>
+                            <includes>
+                                <include>
+                                    <groupId>nothing</groupId>
+                                    <artifactId>nothing</artifactId>
+                                </include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 ###########################################################################
 我還有一個問題：就是我們現在在web上操作的本質是靜態服務器和後端的web服務器交互（瀏覽器是一個中間人）
@@ -743,132 +848,7 @@ drwxr-xr-x 2 nginx nginx 20480 Aug 27 20:55 assets
 
 
 ###########################################################################
-在服務器上curl有相應了，但是我在本地用http://ip:80 請求的時候沒有反應？
 
-# curl http://localhost:80
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PAP</title>
-    <script type="module" crossorigin src="/assets/index-DEwFXcEi.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/form-create-DsHKaGs8.js">
-    <link rel="modulepreload" crossorigin href="/assets/form-designer-BYIyBuGa.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-BNhxEomj.css">
-  </head>
-  <body>
-    <div id="app">
-      <style>
-        .app-loading {
-          display: flex;
-          width: 100%;
-          height: 100%;
-          justify-content: center;
-          align-items: center;
-          flex-direction: column;
-          background: #f0f2f5;
-        }
-
-        .app-loading .app-loading-wrap {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          display: flex;
-          transform: translate3d(-50%, -50%, 0);
-          justify-content: center;
-          align-items: center;
-          flex-direction: column;
-        }
-
-        .app-loading .app-loading-title {
-          margin-bottom: 30px;
-          font-size: 20px;
-          font-weight: bold;
-          text-align: center;
-        }
-
-        .app-loading .app-loading-logo {
-          width: 100px;
-          margin: 0 auto 15px auto;
-        }
-
-        .app-loading .app-loading-item {
-          position: relative;
-          display: inline-block;
-          width: 60px;
-          height: 60px;
-          vertical-align: middle;
-          border-radius: 50%;
-        }
-
-        .app-loading .app-loading-outter {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          border: 4px solid #2d8cf0;
-          border-bottom: 0;
-          border-left-color: transparent;
-          border-radius: 50%;
-          animation: loader-outter 1s cubic-bezier(0.42, 0.61, 0.58, 0.41) infinite;
-        }
-
-        .app-loading .app-loading-inner {
-          position: absolute;
-          top: calc(50% - 20px);
-          left: calc(50% - 20px);
-          width: 40px;
-          height: 40px;
-          border: 4px solid #87bdff;
-          border-right: 0;
-          border-top-color: transparent;
-          border-radius: 50%;
-          animation: loader-inner 1s cubic-bezier(0.42, 0.61, 0.58, 0.41) infinite;
-        }
-
-        @keyframes loader-outter {
-          0% {
-            transform: rotate(0deg);
-          }
-
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes loader-inner {
-          0% {
-            transform: rotate(0deg);
-          }
-
-          100% {
-            transform: rotate(-360deg);
-          }
-        }
-      </style>
-      <div class="app-loading">
-        <div class="app-loading-wrap">
-          <div class="app-loading-title">
-            <img src="/logo.gif" class="app-loading-logo" alt="Logo" />
-            <div class="app-loading-title">PAP</div>
-          </div>
-          <div class="app-loading-item">
-            <div class="app-loading-outter"></div>
-            <div class="app-loading-inner"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
-
-
-本地請求對應的服務器：
-This page isn’t working
-8.138.252.225 is currently unable to handle this request.
-HTTP ERROR 503
 
 
 ###########################################################################
