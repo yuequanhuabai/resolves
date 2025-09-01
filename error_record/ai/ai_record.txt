@@ -10,10 +10,7 @@
 Google   DeepMind： 丹尼-周（Denny Zhou）
 他和他的團隊：奠定了我們今天理解和使用大語言模型推理能力的基石
 
-提出：
-四維連提示（Chain-of-Thought Prompting）
-自恰性：(Self-Consistency)
-關鍵技術
+ 
 
 深度參與了Google  Gemini模型推理能力的構建
 
