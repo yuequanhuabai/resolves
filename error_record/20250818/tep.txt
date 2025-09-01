@@ -983,30 +983,51 @@ redis-server   3761095   papuser  Su  Ipv4  12078658  0t0  TCP   *:redis(LISTEN)
 
 
 ###########################################################################
+可以帮我看看这个拨错吗？ 在linux server上的启动报错
 at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSinggletonBeanRegistry.java:371)
 at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337)
 at org.springframework.beans.factory.support.AbtractAutowireCapableBeanFactory.resolveBeanByName(AbstractAutowireCapbleBeanFactory.java:468)
 at org.springframework.context.annotation.CommonAnnotationBeanPostProcessor.autowireResource(CommonAnnotationBeanPostrocessor.java:606)
 at org.springframework.context.annotation.CommonAnnotationBeanPostProcessor.getResource(CommonAnnotationBeanPostProcesor.java:577)
 at org.springframework.context.annotation.CommonAnnotationBeanPostProcessor$ResourceElement.inject(InjectionMetadata.java:272)
-at org.springframework.
+at org.springframework.context.annotation.CommonAnnotationBeanPostProcessor.postProcessProperties(CommonAnnotationBeanPostProcessor.java:359)
+... 88 common framew omitted
+
+caused by: org.springframework.beans.factory.UnsatisfiedDependencyExeception: Error creating bean with name 'sqlSessionFacgory' defined in class path resoruce
+[com/baomidou/mybatisplus/autoconfigure/MybatisPlusAutoConfiguration.class]: Unsatisfied dependency expressed through method 'sqlSessionFactory' parameter 0: Error creating bean with name 'dataSource' defined in class
+path resource[com/baomidou/dynamic/datasource/spring/boot/autoconfigure/DynamicDataSourceAutoConfiguration.class]: druid create error
+at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:804)
+at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java)
 
 
 ###########################################################################
+1.我的需求该下，这个项目并不是集成flowable的，这只是一个项目名字，它目前的前后端项目就是一个空壳，主要是做一个auth2的实现，
+你把文档中对应的flowable相关的内容删除；
+2.你先给出auth2的原理，再给出基于原理的步骤，例如auth2的核心对象是啥？ 这个对象的定位和功能是啥？ 该步骤实现了auth2原理的哪个部分
+###########################################################################
+你可以在文档的开头位置再附加auth2的诞生背景，发展历史；然后讲讲为什么要用auth2，auth2解决了什么问题？
+auth2的每个步骤要达到什么目的，这个目的可以用其它方式去实现吗？（这里只要稍微讲讲其他方式的宏观的利弊即可，无需具体）
+
+###########################################################################
+你创建一个新目录吧，可以把上面的auth2的实现改为oidc的实现吗，把所有的文档重新更新一边吗
+把原来的auth2的文档也创建一个目录，放在里面，auth2的文档和oidc的文档隔离开来，原来的auth2文档不用改；
+新的oidc文档放在新目录里面
+
+###########################################################################
+关于文档的：
+”### 1.2 OAuth2 四个核心角色“  这个地方，
+我有一点疑问，就是Resource Owner-> Authorization Server  第三步：授权许可；
+然后到第四步， Client->Resource Server  访问令牌，
+这里是不是操作有点跳跃，用户授权许可操作发送给授权服务器，授权服务器确认了用户的操作，客户端才可以替代用户访问对应的资源
 
 
 ###########################################################################
+测试数据库连接：
+$nv -vz databaseIp 3306
+Ncat: Version 7.92(https://nmap.org/ncat)
+Ncat: Connection refused.
 
-
-
-###########################################################################
-
-
-###########################################################################
-
-
-
-###########################################################################
+这个是无法联通吗
 
 
 ###########################################################################
