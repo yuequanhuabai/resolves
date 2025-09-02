@@ -1,0 +1,109 @@
+ 根据你的项目分析，已经配置了完整的离线打包方案。以下是你可以使用的3种离线打包方式：
+
+  1. 快速离线打包（推荐）
+
+  你的项目已经配置好了离线打包，可以直接使用：
+
+  # 使用项目本地仓库进行离线打包
+  mvn clean package -o -Dmaven.repo.local=./lib-repository -DskipTests=true
+
+  或者使用temp-settings.xml：
+
+  mvn clean package -s temp-settings.xml -DskipTests=true
+
+  2. 生成的文件类型
+
+  打包完成后，在 pap-server/target/ 目录下会生成：
+
+  - pap-server-fat.jar - 包含所有依赖的完整包（约100-200MB）
+  - pap-server-thin.jar - 仅包含应用代码的轻量包（约2-5MB）
+  - lib/ - 所有依赖jar包目录
+
+  3. 运行方式
+
+  方式A：使用fat jar（简单）
+
+  java -jar pap-server-fat.jar
+
+  方式B：使用thin jar + classpath
+
+  java -cp "pap-server-thin.jar;lib/*" 启动类全路径
+
+  4. 创建便捷脚本
+
+  你可以创建一个 offline-build.bat 脚本：
+
+  @echo off
+  echo "开始离线打包..."
+  mvn clean package -s temp-settings.xml -DskipTests=true
+  echo "离线打包完成！"
+  echo "Fat JAR: pap-server/target/pap-server-fat.jar"
+  echo "Thin JAR: pap-server/target/pap-server-thin.jar"
+  pause
+
+  5. 如果需要更新依赖
+
+  当项目依赖变更时，需要重新收集依赖到本地仓库：
+
+  # 收集新依赖
+  mvn dependency:go-offline -Dmaven.repo.local=./lib-repository
+
+  # 或者复制依赖
+  mvn dependency:copy-dependencies -DoutputDirectory=./lib-repository
+
+
+
+
+
+
+##########################################################################################################
+
+  看到问题了，需要先安装本地模块。让我总结完整的离线打包步骤：
+
+    完整离线打包步骤总结
+
+    第1步：安装项目本地依赖
+
+    # 先安装本地模块到Maven仓库
+    mvn clean install -DskipTests=true -Dmaven.repo.local=./lib-repository
+  ✻ Transpiling… (esc to interrupt)
+    第2步：收集所有外部依赖reate a todo list when working on complex tasks to track progress and remain on track
+
+    # 下载所有外部依赖到本地仓库─────────────────────────────────────────────────────────────────────────────────────────╮
+    mvn dependency:go-offline -Dmaven.repo.local=./lib-repository                                                        │
+  ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+    第3步：执行离线打包(shift+tab to cycle)
+
+    # 使用本地仓库进行打包
+    mvn clean package -Dmaven.repo.local=./lib-repository -DskipTests=true
+
+    第4步：清理临时文件（可选）
+
+    # 删除编译过程中的临时文件
+    rm -rf pap-server/target/classes pap-server/target/test-classes
+    rm -rf pap-server/target/generated-* pap-server/target/maven-*
+    rm -rf pap-framework/target/
+    rm -f .flattened-pom.xml pap-framework/.flattened-pom.xml
+
+    关键配置文件
+
+    你的项目已经包含了必要的配置：
+    - pap-server/pom.xml 中的 maven-dependency-plugin 和多版本 spring-boot-maven-plugin
+    - temp-settings.xml 离线配置文件
+
+    生成的部署文件
+
+    最终在 pap-server/target/ 下生成：
+    - pap-server-fat.jar (129MB) - 完整可执行包
+    - pap-server-thin.jar (1.9MB) - 应用代码包
+    - lib/ 目录 (131MB, 265个依赖包) - 依赖库
+
+    运行方式
+
+    方式1（推荐）：
+    java -jar pap-server-fat.jar
+
+    方式2：
+    java -cp "pap-server-thin.jar;lib/*" [主类名]
+
+    现在你应该先执行第1步来解决当前的错误。
