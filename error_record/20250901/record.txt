@@ -146,25 +146,113 @@ INFO] -------------------< cn.bochk.boot:pap-dependencies >-------------------
 
 
 ###########################################################################
+帮我看看这个报错： 是执行：mvn clean install -DskipTests=true -Dmaven.repo.local=./lib-repository 产生的
+[ERROR] Could not find goal 'install' in plugin org.springframework.boot:spring-boot-maven-plugin:3.5.0 among avaible goals build-image, build-image-no-fork,
+build-info,help, process-aot,process-test-aot,repackage,run,start,stop,test-run -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR]Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR]For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoNotFoundException
 
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-###########################################################################
-
-
-
-###########################################################################
 
 
 
 ###########################################################################
+pom文件的plugins是这样的，好像是最后一个有点问题：你帮我看看
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>auto-install</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install</goal>
+                        </goals>
+                        <configuration>
+                            <file>${project.basedir}/lib</file>
+                            <groupId>your.custom.groupid</groupId>
+                            <artifactId>your-local-jar</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+
+
+###########################################################################
+我执行 mvn dependency:go-offline -Dmaven.repo.local=./lib-repository    这个又报错了
+[INFO]
+[INFO]   BUILD FAILED
+[INFO]
+[INFO]  Total time: 02:02 min
+[INFO]  Finished at : 2025-09-02T14:08:02+08:00
+[INFO]
+[INFO]
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline(default-cli) on project saml: org.eclipse.aether.resolution.DependencyResolutionException:Failed to read artifact descriptor for
+org.opensaml:opensaml-messaging-api:jar:4.3.2: Could not transfer artifact org.opensaml:opensaml-messaging-api:pom:4.3.2 from/to central(https://repo.maven.apache.org/maven2):
+transfer failed for https://repo.maven.apache.org/maven2/org/opensaml/opensaml-messaging-api/4.3.2/opensaml-messaging-api-4.3.2.pom: Connect to repo.maven.apache.org:443[repomaven.apache.org/151.101.0.215,
+repo.maven.apache.org/151.101.64.215,repo.maven.apache.org/151.101.128.215,repo.maven.apache.org/151.101.192.215] failed: connection fimed out: connect -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR]For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+
+
+
+
+###########################################################################
+mvn dependency:get \
+    -DrepoUrl=http://your.repo.company.com/repository/maven-releases/ \
+    -Dartifact=org.opensaml:opensaml-messaging-api:4.3.2
+
+mvn dependency:get -Dartifact=org.opensaml:opensaml-messaging-api:4.3.2
+
+
+###########################################################################
+我在执行mvn dependency:go-offline -Dmaven.repo.local=./lib-repository  的时候报错，
+但是有个依赖在内网的repo里面没有 org.opensaml:opensaml-xmlsec-api:4.3.2
+但是手动放到了当前项目的lib目录下，
+
+如何基于当前lib，重新设置离线打包命令
+
+###########################################################################
+我执行：mvn dependency:go-offline -Dmaven.repo.local=./lib-repository 又报错了，为什么它又去仓库下载了
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline (default-cli) on project
+ saml: org.eclipse.aether.resolution.DependencyResolutionExeption: Failed to read artifact descriptor for org.opensaml:opensaml-saml-api:jar:4.3.2:Could not transfer artifact org.opensaml:opensaml-saml-api:pom:4.3.2
+ from/to central (https://repo.maven.apache.org/maven2): transfer failed for https://repo.maven.apache.org/maven2/org/opensaml/opnesaml-saml-api/4.3.2/opensaml-saml-api-4.3.2.pom:
+ Connect to repo.maven.apache.org:443 [repo.mavenapache.org/151.101.128.215,repo.maven.apache.org/151.101.192.215,repo.maven.apache.org/151.101.0.215,
+ repo.maven.apache.org/151.101.64.215] failed: Connection timed out: connect -> [Help 1]
+
+ [ERROR]
+ [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+ [ERROR] Re-run Maven using the -X switch to enable full debug logging
 
 
 
