@@ -254,11 +254,14 @@ mvn dependency:get -Dartifact=org.opensaml:opensaml-messaging-api:4.3.2
  [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
  [ERROR] Re-run Maven using the -X switch to enable full debug logging
 
-
-
 ###########################################################################
+现在主要看auth2的实现文档
+基于文档，你可以再详细一些吗？ 把文档的逻辑和代码的逻辑关联起来
+例如
 
+nohup  java -jar  pap-server-fat.jar >output.log 2>&1 &
 
+nohup java -jar a.jar > output.log 2>&1 &
 ###########################################################################
 
 
