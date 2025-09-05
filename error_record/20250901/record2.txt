@@ -107,3 +107,6 @@
     java -cp "pap-server-thin.jar;lib/*" [主类名]
 
     现在你应该先执行第1步来解决当前的错误。
+
+
+
