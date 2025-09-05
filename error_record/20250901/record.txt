@@ -301,6 +301,10 @@ Caused by: com.mysql.cj.exceptions.CJCommuicationsException: Communications link
 
 
 ###########################################################################
+你上面说oauth2有四个对象，那你把你上面的内容重新基于哪个对象做了什么行为的方式做一个简明的描述吗？ 在描述的时候不要直接说行为，要附上哪个对象，做了什么行为；oauth2设计这一行为的目的是为了保证什么？
+
+OAuth 2.0 流程：基于角色行为的简明描述以下是授权码模式（Authorization Code Grant）中，四个对象各自的行为和设计目的：1. 启动授权•[客户端 Client] 做的行为是：将 [资源所有者 Resource Owner] 的浏览器重定向至 [授权服务器 Authorization Server]，并在 URL 中附上自己的身份（client_id）和想要的权限（scope）。•设计目的：安全委托。客户端自身不处理用户的密码，而是将“认证用户身份”这个敏感操作完全委托给用户所信任的授权服务器。这从一开始就避免了密码泄露给第三方应用的风险。2. 用户同意授权•[资源所有者 Resource Owner] 做的行为是：在 [授权服务器 Authorization Server] 的页面上，输入自己的用户名和密码进行登录，并明确点击“同意”授权 [客户端 Client] 获取指定的权限。•设计目的：明确的用户授权 (Explicit Consent)。保证用户是知情且自愿的。用户能清楚地看到是哪个应用在请求什么权限，并可以自主决定是否批准。用户的密码也只提供给了授权服务器，而不是客户端。3. 颁发临时授权码•[授权服务器 Authorization Server] 做的行为是：验证用户身份和授权后，生成一个临时的、一次性的授权码 (Authorization Code)，然后通过浏览器重定向，将其发送给 [客户端 Client]。•设计目的：防止令牌在不安全的信道中泄露。授权码本身不是最终的访问令牌，它只是一个“凭证交换券”。即使这个授权码在通过浏览器（前端信道）时被截获，因为它是一次性的，并且需要客户端密钥（client_secret）才能兑换成令牌，所以攻击者也无法利用它。4. 交换最终访问令牌•[客户端 Client] 做的行为是：在其后端服务器上，使用上一步获取的授权码，并附上自己的客户端密钥 (Client Secret)，向 [授权服务器 Authorization Server] 发起一个直接的、安全的后台请求。•设计目的：验证客户端身份并保护令牌安全。这一步发生在安全的后端信道（服务器到服务器），对用户不可见。Client Secret 的存在是为了向授权服务器证明“我就是我，是那个合法的客户端应用”，防止攻击者用偷来的授权码冒名顶替。最终的访问令牌（Access Token）也只在这个安全通道中传输，从不暴露在前端浏览器中。5. 使用令牌访问资源•[客户端 Client] 做的行为是：携带上一步获取的访问令牌 (Access Token)，向 [资源服务器 Resource Server] 请求受保护的资源（例如，用户的照片API）。•设计目的：实现授权的最终目的。访问令牌就像一个有时效、有范围限制的钥匙。客户端凭借这把钥匙，可以在用户不在线的情况下，代表用户去访问被授权的资源。6. 验证令牌并返回资源•[资源服务器 Resource Server] 做的行为是：接收到请求后，首先验证 [客户端 Client] 提供的访问令牌是否有效（是否过期、权限是否足够等）。验证通过后，才将受保护的资源返回给客户端。•设计目的：权限控制和最小权限原则 (Least Privilege)。资源服务器是数据安全的最后一道防线。它必须确保每一个请求都携带了合法、有效的令牌，并且该令牌拥有的权限（scope）与请求的操作相匹配。例如，一个只被授予“读取照片”权限的令牌，不能用来执行“删除照片”的操作。总结通过这一系列精心设计的步骤，OAuth 2.0 将一个复杂的授权过程分解开来，让每个角色各司其职，其核心目的可以归结为：在不暴露用户核心凭证（如密码）的前提下，实现对第三方应用安全、可控、可撤销的资源访问授权。
+###########################################################################
 在oauth2的文檔裏面，
 关于授权流程的八个步骤：
 1.访问应用
@@ -530,7 +534,12 @@ pkce的流程又是什麼？ 感覺步驟比授權碼多。
 
 
 ###########################################################################
-基於當前目錄，查看當前目錄的項目
+flowable-demo和flowable-demo-ui 该项目对应的前后端就是一个空的项目，
+现在需要基于oauth2的授权码文档实现；
+oauth2有四个角色，资源拥有者，客户端，授权服务器，资源服务器，
+我想在本地实现整个过程，
+你可以给我列一下步骤吗？
+第一步是不是要对客户端进行注册操作？
 
 
 ###########################################################################
@@ -550,171 +559,57 @@ pkce的流程又是什麼？ 感覺步驟比授權碼多。
 另外，你幫我改下，用mybatisplus吧，不用jpa，我對mybatisplus熟悉一些
 
 ###########################################################################
-前端報錯：
-Whitelabel Error Page
-This application has no explicit mapping for /error, so you are seeing this as a fallback.
+在oauth2的文檔裏面的八个步骤：
 
-Fri Sep 05 23:49:35 CST 2025
-There was an unexpected error (type=Internal Server Error, status=500).
-後端報錯：
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@276cde3] was not registered for synchronization because synchronization is not active
-JDBC Connection [HikariProxyConnection@587731168 wrapping com.mysql.cj.jdbc.ConnectionImpl@6818fd48] will not be managed by Spring
-==>  Preparing: SELECT r.* FROM roles r INNER JOIN user_roles ur ON r.id = ur.role_id WHERE ur.user_id = ?
-==> Parameters: 1(Long)
-<==    Columns: id, name, description
-<==        Row: 1, USER, 鏅??鐢ㄦ埗
-<==      Total: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@276cde3]
-2025-09-05T23:49:35.720+08:00 ERROR 9640 --- [nio-8084-exec-5] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception
+1.访问应用
+2.构建授权URL并重定向用户
+3.用户在授权服务器页面登录并授权
+4.重定向回客户端携带授权码
+5.用授权码+客户端凭证换取令牌
+6.返回访问令牌和刷新令牌
+7.使用访问令牌访问API
+8.验证令牌并返回受保护资源
 
-org.springframework.jdbc.BadSqlGrammarException: PreparedStatementCallback; bad SQL grammar [SELECT id, registered_client_id, principal_name, authorization_grant_type, authorized_scopes, attributes, state, authorization_code_value, authorization_code_issued_at, authorization_code_expires_at,authorization_code_metadata,access_token_value,access_token_issued_at,access_token_expires_at,access_token_metadata,access_token_type,access_token_scopes,oidc_id_token_value,oidc_id_token_issued_at,oidc_id_token_expires_at,oidc_id_token_metadata,refresh_token_value,refresh_token_issued_at,refresh_token_expires_at,refresh_token_metadata,user_code_value,user_code_issued_at,user_code_expires_at,user_code_metadata,device_code_value,device_code_issued_at,device_code_expires_at,device_code_metadata FROM oauth2_authorization WHERE id = ?]
-	at org.springframework.jdbc.support.SQLExceptionSubclassTranslator.doTranslate(SQLExceptionSubclassTranslator.java:103) ~[spring-jdbc-6.0.13.jar:6.0.13]
-	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:73) ~[spring-jdbc-6.0.13.jar:6.0.13]
-	at org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1572) ~[spring-jdbc-6.0.13.jar:6.0.13]
-	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:667) ~[spring-jdbc-6.0.13.jar:6.0.13]
-	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:713) ~[spring-jdbc-6.0.13.jar:6.0.13]
-	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:744) ~[spring-jdbc-6.0.13.jar:6.0.13]
-	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:799) ~[spring-jdbc-6.0.13.jar:6.0.13]
-	at org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService.findBy(JdbcOAuth2AuthorizationService.java:294) ~[spring-security-oauth2-authorization-server-1.1.3.jar:1.1.3]
-	at org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService.findById(JdbcOAuth2AuthorizationService.java:248) ~[spring-security-oauth2-authorization-server-1.1.3.jar:1.1.3]
-	at org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService.save(JdbcOAuth2AuthorizationService.java:204) ~[spring-security-oauth2-authorization-server-1.1.3.jar:1.1.3]
-	at org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationProvider.authenticate(OAuth2AuthorizationCodeRequestAuthenticationProvider.java:179) ~[spring-security-oauth2-authorization-server-1.1.3.jar:1.1.3]
-	at org.springframework.security.authentication.ProviderManager.authenticate(ProviderManager.java:182) ~[spring-security-core-6.1.5.jar:6.1.5]
-	at org.springframework.security.oauth2.server.authorization.web.OAuth2AuthorizationEndpointFilter.doFilterInternal(OAuth2AuthorizationEndpointFilter.java:167) ~[spring-security-oauth2-authorization-server-1.1.3.jar:1.1.3]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.oauth2.server.authorization.web.OAuth2AuthorizationServerMetadataEndpointFilter.doFilterInternal(OAuth2AuthorizationServerMetadataEndpointFilter.java:84) ~[spring-security-oauth2-authorization-server-1.1.3.jar:1.1.3]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.oauth2.server.authorization.oidc.web.OidcLogoutEndpointFilter.doFilterInternal(OidcLogoutEndpointFilter.java:117) ~[spring-security-oauth2-authorization-server-1.1.3.jar:1.1.3]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.web.csrf.CsrfFilter.doFilterInternal(CsrfFilter.java:117) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.AuthorizationServerContextFilter.doFilterInternal(AuthorizationServerContextFilter.java:61) ~[spring-security-oauth2-authorization-server-1.1.3.jar:1.1.3]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191) ~[spring-security-web-6.1.5.jar:6.1.5]
-	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:352) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:268) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.0.13.jar:6.0.13]
-	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:340) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1744) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) ~[tomcat-embed-core-10.1.15.jar:10.1.15]
-	at java.base/java.lang.Thread.run(Thread.java:842) ~[na:na]
-Caused by: java.sql.SQLSyntaxErrorException: Unknown column 'oidc_id_token_value' in 'field list'
-	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:121) ~[mysql-connector-j-8.0.33.jar:8.0.33]
-	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122) ~[mysql-connector-j-8.0.33.jar:8.0.33]
-	at com.mysql.cj.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:916) ~[mysql-connector-j-8.0.33.jar:8.0.33]
-	at com.mysql.cj.jdbc.ClientPreparedStatement.executeQuery(ClientPreparedStatement.java:972) ~[mysql-connector-j-8.0.33.jar:8.0.33]
-	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52) ~[HikariCP-5.0.1.jar:na]
-	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java) ~[HikariCP-5.0.1.jar:na]
-	at org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:722) ~[spring-jdbc-6.0.13.jar:6.0.13]
-	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:648) ~[spring-jdbc-6.0.13.jar:6.0.13]
-	... 73 common frames omitted
-
-2025-09-05T23:49:35.729+08:00 DEBUG 9640 --- [nio-8084-exec-5] o.s.web.servlet.DispatcherServlet        : "ERROR" dispatch for GET "/error?response_type=code&client_id=demo-client-id&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fcallback&scope=openid+profile+read+write&state=aL-gyFoOlWcTtaFLE1towQ&code_challenge=X1oTofFdaMIgOrpEVPJupFL3hAVraOO8EZBKlLoz1P0&code_challenge_method=S256&continue", parameters={masked}
-2025-09-05T23:49:35.736+08:00 DEBUG 9640 --- [nio-8084-exec-5] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController#errorHtml(HttpServletRequest, HttpServletResponse)
-
+jwt在哪个步骤里面？
 
 
 ###########################################################################
-前端報錯：
-404 - File Not Found
-請求url：http://localhost:3000/callback?code=rSLzMKAszXLj7zCYL8sh1I9jiKH4pvPD_t9PnfqRO-5xJoj48Z5cpRPyUGOO98CzV0tt48nN1Da1WZyCVa6Yg6JzReoV1rv_yvHlM6ll1t6CRq833BkH-zuUFmrdfjBJ&state=Ax6MVnaWvL_BHu0FbQR5eg
 
-後端日誌：
-Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@51c12248] was not registered for synchronization because synchronization is not active
-JDBC Connection [HikariProxyConnection@1171209528 wrapping com.mysql.cj.jdbc.ConnectionImpl@6818fd48] will not be managed by Spring
-==>  Preparing: SELECT * FROM users WHERE username = ?
-==> Parameters: user(String)
-<==    Columns: id, username, password, enabled, created_at, updated_at
-<==        Row: 1, user, $2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW, 1, 2025-09-05 23:42:03, 2025-09-05 23:42:03
-<==      Total: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@51c12248]
-Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1541f29c] was not registered for synchronization because synchronization is not active
-JDBC Connection [HikariProxyConnection@1007071888 wrapping com.mysql.cj.jdbc.ConnectionImpl@6818fd48] will not be managed by Spring
-==>  Preparing: SELECT r.* FROM roles r INNER JOIN user_roles ur ON r.id = ur.role_id WHERE ur.user_id = ?
-==> Parameters: 1(Long)
-<==    Columns: id, name, description
-<==        Row: 1, USER, 鏅??鐢ㄦ埗
-<==      Total: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1541f29c]
+503 Service Unavailable
 
+http://8.138.252.225/admin-api/bpm/category/create
+
+http://ip/admin-api/bpm/category/create
+
+// 插入模型分类；
+ INSERT INTO bpm_category (
+      name,
+      code,
+      status,
+      sort,
+      creator,
+      create_time,
+      updater,
+      update_time,
+      deleted
+  ) VALUES (
+      'business_name',
+      'business_identify',
+      0,
+      1,
+      'system', -- 需要根据实际情况设置创建者
+      GETDATE(), -- SQL Server语法，其他数据库需调整
+      'system', -- 需要根据实际情况设置更新者
+      GETDATE(),
+      0
+  );
 
 
 ###########################################################################
-前端： 授權失敗: Failed to fetch
+http://ip/admin-api/bpm/model/create
+这个接口：
+请求参数是：
 
-後端日誌：
-2025-09-06T00:03:50.163+08:00 DEBUG 15260 --- [nio-8085-exec-1] o.s.web.servlet.DispatcherServlet        : enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
-2025-09-06T00:03:50.163+08:00  INFO 15260 --- [nio-8085-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
-Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@71b05a3c] was not registered for synchronization because synchronization is not active
-JDBC Connection [HikariProxyConnection@1551604737 wrapping com.mysql.cj.jdbc.ConnectionImpl@6818fd48] will not be managed by Spring
-==>  Preparing: SELECT * FROM users WHERE username = ?
-==> Parameters: user(String)
-<==    Columns: id, username, password, enabled, created_at, updated_at
-<==        Row: 1, user, $2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW, 1, 2025-09-05 23:42:03, 2025-09-05 23:42:03
-<==      Total: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@71b05a3c]
-Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@276cde3] was not registered for synchronization because synchronization is not active
-JDBC Connection [HikariProxyConnection@587731168 wrapping com.mysql.cj.jdbc.ConnectionImpl@6818fd48] will not be managed by Spring
-==>  Preparing: SELECT r.* FROM roles r INNER JOIN user_roles ur ON r.id = ur.role_id WHERE ur.user_id = ?
-==> Parameters: 1(Long)
-<==    Columns: id, name, description
-<==        Row: 1, USER, 鏅??鐢ㄦ埗
-<==      Total: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@276cde3]
-2025-09-06T00:03:52.224+08:00 DEBUG 15260 --- [nio-8085-exec-7] o.s.a.w.OAuth2ClientAuthenticationFilter : Set SecurityContextHolder authentication to OAuth2ClientAuthenticationToken
-2025-09-06T00:04:22.292+08:00 DEBUG 15260 --- [nio-8085-exec-8] o.s.a.w.OAuth2ClientAuthenticationFilter : Set SecurityContextHolder authentication to OAuth2ClientAuthenticationToken
-2025-09-06T00:04:22.306+08:00  WARN 15260 --- [nio-8085-exec-8] 2AuthorizationCodeAuthenticationProvider : Invalidated authorization token(s) previously issued to registered client '20c426b3-8a6f-11f0-baf2-2cf05d7f891d'
 
 
 ###########################################################################
