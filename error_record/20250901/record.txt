@@ -642,42 +642,152 @@ oauth2的前提是：客戶端要先註冊纔可以吧，你給我講講客戶�
 ###########################################################################
 基于当前目录查看下当前目录的项目，一个是前端，另一个是与之对应的后端
 
+###########################################################################
+因为项目初始化的时候只需要一次创建模型，所以我想把这个操作sql脚本化，我想知道这个接口做了哪些操作
+接口的核心功能是创建流程模型：
+你帮我看看这个接口：/admin-api/bpm/model/create
+
+入参：
+allowCancelRunningProcess
+:
+true
+autoApprovalType
+:
+0
+bpmnXml
+:
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<bpmn2:definitions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:bpmn2=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\" xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\" xmlns:flowable=\"http://flowable.org/bpmn\" id=\"diagram_buy_list\" targetNamespace=\"http://flowable.org/bpmn\">\n  <bpmn2:process id=\"buy_list\" name=\"buy_list_name\" isExecutable=\"true\">\n    <bpmn2:startEvent id=\"Event_0lg1ova\">\n      <bpmn2:extensionElements>\n        <flowable:formData />\n      </bpmn2:extensionElements>\n      <bpmn2:outgoing>Flow_0fxg3r8</bpmn2:outgoing>\n    </bpmn2:startEvent>\n    <bpmn2:userTask id=\"Activity_1g5dkyu\" name=\"一级审批\">\n      <bpmn2:extensionElements>\n        <flowable:assignStartUserHandlerType>1</flowable:assignStartUserHandlerType>\n        <flowable:rejectHandlerType>1</flowable:rejectHandlerType>\n        <flowable:rejectReturnTaskId></flowable:rejectReturnTaskId>\n        <flowable:assignEmptyHandlerType>1</flowable:assignEmptyHandlerType>\n        <flowable:assignEmptyUserIds></flowable:assignEmptyUserIds>\n        <flowable:approveType>1</flowable:approveType>\n        <flowable:buttonsSetting id=\"1\" enable=\"true\" displayName=\"通过\" />\n        <flowable:buttonsSetting id=\"2\" enable=\"true\" displayName=\"拒绝\" />\n        <flowable:buttonsSetting id=\"3\" enable=\"true\" displayName=\"转办\" />\n        <flowable:buttonsSetting id=\"4\" enable=\"true\" displayName=\"委派\" />\n        <flowable:buttonsSetting id=\"5\" enable=\"true\" displayName=\"加签\" />\n        <flowable:buttonsSetting id=\"6\" enable=\"true\" displayName=\"退回\" />\n        <flowable:signEnable>false</flowable:signEnable>\n        <flowable:reasonRequire>false</flowable:reasonRequire>\n        <flowable:formData />\n        <flowable:approveMethod>3</flowable:approveMethod>\n      </bpmn2:extensionElements>\n      <bpmn2:incoming>Flow_0fxg3r8</bpmn2:incoming>\n      <bpmn2:outgoing>Flow_0r5h3cj</bpmn2:outgoing>\n      <bpmn2:multiInstanceLoopCharacteristics flowable:collection=\"${coll_userList}\">\n        <bpmn2:completionCondition xsi:type=\"bpmn2:tFormalExpression\">${ nrOfCompletedInstances &gt; 0 }</bpmn2:completionCondition>\n      </bpmn2:multiInstanceLoopCharacteristics>\n    </bpmn2:userTask>\n    <bpmn2:sequenceFlow id=\"Flow_0fxg3r8\" sourceRef=\"Event_0lg1ova\" targetRef=\"Activity_1g5dkyu\" />\n    <bpmn2:endEvent id=\"Event_1cxks75\">\n      <bpmn2:incoming>Flow_0r5h3cj</bpmn2:incoming>\n    </bpmn2:endEvent>\n    <bpmn2:sequenceFlow id=\"Flow_0r5h3cj\" sourceRef=\"Activity_1g5dkyu\" targetRef=\"Event_1cxks75\" />\n  </bpmn2:process>\n  <bpmndi:BPMNDiagram id=\"BPMNDiagram_1\">\n    <bpmndi:BPMNPlane id=\"buy_list_di\" bpmnElement=\"buy_list\">\n      <bpmndi:BPMNShape id=\"Event_0lg1ova_di\" bpmnElement=\"Event_0lg1ova\">\n        <dc:Bounds x=\"192\" y=\"132\" width=\"36\" height=\"36\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Activity_1g5dkyu_di\" bpmnElement=\"Activity_1g5dkyu\">\n        <dc:Bounds x=\"280\" y=\"110\" width=\"100\" height=\"80\" />\n        <bpmndi:BPMNLabel />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Event_1cxks75_di\" bpmnElement=\"Event_1cxks75\">\n        <dc:Bounds x=\"432\" y=\"132\" width=\"36\" height=\"36\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNEdge id=\"Flow_0fxg3r8_di\" bpmnElement=\"Flow_0fxg3r8\">\n        <di:waypoint x=\"228\" y=\"150\" />\n        <di:waypoint x=\"280\" y=\"150\" />\n      </bpmndi:BPMNEdge>\n      <bpmndi:BPMNEdge id=\"Flow_0r5h3cj_di\" bpmnElement=\"Flow_0r5h3cj\">\n        <di:waypoint x=\"380\" y=\"150\" />\n        <di:waypoint x=\"432\" y=\"150\" />\n      </bpmndi:BPMNEdge>\n    </bpmndi:BPMNPlane>\n  </bpmndi:BPMNDiagram>\n</bpmn2:definitions>\n"
+category
+:
+"business_identify"
+description
+:
+""
+formCustomCreatePath
+:
+"bpm/processInstance/create"
+formCustomViewPath
+:
+"bpm/processInstance/detail"
+formId
+:
+""
+formType
+:
+20
+key
+:
+"buy_list"
+managerUserIds
+:
+[1, 2]
+name
+:
+"buy_list_name"
+processIdRule
+:
+{enable: false, prefix: "", infix: "", postfix: "", length: 5}
+simpleModel
+:
+null
+startDeptIds
+:
+[]
+startUserIds
+:
+[]
+startUserType
+:
+0
+summarySetting
+:
+{enable: false, summary: []}
+titleSetting
+:
+{enable: false, title: ""}
+type
+:
+10
+visible
+:
+true
 
 ###########################################################################
+因为项目初始化的时候只需要一次创建模型和部署，我想知道它做了哪些操作；
+接口的核心功能是部署流程模型：
+你可以帮我把这个接口的操作sql脚本化吗？
+/admin-api/bpm/model/deploy?id=22cdb636-8c59-11f0-a149-00163e0948bc
 
 
 
 ###########################################################################
+再帮我看看这个接口：
+http://localhost:48080/admin-api/system/user/create
+我想知道它做了哪些操作；
+他是创建了一个用户
+你可以帮我把这个接口的操作sql脚本化吗？
 
+刚才忘记说了，这个是入参：
+{
+    "nickname": "xs001",
+    "deptId": "",
+    "mobile": "",
+    "email": "",
+    "username": "xs001",
+    "password": "123456",
+    "postIds": [
+
+    ],
+    "remark": "",
+    "status": 0,
+    "roleIds": [
+
+    ]
+}
+###########################################################################
+再帮我看看这个接口：
+http://localhost:48080/admin-api/system/permission/assign-user-role
+
+入参：
+{"userId":3,"roleIds":[1]}
+
+刚才是创建用户，现在是分配角色
+我想知道它做了哪些操作；
+你可以帮我把这个接口的操作sql脚本化吗？
+###########################################################################
+重新帮我看看这个接口：
+http://localhost:48080/admin-api/bpm/model/create
+入参为：
+{"name":"buyList_name","key":"buyList","category":"business_identify","description":"","type":10,"formType":20,"formId":"","formCustomCreatePath":"bpm/processInstance/create","formCustomViewPath":"bpm/processInstance/detail","visible":true,"startUserType":0,"startUserIds":[],"startDeptIds":[],"managerUserIds":[1,3],"allowCancelRunningProcess":true,"processIdRule":{"enable":false,"prefix":"","infix":"","postfix":"","length":5},"autoApprovalType":0,"titleSetting":{"enable":false,"title":""},"summarySetting":{"enable":false,"summary":[]},"bpmnXml":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<bpmn2:definitions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:bpmn2=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\" xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\" xmlns:flowable=\"http://flowable.org/bpmn\" id=\"diagram_buyList\" targetNamespace=\"http://flowable.org/bpmn\">\n  <bpmn2:process id=\"buyList\" name=\"buyList_name\" isExecutable=\"true\">\n    <bpmn2:startEvent id=\"Event_09zjoww\">\n      <bpmn2:extensionElements>\n        <flowable:formData />\n      </bpmn2:extensionElements>\n      <bpmn2:outgoing>Flow_1qyeqp4</bpmn2:outgoing>\n    </bpmn2:startEvent>\n    <bpmn2:userTask id=\"Activity_05dyncs\" name=\"一级审批\">\n      <bpmn2:extensionElements>\n        <flowable:assignStartUserHandlerType>1</flowable:assignStartUserHandlerType>\n        <flowable:rejectHandlerType>1</flowable:rejectHandlerType>\n        <flowable:rejectReturnTaskId></flowable:rejectReturnTaskId>\n        <flowable:assignEmptyHandlerType>1</flowable:assignEmptyHandlerType>\n        <flowable:assignEmptyUserIds></flowable:assignEmptyUserIds>\n        <flowable:approveType>1</flowable:approveType>\n        <flowable:buttonsSetting id=\"1\" enable=\"true\" displayName=\"通过\" />\n        <flowable:buttonsSetting id=\"2\" enable=\"true\" displayName=\"拒绝\" />\n        <flowable:buttonsSetting id=\"3\" enable=\"true\" displayName=\"转办\" />\n        <flowable:buttonsSetting id=\"4\" enable=\"true\" displayName=\"委派\" />\n        <flowable:buttonsSetting id=\"5\" enable=\"true\" displayName=\"加签\" />\n        <flowable:buttonsSetting id=\"6\" enable=\"true\" displayName=\"退回\" />\n        <flowable:signEnable>false</flowable:signEnable>\n        <flowable:reasonRequire>false</flowable:reasonRequire>\n        <flowable:formData />\n        <flowable:approveMethod>3</flowable:approveMethod>\n      </bpmn2:extensionElements>\n      <bpmn2:incoming>Flow_1qyeqp4</bpmn2:incoming>\n      <bpmn2:outgoing>Flow_0rgs471</bpmn2:outgoing>\n      <bpmn2:multiInstanceLoopCharacteristics flowable:collection=\"${coll_userList}\">\n        <bpmn2:completionCondition xsi:type=\"bpmn2:tFormalExpression\">${ nrOfCompletedInstances &gt; 0 }</bpmn2:completionCondition>\n      </bpmn2:multiInstanceLoopCharacteristics>\n    </bpmn2:userTask>\n    <bpmn2:sequenceFlow id=\"Flow_1qyeqp4\" sourceRef=\"Event_09zjoww\" targetRef=\"Activity_05dyncs\" />\n    <bpmn2:endEvent id=\"Event_1ycxzvy\">\n      <bpmn2:incoming>Flow_0rgs471</bpmn2:incoming>\n    </bpmn2:endEvent>\n    <bpmn2:sequenceFlow id=\"Flow_0rgs471\" sourceRef=\"Activity_05dyncs\" targetRef=\"Event_1ycxzvy\" />\n  </bpmn2:process>\n  <bpmndi:BPMNDiagram id=\"BPMNDiagram_1\">\n    <bpmndi:BPMNPlane id=\"buyList_di\" bpmnElement=\"buyList\">\n      <bpmndi:BPMNShape id=\"Event_09zjoww_di\" bpmnElement=\"Event_09zjoww\">\n        <dc:Bounds x=\"142\" y=\"152\" width=\"36\" height=\"36\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Activity_05dyncs_di\" bpmnElement=\"Activity_05dyncs\">\n        <dc:Bounds x=\"230\" y=\"130\" width=\"100\" height=\"80\" />\n        <bpmndi:BPMNLabel />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Event_1ycxzvy_di\" bpmnElement=\"Event_1ycxzvy\">\n        <dc:Bounds x=\"382\" y=\"152\" width=\"36\" height=\"36\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNEdge id=\"Flow_1qyeqp4_di\" bpmnElement=\"Flow_1qyeqp4\">\n        <di:waypoint x=\"178\" y=\"170\" />\n        <di:waypoint x=\"230\" y=\"170\" />\n      </bpmndi:BPMNEdge>\n      <bpmndi:BPMNEdge id=\"Flow_0rgs471_di\" bpmnElement=\"Flow_0rgs471\">\n        <di:waypoint x=\"330\" y=\"170\" />\n        <di:waypoint x=\"382\" y=\"170\" />\n      </bpmndi:BPMNEdge>\n    </bpmndi:BPMNPlane>\n  </bpmndi:BPMNDiagram>\n</bpmn2:definitions>\n","simpleModel":null}
+之前的参数可能有点问题；
+
+###########################################################################
+除了创建模板外，还需要部署模板才可以吧，你帮我看看这几接口：
+http://localhost:48080/admin-api/bpm/model/deploy?id=b321e5b8-8c84-11f0-8415-5eea1d7fcc1d
+入参：id=b321e5b8-8c84-11f0-8415-5eea1d7fcc1d
+我想知道它做了哪些操作；
+你可以帮我把这个接口的操作sql脚本化吗？
+
+###########################################################################
+你把上面的sql脚本转化为 sqlserver 语法，并存放在当前目录的deploy.sql文件里
+
+###########################################################################
+你再把上上一个创建模型的转化为 sqlserver 语法，存放在当前目录的create_model.sql里面吧
+
+###########################################################################
+生成的两个sql文件是脚本格式吧，不是单个sql语法格式吧，如果是单个sql语法格式，需要帮我改为脚本执行格式
 
 
 ###########################################################################
+重新帮我看这个接口：http://localhost:48080/admin-api/bpm/model/create
+入参：
+{"name":"buyList_name","key":"buyList","category":"business_identify","description":"","type":10,"formType":20,"formId":"","formCustomCreatePath":"bpm/processInstance/create","formCustomViewPath":"bpm/processInstance/detail","visible":true,"startUserType":0,"startUserIds":[],"startDeptIds":[],"managerUserIds":[1,2],"allowCancelRunningProcess":true,"processIdRule":{"enable":false,"prefix":"","infix":"","postfix":"","length":5},"autoApprovalType":0,"titleSetting":{"enable":false,"title":""},"summarySetting":{"enable":false,"summary":[]},"bpmnXml":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<bpmn2:definitions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:bpmn2=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\" xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\" xmlns:flowable=\"http://flowable.org/bpmn\" id=\"diagram_buyList\" targetNamespace=\"http://flowable.org/bpmn\">\n  <bpmn2:process id=\"buyList\" name=\"buyList_name\" isExecutable=\"true\">\n    <bpmn2:startEvent id=\"Event_04t3kee\">\n      <bpmn2:extensionElements>\n        <flowable:formData />\n      </bpmn2:extensionElements>\n      <bpmn2:outgoing>Flow_0jeysxz</bpmn2:outgoing>\n    </bpmn2:startEvent>\n    <bpmn2:userTask id=\"Activity_0sxi7n5\" name=\"一级审批\">\n      <bpmn2:extensionElements>\n        <flowable:assignStartUserHandlerType>1</flowable:assignStartUserHandlerType>\n        <flowable:rejectHandlerType>1</flowable:rejectHandlerType>\n        <flowable:rejectReturnTaskId />\n        <flowable:assignEmptyHandlerType>1</flowable:assignEmptyHandlerType>\n        <flowable:assignEmptyUserIds />\n        <flowable:approveType>1</flowable:approveType>\n        <flowable:buttonsSetting id=\"1\" enable=\"true\" displayName=\"通过\" />\n        <flowable:buttonsSetting id=\"2\" enable=\"true\" displayName=\"拒绝\" />\n        <flowable:buttonsSetting id=\"3\" enable=\"true\" displayName=\"转办\" />\n        <flowable:buttonsSetting id=\"4\" enable=\"true\" displayName=\"委派\" />\n        <flowable:buttonsSetting id=\"5\" enable=\"true\" displayName=\"加签\" />\n        <flowable:buttonsSetting id=\"6\" enable=\"true\" displayName=\"退回\" />\n        <flowable:signEnable>false</flowable:signEnable>\n        <flowable:reasonRequire>false</flowable:reasonRequire>\n        <flowable:candidateStrategy>30</flowable:candidateStrategy>\n        <flowable:candidateParam>2</flowable:candidateParam>\n        <flowable:formData />\n        <flowable:approveMethod>3</flowable:approveMethod>\n      </bpmn2:extensionElements>\n      <bpmn2:incoming>Flow_0jeysxz</bpmn2:incoming>\n      <bpmn2:outgoing>Flow_10p1o17</bpmn2:outgoing>\n      <bpmn2:multiInstanceLoopCharacteristics flowable:collection=\"${coll_userList}\">\n        <bpmn2:completionCondition xsi:type=\"bpmn2:tFormalExpression\">${ nrOfCompletedInstances &gt; 0 }</bpmn2:completionCondition>\n      </bpmn2:multiInstanceLoopCharacteristics>\n    </bpmn2:userTask>\n    <bpmn2:sequenceFlow id=\"Flow_0jeysxz\" sourceRef=\"Event_04t3kee\" targetRef=\"Activity_0sxi7n5\" />\n    <bpmn2:endEvent id=\"Event_1wu4ei5\">\n      <bpmn2:incoming>Flow_10p1o17</bpmn2:incoming>\n    </bpmn2:endEvent>\n    <bpmn2:sequenceFlow id=\"Flow_10p1o17\" sourceRef=\"Activity_0sxi7n5\" targetRef=\"Event_1wu4ei5\" />\n  </bpmn2:process>\n  <bpmndi:BPMNDiagram id=\"BPMNDiagram_1\">\n    <bpmndi:BPMNPlane id=\"buyList_di\" bpmnElement=\"buyList\">\n      <bpmndi:BPMNShape id=\"Event_04t3kee_di\" bpmnElement=\"Event_04t3kee\">\n        <dc:Bounds x=\"172\" y=\"122\" width=\"36\" height=\"36\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Activity_0sxi7n5_di\" bpmnElement=\"Activity_0sxi7n5\">\n        <dc:Bounds x=\"260\" y=\"100\" width=\"100\" height=\"80\" />\n        <bpmndi:BPMNLabel />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Event_1wu4ei5_di\" bpmnElement=\"Event_1wu4ei5\">\n        <dc:Bounds x=\"412\" y=\"122\" width=\"36\" height=\"36\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNEdge id=\"Flow_0jeysxz_di\" bpmnElement=\"Flow_0jeysxz\">\n        <di:waypoint x=\"208\" y=\"140\" />\n        <di:waypoint x=\"260\" y=\"140\" />\n      </bpmndi:BPMNEdge>\n      <bpmndi:BPMNEdge id=\"Flow_10p1o17_di\" bpmnElement=\"Flow_10p1o17\">\n        <di:waypoint x=\"360\" y=\"140\" />\n        <di:waypoint x=\"412\" y=\"140\" />\n      </bpmndi:BPMNEdge>\n    </bpmndi:BPMNPlane>\n  </bpmndi:BPMNDiagram>\n</bpmn2:definitions>\n","simpleModel":null}
 
+你先分析代码，再基于代码分析执行的数据库操作，我的要求是把这个接口用sql脚本实现；
+用sql脚本取代再前端页面手动创建模型
 
-###########################################################################
+最后生成的脚本导入create_model_new.sql中，用mysql语法吧，脚本的内容和入参强绑定；
 
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
 
 
 
