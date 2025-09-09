@@ -651,6 +651,7 @@ oauth2的前提是：客戶端要先註冊纔可以吧，你給我講講客戶�
 註冊操作不應該需要客戶端和服務器嗎？ 你上面代碼哪些是客戶端，哪些是授權服務器？
 
 
+
 ###########################################################################
 這些數據是客戶端的請求註冊的數據嗎？ 全部在前端生成的嗎？
   // 这是SPA客户端的配置
@@ -690,14 +691,22 @@ oauth2的前提是：客戶端要先註冊纔可以吧，你給我講講客戶�
 你看我理解有問題嗎？ 還有一個問題是第一和第二次，他們的隨機數是放在哪裏？
 
 ###########################################################################
+你再把上上一个创建模型的转化为 sqlserver 语法，存放在当前目录的create_model.sql里面吧
 
+###########################################################################
+生成的两个sql文件是脚本格式吧，不是单个sql语法格式吧，如果是单个sql语法格式，需要帮我改为脚本执行格式
 
 
 ###########################################################################
+重新帮我看这个接口：http://localhost:48080/admin-api/bpm/model/create
+入参：
+{"name":"buyList_name","key":"buyList","category":"business_identify","description":"","type":10,"formType":20,"formId":"","formCustomCreatePath":"bpm/processInstance/create","formCustomViewPath":"bpm/processInstance/detail","visible":true,"startUserType":0,"startUserIds":[],"startDeptIds":[],"managerUserIds":[1,2],"allowCancelRunningProcess":true,"processIdRule":{"enable":false,"prefix":"","infix":"","postfix":"","length":5},"autoApprovalType":0,"titleSetting":{"enable":false,"title":""},"summarySetting":{"enable":false,"summary":[]},"bpmnXml":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<bpmn2:definitions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:bpmn2=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\" xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\" xmlns:flowable=\"http://flowable.org/bpmn\" id=\"diagram_buyList\" targetNamespace=\"http://flowable.org/bpmn\">\n  <bpmn2:process id=\"buyList\" name=\"buyList_name\" isExecutable=\"true\">\n    <bpmn2:startEvent id=\"Event_04t3kee\">\n      <bpmn2:extensionElements>\n        <flowable:formData />\n      </bpmn2:extensionElements>\n      <bpmn2:outgoing>Flow_0jeysxz</bpmn2:outgoing>\n    </bpmn2:startEvent>\n    <bpmn2:userTask id=\"Activity_0sxi7n5\" name=\"一级审批\">\n      <bpmn2:extensionElements>\n        <flowable:assignStartUserHandlerType>1</flowable:assignStartUserHandlerType>\n        <flowable:rejectHandlerType>1</flowable:rejectHandlerType>\n        <flowable:rejectReturnTaskId />\n        <flowable:assignEmptyHandlerType>1</flowable:assignEmptyHandlerType>\n        <flowable:assignEmptyUserIds />\n        <flowable:approveType>1</flowable:approveType>\n        <flowable:buttonsSetting id=\"1\" enable=\"true\" displayName=\"通过\" />\n        <flowable:buttonsSetting id=\"2\" enable=\"true\" displayName=\"拒绝\" />\n        <flowable:buttonsSetting id=\"3\" enable=\"true\" displayName=\"转办\" />\n        <flowable:buttonsSetting id=\"4\" enable=\"true\" displayName=\"委派\" />\n        <flowable:buttonsSetting id=\"5\" enable=\"true\" displayName=\"加签\" />\n        <flowable:buttonsSetting id=\"6\" enable=\"true\" displayName=\"退回\" />\n        <flowable:signEnable>false</flowable:signEnable>\n        <flowable:reasonRequire>false</flowable:reasonRequire>\n        <flowable:candidateStrategy>30</flowable:candidateStrategy>\n        <flowable:candidateParam>2</flowable:candidateParam>\n        <flowable:formData />\n        <flowable:approveMethod>3</flowable:approveMethod>\n      </bpmn2:extensionElements>\n      <bpmn2:incoming>Flow_0jeysxz</bpmn2:incoming>\n      <bpmn2:outgoing>Flow_10p1o17</bpmn2:outgoing>\n      <bpmn2:multiInstanceLoopCharacteristics flowable:collection=\"${coll_userList}\">\n        <bpmn2:completionCondition xsi:type=\"bpmn2:tFormalExpression\">${ nrOfCompletedInstances &gt; 0 }</bpmn2:completionCondition>\n      </bpmn2:multiInstanceLoopCharacteristics>\n    </bpmn2:userTask>\n    <bpmn2:sequenceFlow id=\"Flow_0jeysxz\" sourceRef=\"Event_04t3kee\" targetRef=\"Activity_0sxi7n5\" />\n    <bpmn2:endEvent id=\"Event_1wu4ei5\">\n      <bpmn2:incoming>Flow_10p1o17</bpmn2:incoming>\n    </bpmn2:endEvent>\n    <bpmn2:sequenceFlow id=\"Flow_10p1o17\" sourceRef=\"Activity_0sxi7n5\" targetRef=\"Event_1wu4ei5\" />\n  </bpmn2:process>\n  <bpmndi:BPMNDiagram id=\"BPMNDiagram_1\">\n    <bpmndi:BPMNPlane id=\"buyList_di\" bpmnElement=\"buyList\">\n      <bpmndi:BPMNShape id=\"Event_04t3kee_di\" bpmnElement=\"Event_04t3kee\">\n        <dc:Bounds x=\"172\" y=\"122\" width=\"36\" height=\"36\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Activity_0sxi7n5_di\" bpmnElement=\"Activity_0sxi7n5\">\n        <dc:Bounds x=\"260\" y=\"100\" width=\"100\" height=\"80\" />\n        <bpmndi:BPMNLabel />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Event_1wu4ei5_di\" bpmnElement=\"Event_1wu4ei5\">\n        <dc:Bounds x=\"412\" y=\"122\" width=\"36\" height=\"36\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNEdge id=\"Flow_0jeysxz_di\" bpmnElement=\"Flow_0jeysxz\">\n        <di:waypoint x=\"208\" y=\"140\" />\n        <di:waypoint x=\"260\" y=\"140\" />\n      </bpmndi:BPMNEdge>\n      <bpmndi:BPMNEdge id=\"Flow_10p1o17_di\" bpmnElement=\"Flow_10p1o17\">\n        <di:waypoint x=\"360\" y=\"140\" />\n        <di:waypoint x=\"412\" y=\"140\" />\n      </bpmndi:BPMNEdge>\n    </bpmndi:BPMNPlane>\n  </bpmndi:BPMNDiagram>\n</bpmn2:definitions>\n","simpleModel":null}
 
+你先分析代码，再基于代码分析执行的数据库操作，我的要求是把这个接口用sql脚本实现；
+用sql脚本取代再前端页面手动创建模型
 
+最后生成的脚本导入create_model_new.sql中，用mysql语法吧，脚本的内容和入参强绑定；
 
-###########################################################################
 
 
 
