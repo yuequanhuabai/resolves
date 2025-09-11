@@ -1,0 +1,26 @@
+pojo:system_dict_type
+
+1. 基础CRUD操作
+
+  @PostMapping("/create")     // 创建字典类型
+  @PutMapping("/update")      // 修改字典类型
+  @DeleteMapping("/delete")   // 删除字典类型
+  @DeleteMapping("/delete-list") // 批量删除
+  @GetMapping("/get")         // 查询单个字典类型
+
+  2. 查询管理功能
+
+  //  分页查询字典类型
+  @GetMapping("/page")
+  pageDictTypes(DictTypePageReqVO) → PageResult<DictTypeRespVO>
+
+  //  全部字典类型简化列表 (无权限限制)
+  @GetMapping({"/list-all-simple", "simple-list"})
+  getSimpleDictTypeList() → List<DictTypeSimpleRespVO>
+  // 特点：包括开启+禁用的类型，用于前端下拉选项
+
+  3. 数据导出功能
+
+  //  Excel导出字典类型
+  @GetMapping("/export-excel")
+  export(HttpServletResponse, DictTypePageReqVO) → void

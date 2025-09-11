@@ -1,0 +1,42 @@
+ pojo类: PostDO
+
+ 核心功能分析
+
+  1. 完整CRUD操作
+
+  @PostMapping("/create")    // 创建岗位
+  @PutMapping("/update")     // 修改岗位
+  @DeleteMapping("/delete")  // 删除岗位
+  @GetMapping("/get")        // 获取岗位详情
+
+  2. 高级查询功能
+
+  // 分页查询 (比DeptController功能更丰富)
+  @GetMapping("/page")
+  getPostPage(PostPageReqVO) → PageResult<PostRespVO>
+
+  // 简化列表 (用于下拉选项)
+  @GetMapping({"/list-all-simple", "simple-list"})
+  getSimplePostList() → List<PostSimpleRespVO>
+
+  3. 数据导出功能
+
+  // Excel导出 (DeptController没有此功能)
+  @GetMapping("/export-excel")
+  export(HttpServletResponse, PostPageReqVO) → void
+
+  特殊设计特点
+
+  排序优化
+  // 在简化列表中自动按sort字段排序
+  list.sort(Comparator.comparing(PostDO::getSort));
+  // 确保前端下拉选项的显示顺序
+  状态过滤
+
+  // 只返回启用状态的岗位
+  Collections.singleton(CommonStatusEnum.ENABLE.getStatus())
+
+  BeanUtils.toBean() 和MapStruct
+
+复杂映射 (字段名不同) → MapStruct
+简单映射 (字段名相同) → BeanUtils 反射
