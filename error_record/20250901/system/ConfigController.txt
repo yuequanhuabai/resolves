@@ -1,0 +1,68 @@
+核心：
+
+配置信息：
+ 1. 基础CRUD操作
+
+  // 创建配置
+  @PostMapping("/create")
+  createConfig(ConfigSaveReqVO) → Long
+
+  //  更新配置
+  @PutMapping("/update")
+  updateConfig(ConfigSaveReqVO) → Boolean
+
+  //  单个删除
+  @DeleteMapping("/delete")
+  deleteConfig(Long id) → Boolean
+
+  // 批量删除
+  @DeleteMapping("/delete-list")
+  deleteConfigList(List<Long> ids) → Boolean
+
+  // 查询单个
+  @GetMapping("/get")
+  getConfig(Long id) → ConfigRespVO
+
+  2. 业务查询功能
+
+  // 根据配置键查询值 - 核心业务接口
+  @GetMapping("/get-value-by-key")
+  getConfigKey(String key) → String
+  // 特殊逻辑：不可见配置不允许返回给前端
+
+  // 分页查询
+  @GetMapping("/page")
+  getConfigPage(ConfigPageReqVO) → PageResult<ConfigRespVO>
+
+  3. 数据导出功能
+
+  //  Excel导出
+  @GetMapping("/export-excel")
+  exportConfig(ConfigPageReqVO, HttpServletResponse) → void
+  // 支持按条件导出配置数据
+
+pojo类：infra_config
+所有操作有权限控制;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

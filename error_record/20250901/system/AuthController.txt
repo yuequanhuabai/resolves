@@ -1,0 +1,222 @@
+
+  1.  身份认证管理
+
+  用户登录
+
+  @PostMapping("/login")
+  @PermitAll  // 公开接口，无需认证
+  login(AuthLoginReqVO) → AuthLoginRespVO
+
+  // 功能：验证用户名密码，生成访问令牌
+  // 返回：用户信息 + accessToken + refreshToken
+
+  用户登出
+
+  @PostMapping("/logout")
+  @PermitAll  // 公开接口
+  logout(HttpServletRequest) → Boolean
+
+  // 功能：注销当前会话，失效访问令牌
+  // 特点：从请求头或参数中提取token进行注销
+
+  令牌刷新
+
+  @PostMapping("/refresh-token")
+  @PermitAll  // 公开接口
+  refreshToken(String refreshToken) → AuthLoginRespVO
+
+  // 功能：使用refreshToken获取新的accessToken
+  // 目的：延长用户会话，避免频繁登录
+
+  2. 👤 用户注册管理
+
+  @PostMapping("/register")
+  @PermitAll  // 公开接口
+  register(AuthRegisterReqVO) → AuthLoginRespVO
+
+  // 功能：新用户注册，注册成功后自动登录
+  // 返回：注册用户信息 + 登录令牌
+
+  3.  密码重置管理
+
+  @PostMapping("/reset-password")
+  @PermitAll  // 公开接口
+  resetPassword(AuthResetPasswordReqVO) → Boolean
+
+  // 功能：重置用户密码(通常需要验证码验证)
+  // 安全：防止恶意重置，需要身份验证
+
+  4. 权限信息获取 (核心功能)
+
+  @GetMapping("/get-permission-info")
+  // 需要登录后访问(无@PermitAll)
+  getPermissionInfo() → AuthPermissionInfoRespVO
+
+  这是最复杂也最重要的功能，让我们详细分析：
+
+  权限信息获取流程：
+
+  步骤1: 获取用户基本信息
+  AdminUserDO user = userService.getUser(getLoginUserId());
+
+  步骤2: 获取用户角色列表
+  Set<Long> roleIds = permissionService.getUserRoleIdListByUserId(userId);
+  List<RoleDO> roles = roleService.getRoleList(roleIds);
+  // 过滤禁用角色
+  roles.removeIf(role → !CommonStatusEnum.ENABLE.equals(role.getStatus()));
+
+  步骤3: 获取角色对应的菜单权限
+  Set<Long> menuIds = permissionService.getRoleMenuListByRoleId(roleIds);
+  List<MenuDO> menuList = menuService.getMenuList(menuIds);
+  // 过滤禁用菜单
+  menuList = menuService.filterDisableMenus(menuList);
+
+  步骤4: 组装权限信息返回
+  return AuthConvert.INSTANCE.convert(user, roles, menuList);
+
+  ---
+   依赖服务分析
+
+  多服务协作模式
+
+  // AuthController 依赖了5个核心服务：
+
+  @Resource AdminAuthService authService;      // 认证核心服务
+  @Resource AdminUserService userService;      // 用户管理服务
+  @Resource RoleService roleService;           // 角色管理服务
+  @Resource MenuService menuService;           // 菜单管理服务
+  @Resource PermissionService permissionService; // 权限关系服务
+  @Resource SecurityProperties securityProperties; // 安全配置
+
+  RBAC权限模型实现
+
+  User ──── N:M ──── Role ──── N:M ──── Menu/Permission
+   用户        角色        菜单/权限
+
+  // 权限查询链路：
+  用户ID → 角色ID集合 → 菜单ID集合 → 菜单权限信息
+
+  ---
+   安全设计特点
+
+  ⚡ 公开接口设计
+
+  // 所有认证相关接口都标记为@PermitAll
+  @PermitAll // 登录
+  @PermitAll // 登出
+  @PermitAll // 刷新令牌
+  @PermitAll // 用户注册
+  @PermitAll // 重置密码
+
+  // 只有权限信息获取需要登录后访问
+  getPermissionInfo() // 无@PermitAll，需要认证
+
+  🔧 令牌处理机制
+
+  // 灵活的令牌提取方式
+  String token = SecurityFrameworkUtils.obtainAuthorization(request,
+      securityProperties.getTokenHeader(),      // 从Header提取: Authorization
+      securityProperties.getTokenParameter());  // 从参数提取: ?token=xxx
+
+   状态过滤机制
+
+  // 安全过滤：只返回启用状态的角色和菜单
+  roles.removeIf(role → !CommonStatusEnum.ENABLE.equals(role.getStatus()));
+  menuList = menuService.filterDisableMenus(menuList);
+
+  ---
+   数据转换策略
+
+  使用MapStruct进行复杂转换
+
+  // 使用AuthConvert进行复杂对象组装
+  AuthConvert.INSTANCE.convert(user, roles, menuList)
+
+  // 相比其他Controller使用BeanUtils，这里需要复杂的权限信息整合
+  // 需要将用户、角色、菜单三种数据整合为权限响应对象
+
+  ---
+   前端集成模式
+
+  典型的前端使用流程
+
+  // 1. 用户登录
+  POST /system/auth/login
+  → 获得 { accessToken, refreshToken, userInfo }
+
+  // 2. 获取权限信息
+  GET /system/auth/get-permission-info
+  → 获得 { user, roles, menus, permissions }
+
+  // 3. 前端根据权限信息：
+  //    - 渲染菜单结构
+  //    - 控制按钮显示
+  //    - 路由权限控制
+  //    - API接口鉴权
+
+  // 4. Token过期时自动刷新
+  POST /system/auth/refresh-token
+  → 获得新的 accessToken
+
+  ---
+   架构价值分析
+
+   系统入口控制
+
+  - 所有用户必须通过此Controller获得系统访问权限
+  - 统一的认证标准和安全策略执行点
+
+   安全策略实施
+
+  - 集中的令牌管理和生命周期控制
+  - 统一的权限信息分发和格式化
+
+   前端开发效率
+
+  - 一站式权限信息API，前端无需多次请求
+  - 标准化的权限数据格式，便于前端权限控制
+
+  🔧 系统扩展性
+
+  - 支持多种认证方式扩展 (用户名密码、短信、邮箱等)
+  - 灵活的权限模型，支持复杂的企业级权限需求
+
+  ---
+   潜在安全风险点
+
+   需要关注的安全点
+
+  // 1. 注册接口安全
+  register() // 是否需要验证码防刷？是否需要邮箱验证？
+
+  // 2. 密码重置安全
+  resetPassword() // 是否有充分的身份验证？防暴力破解？
+
+  // 3. 权限信息泄露
+  getPermissionInfo() // 返回的权限信息是否过于详细？
+
+  // 4. 登出安全
+  logout() // token失效是否彻底？是否有会话清理？
+
+  ---
+   总结
+
+  AuthController：系统安全守门员
+
+  - 核心职责：身份认证、令牌管理、权限分发
+  - 技术特点：多服务协作、RBAC权限模型、复杂数据整合
+  - 安全定位：系统的第一道防线和权限控制中枢
+  - 业务价值：为整个系统提供统一的认证授权服务
+
+  在系统架构中的地位
+
+  前端应用
+      ↓ 认证授权请求
+   AuthController (认证网关)
+      ↓ 多服务协作
+   UserService +  RoleService +  MenuService +  PermissionService
+      ↓ 权限数据
+   数据库 (用户表、角色表、菜单表、权限关系表)
+
+  AuthController 是整个系统安全架构的核心控制节点，承担着用户身份验证、会话管理、权限分发等关键职责，是典型的企业级安全基
+  础设施组件。其设计充分体现了现代Web应用的安全架构理念和RBAC权限控制模型的最佳实践。

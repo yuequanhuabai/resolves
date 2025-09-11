@@ -1,0 +1,52 @@
+pojo类: DeptDO
+
+1. 基础CRUD操作
+
+  // 部门生命周期管理
+  @PostMapping("create")     // 创建部门
+  @PutMapping("update")      // 更新部门
+  @DeleteMapping("delete")   // 删除部门
+  @GetMapping("/get")        // 查询单个部门
+
+  2. 列表查询功能
+
+  // 完整部门列表 (带权限校验)
+  @GetMapping("/list")
+  getDeptList(DeptListReqVO) → List<DeptRespVO>
+
+  // 简化部门列表 (公开接口，用于下拉选项)
+  @GetMapping({"/list-all-simple", "/simple-list"})
+  getSimpleDeptList() → List<DeptSimpleRespVO>
+  // 特点：只返回启用状态的部门，无需权限校验
+
+
+  层级结构支持
+
+  // 部门通常是树形结构：公司 → 部门 → 科室
+  // DeptDO内部应该包含parentId字段支持层级关系
+
+  双路径支持
+
+  // 兼容性设计，支持两种URL路径
+  @GetMapping(value = {"/list-all-simple", "/simple-list"})
+  // 可能是为了兼容旧版本API或前端组件
+
+
+
+   业务关系
+
+    部门(Department) ──── 1:N ──── 岗位(Post)
+         │                          │
+         │                          │
+       管理组织架构              定义具体职位
+         │                          │
+         └──────── N:M ─────────────┘
+                    用户可属于多个部门的不同岗位
+
+    数据流转模式
+
+    // 典型使用场景：
+    1. 创建部门 → DeptController.createDept()
+    2. 在部门下创建岗位 → PostController.createPost()
+    3. 用户管理时选择部门 → DeptController.getSimpleDeptList()
+    4. 用户管理时选择岗位 → PostController.getSimplePostList()
