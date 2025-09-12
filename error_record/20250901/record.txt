@@ -931,30 +931,50 @@ Bash(mysql -h localhost -u root -p"Aa+123456" oauth2 -e "DESCRIBE oauth2_client;
 把回复生成到authorizationServer.md文件吧
 
 ###########################################################################
-
-
-
-###########################################################################
-
-
+我把authorizationServver.md文档移到了后端项目flowable-demo的resource目录下了，
+接下来我想关于该文档提问：
+1.private final String issuer = "http://localhost:8080"
+我可以理解为issuer 代表授权服务器进程吗？
 
 ###########################################################################
+我还有个问题：
+jwt令牌里面：  "iss": "http://localhost:8080"
+返回的："issuer": "https://auth.example.com",
 
-
-###########################################################################
-
-
-
-###########################################################################
-
-
+一个是带端口的，一个是不带端口的，我理解后面那个域名的是带了默认的443端口吗
 
 ###########################################################################
-
-
+tokenSigningKey不应该是这个值吧“tokenSigningKey”，
+这个字段的密钥是如何生成的，可以有哪些生成方式？
 
 ###########################################################################
+再看看这个参数，private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+BCryptPasswordEncoder的长度默认是多少，最长是多少？一般建议多长
 
+###########################################################################
+passwordEncoder是对tokenSigningKey进行加密操作吗？
+
+###########################################################################
+ // 🌐 端点配置
+    private final String authorizationEndpoint = "/oauth2/authorize";
+    private final String tokenEndpoint = "/oauth2/token";
+    private final String userInfoEndpoint = "/oauth2/userinfo";
+这三个接口的作用是啥？ 他们的url是固定"/oauth2/authorize"，"/oauth2/token"，"/oauth2/userinfo"
+不变的吗？ 可以修改吗？ 为什么需要它们?
+
+###########################################################################
+ // 🎭 支持的功能
+    private final List<String> supportedGrantTypes = Arrays.asList(
+        "authorization_code", "refresh_token", "client_credentials"
+    );
+    private final List<String> supportedScopes = Arrays.asList(
+        "read", "write", "user:profile", "user:email"
+    );
+    private final List<String> supportedResponseTypes = Arrays.asList(
+        "code", "token"
+    );
+
+    这三个变量呢？
 
 ###########################################################################
 
