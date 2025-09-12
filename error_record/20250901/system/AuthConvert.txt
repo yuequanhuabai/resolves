@@ -1,0 +1,145 @@
+ AuthConvert 是认证授权模块的专业数据转换器，负责将底层数据对象转换为前端友好的权限信息结构。
+
+  ---
+   角色定位
+
+  认证授权数据的适配器和整合器，承担复杂权限数据的结构化转换，特别是将扁平化的权限数据转换为前端需要的层次化结构。
+
+  ---
+   核心功能分析
+
+  1.  登录令牌转换
+
+  AuthLoginRespVO convert(OAuth2AccessTokenDO bean);
+
+  // 功能：将OAuth2访问令牌转换为登录响应对象
+  // 用途：登录成功后返回给前端的令牌信息
+
+  2.  权限信息整合 (核心功能)
+
+  default AuthPermissionInfoRespVO convert(AdminUserDO user,
+                                          List<RoleDO> roleList,
+                                          List<MenuDO> menuList) {
+      return AuthPermissionInfoRespVO.builder()
+          .user(BeanUtils.toBean(user, AuthPermissionInfoRespVO.UserVO.class))
+          .roles(convertSet(roleList, RoleDO::getCode))           // 角色编码集合
+          .permissions(convertSet(menuList, MenuDO::getPermission)) // 权限标识集合
+          .menus(buildMenuTree(menuList))                         // 菜单树结构
+          .build();
+  }
+
+  这个方法是整个系统权限控制的核心数据整合点，将三种不同的数据对象整合为前端可直接使用的权限信息。
+
+  3.  菜单树构建 (技术亮点)
+
+  default List<AuthPermissionInfoRespVO.MenuVO> buildMenuTree(List<MenuDO> menuList)
+
+  这是一个复杂的树形结构构建算法，让我们详细分析：
+
+  树构建算法流程：
+
+  步骤1: 数据预处理
+  menuList.removeIf(menu -> menu.getType().equals(MenuTypeEnum.BUTTON.getType()));
+  // 过滤掉按钮类型，只保留菜单和目录
+
+  步骤2: 排序保证有序性
+  menuList.sort(Comparator.comparing(MenuDO::getSort));
+  // 按sort字段排序，确保菜单显示顺序正确
+
+  步骤3: 扁平数据映射
+  Map<Long, AuthPermissionInfoRespVO.MenuVO> treeNodeMap = new LinkedHashMap<>();
+  menuList.forEach(menu -> treeNodeMap.put(menu.getId(), convertTreeNode(menu)));
+  // 将所有菜单转换为VO对象，存储在Map中便于查找
+
+  步骤4: 构建父子关系
+  treeNodeMap.values().stream()
+      .filter(node -> !node.getParentId().equals(ID_ROOT))  // 过滤非根节点
+      .forEach(childNode -> {
+          AuthPermissionInfoRespVO.MenuVO parentNode = treeNodeMap.get(childNode.getParentId());
+          // 将子节点添加到父节点的children列表中
+          parentNode.getChildren().add(childNode);
+      });
+
+  步骤5: 返回根节点列表
+  return filterList(treeNodeMap.values(), node -> ID_ROOT.equals(node.getParentId()));
+  // 只返回根节点，子节点通过children属性访问
+
+  ---
+  🔧 技术设计特点
+
+  MapStruct + 自定义逻辑混合模式
+
+  @Mapper
+  public interface AuthConvert {
+      AuthConvert INSTANCE = Mappers.getMapper(AuthConvert.class);
+
+      // MapStruct自动生成的简单转换
+      AuthLoginRespVO convert(OAuth2AccessTokenDO bean);
+      AuthPermissionInfoRespVO.MenuVO convertTreeNode(MenuDO menu);
+
+      // 手工实现的复杂转换逻辑
+      default AuthPermissionInfoRespVO convert(AdminUserDO user, List<RoleDO> roleList, List<MenuDO> menuList)
+      default List<AuthPermissionInfoRespVO.MenuVO> buildMenuTree(List<MenuDO> menuList)
+  }
+
+  性能优化设计
+
+  // 使用LinkedHashMap保证顺序性和查找效率
+  Map<Long, AuthPermissionInfoRespVO.MenuVO> treeNodeMap = new LinkedHashMap<>();
+
+  // 一次遍历构建树形结构，时间复杂度O(n)
+  // 相比递归构建树的O(n²)复杂度，性能更优
+
+  错误处理机制
+
+  if (parentNode == null) {
+      LoggerFactory.getLogger(getClass()).error("[buildRouterTree][resource({}) 找不到父资源({})]",
+              childNode.getId(), childNode.getParentId());
+      return;  // 优雅处理数据不一致情况
+  }
+
+  ---
+   数据转换链路
+
+  权限信息转换流程
+
+  // 输入：三种数据库实体对象
+  AdminUserDO user      // 用户基本信息
+  List<RoleDO> roleList // 用户角色列表
+  List<MenuDO> menuList // 用户可访问菜单列表
+
+          ↓ AuthConvert.convert()
+
+  // 输出：前端权限信息对象
+  AuthPermissionInfoRespVO {
+      user: UserVO,              // 用户信息VO
+      roles: Set<String>,        // 角色编码集合 ["admin", "user"]
+      permissions: Set<String>,  // 权限标识集合 ["user:create", "user:update"]
+      menus: List<MenuVO>        // 层次化菜单树
+  }
+
+  菜单树转换示例
+
+  // 输入：扁平化菜单数据
+  [
+    {id: 1, name: "系统管理", parentId: 0, sort: 1},
+    {id: 2, name: "用户管理", parentId: 1, sort: 1},
+    {id: 3, name: "角色管理", parentId: 1, sort: 2},
+    {id: 4, name: "权限管理", parentId: 0, sort: 2}
+  ]
+
+          ↓ buildMenuTree()
+
+  // 输出：层次化菜单树
+  [
+    {
+      id: 1, name: "系统管理", parentId: 0,
+      children: [
+        {id: 2, name: "用户管理", parentId: 1, children: []},
+        {id: 3, name: "角色管理", parentId: 1, children: []}
+      ]
+    },
+    {
+      id: 4, name: "权限管理", parentId: 0, children: []
+    }
+  ]
