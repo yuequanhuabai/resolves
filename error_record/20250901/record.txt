@@ -1078,57 +1078,197 @@ Cookies are preserved between requests:
 ###########################################################################
 那授权服务器在注册中干了什么，它真的需要oauth2_authorization这个表吗？
 
-
 ###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
+你可以檢查一下我的flowable-demo的後端代碼，現在的後端代碼已經可以註冊客戶端了；
+我想下一步可以進行用戶在前端頁面進行oauth2的操作了；
+是不是開始創建用戶表之類的了？
+你可以給我一個下一步的解決方案嗎？
+你先給出方案，我審查過後再決定要不要執行
 
 
 ###########################################################################
+你把當前的方案放在oauth2_client_register_step1.md的文檔裏面，文檔放在resource/doc/flow目錄下
+
+
+###########################################################################
+我把oauth2_client_register_step1.md文件移動到了resource/doc/目錄下了，
+我另外問一個問題，就是我先在只創建用戶表就可以了吧，暫時不需要角色表和用戶角色的映射表，把事情弄複雜；
+我的核心是oauth2，而不是用戶管理，你先給出意見，我基於意見再作出反饋；
+
+###########################################################################
+可以，那你幫我創建用戶表吧；那現在需要前端要有登錄界面了嗎？
+你先給出意見，我審核後再決定要不要執行
+
+###########################################################################
+你先把當前的方案放在oauth2_client_register_step2.md的文檔裏面，文檔放在resource/doc/目錄下
+
+###########################################################################
+那按照上面的步驟執行吧，先創建user表，引入Spring Security依賴
+
+###########################################################################
+我已經執行了在數據庫執行了create_users.sql成功創建了users表，而且也插入了三條數據，
+但是現在我在訪問http://localhost:8080的時候，輸入了帳號和密碼，報錯了
+是不是應該放行登錄接口？但是我的controller裏面好像沒有登錄接口...
+你先給出排查後的解決方案，我審核後再決定要不要執行
+
+###########################################################################
+還是報錯：
+http://localhost:8080/login
+
+頁面報錯信息：
+Whitelabel Error Page
+This application has no explicit mapping for /error, so you are seeing this as a fallback.
+
+Sat Sep 13 23:10:37 CST 2025
+There was an unexpected error (type=Not Found, status=404).
+
+後端日誌：
+2025-09-13T23:10:37.345+08:00 DEBUG 18256 --- [nio-8080-exec-9] o.s.web.servlet.DispatcherServlet        : GET "/login", parameters={}
+2025-09-13T23:10:37.346+08:00 DEBUG 18256 --- [nio-8080-exec-9] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:10:37.347+08:00 DEBUG 18256 --- [nio-8080-exec-9] o.s.w.s.r.ResourceHttpRequestHandler     : Resource not found
+2025-09-13T23:10:37.347+08:00 DEBUG 18256 --- [nio-8080-exec-9] o.s.web.servlet.DispatcherServlet        : Completed 404 NOT_FOUND
+2025-09-13T23:10:37.349+08:00 DEBUG 18256 --- [nio-8080-exec-9] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController#errorHtml(HttpServletRequest, HttpServletResponse)
+2025-09-13T23:10:37.349+08:00 DEBUG 18256 --- [nio-8080-exec-9] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController#errorHtml(HttpServletRequest, HttpServletResponse)
+2025-09-13T23:10:37.349+08:00 DEBUG 18256 --- [nio-8080-exec-9] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController#errorHtml(HttpServletRequest, HttpServletResponse)
+2025-09-13T23:10:37.349+08:00 DEBUG 18256 --- [nio-8080-exec-9] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController#errorHtml(HttpServletRequest, HttpServletResponse)
+2025-09-13T23:10:37.349+08:00 DEBUG 18256 --- [nio-8080-exec-9] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController#errorHtml(HttpServletRequest, HttpServletResponse)
+2025-09-13T23:10:37.349+08:00 DEBUG 18256 --- [nio-8080-exec-9] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController#errorHtml(HttpServletRequest, HttpServletResponse)
+2025-09-13T23:10:37.349+08:00 DEBUG 18256 --- [nio-8080-exec-9] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController#errorHtml(HttpServletRequest, HttpServletResponse)
+2025-09-13T23:10:37.350+08:00 DEBUG 18256 --- [nio-8080-exec-9] o.s.web.servlet.DispatcherServlet        : "ERROR" dispatch for GET "/error", parameters={}
+2025-09-13T23:10:37.350+08:00 DEBUG 18256 --- [nio-8080-exec-9] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController#errorHtml(HttpServletRequest, HttpServletResponse)
+2025-09-13T23:10:37.351+08:00 DEBUG 18256 --- [nio-8080-exec-9] o.s.w.s.v.ContentNegotiatingViewResolver : Selected 'text/html' given [text/html, text/html;q=0.8]
+2025-09-13T23:10:37.351+08:00 DEBUG 18256 --- [nio-8080-exec-9] o.s.web.servlet.DispatcherServlet        : Exiting from "ERROR" dispatch, status 404
+
+###########################################################################
+那你剛纔的那個解決方案是自定義的頁面嗎？
+
+###########################################################################
+好像還是無法登錄：
+Bad credentials
+
+後端日誌：
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@175c9534] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@325255943 wrapping com.mysql.cj.jdbc.ConnectionImpl@cbdf934] will not be managed by Spring
+==>  Preparing: SELECT id, username, password, enabled, created_at, updated_at FROM users WHERE username = ? AND enabled = true
+==> Parameters: admin(String)
+<==    Columns: id, username, password, enabled, created_at, updated_at
+<==        Row: 2, admin, $2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG, 1, 2025-09-13 22:59:00, 2025-09-13 22:59:00
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@175c9534]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@147b8d64] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1744654314 wrapping com.mysql.cj.jdbc.ConnectionImpl@cbdf934] will not be managed by Spring
+==>  Preparing: SELECT id, username, password, enabled, created_at, updated_at FROM users WHERE username = ? AND enabled = true
+==> Parameters: admin(String)
+<==    Columns: id, username, password, enabled, created_at, updated_at
+<==        Row: 2, admin, $2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG, 1, 2025-09-13 22:59:00, 2025-09-13 22:59:00
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@147b8d64]
+2025-09-13T23:18:19.514+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:18:19.515+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:18:19.515+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:18:19.515+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:18:19.515+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:18:19.516+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:18:19.516+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
 
 
 
 ###########################################################################
+啓動失敗了：
+2025-09-13T23:21:11.849+08:00  WARN 20748 --- [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'securityConfig' defined in file [D:\software\develop_tools\git\gitee\flowable-learn\flowable-demo\target\classes\com\example\flowabledemo\config\SecurityConfig.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'customUserDetailsService' defined in file [D:\software\develop_tools\git\gitee\flowable-learn\flowable-demo\target\classes\com\example\flowabledemo\service\CustomUserDetailsService.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'userService' defined in file [D:\software\develop_tools\git\gitee\flowable-learn\flowable-demo\target\classes\com\example\flowabledemo\service\UserService.class]: Unsatisfied dependency expressed through constructor parameter 1: Error creating bean with name 'securityConfig': Requested bean is currently in creation: Is there an unresolvable circular reference?
+2025-09-13T23:21:11.851+08:00  INFO 20748 --- [           main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+2025-09-13T23:21:11.873+08:00  INFO 20748 --- [           main] .s.b.a.l.ConditionEvaluationReportLogger :
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-09-13T23:21:11.888+08:00 ERROR 20748 --- [           main] o.s.b.d.LoggingFailureAnalysisReporter   :
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+The dependencies of some of the beans in the application context form a cycle:
+
+┌─────┐
+|  securityConfig defined in file [D:\software\develop_tools\git\gitee\flowable-learn\flowable-demo\target\classes\com\example\flowabledemo\config\SecurityConfig.class]
+↑     ↓
+|  customUserDetailsService defined in file [D:\software\develop_tools\git\gitee\flowable-learn\flowable-demo\target\classes\com\example\flowabledemo\service\CustomUserDetailsService.class]
+↑     ↓
+|  userService defined in file [D:\software\develop_tools\git\gitee\flowable-learn\flowable-demo\target\classes\com\example\flowabledemo\service\UserService.class]
+└─────┘
 
 
+Action:
+
+Relying upon circular references is discouraged and they are prohibited by default. Update your application to remove the dependency cycle between beans. As a last resort, it may be possible to break the cycle automatically by setting spring.main.allow-circular-references to true.
+
+Disconnected from the target VM, address: '127.0.0.1:13050', transport: 'socket'
+
+Process finished with exit code 1
 
 ###########################################################################
-
-
+還是失敗了：
+前端頁面：Bad credentials
+後端日誌：
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@56a8f03c] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1385659953 wrapping com.mysql.cj.jdbc.ConnectionImpl@6c62b461] will not be managed by Spring
+==>  Preparing: SELECT id, username, password, enabled, created_at, updated_at FROM users WHERE username = ? AND enabled = true
+==> Parameters: admin(String)
+<==    Columns: id, username, password, enabled, created_at, updated_at
+<==        Row: 2, admin, $2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG, 1, 2025-09-13 22:59:00, 2025-09-13 22:59:00
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@56a8f03c]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@37f020a9] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@650645371 wrapping com.mysql.cj.jdbc.ConnectionImpl@6c62b461] will not be managed by Spring
+==>  Preparing: SELECT id, username, password, enabled, created_at, updated_at FROM users WHERE username = ? AND enabled = true
+==> Parameters: admin(String)
+<==    Columns: id, username, password, enabled, created_at, updated_at
+<==        Row: 2, admin, $2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG, 1, 2025-09-13 22:59:00, 2025-09-13 22:59:00
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@37f020a9]
+2025-09-13T23:23:50.226+08:00 DEBUG 18944 --- [nio-8080-exec-1] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:23:50.227+08:00 DEBUG 18944 --- [nio-8080-exec-1] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:23:50.227+08:00 DEBUG 18944 --- [nio-8080-exec-1] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:23:50.227+08:00 DEBUG 18944 --- [nio-8080-exec-1] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:23:50.229+08:00 DEBUG 18944 --- [nio-8080-exec-1] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:23:50.229+08:00 DEBUG 18944 --- [nio-8080-exec-1] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:23:50.229+08:00 DEBUG 18944 --- [nio-8080-exec-1] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
 
 ###########################################################################
-
+前端還是一樣的報錯：
+後端日誌如下：
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@61b2d20f] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1138391537 wrapping com.mysql.cj.jdbc.ConnectionImpl@2ff09124] will not be managed by Spring
+==>  Preparing: SELECT id, username, password, enabled, created_at, updated_at FROM users WHERE username = ? AND enabled = true
+==> Parameters: admin(String)
+<==    Columns: id, username, password, enabled, created_at, updated_at
+<==        Row: 5, admin, $2a$10$5OpTX3vjdsb3F6EaBk6YQ.x2hDPxl2xgKFCG/GGc0JCvEBmKxQo8a, 1, 2025-09-13 23:28:41, 2025-09-13 23:28:41
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@61b2d20f]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6b8ac3bd] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@406119340 wrapping com.mysql.cj.jdbc.ConnectionImpl@2ff09124] will not be managed by Spring
+==>  Preparing: SELECT id, username, password, enabled, created_at, updated_at FROM users WHERE username = ? AND enabled = true
+==> Parameters: admin(String)
+<==    Columns: id, username, password, enabled, created_at, updated_at
+<==        Row: 5, admin, $2a$10$5OpTX3vjdsb3F6EaBk6YQ.x2hDPxl2xgKFCG/GGc0JCvEBmKxQo8a, 1, 2025-09-13 23:28:41, 2025-09-13 23:28:41
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6b8ac3bd]
+2025-09-13T23:29:12.508+08:00 DEBUG 18928 --- [nio-8080-exec-7] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:29:12.508+08:00 DEBUG 18928 --- [nio-8080-exec-7] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:29:12.508+08:00 DEBUG 18928 --- [nio-8080-exec-7] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:29:12.509+08:00 DEBUG 18928 --- [nio-8080-exec-7] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:29:12.509+08:00 DEBUG 18928 --- [nio-8080-exec-7] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:29:12.509+08:00 DEBUG 18928 --- [nio-8080-exec-7] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+2025-09-13T23:29:12.509+08:00 DEBUG 18928 --- [nio-8080-exec-7] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
 
 ###########################################################################
-
-
-
-###########################################################################
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
-
+我可以理解爲你之前給我的密碼的hash值有問題是吧，現在是用了項目內統一的密碼處理器就ok了吧
 
 
 ###########################################################################
