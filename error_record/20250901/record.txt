@@ -1142,38 +1142,25 @@ There was an unexpected error (type=Not Found, status=404).
 ###########################################################################
 那你剛纔的那個解決方案是自定義的頁面嗎？
 
+
 ###########################################################################
-好像還是無法登錄：
-Bad credentials
+还有一个问题，就是客户端在注册的时候权限可以申请无限大吗？
+例如下面，有write和 user:profile 了
+{
+  "clientName": "测试应用001",
+  "redirectUri": "http://localhost:3000/callback",
+  "scopes": ["read", "write", "user:profile"],
+  "description": "这是一个测试OAuth2客户端应用"
+}
+授权服务器会全部同意这些权限吗？
 
-後端日誌：
-Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@175c9534] was not registered for synchronization because synchronization is not active
-JDBC Connection [HikariProxyConnection@325255943 wrapping com.mysql.cj.jdbc.ConnectionImpl@cbdf934] will not be managed by Spring
-==>  Preparing: SELECT id, username, password, enabled, created_at, updated_at FROM users WHERE username = ? AND enabled = true
-==> Parameters: admin(String)
-<==    Columns: id, username, password, enabled, created_at, updated_at
-<==        Row: 2, admin, $2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG, 1, 2025-09-13 22:59:00, 2025-09-13 22:59:00
-<==      Total: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@175c9534]
-Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@147b8d64] was not registered for synchronization because synchronization is not active
-JDBC Connection [HikariProxyConnection@1744654314 wrapping com.mysql.cj.jdbc.ConnectionImpl@cbdf934] will not be managed by Spring
-==>  Preparing: SELECT id, username, password, enabled, created_at, updated_at FROM users WHERE username = ? AND enabled = true
-==> Parameters: admin(String)
-<==    Columns: id, username, password, enabled, created_at, updated_at
-<==        Row: 2, admin, $2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG, 1, 2025-09-13 22:59:00, 2025-09-13 22:59:00
-<==      Total: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@147b8d64]
-2025-09-13T23:18:19.514+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
-2025-09-13T23:18:19.515+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
-2025-09-13T23:18:19.515+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
-2025-09-13T23:18:19.515+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
-2025-09-13T23:18:19.515+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
-2025-09-13T23:18:19.516+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
-2025-09-13T23:18:19.516+08:00 DEBUG 12080 --- [nio-8080-exec-5] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler [classpath [META-INF/resources/], classpath [resources/], classpath [static/], classpath [public/], ServletContext [/]]
+###########################################################################
+我问一下，是不是正式的客户端申请需要审批流，需要授权服务器端的同意才可以？
+你先说是不是，有什么解决方案，我先阅览了再确定要不要执行该方案
 
 
+###########################################################################
+你把上面的四个解决方案生成一个文档：approval_flow.md,放在resource/doc/flow目录下
 
 ###########################################################################
 啓動失敗了：
