@@ -1,3 +1,19 @@
+
+请求参数和响应参数：
+vo：
+ConfigPageReqVO
+ConfigRespVO
+ConfigSaveReqVO
+
+转换：
+ @Mapping(source = "configKey", target = "key")
+    ConfigRespVO convert(ConfigDO bean);
+
+    @Mapping(source = "key", target = "configKey")
+    ConfigDO convert(ConfigSaveReqVO bean);
+
+表：infra_config
+
 核心：
 
 配置信息：
