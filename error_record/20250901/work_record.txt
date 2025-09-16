@@ -81,15 +81,23 @@ NotifySendService接口，为什么不直接用这个呢？
 
 
 ###########################################################################
+D:\software\developmentTools\Git\gitee\newpap\pap\repo
 
+mvn clean install -DskipTests=true -Dmaven.repo.local=D:\software\developmentTools\Git\gitee\newpap\pap\repo
 
+mvn dependency:go-offline -Dmaven.repo.local=D:\software\developmentTools\Git\gitee\newpap\pap\repo
+
+mvn clean package -Dmaven.repo.local=D:\software\developmentTools\Git\gitee\newpap\pap\repo -DskipTests=true
 
 ###########################################################################
 
+mvn clean install -DskipTests=true -Dmaven.repo.local=../repo
 
+mvn dependency:go-offline -Dmaven.repo.local=../repo
+
+mvn clean package -Dmaven.repo.local=../repo
 
 ###########################################################################
-
 
 ###########################################################################
 
