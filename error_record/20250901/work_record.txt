@@ -98,13 +98,40 @@ mvn dependency:go-offline -Dmaven.repo.local=../repo
 mvn clean package -Dmaven.repo.local=../repo
 
 ###########################################################################
+可以帮我看看这个是什么原因吗？nginx把端口从80改为了8080，前端登录页面可以显示，但是登录就报错了：
+这个是前端console的报错
+ccess to XMLHttpRequest at 'http://8.138.252.225/admin-api/system/auth/login' from origin 'http://8.138.252.225:8080' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.Understand this error
+is-plain-object.mjs:8 errAxiosError: Network Error
+form-create-BWBiqH2p.js:13 TypeError: Cannot read properties of undefined (reading 'close')
+    at y (LoginForm-9peR21Q0.js:1:1698)
+    at async h (LoginForm-9peR21Q0.js:1:1176)
+(anonymous) @ form-create-BWBiqH2p.js:13
+fn @ form-create-BWBiqH2p.js:13
+(anonymous) @ form-create-BWBiqH2p.js:13
+Promise.catch
+re @ form-create-BWBiqH2p.js:13
+jf @ form-create-BWBiqH2p.js:14
+handleClick @ form-designer-Bld0OVzi.js:9
+jn @ form-create-BWBiqH2p.js:13
+re @ form-create-BWBiqH2p.js:13
+h @ form-create-BWBiqH2p.js:22Understand this error
+LoginForm-9peR21Q0.js:1  POST http://8.138.252.225/admin-api/system/auth/login net::ERR_FAILED
+###########################################################################
+我在前端执行了打包操作：
+但是报错了
+Error: Could find moudle @rollup-win32-x64-msvc. npm has a bug related to optional dependencies
+
 
 ###########################################################################
+npm run build:dev
+打包报错：
+Error: Cannot find module @rollup/rollup-win32-x64-msvc.npm has a bug related to optional dependencies(https://github.com/npm/cli/issues/4828).
+Please try 'npm i' again after removing both package-lock.json and node_modules directory.
+at requireWithFriendlyError (...\node_modules\rollup\dist\native.js:64:9)
+at Object.<anonymous>(...\node_modules\rollup\dist\native.js:73:76)
 
-
-
-###########################################################################
-
+[cause]: Error: This program is blocked by group policy. For more information. contact your system administrator.
+...\node_modules\@rullup\rollup-win32-x64-msvc\rollup.win32-x64-msvc.node
 
 
 ###########################################################################
