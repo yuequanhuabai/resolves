@@ -1448,16 +1448,35 @@ not sure if it is due to an entry in the host table
 ###########################################################################
 spring-security在oauth2中的定位和角色是什么？为什么要引入这个依赖？不用可以吗？
 
+###########################################################################
+当前目录有两个关于oauth2的demo项目oauth2-server，oauth2-client：但是里面都还没有内容：
+我现在想要你帮我提供一个oauth2的解决方案：
+放在当前目录下，名字叫oauth2_summary.md
 
 ###########################################################################
+可以帮我看看这个报错吗？ sp-deploy.xml 这个文件的内容暂时不清楚
+你基于错误日志帮我定位一下，是maven执行的时候哪个步骤出现的什么问题？会不会和sp-deploy.xml文件有关
+命令是：/tmp/apache-maven-3.8.2/bin/mvn clean package --settings /tmp/sp-deploy.xml
+[ERROR]Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:compile(default-compile)
+-framework: Fatal error compiling: error: invalid target release: 16 -> [Help 1]
+
+[ERROR]To see the full stack tarce of the errors, re-run Maven with the -e switch.
+[ERROR]Re-run Maven using the -X switch to enable full debug logging.
+
+[ERROR]For more information about the errors and possible solutions, please read the following articles:
+[ERROR][Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+
+[ERROR]After correcting the problems, you can resume the build with the command
+
+[ERROR]  mvn <args> -rf  :pap-framework
+
+
 
 
 ###########################################################################
-
-
-
-###########################################################################
-
+再帮我看看这个报错：
+Failed to execute goal org.apache.maven.plugins:maven-clean-plugin:2.5:clean (default-clean) on
+project pap-framework: Failed to clean project: Failed to delete /tmp/PAP/pocpro-dev/pap-framework/target --> [Help 1]
 
 
 ###########################################################################
