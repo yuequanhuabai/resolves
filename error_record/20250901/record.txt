@@ -1527,8 +1527,7 @@ oauth2-client失敗了，是因爲OAuth2ClientController讀取配置文件的配
 因为你不支持换行，我的问题有时候会比较长，需要换行，所以我现在把我的问题写在oauth2-server项目的resource/doc/command.md文件里面，你去该文件获取问题，回答我;
 
 ###########################################################################
-基于当前目录，你可以查看到当前目录的oauth2-server项目的resource/doc 目录下的
-oauth2_solution.md吗，你详细解析该文件，我后续的问题以该文件为基础提问
+基于当前目录，你可以查看到当前目录的oauth2-server项目的resource/doc 目录下的oauth2_solution.md吗，你详细解析该文件，我后续的问题以该文件为基础提问
 
 ###########################################################################
 那你帮忙检查一下oauth2-server项目的resource/doc 目录下的pkce_solution.md这个解决方案的可行性
