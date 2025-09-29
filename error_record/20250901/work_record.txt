@@ -121,7 +121,6 @@ LoginForm-9peR21Q0.js:1  POST http://8.138.252.225/admin-api/system/auth/login n
 但是报错了
 Error: Could find moudle @rollup-win32-x64-msvc. npm has a bug related to optional dependencies
 
-
 ###########################################################################
 npm run build:dev
 打包报错：
@@ -133,10 +132,8 @@ at Object.<anonymous>(...\node_modules\rollup\dist\native.js:73:76)
 [cause]: Error: This program is blocked by group policy. For more information. contact your system administrator.
 ...\node_modules\@rullup\rollup-win32-x64-msvc\rollup.win32-x64-msvc.node
 
-
 ###########################################################################
 working out a buy list in pending state - what to fill id and process_instance id on buy_list table?
-
 
 ###########################################################################
 startProcess
@@ -144,11 +141,14 @@ BuyListServiceImpl
 ###########################################################################
 oauth2-server项目的resource/doc
 
-
 ###########################################################################
 我有一个问题，前端的node是不是等价于后端的tomcat？
 
 ###########################################################################
+
+资源所有者在客户端点击使用服务端账号进行授权登录;
+客户端前端发起授权请求(get)/auth/oauthrize;把code_challenge(hash值),state,client_id,callback_url发送到服务端的后端;
+授权服务器后端接受授权请求后，给出对应的登录页面？
 
 
 ###########################################################################

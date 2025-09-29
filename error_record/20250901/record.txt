@@ -1539,7 +1539,7 @@ oauth2_solution.md吗，你详细解析该文件，我后续的问题以该文�
 ###########################################################################
 我是基于pkce_solution.md给的方案修改了oauth2-server和oauth2-client项目，其中还有报错，你先基于pkce_solution.md问对对已经修改的代码进行排查验证，
 ###########################################################################
-  2. Add the client-side proxy endpoints (POST /token, GET /userinfo) that pass the stored verifier through OAuth2Service, and update that service to include the code_verifier parameter.
+2. Add the client-side proxy endpoints (POST /token, GET /userinfo) that pass the stored verifier through OAuth2Service, and update that service to include the code_verifier parameter.
 
 ###########################################################################
 关于oauth2-server，在resources/templates 目录下的login.html中，${client_id}，${redirect_uri}，${state}的取值是从哪里获取的？如何获取？
