@@ -79,7 +79,6 @@ Array.from(random).join('');
 和const data = new TextEncoder().encode(verifier);
 功能是相反的
 
-
 ###########################################################################
 
 
