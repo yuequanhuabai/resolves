@@ -41,7 +41,14 @@ oauth2的核心目的是确认请求的客户端身份吧？
 ###########################################################################
 The terminal process failed to launch: A native exception occurred during launch (Unable to start terminal process: CreateProcess failed).
 
-
+Setting-->setting.json文件：
+添加好即可
+{
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "terminal.integrated.profiles.windows": {
+    "Command Prompt": { "path": "C:\\Windows\\System32\\cmd.exe" }
+  }
+}
 ###########################################################################
 
 
