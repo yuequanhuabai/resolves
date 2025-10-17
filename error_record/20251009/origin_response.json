@@ -1,0 +1,277 @@
+{
+
+  "data": [
+    {
+      "id": "0ea7165cb28743e3bd6cbab2cd161a62",
+      "assetsClassification": "Alternatives",
+      "weight": "20.00",
+      "recordVersion": "0",
+      "processInstanceId": "",
+      "benchmarkDetailsLevel": [
+        {
+          "id": "64fab96bbc074643bf0aecb42c4336da",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "0ea7165cb28743e3bd6cbab2cd161a62",
+          "assetClassification": "Alternative Other",
+          "assetLevel": 2,
+          "weight": 0.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "f7b7227e0cb64cc9999723d3a8992138",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "0ea7165cb28743e3bd6cbab2cd161a62",
+          "assetClassification": "Alternative Structured Product And Derivatives",
+          "assetLevel": 2,
+          "weight": 0.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "d5225999f5f441e5a41cb25c8eb40e65",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "0ea7165cb28743e3bd6cbab2cd161a62",
+          "assetClassification": "Commodities",
+          "assetLevel": 2,
+          "weight": 10.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "84e755784fe241d7a4fe85175d530af2",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "0ea7165cb28743e3bd6cbab2cd161a62",
+          "assetClassification": "Hedge Funds",
+          "assetLevel": 2,
+          "weight": 10.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "2f650a7808bf4a8795b17b3de997526f",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "0ea7165cb28743e3bd6cbab2cd161a62",
+          "assetClassification": "Private Credit",
+          "assetLevel": 2,
+          "weight": 0.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "6ec397650ad2490087667dbd2d370328",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "0ea7165cb28743e3bd6cbab2cd161a62",
+          "assetClassification": "Private Equity",
+          "assetLevel": 2,
+          "weight": 0.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "651a2133f59547e895aeec9d0f868bc1",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "0ea7165cb28743e3bd6cbab2cd161a62",
+          "assetClassification": "Real Estate",
+          "assetLevel": 2,
+          "weight": 0.00,
+          "recordVersion": 0
+        }
+      ]
+    },
+    {
+      "id": "25aedf342419468fb08e1384ae9a9829",
+      "assetsClassification": "Equity",
+      "weight": "57.00",
+      "recordVersion": "0",
+      "processInstanceId": "",
+      "benchmarkDetailsLevel": [
+        {
+          "id": "b9d8d571ecb540b9973205c54cd6ba13",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "25aedf342419468fb08e1384ae9a9829",
+          "assetClassification": "Developed Asia Pacific Ex Japan",
+          "assetLevel": 2,
+          "weight": 2.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "95372126436f44ca8a814c5f07408469",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "25aedf342419468fb08e1384ae9a9829",
+          "assetClassification": "Developed Europe",
+          "assetLevel": 2,
+          "weight": 19.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "155511708c2d4834b9b75c7f4d67f1c3",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "25aedf342419468fb08e1384ae9a9829",
+          "assetClassification": "Developed Japan",
+          "assetLevel": 2,
+          "weight": 10.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "1825c3fcca3c4f14b8d16ecc34af3392",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "25aedf342419468fb08e1384ae9a9829",
+          "assetClassification": "Developed Markets",
+          "assetLevel": 2,
+          "weight": 5.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "dc7cdf8c02f9427eb150152ed4ea4d5f",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "25aedf342419468fb08e1384ae9a9829",
+          "assetClassification": "Developed North America",
+          "assetLevel": 2,
+          "weight": 21.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "267e993af4da479eba94805fb32167dc",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "25aedf342419468fb08e1384ae9a9829",
+          "assetClassification": "Developed Other",
+          "assetLevel": 2,
+          "weight": 0.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "5a7efeaad7a545c7921063985fd24ebd",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "25aedf342419468fb08e1384ae9a9829",
+          "assetClassification": "Developed Structured Product And Derivatives",
+          "assetLevel": 2,
+          "weight": 0.00,
+          "recordVersion": 0
+        }
+      ]
+    },
+    {
+      "id": "040a9172db73470ba794037a48aafa80",
+      "assetsClassification": "Fixed Income",
+      "weight": "18.00",
+      "recordVersion": "0",
+      "processInstanceId": "",
+      "benchmarkDetailsLevel": [
+        {
+          "id": "a2bca71a37dd49b6834ebb99fc4bed07",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "040a9172db73470ba794037a48aafa80",
+          "assetClassification": "Developed EUR Comporate Investment Grade",
+          "assetLevel": 2,
+          "weight": 2.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "78eb49b7dd3b43359a3e809218ce7ec2",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "040a9172db73470ba794037a48aafa80",
+          "assetClassification": "Developed EUR Govemment Debt",
+          "assetLevel": 2,
+          "weight": 3.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "1a8d6d904c284bd2a338ca76c30f3d80",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "040a9172db73470ba794037a48aafa80",
+          "assetClassification": "Developed High Yield",
+          "assetLevel": 2,
+          "weight": 1.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "8ca1ed20873745a09c4f9fdc8e3dacb5",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "040a9172db73470ba794037a48aafa80",
+          "assetClassification": "Developed Non-EUR Govemment Debt",
+          "assetLevel": 2,
+          "weight": 3.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "9aad386a81de437d8dc90d8762a05628",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "040a9172db73470ba794037a48aafa80",
+          "assetClassification": "Developed Non-EURComporate Investment Grade",
+          "assetLevel": 2,
+          "weight": 2.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "418f7cb512c54d33aa53184ed1b7ee20",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "040a9172db73470ba794037a48aafa80",
+          "assetClassification": "Emerging Market Debt",
+          "assetLevel": 2,
+          "weight": 5.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "935f3d4f82e646c39b950aa1f206e2ab",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "040a9172db73470ba794037a48aafa80",
+          "assetClassification": "Fixed Income Other",
+          "assetLevel": 2,
+          "weight": 1.00,
+          "recordVersion": 0
+        },
+        {
+          "id": "7a5fb9f481f244278c33d7a4b4802c06",
+          "businessId": "B00001",
+          "benchmarkId": "7b474041e72649bab06cb5ef3a0401df",
+          "parentId": "040a9172db73470ba794037a48aafa80",
+          "assetClassification": "Fixed Income Structured Product And Derivatives",
+          "assetLevel": 2,
+          "weight": 1.00,
+          "recordVersion": 0
+        }
+      ]
+    },
+    {
+      "id": "c1c16271a2844b29ab356f57d45e9267",
+      "assetsClassification": "FX Structured Product And Derivatives",
+      "weight": "1.00",
+      "recordVersion": "0",
+      "processInstanceId": "",
+      "benchmarkDetailsLevel": []
+    },
+    {
+      "id": "69912ad5399d4c79870be23352f422dd",
+      "assetsClassification": "Liquidity",
+      "weight": "4.00",
+      "recordVersion": "0",
+      "processInstanceId": "",
+      "benchmarkDetailsLevel": []
+    },
+    {
+      "id": "7c5f839bfda148a39956c2c577ad41ed",
+      "assetsClassification": "Other",
+      "weight": "0.00",
+      "recordVersion": "0",
+      "processInstanceId": "",
+      "benchmarkDetailsLevel": []
+    }
+  ]
+
+}
