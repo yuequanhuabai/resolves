@@ -1,0 +1,5 @@
+现在还有一个问题，就是在初始化的时候指挥初始化benchmark的数据，没有benchmark_detail的数据;
+所以在程序初始阶段，benchmark_detail表是空的，数据需要从一个字典表里面查询给出具体的benchmark的detail数据，不需要权重数据，该数据需要用户在前端维护填写;
+用户填写后进行保存操作，这个操作也需要一些注意事项：对于第一次保存操作，该操作为新增操作，因为当时benchmark关联的详情表benchmark_detail里面为空的数据，
+前端只有对应的benchmark_id和从字典表里面查询的对应的固定结构的benchmark_detail数据；但是第二次操作的话，它就会执行更新操作，
+因为第一次操作已经基于同一个benchmark_id新增过数据了;
