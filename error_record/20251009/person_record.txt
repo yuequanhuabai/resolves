@@ -134,12 +134,21 @@ git push -u  origin test
 
 
 ###########################################################################
+claude code
+? for shortcuts
+
+! for bash mode   double tap esc to clear input
+/ for commands    shift + tab to auto-accept edits
+@ for file paths   ctrl + o for verbose output
+# to memorize      ctrl + t to show todos
+                   tab to toggle thinking
+                   backslash (\) + return   for
+                   newline
 
 
 
 ###########################################################################
-
-
+读取当前目录下的command.md获取我的命令
 
 ###########################################################################
 
