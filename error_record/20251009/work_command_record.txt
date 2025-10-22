@@ -102,22 +102,49 @@ double totalWeight = updateReqVO.stream()
 我可以把当前文档分为三个部分：1. 初始化的逻辑，从模板表查找或者从已有的benchmark_detail,组装为el-tree的数据类型；2.前端的处理逻辑，在返回数据后，需要保存是否为模板数据；3. 用户在前端界面进行了维护数据，基于是否为模板数据，在后端进行对应新增和更新benchmark_detail表操作；我这样理解对吗
 
 ###########################################################################
+你的代码逻辑还是有些问题，我要的是，基于isTemplate来判断分两种情况：1.第一次初始化，2.已经有数据了，是从benchmark_detail表里面查询的数据;然后把数据返回给前端，用户在页面进行操作，如果是情况1.第一次初始化：benchmark表的数据更新为初始状态，把当前的process_instance_id放进去，del_flag设置为初始状态0，record_version设置为初始状态0等;在benchmark_detail表里进行全部新增操作，再基于benchmarkId查询，如果没有数据，则进行递归新增操作;如果是情况2.前端保存的数据是从benchmark_detail表里面查询的数据，则先更新主表benchmark表，再递归全量更新benchmark_detail详情表的数据，以前端传入的数据为主进行更新；还有就是每次操作代码前要讨论可行性，不要马上更新代码，先更新文档，再更新代码
+
+###########################################################################
+和我确认的问题 1.record_version的处理，你先参考已有的代码逻辑后再和我讨论;2.旧数据需要保留把新数据的record_version+1，你参考现有的代码逻辑,应该是这个(以后每次查询benchmark表就查询最新的record_version的数据)你详细看看是不是再和我讨论;3.对于del_flag字段的处理，你参考现有的代码逻辑：应该是这个(每次修改的时候把旧数据的del_flag设置为1，新数据的设置为0)你详细看看是不是再和我讨论;
+你的建议：
+情况一(首次初始化): 1. UPDATE benchmark表为初始状态,2. 验证detail表是否为空,3. 递归INSERT所有details 同意,按照你的建议执行;
+情况二（从benchmark_detail表里查询的数据） 1.主表先保存一份旧数据，然后版本+1再新增一份新数据到主表，这个逻辑你可以参考现有的代码逻辑是怎样的再讨论下;2和3的建议我也同意，先删除再统一递归新增更加简洁方便
+
+###########################################################################
+大部分还是按照原来的逻辑来吧，现在的修改只不过是再原来二级树的结构上改为了二级树和三级树并存的结构;benchmark表的处理方案是:初始化的时候，需要把record_version设置为0; benchmark_detail表的操作是全量新增record_version设置为0, del_flag也设置为0，把benchmark主表的id设置到benchmark_detail中进行关联,weight设置为0,asset_level用benchmark_grouping表对应数据的asset_level,id和parent_id 的层级关系基于component_id和parent_component_id的层级关系进行映射实现对应; 如果是非初始化，保存操作： 对benchmark表的解决方案：把del_flag设置为1，新增一条相同的数据，id重新用uuid生成，del_flag设置为0，record_version+1; benchmark_detail表的操作是，原数据保持不变，全部新增数据要修改的数据，id全部用uuid生成新增，record_version和benchmark表的record_version保持一致，直接查询一次benchmark表，把它的record_version赋值到每个修改的benchmark_detail的新数据中;
+
+###########################################################################
+你把是否初始化这个逻辑改下，直接基于benchmark_id从benchmark_detail表里面查数据吧，如果没有数据就是初始化，有数据就非初始化，保存操作；
+情况1（初始化）. benchmark表操作没问题，benchmark_detail表的操作，因为没有del_flag字段，这个del_flag = 0操作不需要，只要record_version = 0这个即可，其它的没问题；
+情况2 （非初始化），Benchmark表操作没问题；Benchmark_detail表操作 没问题，record_version=新记录的benchmark表的record_version，它比原来的record_version大1吧
+
+确认细节：
+ 问题1：Benchmark_detail表的del_flag字段
+ 回答1： Benchmark_detail表不要del_flag字段
+
+问题2：情况1的验证逻辑
+  回答2： 改为查询Benchmark_detail表来验证是否初始化，不会有这个情况
+
+问题3：情况1的record_version更新
+回答3： 如果是初始化，record_version全部设置为0，不管它之前是啥;
+
+问题4：查询逻辑
+
+  查询benchmark_details时，是否需要添加过滤条件：
+  // 只查询del_flag=0的benchmark关联的details
+  SELECT * FROM benchmark_details
+  WHERE benchmark_id IN (
+    SELECT id FROM benchmark WHERE business_id = ? AND del_flag = 0
+  )
+
+ 回答4: 这个肯定要加条件过滤，查询del_flag=0和对应benchmark_id的数据
+
+
 
 
 
 ###########################################################################
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
-
+在这里回答你：  回答1： Benchmark_detail表不要del_flag字段； 回答2： 改为查询Benchmark_detail表来验证是否初始化，不会有这个情况；回答3： 如果是初始化，record_version全部设置为0，不管它之前是啥;  回答4: 这个肯定要加条件过滤，查询del_flag=0和对应benchmark_id的数据
 
 
 ###########################################################################
