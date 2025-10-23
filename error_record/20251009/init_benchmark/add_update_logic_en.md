@@ -1,9 +1,9 @@
 # Benchmark Details Insert/Update Logic Design
 
-> **Version**: v2.0
-> **Date**: 2025-10-21
+> **Version**: v3.0 (Hybrid Approach)
+> **Date**: 2025-10-22
 > **Author**: Claude Code
-> **Description**: Template-based initialization with template_code approach (supports multiple benchmark types)
+> **Description**: Hybrid approach with pre-generated UUIDs and isTemplate marker (universal template design)
 
 ---
 
@@ -32,245 +32,203 @@
 
 ## Database Design
 
-### ⚠️ Design Problem and Solution
+### ⚠️ Design Evolution: v2.0 → v3.0
 
-**Problem**:
-1. Template table cannot use fixed `id` and `parent_id` - conflicts when supporting multiple benchmark types (Private Bank, Retail Bank)
-2. Cannot establish hierarchy using `parent_id` when IDs don't exist yet
+**v2.0 Problem**:
+1. Using `id=null` for template data caused confusion
+2. Frontend had to generate temporary IDs for display
+3. Complex logic to track originalId vs display ID
 
-**Solution**:
-1. Use **`template_code`** as business identifier instead of fixed UUID
-2. Use **`parent_template_code`** to establish hierarchy (not dependent on real IDs)
-3. Use **`benchmark_type`** to support multiple types (1=Private Bank, 2=Retail Bank)
-4. **Dynamically generate UUIDs** during save operation using Map<template_code, generated_uuid>
+**v3.0 Solution (Hybrid Approach)**:
+1. Use **`componentId`** as business identifier in grouping table (e.g., `FI_GD`, `EQUITY_DM`)
+2. Use **`parentComponentId`** to establish hierarchy (independent of UUIDs)
+3. **Pre-generate UUIDs** during query, use same UUIDs for insert
+4. Use **`isTemplate`** field to distinguish template from real data
+5. **Universal template**: Removed `benchmark_type`, all benchmarks use same grouping structure
 
-### 1. Create Template Table
+### 1. Create Grouping Table
 
-**Table Name**: `benchmark_details_template`
+**Table Name**: `benchmark_grouping`
 
-**Purpose**: Store template structure for different benchmark types using template codes
+**Purpose**: Store universal grouping template structure (used by all benchmark types)
 
 ```sql
--- benchmark_details_template template table (v2.0)
-CREATE TABLE benchmark_details_template (
-    id nvarchar(64) NOT NULL PRIMARY KEY,  -- Auto-generated primary key (UUID)
-    template_code nvarchar(64) NOT NULL,   -- Template code (business identifier, unique per type)
-    parent_template_code nvarchar(64) DEFAULT NULL NULL,  -- Parent template code (for hierarchy)
-    benchmark_type tinyint NOT NULL,       -- Benchmark type: 1=Private Bank, 2=Retail Bank
-    asset_classification nvarchar(64) NOT NULL,
-    asset_level tinyint NOT NULL,
-    sort_order int DEFAULT 0 NULL,
-    is_active bit DEFAULT 1 NULL,
-    CONSTRAINT UK_template_code_type UNIQUE (template_code, benchmark_type)  -- Unique per type
+-- benchmark_grouping table (v3.0 - Universal Template)
+CREATE TABLE benchmark_grouping (
+    id nvarchar(64) NOT NULL PRIMARY KEY,           -- Auto-generated primary key (UUID)
+    componentId nvarchar(64) NOT NULL,              -- Component ID (business identifier, e.g., FI_GD, EQUITY_DM)
+    parentComponentId nvarchar(64) DEFAULT NULL,    -- Parent Component ID (NULL for root nodes)
+    componentName nvarchar(64) DEFAULT NULL,        -- Component Name (display name)
+    description nvarchar(128) NOT NULL,             -- Description (asset classification name)
+    asset_level tinyint NOT NULL,                   -- Asset Level (1,2,3...)
+    sort_order int DEFAULT 0 NULL,                  -- Sort Order
+    CONSTRAINT UK_componentId UNIQUE (componentId)  -- Unique component ID
 )
 GO
 
 EXEC sp_addextendedproperty
     'MS_Description', N'Primary Key ID (auto-generated UUID)',
     'SCHEMA', N'dbo',
-    'TABLE', N'benchmark_details_template',
+    'TABLE', N'benchmark_grouping',
     'COLUMN', N'id'
 GO
 
 EXEC sp_addextendedproperty
-    'MS_Description', N'Template Code (e.g., PB_FI, RB_EQUITY)',
+    'MS_Description', N'Component ID (business identifier, e.g., FI, FI_GD, FI_GD_EUR)',
     'SCHEMA', N'dbo',
-    'TABLE', N'benchmark_details_template',
-    'COLUMN', N'template_code'
+    'TABLE', N'benchmark_grouping',
+    'COLUMN', N'componentId'
 GO
 
 EXEC sp_addextendedproperty
-    'MS_Description', N'Parent Template Code (NULL for root nodes)',
+    'MS_Description', N'Parent Component ID (NULL for root nodes)',
     'SCHEMA', N'dbo',
-    'TABLE', N'benchmark_details_template',
-    'COLUMN', N'parent_template_code'
+    'TABLE', N'benchmark_grouping',
+    'COLUMN', N'parentComponentId'
 GO
 
 EXEC sp_addextendedproperty
-    'MS_Description', N'Benchmark Type: 1=Private Bank, 2=Retail Bank',
+    'MS_Description', N'Component Name (display name)',
     'SCHEMA', N'dbo',
-    'TABLE', N'benchmark_details_template',
-    'COLUMN', N'benchmark_type'
+    'TABLE', N'benchmark_grouping',
+    'COLUMN', N'componentName'
 GO
 
 EXEC sp_addextendedproperty
-    'MS_Description', N'Asset Classification Name',
+    'MS_Description', N'Description (asset classification description)',
     'SCHEMA', N'dbo',
-    'TABLE', N'benchmark_details_template',
-    'COLUMN', N'asset_classification'
+    'TABLE', N'benchmark_grouping',
+    'COLUMN', N'description'
 GO
 
 EXEC sp_addextendedproperty
     'MS_Description', N'Asset Level (1,2,3...)',
     'SCHEMA', N'dbo',
-    'TABLE', N'benchmark_details_template',
+    'TABLE', N'benchmark_grouping',
     'COLUMN', N'asset_level'
 GO
 
 EXEC sp_addextendedproperty
     'MS_Description', N'Sort Order',
     'SCHEMA', N'dbo',
-    'TABLE', N'benchmark_details_template',
+    'TABLE', N'benchmark_grouping',
     'COLUMN', N'sort_order'
 GO
 
 EXEC sp_addextendedproperty
-    'MS_Description', N'Is Active (1=active, 0=inactive)',
+    'MS_Description', N'Benchmark grouping table (universal template for all benchmarks)',
     'SCHEMA', N'dbo',
-    'TABLE', N'benchmark_details_template',
-    'COLUMN', N'is_active'
-GO
-
-EXEC sp_addextendedproperty
-    'MS_Description', N'Benchmark details template table (supports multiple types)',
-    'SCHEMA', N'dbo',
-    'TABLE', N'benchmark_details_template'
+    'TABLE', N'benchmark_grouping'
 GO
 ```
 
-### 2. Template Code Naming Convention
+### 2. Component ID Naming Convention (v3.0)
 
-**Format**: `{Type}_{Category}_{SubCategory}_{Detail}`
+**Format**: `{Category}_{SubCategory}_{Detail}` (without type prefix, universal for all benchmarks)
 
 **Examples**:
-- **Private Bank**:
-  - `PB_FI` (Level 1: Fixed Income)
-  - `PB_FI_GD` (Level 2: Government Debt)
-  - `PB_FI_GD_EUR` (Level 3: EUR Government Bonds)
-  - `PB_EQUITY` (Level 1: Equity)
-  - `PB_EQUITY_DM` (Level 2: Developed Markets)
+- **Level 1**:
+  - `FI` (Fixed Income)
+  - `EQUITY` (Equity)
+  - `ALT` (Alternatives)
 
-- **Retail Bank**:
-  - `RB_FI` (Level 1: Fixed Income)
-  - `RB_FI_GD` (Level 2: Government Debt)
-  - `RB_FI_GD_EUR` (Level 3: EUR Government Bonds)
+- **Level 2**:
+  - `FI_GD` (Fixed Income > Government Debt)
+  - `FI_CD` (Fixed Income > Corporate Debt)
+  - `EQUITY_DM` (Equity > Developed Markets)
+  - `EQUITY_EM` (Equity > Emerging Markets)
+
+- **Level 3**:
+  - `FI_GD_EUR` (Fixed Income > Government Debt > EUR Bonds)
+  - `FI_GD_NEUR` (Fixed Income > Government Debt > Non-EUR Bonds)
+  - `EQUITY_DM_EU` (Equity > Developed Markets > Europe)
 
 **Benefits**:
-- Human-readable
-- No UUID conflicts across types
+- Human-readable and concise
+- Universal template works for all benchmark types
 - Easy to maintain and debug
+- No type prefix needed (simplified from v2.0)
 
-### 3. Insert Template Data (Private Bank Example)
+### 3. Insert Template Data (v3.0 - Universal Template)
 
-**Note**: ID is auto-generated UUID, hierarchy is established by template_code
+**Note**: ID is auto-generated UUID, hierarchy is established by parentComponentId
 
 ```sql
 -- ====================================================================
--- Insert benchmark_details_template for Private Bank (benchmark_type = 1)
+-- Insert benchmark_grouping data (v3.0 - Universal Template)
 -- Mixed 2-level and 3-level hierarchy
 -- ====================================================================
 
 -- Level 1: Fixed Income
-INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-VALUES (NEWID(), N'PB_FI', NULL, 1, N'Fixed Income', 1, 1, 1);
+INSERT INTO benchmark_grouping (id, componentId, parentComponentId, componentName, description, asset_level, sort_order)
+VALUES (NEWID(), N'FI', NULL, N'Fixed Income', N'Fixed Income', 1, 1);
 
     -- Level 2: Government Debt (has level 3 children)
-    INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-    VALUES (NEWID(), N'PB_FI_GD', N'PB_FI', 1, N'Government Debt', 2, 1, 1);
+    INSERT INTO benchmark_grouping (id, componentId, parentComponentId, componentName, description, asset_level, sort_order)
+    VALUES (NEWID(), N'FI_GD', N'FI', N'Government Debt', N'Government Debt', 2, 1);
 
         -- Level 3: EUR Government Bonds
-        INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-        VALUES (NEWID(), N'PB_FI_GD_EUR', N'PB_FI_GD', 1, N'EUR Government Bonds', 3, 1, 1);
+        INSERT INTO benchmark_grouping (id, componentId, parentComponentId, componentName, description, asset_level, sort_order)
+        VALUES (NEWID(), N'FI_GD_EUR', N'FI_GD', N'EUR Bonds', N'EUR Government Bonds', 3, 1);
 
         -- Level 3: Non-EUR Government Bonds
-        INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-        VALUES (NEWID(), N'PB_FI_GD_NEUR', N'PB_FI_GD', 1, N'Non-EUR Government Bonds', 3, 2, 1);
+        INSERT INTO benchmark_grouping (id, componentId, parentComponentId, componentName, description, asset_level, sort_order)
+        VALUES (NEWID(), N'FI_GD_NEUR', N'FI_GD', N'Non-EUR Bonds', N'Non-EUR Government Bonds', 3, 2);
 
     -- Level 2: Corporate Debt (leaf node, no level 3 children)
-    INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-    VALUES (NEWID(), N'PB_FI_CD', N'PB_FI', 1, N'Corporate Debt', 2, 2, 1);
+    INSERT INTO benchmark_grouping (id, componentId, parentComponentId, componentName, description, asset_level, sort_order)
+    VALUES (NEWID(), N'FI_CD', N'FI', N'Corporate Debt', N'Corporate Debt', 2, 2);
 
 -- Level 1: Equity
-INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-VALUES (NEWID(), N'PB_EQUITY', NULL, 1, N'Equity', 1, 2, 1);
+INSERT INTO benchmark_grouping (id, componentId, parentComponentId, componentName, description, asset_level, sort_order)
+VALUES (NEWID(), N'EQUITY', NULL, N'Equity', N'Equity', 1, 2);
 
     -- Level 2: Developed Markets (has level 3 children)
-    INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-    VALUES (NEWID(), N'PB_EQUITY_DM', N'PB_EQUITY', 1, N'Developed Markets', 2, 1, 1);
+    INSERT INTO benchmark_grouping (id, componentId, parentComponentId, componentName, description, asset_level, sort_order)
+    VALUES (NEWID(), N'EQUITY_DM', N'EQUITY', N'Developed Markets', N'Developed Markets', 2, 1);
 
         -- Level 3: Europe Equity
-        INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-        VALUES (NEWID(), N'PB_EQUITY_DM_EU', N'PB_EQUITY_DM', 1, N'Europe Equity', 3, 1, 1);
+        INSERT INTO benchmark_grouping (id, componentId, parentComponentId, componentName, description, asset_level, sort_order)
+        VALUES (NEWID(), N'EQUITY_DM_EU', N'EQUITY_DM', N'Europe', N'Europe Equity', 3, 1);
 
         -- Level 3: North America Equity
-        INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-        VALUES (NEWID(), N'PB_EQUITY_DM_NA', N'PB_EQUITY_DM', 1, N'North America Equity', 3, 2, 1);
+        INSERT INTO benchmark_grouping (id, componentId, parentComponentId, componentName, description, asset_level, sort_order)
+        VALUES (NEWID(), N'EQUITY_DM_NA', N'EQUITY_DM', N'North America', N'North America Equity', 3, 2);
 
     -- Level 2: Emerging Markets (leaf node, no level 3 children)
-    INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-    VALUES (NEWID(), N'PB_EQUITY_EM', N'PB_EQUITY', 1, N'Emerging Markets', 2, 2, 1);
+    INSERT INTO benchmark_grouping (id, componentId, parentComponentId, componentName, description, asset_level, sort_order)
+    VALUES (NEWID(), N'EQUITY_EM', N'EQUITY', N'Emerging Markets', N'Emerging Markets', 2, 2);
 
 -- Level 1: Alternatives
-INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-VALUES (NEWID(), N'PB_ALT', NULL, 1, N'Alternatives', 1, 3, 1);
+INSERT INTO benchmark_grouping (id, componentId, parentComponentId, componentName, description, asset_level, sort_order)
+VALUES (NEWID(), N'ALT', NULL, N'Alternatives', N'Alternatives', 1, 3);
 
     -- Level 2: Hedge Funds (leaf node, no level 3 children)
-    INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-    VALUES (NEWID(), N'PB_ALT_HF', N'PB_ALT', 1, N'Hedge Funds', 2, 1, 1);
+    INSERT INTO benchmark_grouping (id, componentId, parentComponentId, componentName, description, asset_level, sort_order)
+    VALUES (NEWID(), N'ALT_HF', N'ALT', N'Hedge Funds', N'Hedge Funds', 2, 1);
 ```
 
-### 4. Insert Template Data (Retail Bank Example)
+### 4. Template Data Tree Structure (v3.0 - Universal Template)
 
-```sql
--- ====================================================================
--- Insert benchmark_details_template for Retail Bank (benchmark_type = 2)
--- ====================================================================
+**All Benchmarks (Universal Structure)**:
+```
+FI (Fixed Income)
+├─ FI_GD (Government Debt) [has children]
+│  ├─ FI_GD_EUR (EUR Government Bonds)
+│  └─ FI_GD_NEUR (Non-EUR Government Bonds)
+└─ FI_CD (Corporate Debt) [leaf]
 
--- Level 1: Fixed Income
-INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-VALUES (NEWID(), N'RB_FI', NULL, 2, N'Fixed Income', 1, 1, 1);
+EQUITY (Equity)
+├─ EQUITY_DM (Developed Markets) [has children]
+│  ├─ EQUITY_DM_EU (Europe Equity)
+│  └─ EQUITY_DM_NA (North America Equity)
+└─ EQUITY_EM (Emerging Markets) [leaf]
 
-    -- Level 2: Government Debt
-    INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-    VALUES (NEWID(), N'RB_FI_GD', N'RB_FI', 2, N'Government Debt', 2, 1, 1);
-
-    -- Level 2: Corporate Debt
-    INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-    VALUES (NEWID(), N'RB_FI_CD', N'RB_FI', 2, N'Corporate Debt', 2, 2, 1);
-
--- Level 1: Equity
-INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-VALUES (NEWID(), N'RB_EQUITY', NULL, 2, N'Equity', 1, 2, 1);
-
-    -- Level 2: Domestic Equity
-    INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-    VALUES (NEWID(), N'RB_EQUITY_DOM', N'RB_EQUITY', 2, N'Domestic Equity', 2, 1, 1);
-
-    -- Level 2: International Equity
-    INSERT INTO benchmark_details_template (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-    VALUES (NEWID(), N'RB_EQUITY_INTL', N'RB_EQUITY', 2, N'International Equity', 2, 2, 1);
+ALT (Alternatives)
+└─ ALT_HF (Hedge Funds) [leaf]
 ```
 
-**Template Data Tree Structure**:
-
-**Private Bank (benchmark_type = 1)**:
-```
-PB_FI (Fixed Income)
-├─ PB_FI_GD (Government Debt) [has children]
-│  ├─ PB_FI_GD_EUR (EUR Government Bonds)
-│  └─ PB_FI_GD_NEUR (Non-EUR Government Bonds)
-└─ PB_FI_CD (Corporate Debt) [leaf]
-
-PB_EQUITY (Equity)
-├─ PB_EQUITY_DM (Developed Markets) [has children]
-│  ├─ PB_EQUITY_DM_EU (Europe Equity)
-│  └─ PB_EQUITY_DM_NA (North America Equity)
-└─ PB_EQUITY_EM (Emerging Markets) [leaf]
-
-PB_ALT (Alternatives)
-└─ PB_ALT_HF (Hedge Funds) [leaf]
-```
-
-**Retail Bank (benchmark_type = 2)**:
-```
-RB_FI (Fixed Income)
-├─ RB_FI_GD (Government Debt)
-└─ RB_FI_CD (Corporate Debt)
-
-RB_EQUITY (Equity)
-├─ RB_EQUITY_DOM (Domestic Equity)
-└─ RB_EQUITY_INTL (International Equity)
-```
+**Note**: In v3.0, all benchmarks use the same universal template structure. Users can customize by setting weights to 0 for unused categories.
 
 ---
 
@@ -278,23 +236,23 @@ RB_EQUITY (Equity)
 
 ### 1. Create Template Table Entity and Mapper
 
-#### 1.1 BenchmarkDetailsTemplateDO.java
+#### 1.1 BenchmarkGroupingDO.java
 
-**Path**: `pap-server/src/main/java/cn/bochk/pap/server/business/dal/dataobject/BenchmarkDetailsTemplateDO.java`
+**Path**: `pap-server/src/main/java/cn/bochk/pap/server/business/dal/BenchmarkGroupingDO.java`
 
 ```java
-package cn.bochk.pap.server.business.dal.dataobject;
+package cn.bochk.pap.server.business.dal;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
- * benchmark_details_template template table entity (v2.0)
- * Store template structure using template codes (supports multiple benchmark types)
+ * benchmark_grouping table entity (v3.0)
+ * Store grouping template structure (universal template for all benchmark types)
  */
 @Data
-@TableName("benchmark_details_template")
-public class BenchmarkDetailsTemplateDO {
+@TableName("benchmark_grouping")
+public class BenchmarkGroupingDO {
 
     /**
      * Primary Key ID (auto-generated UUID)
@@ -302,24 +260,24 @@ public class BenchmarkDetailsTemplateDO {
     private String id;
 
     /**
-     * Template Code (business identifier, e.g., PB_FI, RB_EQUITY)
+     * Component ID (business identifier, e.g., FI, FI_GD, FI_GD_EUR)
      */
-    private String templateCode;
+    private String componentId;
 
     /**
-     * Parent Template Code (NULL means root node)
+     * Parent Component ID (NULL means root node)
      */
-    private String parentTemplateCode;
+    private String parentComponentId;
 
     /**
-     * Benchmark Type: 1=Private Bank, 2=Retail Bank
+     * Component Name (display name)
      */
-    private Integer benchmarkType;
+    private String componentName;
 
     /**
-     * Asset Classification Name
+     * Description (asset classification description)
      */
-    private String assetClassification;
+    private String description;
 
     /**
      * Asset Level (1,2,3...)
@@ -330,90 +288,85 @@ public class BenchmarkDetailsTemplateDO {
      * Sort Order
      */
     private Integer sortOrder;
-
-    /**
-     * Is Active (true=active, false=inactive)
-     */
-    private Boolean isActive;
 }
 ```
 
-#### 1.2 BenchmarkDetailsTemplateMapper.java
+#### 1.2 BenchmarkGroupingMapper.java
 
-**Path**: `pap-server/src/main/java/cn/bochk/pap/server/business/dal/mysql/BenchmarkDetailsTemplateMapper.java`
+**Path**: `pap-server/src/main/java/cn/bochk/pap/server/business/mapper/BenchmarkGroupingMapper.java`
 
 ```java
-package cn.bochk.pap.server.business.dal.mysql;
+package cn.bochk.pap.server.business.mapper;
 
-import cn.bochk.pap.server.business.dal.dataobject.BenchmarkDetailsTemplateDO;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import cn.bochk.pap.server.business.dal.BenchmarkGroupingDO;
+import cn.bochk.pap.framework.common.mybatis.mybatis.core.mapper.BaseMapperX;
+import cn.bochk.pap.framework.common.mybatis.mybatis.core.query.LambdaQueryWrapperX;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
 /**
- * benchmark_details_template Mapper (v2.0)
+ * benchmark_grouping Mapper (v3.0)
  */
 @Mapper
-public interface BenchmarkDetailsTemplateMapper extends BaseMapper<BenchmarkDetailsTemplateDO> {
+public interface BenchmarkGroupingMapper extends BaseMapperX<BenchmarkGroupingDO> {
 
     /**
-     * Query active template data by benchmark type
+     * Query all grouping templates
      * Ordered by sort_order
      *
-     * @param benchmarkType benchmark type (1=Private Bank, 2=Retail Bank)
      * @return template list
      */
-    @Select("SELECT * FROM benchmark_details_template " +
-            "WHERE is_active = 1 AND benchmark_type = #{benchmarkType} " +
-            "ORDER BY sort_order ASC")
-    List<BenchmarkDetailsTemplateDO> selectActiveTemplatesByType(@Param("benchmarkType") Integer benchmarkType);
+    default List<BenchmarkGroupingDO> selectList() {
+        return selectList(new LambdaQueryWrapperX<BenchmarkGroupingDO>()
+                .orderByAsc(BenchmarkGroupingDO::getSortOrder));
+    }
 }
 ```
 
-### 2. VO Classes (No modifications needed)
+### 2. Modify VO Classes
 
-#### 2.1 BenchmarkDetailsRespVo (No changes needed)
+#### 2.1 Modify BenchmarkDetailsRespVo
 
 **Path**: `pap-server/src/main/java/cn/bochk/pap/server/business/controller/vo/response/BenchmarkDetailsRespVo.java`
 
 ```java
 /**
- * Benchmark details response VO
- * Note: No need to add templateCode field
- * The hierarchy is maintained by children array
+ * Benchmark details response VO (v3.0 - Hybrid Approach)
+ * Support both template data (with pre-generated UUID) and real data
  */
 @Data
 public class BenchmarkDetailsRespVo {
-    private String id;
+    private String id;  // Pre-generated UUID for template data, real UUID for saved data
     private String assetsClassification;
     private String weight;
-    private Integer assetLevel;
     private String processInstanceId;
     private String recordVersion;
+
+    // NEW: Mark if this is template data
+    private Boolean isTemplate;  // true = template data, false/null = real saved data
+
     private List<BenchmarkDetailsRespVo> children;  // ← Hierarchy maintained here
 }
 ```
 
-#### 2.2 BenchmarkDetailsReqVo (No changes needed)
+#### 2.2 Modify BenchmarkDetailsReqVo
 
 **Path**: `pap-server/src/main/java/cn/bochk/pap/server/business/controller/vo/request/BenchmarkDetailsReqVo.java`
 
 ```java
 /**
- * Benchmark details request VO
- * Note: No need to add templateCode field
- * The hierarchy is maintained by children array
+ * Benchmark details request VO (v4.0 - Query-based Approach)
+ * Backend determines initialization by querying benchmark_details table
  */
 @Data
 public class BenchmarkDetailsReqVo {
     private String id;
-    private String assetsClassification;
+    private String benchmarkId;  // Benchmark main table ID (required for query)
+    private String assetClassification;
     private String weight;
-    private Integer assetLevel;
     private String recordVersion;
+
     private List<BenchmarkDetailsReqVo> children;  // ← Hierarchy maintained here
 }
 ```
@@ -425,8 +378,8 @@ public class BenchmarkDetailsReqVo {
 #### 3.1 Add Dependency Injection
 
 ```java
-import cn.bochk.pap.server.business.dal.dataobject.BenchmarkDetailsTemplateDO;
-import cn.bochk.pap.server.business.dal.mysql.BenchmarkDetailsTemplateMapper;
+import cn.bochk.pap.server.business.dal.BenchmarkGroupingDO;
+import cn.bochk.pap.server.business.mapper.BenchmarkGroupingMapper;
 import cn.hutool.core.util.IdUtil;
 
 @Service
@@ -439,9 +392,9 @@ public class BenchmarkServiceImpl implements BenchmarkService {
     @Autowired
     private BenchmarkDetailsMapper benchmarkDetailsMapper;
 
-    // NEW: Inject template table Mapper
+    // NEW: Inject grouping table Mapper (v3.0)
     @Autowired
-    private BenchmarkDetailsTemplateMapper templateMapper;
+    private BenchmarkGroupingMapper benchmarkGroupingMapper;
 
     // ... other code
 }
@@ -487,29 +440,24 @@ public List<BenchmarkDetailsRespVo> getBenchmark(String id) {
 
 ```java
 /**
- * Get default template data (called when benchmark_details is empty)
+ * Get default template data (called when benchmark_details is empty) (v3.0)
+ * Query from benchmark_grouping table and pre-generate UUIDs
  *
  * @param benchmarkDO benchmark main table data
- * @return tree structure of template data
+ * @return tree structure of template data with pre-generated UUIDs
  */
 private List<BenchmarkDetailsRespVo> getDefaultTemplateData(BenchmarkDO benchmarkDO) {
-    // 1. Get benchmark_type from benchmarkDO
-    Integer benchmarkType = benchmarkDO.getBenchmarkType();
-    if (benchmarkType == null) {
-        throw new BusinessException("Benchmark type cannot be null");
-    }
-
-    // 2. Query template data by benchmark_type
-    List<BenchmarkDetailsTemplateDO> templates = templateMapper.selectActiveTemplatesByType(benchmarkType);
+    // 1. Query all grouping templates
+    List<BenchmarkGroupingDO> templates = benchmarkGroupingMapper.selectList();
 
     if (templates == null || templates.isEmpty()) {
-        log.warn("No active templates found for benchmark_type: {}", benchmarkType);
+        log.warn("No grouping templates found in benchmark_grouping table");
         return new ArrayList<>();
     }
 
-    log.info("Loaded {} template records for benchmark_type: {}", templates.size(), benchmarkType);
+    log.info("Loaded {} template records from benchmark_grouping", templates.size());
 
-    // 3. Convert template data to tree structure
+    // 2. Convert template data to tree structure with pre-generated UUIDs
     return buildTreeFromTemplate(templates, benchmarkDO);
 }
 ```
@@ -518,38 +466,42 @@ private List<BenchmarkDetailsRespVo> getDefaultTemplateData(BenchmarkDO benchmar
 
 ```java
 /**
- * Build tree structure from template data (v2.0)
- * Use template_code and parent_template_code to establish hierarchy
+ * Build tree structure from template data (v3.0 - Hybrid Approach)
+ * Use componentId and parentComponentId to establish hierarchy
+ * Pre-generate UUIDs for all nodes
  *
  * @param templates template data list
  * @param benchmarkDO benchmark main table data
  * @return tree structure list
  */
 private List<BenchmarkDetailsRespVo> buildTreeFromTemplate(
-        List<BenchmarkDetailsTemplateDO> templates,
+        List<BenchmarkGroupingDO> templates,
         BenchmarkDO benchmarkDO) {
 
     List<BenchmarkDetailsRespVo> result = new ArrayList<>();
 
-    // 1. Group by parent_template_code (Map<parent_template_code, List<children>>)
-    Map<String, List<BenchmarkDetailsTemplateDO>> parentChildMap = templates.stream()
-        .filter(t -> t.getParentTemplateCode() != null)  // Exclude root nodes
-        .collect(Collectors.groupingBy(BenchmarkDetailsTemplateDO::getParentTemplateCode));
+    // Create Map to store componentId -> UUID mapping
+    Map<String, String> componentIdToUuidMap = new HashMap<>();
 
-    // 2. Find all root nodes (parent_template_code == null)
-    List<BenchmarkDetailsTemplateDO> rootNodes = templates.stream()
-        .filter(t -> t.getParentTemplateCode() == null)
-        .sorted(Comparator.comparing(BenchmarkDetailsTemplateDO::getSortOrder))
+    // 1. Group by parentComponentId (Map<parentComponentId, List<children>>)
+    Map<String, List<BenchmarkGroupingDO>> parentChildMap = templates.stream()
+        .filter(t -> t.getParentComponentId() != null)  // Exclude root nodes
+        .collect(Collectors.groupingBy(BenchmarkGroupingDO::getParentComponentId));
+
+    // 2. Find all root nodes (parentComponentId == null)
+    List<BenchmarkGroupingDO> rootNodes = templates.stream()
+        .filter(t -> t.getParentComponentId() == null)
+        .sorted(Comparator.comparing(BenchmarkGroupingDO::getSortOrder))
         .collect(Collectors.toList());
 
-    log.info("Found {} root nodes in template for benchmark_type: {}",
-        rootNodes.size(), benchmarkDO.getBenchmarkType());
+    log.info("Found {} root nodes in template", rootNodes.size());
 
     // 3. Recursively build each root node and its subtree
-    for (BenchmarkDetailsTemplateDO rootNode : rootNodes) {
+    for (BenchmarkGroupingDO rootNode : rootNodes) {
         BenchmarkDetailsRespVo rootVo = buildTemplateNodeRecursive(
             rootNode,
             parentChildMap,
+            componentIdToUuidMap,
             benchmarkDO
         );
         result.add(rootVo);
@@ -563,46 +515,55 @@ private List<BenchmarkDetailsRespVo> buildTreeFromTemplate(
 
 ```java
 /**
- * Recursively build template node (v2.0 - Simplified)
- * Use template_code to find children, but don't pass it to VO
+ * Recursively build template node (v3.0 - Hybrid Approach with pre-generated UUID)
+ * Pre-generate UUID and establish id/parent_id relationships
  *
  * @param template current template node
- * @param parentChildMap parent-child relationship map (key=parent_template_code)
+ * @param parentChildMap parent-child relationship map (key=componentId)
+ * @param componentIdToUuidMap Map storing componentId -> pre-generated UUID
  * @param benchmarkDO benchmark main table data
  * @return built response VO
  */
 private BenchmarkDetailsRespVo buildTemplateNodeRecursive(
-        BenchmarkDetailsTemplateDO template,
-        Map<String, List<BenchmarkDetailsTemplateDO>> parentChildMap,
+        BenchmarkGroupingDO template,
+        Map<String, List<BenchmarkGroupingDO>> parentChildMap,
+        Map<String, String> componentIdToUuidMap,
         BenchmarkDO benchmarkDO) {
 
     // 1. Build current node
     BenchmarkDetailsRespVo vo = new BenchmarkDetailsRespVo();
 
-    // IMPORTANT: Template data does not set id, backend generates on save
-    vo.setId(null);
+    // IMPORTANT: Pre-generate UUID for template data
+    String generatedId = IdUtil.fastSimpleUUID();
+    vo.setId(generatedId);
 
-    vo.setAssetsClassification(template.getAssetClassification());
+    // Store mapping: componentId -> UUID (for building parent_id relationships)
+    componentIdToUuidMap.put(template.getComponentId(), generatedId);
+
+    vo.setAssetsClassification(template.getDescription());
 
     // IMPORTANT: Default weight is 0, filled by user in frontend
     vo.setWeight("0.00");
 
-    vo.setAssetLevel(template.getAssetLevel());
     vo.setProcessInstanceId(benchmarkDO.getProcessInstanceId());
     vo.setRecordVersion("0");
 
-    // 2. Recursively process child nodes (find children by current template_code)
-    List<BenchmarkDetailsTemplateDO> childTemplates = parentChildMap.get(template.getTemplateCode());
+    // IMPORTANT: Mark this as template data
+    vo.setIsTemplate(true);
+
+    // 2. Recursively process child nodes (find children by current componentId)
+    List<BenchmarkGroupingDO> childTemplates = parentChildMap.get(template.getComponentId());
     if (childTemplates != null && !childTemplates.isEmpty()) {
         List<BenchmarkDetailsRespVo> children = new ArrayList<>();
 
         // Sort by sort_order
-        childTemplates.sort(Comparator.comparing(BenchmarkDetailsTemplateDO::getSortOrder));
+        childTemplates.sort(Comparator.comparing(BenchmarkGroupingDO::getSortOrder));
 
-        for (BenchmarkDetailsTemplateDO childTemplate : childTemplates) {
+        for (BenchmarkGroupingDO childTemplate : childTemplates) {
             BenchmarkDetailsRespVo childVo = buildTemplateNodeRecursive(
                 childTemplate,
                 parentChildMap,
+                componentIdToUuidMap,
                 benchmarkDO
             );
             children.add(childVo);
@@ -615,215 +576,230 @@ private BenchmarkDetailsRespVo buildTemplateNodeRecursive(
 }
 ```
 
-#### 3.6 Modify updateBenchmark() Method (Auto-detect Insert/Update)
+#### 3.6 Modify updateBenchmark() Method (v4.0 - Query-based)
 
 ```java
 /**
  * Update benchmark and its details data
- * Automatically determines whether to insert or update
+ * Determines initialization by querying benchmark_details table
  *
  * @param updateReqVO update request VO
  */
 @Override
 @Transactional(rollbackFor = Exception.class)
-public void updateBenchmark(BenchmarkUpdateReqVo updateReqVO) {
-    String benchmarkId = updateReqVO.getId();
+public void updateBenchmark(List<BenchmarkDetailsReqVo> updateReqVO) {
+    if (updateReqVO == null || CollUtil.isEmpty(updateReqVO)) {
+        throw new ServerException(400, "updateRequestion is null");
+    }
 
-    // 1. Update benchmark main table
+    try {
+        // 1. Validate root weights sum to 100
+        validateRootWeights(updateReqVO);
+
+        // 2. Get benchmarkId
+        String benchmarkId = updateReqVO.get(0).getBenchmarkId();
+        if (benchmarkId == null || benchmarkId.isEmpty()) {
+            throw new ServerException(400, "benchmarkId cannot be null");
+        }
+
+        // 3. Query detail table to determine if this is initialization
+        List<BenchmarkDetailsDo> existingDetails = benchmarkDetailsMapper.selectList(
+            new LambdaQueryWrapperX<BenchmarkDetailsDo>()
+                .eq(BenchmarkDetailsDo::getBenchmarkId, benchmarkId)
+        );
+
+        if (existingDetails == null || existingDetails.isEmpty()) {
+            // Case 1: Initialization
+            log.info("Initialization save, benchmarkId: {}", benchmarkId);
+            handleFirstSave(benchmarkId, updateReqVO);
+        } else {
+            // Case 2: Non-initialization save
+            log.info("Non-initialization save, benchmarkId: {}", benchmarkId);
+            handleSubsequentSave(benchmarkId, updateReqVO);
+        }
+
+    } catch (Exception e) {
+        log.error("Update Benchmark error: ", e);
+        throw new ServerException(500, "Update Benchmark failed: " + e.getMessage());
+    }
+}
+```
+
+#### 3.7 Add validateRootWeights() Method
+
+```java
+/**
+ * Validate root node weights sum to 100
+ */
+private void validateRootWeights(List<BenchmarkDetailsReqVo> updateReqVO) {
+    double totalWeight = updateReqVO.stream()
+        .filter(vo -> vo.getWeight() != null && !vo.getWeight().isEmpty())
+        .mapToDouble(vo -> new BigDecimal(vo.getWeight())
+            .setScale(2, RoundingMode.HALF_UP)
+            .doubleValue())
+        .sum();
+
+    if (Math.abs(totalWeight - 100.0) > 0.01) {  // Allow 0.01 error margin
+        throw new ServerException(400, "Root weights must sum to 100");
+    }
+}
+```
+
+#### 3.8 Add handleFirstSave() Method (Initialization)
+
+```java
+/**
+ * Handle first save (initialization)
+ *
+ * @param benchmarkId benchmark ID
+ * @param updateReqVO request data
+ */
+private void handleFirstSave(String benchmarkId, List<BenchmarkDetailsReqVo> updateReqVO) {
+    // 1. Get benchmark record
     BenchmarkDO benchmarkDO = benchmarkMapper.selectById(benchmarkId);
     if (benchmarkDO == null) {
-        throw new BusinessException("Benchmark not found: " + benchmarkId);
+        throw new ServerException(400, "Benchmark does not exist: " + benchmarkId);
     }
 
-    // Update main table fields (based on actual business needs)
-    // benchmarkDO.setXxx(updateReqVO.getXxx());
+    // 2. UPDATE benchmark table to initial state
+    benchmarkDO.setRecordVersion(0);  // Force set to 0
+    benchmarkDO.setDelFlag(0);
+    benchmarkDO.setMaker(getLoginUserNickname());
+    benchmarkDO.setMakerDatetime(LocalDateTime.now());
     benchmarkMapper.updateById(benchmarkDO);
 
-    // 2. Query existing benchmark_details data
-    List<BenchmarkDetailsDo> existingDetails = benchmarkDetailsMapper.selectList(
-        new LambdaQueryWrapper<BenchmarkDetailsDo>()
-            .eq(BenchmarkDetailsDo::getBenchmarkId, benchmarkId)
-    );
+    // 3. Recursively INSERT all details (record_version=0)
+    insertBenchmarkDetailsRecursive(updateReqVO, benchmarkDO, null, 1);
 
-    // 3. Determine whether to insert or update
-    if (existingDetails == null || existingDetails.isEmpty()) {
-        // First save - perform INSERT operation
-        log.info("First time save - performing INSERT operation for benchmark: {}", benchmarkId);
-        insertBenchmarkDetailsFromTemplate(updateReqVO.getChildren(), benchmarkDO);
-    } else {
-        // Subsequent save - perform UPDATE operation
-        log.info("Subsequent save - performing UPDATE operation for benchmark: {}", benchmarkId);
-        updateBenchmarkDetails(updateReqVO.getChildren(), benchmarkDO, existingDetails);
-    }
+    // 4. Start BPM process
+    Map<String, Object> processInstanceVariables = new HashMap<>();
+    startProcess(benchmarkId, processInstanceVariables);
 
-    log.info("Benchmark updated successfully: {}", benchmarkId);
+    // 5. Send notification
+    sendNotification();
 }
 ```
 
-#### 3.7 Add insertBenchmarkDetailsFromTemplate() Method
+#### 3.9 Add handleSubsequentSave() Method (Non-initialization)
 
 ```java
 /**
- * First save - insert benchmark_details from template data (v2.0 - Simplified)
- * Key: Use recursive parentId parameter to establish parent-child relationships
+ * Handle subsequent save (non-initialization)
  *
- * @param reqVos frontend submitted data (including user-filled weights)
- * @param benchmarkDO benchmark main table data
+ * @param benchmarkId benchmark ID
+ * @param updateReqVO request data
  */
-private void insertBenchmarkDetailsFromTemplate(
-        List<BenchmarkDetailsReqVo> reqVos,
-        BenchmarkDO benchmarkDO) {
-
-    if (reqVos == null || reqVos.isEmpty()) {
-        log.warn("No details to insert for benchmark: {}", benchmarkDO.getId());
-        return;
+private void handleSubsequentSave(String benchmarkId, List<BenchmarkDetailsReqVo> updateReqVO) {
+    // 1. Get old benchmark record
+    BenchmarkDO oldBenchmark = benchmarkMapper.selectById(benchmarkId);
+    if (oldBenchmark == null) {
+        throw new ServerException(400, "Benchmark does not exist: " + benchmarkId);
     }
 
-    log.info("Inserting {} detail records for benchmark: {}", reqVos.size(), benchmarkDO.getId());
+    // 2. Validate version
+    validateRecordVersion(updateReqVO.get(0), oldBenchmark);
 
-    // Use recursive insert (supports multi-level tree)
-    // parentId is null for root level nodes
-    insertBenchmarkDetailsRecursive(reqVos, benchmarkDO, null, 1);
+    // 3. Version management: mark old record + INSERT new record
+    BenchmarkDO newBenchmark = createNewBenchmarkVersion(oldBenchmark);
+
+    // 4. Recursively INSERT new version details (old data remains unchanged)
+    insertBenchmarkDetailsRecursive(updateReqVO, newBenchmark, null, 1);
+
+    // 5. Start BPM process
+    Map<String, Object> processInstanceVariables = new HashMap<>();
+    startProcess(newBenchmark.getId(), processInstanceVariables);
+
+    // 6. Send notification
+    sendNotification();
 }
 ```
 
-#### 3.8 Add insertBenchmarkDetailsRecursive() Method
+#### 3.10 Add insertBenchmarkDetailsRecursive() Method
 
 ```java
 /**
- * Recursively insert benchmark_details (v2.0 - Simplified INSERT operation)
- * Key: Directly pass parentId through recursion, no Map needed
+ * Recursively insert benchmark_details (v3.0 - Version Management)
+ * IMPORTANT: Always INSERT, never UPDATE (creates new version each time)
+ * For first save: Use pre-generated UUID from template
+ * For Nth save: Generate new UUID for new version
  *
  * @param reqVos request VO list
- * @param benchmarkDO benchmark main table
+ * @param newBenchmark new version of benchmark main table
  * @param parentId parent node ID (pass null for root level nodes)
  * @param currentLevel current level (starts from 1)
  */
 private void insertBenchmarkDetailsRecursive(
         List<BenchmarkDetailsReqVo> reqVos,
-        BenchmarkDO benchmarkDO,
+        BenchmarkDO newBenchmark,
         String parentId,
         int currentLevel) {
+
+    List<BenchmarkDetailsDo> insertDetails = new ArrayList<>();
 
     for (BenchmarkDetailsReqVo reqVo : reqVos) {
         // 1. Create current node
         BenchmarkDetailsDo detail = new BenchmarkDetailsDo();
 
-        // Generate new UUID as ID
-        String generatedId = IdUtil.fastSimpleUUID();
-        detail.setId(generatedId);
+        // Generate new UUID for new version
+        // (First save uses template UUID, Nth save uses new UUID)
+        detail.setId(IdUtils.getUUID());
 
-        detail.setBusinessId(benchmarkDO.getBusinessId());
-        detail.setBenchmarkId(benchmarkDO.getId());
-        detail.setParentId(parentId);  // ← Directly use the parentId parameter
-        detail.setAssetClassification(reqVo.getAssetsClassification());
+        detail.setBusinessId(newBenchmark.getBusinessId());
+        detail.setBenchmarkId(newBenchmark.getId());  // ← New version benchmark ID
+        detail.setParentId(parentId);
+        detail.setAssetClassification(reqVo.getAssetClassification());
         detail.setAssetLevel(currentLevel);
-
-        // Get user-filled weight from frontend
         detail.setWeight(new BigDecimal(reqVo.getWeight()));
+        detail.setRecordVersion(newBenchmark.getRecordVersion());
 
-        detail.setRecordVersion(0);
-
-        // 2. Insert to database
-        benchmarkDetailsMapper.insert(detail);
-
-        log.debug("Inserted detail: id={}, parent_id={}, classification={}, level={}, weight={}",
-            detail.getId(),
-            detail.getParentId(),
-            detail.getAssetClassification(),
-            detail.getAssetLevel(),
-            detail.getWeight()
-        );
-
-        // 3. Recursively process child nodes
-        if (reqVo.getChildren() != null && !reqVo.getChildren().isEmpty()) {
-            insertBenchmarkDetailsRecursive(
-                reqVo.getChildren(),
-                benchmarkDO,
-                generatedId,  // ← Pass current node's ID as parentId for children
-                currentLevel + 1  // Increment level
-            );
-        }
-    }
-}
-```
-
-#### 3.9 Add updateBenchmarkDetails() Method
-
-```java
-/**
- * Subsequent save - update benchmark_details
- *
- * @param reqVos frontend submitted data
- * @param benchmarkDO benchmark main table data
- * @param existingDetails existing detail data
- */
-private void updateBenchmarkDetails(
-        List<BenchmarkDetailsReqVo> reqVos,
-        BenchmarkDO benchmarkDO,
-        List<BenchmarkDetailsDo> existingDetails) {
-
-    if (reqVos == null || reqVos.isEmpty()) {
-        log.warn("No details to update for benchmark: {}", benchmarkDO.getId());
-        return;
-    }
-
-    log.info("Updating {} detail records for benchmark: {}", reqVos.size(), benchmarkDO.getId());
-
-    // Build ID -> DetailsDO map (for quick lookup)
-    Map<String, BenchmarkDetailsDo> existingMap = existingDetails.stream()
-        .collect(Collectors.toMap(BenchmarkDetailsDo::getId, d -> d));
-
-    // Recursively update
-    updateBenchmarkDetailsRecursive(reqVos, benchmarkDO, existingMap);
-}
-```
-
-#### 3.10 Add updateBenchmarkDetailsRecursive() Method
-
-```java
-/**
- * Recursively update benchmark_details
- *
- * @param reqVos request VO list
- * @param benchmarkDO benchmark main table
- * @param existingMap existing data map (key=id, value=DetailsDO)
- */
-private void updateBenchmarkDetailsRecursive(
-        List<BenchmarkDetailsReqVo> reqVos,
-        BenchmarkDO benchmarkDO,
-        Map<String, BenchmarkDetailsDo> existingMap) {
-
-    for (BenchmarkDetailsReqVo reqVo : reqVos) {
-        // 1. Find existing record by id
-        BenchmarkDetailsDo existingDetail = existingMap.get(reqVo.getId());
-
-        if (existingDetail != null) {
-            // Exists, update it
-            existingDetail.setWeight(new BigDecimal(reqVo.getWeight()));
-            existingDetail.setRecordVersion(existingDetail.getRecordVersion() + 1);
-
-            benchmarkDetailsMapper.updateById(existingDetail);
-
-            log.debug("Updated detail: id={}, classification={}, weight={}, version={}",
-                existingDetail.getId(),
-                existingDetail.getAssetClassification(),
-                existingDetail.getWeight(),
-                existingDetail.getRecordVersion()
-            );
-        } else {
-            // Does not exist, skip or throw error (should not happen normally)
-            log.warn("Detail not found for update: id={}, classification={}",
-                reqVo.getId(),
-                reqVo.getAssetsClassification()
-            );
-        }
+        insertDetails.add(detail);
 
         // 2. Recursively process child nodes
         if (reqVo.getChildren() != null && !reqVo.getChildren().isEmpty()) {
-            updateBenchmarkDetailsRecursive(reqVo.getChildren(), benchmarkDO, existingMap);
+            insertBenchmarkDetailsRecursive(
+                reqVo.getChildren(),
+                newBenchmark,
+                detail.getId(),  // ← Use current node ID as parentId for children
+                currentLevel + 1
+            );
         }
     }
+
+    // 3. Batch insert current level nodes
+    if (!insertDetails.isEmpty()) {
+        benchmarkDetailsMapper.insertBatch(insertDetails);
+    }
+}
+```
+
+#### 3.11 Add createNewBenchmarkVersion() Method
+
+```java
+/**
+ * Create new version benchmark (version management)
+ *
+ * @param oldBenchmark old version of benchmark
+ * @return new version of benchmark
+ */
+private BenchmarkDO createNewBenchmarkVersion(BenchmarkDO oldBenchmark) {
+    // 1. UPDATE old record: mark as deleted
+    oldBenchmark.setDelFlag(1);
+    oldBenchmark.setValidEndDatetime(LocalDateTime.now());
+    benchmarkMapper.updateById(oldBenchmark);
+
+    // 2. INSERT new record
+    BenchmarkDO newBenchmark = new BenchmarkDO();
+    BeanUtils.copyProperties(oldBenchmark, newBenchmark);
+    newBenchmark.setId(IdUtils.getUUID());  // New UUID
+    newBenchmark.setDelFlag(0);
+    newBenchmark.setRecordVersion(oldBenchmark.getRecordVersion() + 1);  // Version + 1
+    newBenchmark.setValidStartDatetime(LocalDateTime.now());
+    newBenchmark.setValidEndDatetime(null);
+    newBenchmark.setMaker(getLoginUserNickname());
+    newBenchmark.setMakerDatetime(LocalDateTime.now());
+    benchmarkMapper.insert(newBenchmark);
+
+    return newBenchmark;
 }
 ```
 
@@ -835,13 +811,13 @@ private void updateBenchmarkDetailsRecursive(
 
 **Location**: `poc-pro-ui/src/views/benchmark/detail/index.vue`
 
-#### 1.1 Process Template Data (v2.0 - Simplified)
+#### 1.1 Process Template Data (v3.0 - Hybrid Approach with isTemplate)
 
 ```javascript
 /**
- * Process tree data returned from backend (v2.0 - Simplified)
- * Supports template data (id is null) and real data (id has value)
- * Note: Hierarchy is maintained by children array, no need for templateCode
+ * Process tree data returned from backend (v3.0 - Hybrid Approach)
+ * Supports template data (isTemplate=true with pre-generated UUID) and real data (isTemplate=false)
+ * Note: Hierarchy is maintained by children array
  */
 const processTreeData = (detailsList) => {
   if (!detailsList || detailsList.length === 0) {
@@ -865,13 +841,11 @@ const processTreeData = (detailsList) => {
    * @returns {Object} processed tree node
    */
   const processNode = (node, level) => {
-    // If id is empty or null, it's template data, generate temp ID
-    const isTemplate = !node.id
-    const tempId = node.id || `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    // IMPORTANT: Use isTemplate field from backend (not checking id)
+    const isTemplate = node.isTemplate === true
 
     const treeNode = {
-      id: tempId,                      // Temp ID or real ID (for display only)
-      originalId: node.id,             // Save original ID (may be null)
+      id: node.id,                     // Pre-generated UUID (template) or real UUID (saved)
       label: node.assetsClassification,
       weight: parseFloat(node.weight || 0),
       recordVersion: node.recordVersion || '0',
@@ -899,36 +873,36 @@ const processTreeData = (detailsList) => {
   Treedata.value = [rootNode]
 
   // If template data, notify user
-  const hasTemplate = detailsList.some(d => !d.id)
+  const hasTemplate = detailsList.some(d => d.isTemplate === true)
   if (hasTemplate) {
     console.log('[Benchmark] Loaded template data, please fill in weights and save')
   }
 }
 ```
 
-#### 1.2 Modify Save Data Building Logic (v2.0 - Simplified)
+#### 1.2 Modify Save Data Building Logic (v3.0 - Version Management)
 
 ```javascript
 /**
- * Build save data (v2.0 - Simplified)
- * Handle template data (originalId is null) and real data
- * Note: No need for templateCode, backend uses children array structure
+ * Build save data (v3.0 - Version Management)
+ * Include benchmarkId and isTemplate to avoid backend NPE
+ * Note: Backend uses children array structure to establish parent-child relationships
  */
-const buildSaveData = (nodes) => {
+const buildSaveData = (nodes, benchmarkId) => {
   return nodes.map(node => {
     const data = {
-      // Use originalId (template data is null, real data has value)
-      id: node.originalId || null,
-      assetsClassification: node.label,
+      id: node.id,
+      benchmarkId: benchmarkId,         // ✅ Add: needed for first save
+      assetClassification: node.label,
       weight: node.weight.toString(),
       recordVersion: node.recordVersion || '0',
-      assetLevel: node.assetLevel
+      isTemplate: node.isTemplate || false,  // ✅ Add: helps backend avoid NPE
+      children: []
     }
 
     // Recursively process child nodes
-    // Backend will use children array structure to establish parent-child relationships
     if (node.children && node.children.length > 0) {
-      data.children = buildSaveData(node.children)
+      data.children = buildSaveData(node.children, benchmarkId)
     }
 
     return data
@@ -940,18 +914,18 @@ const buildSaveData = (nodes) => {
 
 ```javascript
 /**
- * Save benchmark data
- * First save will insert detail data, subsequent saves will update
+ * Save benchmark data (v3.0 - Version Management)
+ * Backend uses version management: always creates new version
  */
 const saveBenchmark = async () => {
   submitting.value = true
 
   try {
-    // 1. Build save data
-    const saveData = {
-      id: benchmarkId.value,
-      children: buildSaveData(Treedata.value[0].children)
-    }
+    // 1. Build save data (pass benchmarkId)
+    const saveData = buildSaveData(
+      Treedata.value[0].children,
+      currentBenchmarkId.value  // Pass current benchmark ID
+    )
 
     console.log('[Benchmark] Saving data:', saveData)
 
@@ -960,7 +934,8 @@ const saveBenchmark = async () => {
 
     ElMessage.success('Save successful')
 
-    // 3. Reload data after save (get backend-generated real IDs)
+    // 3. Reload data after save
+    // Note: Backend creates new version, new IDs will be returned
     await loadBenchmarkData()
 
     console.log('[Benchmark] Data reloaded after save')
@@ -978,180 +953,219 @@ const saveBenchmark = async () => {
 
 ## Complete Process Flow
 
-### 4.1 First Visit Flow (Initialization)
+### 4.1 First Visit Flow (Initialization) - v3.0 Version Management
 
 ```
 User Action            Backend Processing                     Data State
 ──────────────────     ──────────────────────────────────     ─────────────────
 1. Visit detail page
    GET /benchmark/{id}
-                    →  Query benchmark main table             benchmark table has data
-                    →  Query benchmark_details table          X table is empty
+                    →  Query benchmark main table             benchmark v0 exists
+                    →  Query benchmark_details table          X table is empty (no v0 details)
                     →  Call getDefaultTemplateData()
-                    →  Query template from template table
+                    →  Query from benchmark_grouping table
                     →  Build tree structure
-                         - id = null
+                         - Pre-generate UUID
+                         - id = "uuid-001"
+                         - isTemplate = true
                          - weight = "0.00"
                     →  Return template data
    ←
 2. Frontend displays tree
-   (id is temp ID)
-                                                               Frontend shows template structure
+   (id is pre-generated UUID)
+                                                               Frontend shows template + isTemplate=true
 3. User fills weights
    (edit leaf nodes)
-                                                               User fills: 15.00, 10.00...
+                                                               User fills: 50.00, 30.00...
 4. Click Save button
    POST /benchmark/update
-   body: {
-     id: "xxx",
-     children: [{
-       id: null,          ← Template data, id is null
-       weight: "15.00",   ← User-filled weight
-       ...
-     }]
-   }
-                    →  Query existingDetails
-                    →  Found empty → Execute INSERT
-                    →  Call insertBenchmarkDetailsRecursive()
-                    →  Generate real UUID
-                    →  Insert to database                     √ Insert success
+   body: [{
+     id: "uuid-001",
+     benchmarkId: "benchmark-v0",  ← Current benchmark ID
+     weight: "50.00",
+     isTemplate: true,             ← Tell backend this is first save
+     children: [...]
+   }]
+                    →  isTemplate=true → Get benchmarkDO from benchmarkId
+                    →  UPDATE benchmark v0 to v1 (recordVersion 0→1)
+                    →  Recursively INSERT all details (to v1)
+                    →  Start BPM process                      √ Insert success
    ←  Return success
 
 5. Frontend reload
    GET /benchmark/{id}
-                    →  Query benchmark_details table          √ table has data
-                    →  Build tree structure (with real IDs)
+                    →  Query benchmark_details table          √ v1 details exist
+                    →  Build tree structure
+                         - id = "new-uuid-xxx"  (new version IDs)
+                         - isTemplate = false
                     →  Return real data
    ←
 6. Frontend display
-   (id is real UUID)
-                                                               Show real data and IDs
+   (id is new UUID for v1)
+                                                               Show v1 data + isTemplate=false
 ```
 
-### 4.2 Second Visit Flow (Update)
+### 4.2 Second Visit Flow (Modify Existing Data) - v3.0 Version Management
 
 ```
 User Action            Backend Processing                     Data State
 ──────────────────     ──────────────────────────────────     ─────────────────
 1. Visit detail page
    GET /benchmark/{id}
-                    →  Query benchmark_details table          √ table has data
+                    →  Query benchmark_details table          √ v1 details exist
                     →  Call buildDynamicTree()
                     →  Return real data
+                         - id = "uuid-v1-001"
+                         - weight = "50.00"
+                         - isTemplate = false
+                         - recordVersion = "1"
    ←
 2. Frontend display
-   (with real ID and weight)
-                                                               Show saved data
+   (with v1 UUID and weight)
+                                                               Show v1 data + isTemplate=false
 3. User modifies weight
-   (15.00 → 18.00)
+   (50.00 → 55.00)
                                                                User modifies weight
 4. Click Save button
    POST /benchmark/update
-   body: {
-     id: "xxx",
-     children: [{
-       id: "real-uuid-001",  ← Real ID
-       weight: "18.00",      ← Modified weight
-       recordVersion: "0",
-       ...
-     }]
-   }
-                    →  Query existingDetails
-                    →  Found data → Execute UPDATE
-                    →  Call updateBenchmarkDetailsRecursive()
-                    →  Find record by id
-                    →  Update weight and recordVersion        √ Update success
+   body: [{
+     id: "uuid-v1-001",
+     benchmarkId: "benchmark-v1",  ← Current benchmark ID
+     weight: "55.00",               ← Modified weight
+     recordVersion: "1",
+     isTemplate: false,             ← Tell backend this is modify
+     children: [...]
+   }]
+                    →  isTemplate=false → Query detail to get benchmarkId
+                    →  Validate recordVersion
+                    →  Mark old details as deleted (v1 details)
+                    →  Mark benchmark v1 as deleted + INSERT benchmark v2
+                    →  Recursively INSERT all details (to v2, new UUIDs)
+                    →  Start BPM process                      √ Insert v2 success
    ←  Return success
 
 5. Frontend reload
-   (optional, already has latest data)
-                                                               Show updated data
+   GET /benchmark/{id}
+                    →  Query benchmark_details table          √ v2 details exist
+                    →  Return v2 data
+                         - id = "uuid-v2-001"  (new UUIDs for v2)
+                         - weight = "55.00"
+                         - recordVersion = "2"
+   ←
+6. Frontend display
+   (id is new v2 UUID)
+                                                               Show v2 data
 ```
 
 ---
 
 ## Key Points
 
-### 5.1 Template Code Mechanism (⭐ Core Design - Simplified)
+### 5.1 Hybrid Approach Mechanism (⭐ Core Design - v3.0)
 
-**Problem**: Template table cannot use fixed UUID because multiple benchmark types (Private Bank, Retail Bank) would conflict.
+**Problem**: How to distinguish template data from real saved data when both have UUIDs?
 
-**Solution**: Use `template_code` as business identifier in template table **only**. VO classes don't need it.
+**Solution**: Pre-generate UUIDs for template data + use `isTemplate` field to mark template data.
 
-| Field | Template Table (DO) | Query Response (VO) | Frontend Display | Save Request (VO) | Real Data (After Save) |
+| Field | Grouping Table (DO) | Query Response (VO) | Frontend Display | Save Request (VO) | Real Data (After Save) |
 |-------|---------------------|---------------------|------------------|-------------------|------------------------|
-| `id` | Auto-generated UUID | `null` | Temp ID | `null` | Generated UUID |
-| `template_code` | Business code (e.g., `PB_FI`) | ❌ Not included | ❌ Not needed | ❌ Not needed | ❌ Not needed |
-| `parent_template_code` | Parent's code | ❌ Not included | ❌ Not needed | ❌ Not needed | ❌ Not needed |
+| `id` | Auto-generated UUID | Pre-generated UUID | Pre-generated UUID | Pre-generated UUID | New UUID (version management) |
+| `benchmarkId` | ❌ Not in table | ❌ Not included | ❌ Not needed | ✅ **Required** | Stored in details table |
+| `componentId` | Business code (e.g., `FI_GD`) | ❌ Not included | ❌ Not needed | ❌ Not needed | ❌ Not needed |
+| `parentComponentId` | Parent's code | ❌ Not included | ❌ Not needed | ❌ Not needed | ❌ Not needed |
+| `isTemplate` | ❌ Not in table | ✅ `true`/`false` | ✅ Used to identify | ❌ **Not needed** (v4.0) | ❌ Not in table |
 | `children` | ❌ Not in table | ✅ Included | ✅ Used for hierarchy | ✅ Used for save | ❌ Not in table |
-| `parent_id` | ❌ Not in template | ❌ Not in response | ❌ Not needed | ❌ Not needed | ✅ Generated UUID |
+| `parent_id` | ❌ Not in template | ❌ Not in response | ❌ Not needed | ❌ Not needed | ✅ Generated from recursion |
 
-**Simplified Workflow**:
-1. **Query Template**: Backend uses `parent_template_code` to build `children` array, returns VO with `id=null, children=[...]`
-2. **Frontend Display**: Frontend generates temp IDs for display, uses `children` array for hierarchy
-3. **First Save**: Frontend sends `id=null, children=[...]`, backend recursively processes children
-4. **Parent Relationship**: Backend passes `parentId` parameter through recursion: `insert(child, currentNodeId)`
-5. **Second Save**: Use real UUIDs with children array
+**Save Logic Based on Query (v4.0)**:
+1. **Query Template**: Backend uses `parentComponentId` to build `children` array, pre-generates UUIDs, returns VO with `id=UUID, isTemplate=true, children=[...]`
+2. **Frontend Display**: Frontend uses pre-generated UUIDs directly, checks `isTemplate` field to distinguish template from real data
+3. **Determine Operation**: Backend queries `benchmark_details` table by `benchmarkId`
+   - If table is **empty** → Initialization (first save)
+   - If table has **data** → Non-initialization save
+4. **First Save (details empty)**: Frontend sends `{id, benchmarkId, children}`, backend **UPDATE benchmark (recordVersion=0, delFlag=0)** and recursively **INSERT all details**
+5. **Nth Save (details exist)**: Frontend sends `{id, benchmarkId, children}`, backend **marks old benchmark as deleted + INSERT new benchmark**, and recursively **INSERT new details** (old details remain unchanged)
+6. **Key Point**: Backend determines operation by **querying database**, not by frontend flag
 
-### 5.2 Template Data Characteristics
+### 5.2 Template Data vs Real Data (v3.0 Version Management)
 
-| Field | Template Data | Real Data |
-|-------|--------------|-----------|
-| `id` | `null` | Real UUID (e.g., `a1b2c3d4-5678-...`) |
-| `weight` | `"0.00"` | User-filled value (e.g., `"15.00"`) |
-| `recordVersion` | `"0"` | Incremented version (e.g., `"0"`, `"1"`, `"2"`) |
+| Field | Template Data (First Query) | Real Data (After Save) |
+|-------|---------------------------|----------------------|
+| `id` | Pre-generated UUID (e.g., `uuid-001`) | New UUID for each version (e.g., `uuid-v1-001`, `uuid-v2-001`) |
+| `isTemplate` | `true` | `false` |
+| `weight` | `"0.00"` | User-filled value (e.g., `"50.00"`) |
+| `recordVersion` | `"0"` | Incremented version (e.g., `"1"`, `"2"`, `"3"`) |
+| `benchmarkId` | Not in RespVo | Stored in database |
 | `children` | Array (may be empty) | Array (may be empty) |
 
-### 5.3 Insert/Update Decision Logic
+**Key Difference**: Each save creates NEW records with NEW UUIDs (not updating existing ones)
+
+### 5.3 Insert/Update Decision Logic (v4.0 - Query-based)
 
 **Backend logic**:
 ```java
-// Query existing data
-List<BenchmarkDetailsDo> existingDetails = benchmarkDetailsMapper.selectList(...);
+// 1. Get benchmarkId from request
+String benchmarkId = updateReqVO.get(0).getBenchmarkId();
+
+// 2. Query benchmark_details table to determine operation type
+List<BenchmarkDetailsDo> existingDetails = benchmarkDetailsMapper.selectList(
+    new LambdaQueryWrapperX<>().eq(BenchmarkDetailsDo::getBenchmarkId, benchmarkId)
+);
 
 if (existingDetails == null || existingDetails.isEmpty()) {
-    // INSERT operation
-    insertBenchmarkDetailsFromTemplate(...);
+    // ====== Initialization: UPDATE benchmark + INSERT details ======
+    // 1. Get benchmarkDO from benchmarkId
+    // 2. UPDATE benchmark (recordVersion=0, delFlag=0)
+    // 3. Recursively INSERT all details
+    handleFirstSave(benchmarkId, updateReqVO);
 } else {
-    // UPDATE operation
-    updateBenchmarkDetails(...);
+    // ====== Non-initialization: INSERT new benchmark + INSERT new details ======
+    // 1. Get old benchmarkDO
+    // 2. Validate version
+    // 3. Mark old benchmark as deleted + INSERT new benchmark
+    // 4. Recursively INSERT new details (old details remain unchanged)
+    handleSubsequentSave(benchmarkId, updateReqVO);
 }
 ```
 
-**Decision basis**: Query `benchmark_details` table, if empty then INSERT, otherwise UPDATE
+**Decision basis**: Query `benchmark_details` table by `benchmarkId`
+- **Details table empty** → Initialization (UPDATE benchmark, INSERT details)
+- **Details table has data** → Non-initialization (INSERT new version)
 
-### 5.4 Frontend Data Processing Key Points
+### 5.4 Frontend Data Processing Key Points (v3.0)
 
-**Handle template data (v2.0 - Simplified, id is null)**:
+**Handle template data (v3.0 - Use isTemplate field)**:
 ```javascript
-const isTemplate = !node.id
-const tempId = node.id || `temp-${Date.now()}-${Math.random()}`
+const isTemplate = node.isTemplate === true  // Check explicit field
 
 const treeNode = {
-  id: tempId,                 // ID for frontend display (temp or real)
-  originalId: node.id,        // ID to pass to backend on save (null or real UUID)
+  id: node.id,                // Pre-generated UUID (both template and real data)
   children: [],               // Hierarchy maintained here
-  isTemplate: isTemplate
+  isTemplate: isTemplate      // Mark template data
 }
 ```
 
-**Use originalId and children when saving**:
+**Use pre-generated UUID when saving (v4.0)**:
 ```javascript
 const data = {
-  id: node.originalId || null,       // Use originalId, not temp ID
+  id: node.id,                          // Use pre-generated UUID directly
+  benchmarkId: benchmarkId,             // Pass benchmark ID (required)
   weight: node.weight.toString(),
-  children: buildSaveData(node.children)  // Backend uses this for hierarchy
+  recordVersion: node.recordVersion || '0',
+  // Note: No isTemplate field - backend determines by querying database
+  children: buildSaveData(node.children, benchmarkId)  // Backend uses this for hierarchy
 }
 ```
 
-### 5.5 ID Generation Timing
+### 5.5 ID Generation Timing (v3.0)
 
-| Timing | ID Source | Value |
-|--------|-----------|-------|
-| Query template data | Backend does not set | `null` |
-| Frontend display template | Frontend generates temp ID | `temp-1729412345-abc123` |
-| First save | Backend generates real UUID | `a1b2c3d4-5678-90ab-cdef-...` |
-| Subsequent saves | Use existing ID | Unchanged |
+| Timing | ID Source | Value | isTemplate |
+|--------|-----------|-------|------------|
+| Query template data | Backend pre-generates | `a1b2c3d4-5678-...` | `true` |
+| Frontend display template | Use backend UUID | Same UUID | `true` |
+| First save | Use pre-generated UUID | Same UUID | `true` |
+| After save (reload) | Database ID | Same UUID | `false` |
+| Subsequent saves | Use existing ID | Unchanged | `false` |
 
 ---
 
@@ -1180,10 +1194,10 @@ const data = {
 
 ### 6.2 Data Validation
 
-**SQL Validation Scripts**:
+**SQL Validation Scripts (v3.0)**:
 ```sql
--- 1. Check template table data
-SELECT * FROM benchmark_details_template WHERE is_active = 1 ORDER BY sort_order;
+-- 1. Check grouping table data
+SELECT * FROM benchmark_grouping ORDER BY sort_order;
 
 -- 2. Check benchmark table
 SELECT id, business_id, name, status FROM benchmark WHERE id = 'xxx';
@@ -1204,86 +1218,135 @@ LEFT JOIN benchmark_details d2 ON d2.parent_id = d1.id
 LEFT JOIN benchmark_details d3 ON d3.parent_id = d2.id
 WHERE d1.benchmark_id = 'xxx' AND d1.parent_id IS NULL
 ORDER BY d1.asset_level, d2.asset_level, d3.asset_level;
+
+-- 5. Verify grouping hierarchy
+SELECT
+    g1.componentId AS level1_component,
+    g1.description AS level1_desc,
+    g2.componentId AS level2_component,
+    g2.description AS level2_desc,
+    g3.componentId AS level3_component,
+    g3.description AS level3_desc
+FROM benchmark_grouping g1
+LEFT JOIN benchmark_grouping g2 ON g2.parentComponentId = g1.componentId
+LEFT JOIN benchmark_grouping g3 ON g3.parentComponentId = g2.componentId
+WHERE g1.parentComponentId IS NULL
+ORDER BY g1.sort_order, g2.sort_order, g3.sort_order;
 ```
 
 ---
 
 ## FAQ
 
-### Q1: Why use template_code instead of fixed UUID in template table?
-**A**: Because the system supports multiple benchmark types (Private Bank, Retail Bank). If using fixed UUIDs:
-- `PB_FI` and `RB_FI` would need different UUIDs even though they represent same category
-- Cannot reuse template structure across types
-- Hard to maintain
-
-Using `template_code` + `benchmark_type`:
-- Same code can exist for different types (e.g., `PB_FI` and `RB_FI`)
+### Q1: Why use componentId instead of fixed UUID in grouping table? (v3.0)
+**A**: The grouping table uses `componentId` as a business identifier to establish template hierarchy. This provides:
+- Human-readable identifiers (e.g., `FI_GD`, `EQUITY_DM`)
+- Simplified universal template (no need for multi-type support)
 - Easy to maintain and understand
-- Dynamic UUID generation avoids conflicts
+- Dynamic UUID generation in backend avoids conflicts
 
-### Q2: How does parent-child relationship work without parent_id?
+The actual UUID is pre-generated during query time, not stored in the grouping table.
+
+### Q2: How does parent-child relationship work without parent_id? (v3.0)
 **A**: Two stages:
 
-**Template Table (Build tree)**:
+**Grouping Table (Build tree)**:
 ```sql
--- Use parent_template_code to build children array
-template_code: 'PB_FI_GD'
-parent_template_code: 'PB_FI'  -- Links to parent
+-- Use parentComponentId to build children array
+componentId: 'FI_GD'
+parentComponentId: 'FI'  -- Links to parent
 ```
 
 **During Save (Establish real parent_id)**:
 ```java
 // Recursive method passes parentId parameter
-insertRecursive(children, benchmarkDO, currentNodeId, level) {
-    String generatedId = generateUUID();
-    detail.setParentId(currentNodeId);  // Use parameter directly
+insertRecursive(reqVos, benchmarkDO, currentNodeId, level) {
+    detail.setId(reqVo.getId());         // Use pre-generated UUID
+    detail.setParentId(currentNodeId);   // Use parameter directly
     insert(detail);
 
-    // Recurse with current ID as parent
-    insertRecursive(child.getChildren(), benchmarkDO, generatedId, level+1);
+    // Recurse with current UUID as parent
+    insertRecursive(reqVo.getChildren(), benchmarkDO, reqVo.getId(), level+1);
 }
 ```
 
-### Q3: Why not return real ID when querying?
-**A**: Because on first visit `benchmark_details` table is empty, cannot return real ID. Template data is just a structure template, not a real record.
+### Q3: Why pre-generate UUIDs when querying template? (v3.0)
+**A**: Pre-generating UUIDs provides several benefits:
+- **Simplified save logic**: Backend can directly use the UUID without generating new ones
+- **Consistent IDs**: Same UUID used from template load to database insert
+- **Clear distinction**: Use `isTemplate` field to mark template vs real data
+- **Better UX**: Frontend doesn't need to manage temp IDs
 
-### Q4: How does frontend distinguish template data from real data?
-**A**: By checking the `id` field:
-- `id === null` → Template data
-- `id !== null` → Real data (saved)
+### Q4: How does frontend distinguish template data from real data? (v3.0)
+**A**: By checking the `isTemplate` field:
+- `isTemplate === true` → Template data (not yet saved to database)
+- `isTemplate === false` or omitted → Real data (saved to database)
 
-### Q5: What happens if user leaves without saving?
+The `id` field is a pre-generated UUID in both cases.
+
+### Q5: Why does BenchmarkDetailsReqVo need isTemplate and benchmarkId fields? (v3.0)
+**A**: These fields help backend determine the correct operation and avoid NPE (NullPointerException).
+
+**Data flow**:
+```
+Frontend sends:
+{
+  id: "uuid-123",
+  benchmarkId: "benchmark-v0",
+  weight: "15.00",
+  isTemplate: true  // ← Required!
+}
+
+Backend logic (based on isTemplate):
+if (isTemplate === true) {
+  // First save: UPDATE benchmark + INSERT details
+  benchmarkDO = benchmarkMapper.selectById(benchmarkId);  // ← Use benchmarkId directly
+  updateBenchmarkForFirstSave(benchmarkDO);  // UPDATE v0 → v1
+  insertBenchmarkDetailsRecursive(...);       // INSERT details
+} else {
+  // Nth save: INSERT new benchmark + INSERT new details
+  detailDO = benchmarkDetailsMapper.selectById(id);
+  benchmarkDO = benchmarkMapper.selectById(detailDO.getBenchmarkId());
+  markOldDetailsAsDeleted(benchmarkId);
+  updateMainBenchmark(benchmarkDO);           // INSERT new version
+  insertBenchmarkDetailsRecursive(...);       // INSERT new details
+}
+```
+
+**Benefits**:
+- **Avoid NPE**: On first save, detail table is empty, so we can't query by detail ID
+- **Performance**: No need to query detail table on first save
+- **Clear logic**: Explicitly tells backend whether it's first save or Nth save
+
+### Q6: What happens if user leaves without saving?
 **A**: No impact, data not inserted to database, `benchmark_details` table remains empty, next visit still shows template data.
 
-### Q6: How to update template structure?
-**A**: Directly modify `benchmark_details_template` table data:
+### Q7: How to update template structure? (v3.0)
+**A**: Directly modify `benchmark_grouping` table data:
 ```sql
--- Add new template node for Private Bank
-INSERT INTO benchmark_details_template
-  (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
+-- Add new template node
+INSERT INTO benchmark_grouping
+  (id, componentId, parentComponentId, componentName, description, asset_level, sort_order)
 VALUES
-  (NEWID(), N'PB_NEW_ASSET', N'PB_FI', 1, N'New Asset Class', 2, 10, 1);
+  (NEWID(), N'FI_NEW', N'FI', N'New Asset', N'New Asset Class', 2, 10);
 
--- Disable a template node
-UPDATE benchmark_details_template SET is_active = 0 WHERE template_code = 'PB_ALT_HF';
+-- Modify description
+UPDATE benchmark_grouping SET description = N'Updated Description' WHERE componentId = 'FI_GD';
 
 -- Modify sort order
-UPDATE benchmark_details_template SET sort_order = 10 WHERE template_code = 'PB_EQUITY';
+UPDATE benchmark_grouping SET sort_order = 10 WHERE componentId = 'EQUITY';
 ```
 
-### Q7: How to add a new benchmark type (e.g., Corporate Bank)?
-**A**:
-1. Define new `benchmark_type` value (e.g., `3` for Corporate Bank)
-2. Insert template data with new type:
-```sql
-INSERT INTO benchmark_details_template
-  (id, template_code, parent_template_code, benchmark_type, asset_classification, asset_level, sort_order, is_active)
-VALUES
-  (NEWID(), N'CB_FI', NULL, 3, N'Fixed Income', 1, 1, 1),
-  (NEWID(), N'CB_FI_BOND', N'CB_FI', 3, N'Bonds', 2, 1, 1);
-```
+Note: In v3.0, we use a universal template (no `benchmark_type` field), so all benchmarks share the same grouping structure.
 
-### Q8: How to handle concurrent saves?
+### Q8: What if I need different structures for different benchmark types? (v3.0)
+**A**: In v3.0, we simplified to use a **universal template** that works for all benchmark types. If you absolutely need type-specific structures:
+
+**Option 1 (Recommended)**: Use the universal template and let users customize weights based on their needs. Nodes with 0 weight can be considered unused.
+
+**Option 2**: Revert to v2.0 design with `benchmark_type` field in the template table. This adds complexity but provides type-specific templates.
+
+### Q9: How to handle concurrent saves?
 **A**: Use optimistic locking (`record_version`):
 ```java
 // Check version when updating
@@ -1303,36 +1366,40 @@ if (rows == 0) {
 
 ## Summary
 
-### Implementation Points (v2.0 - Simplified)
-1. ⭐ **Template Code Design**: Use `template_code` + `parent_template_code` in template table **only**
-2. **Multi-Type Support**: Support multiple benchmark types (Private Bank, Retail Bank) with `benchmark_type` field
-3. **Children Array**: Use `children` array to maintain tree hierarchy (no need for templateCode in VO)
-4. **Simplified Recursion**: Pass `parentId` parameter through recursion (no Map needed)
-5. **Auto-detect Query**: Return template if `benchmark_details` is empty
-6. **Auto-detect Save**: First save = INSERT, subsequent saves = UPDATE
-7. **Dynamic UUID Generation**: Generate UUIDs during save, pass to children
-8. **Frontend Handling**: Correctly process template data (`id=null`, use `children` for hierarchy)
+### Implementation Points (v3.0 - Hybrid Approach)
+1. ⭐ **Hybrid Approach**: Pre-generate UUIDs for template data + use `isTemplate` field to mark template vs real data
+2. **Component ID Design**: Use `componentId` + `parentComponentId` in `benchmark_grouping` table (universal template)
+3. **Universal Template**: Simplified from multi-type to single universal template (all benchmarks use same structure)
+4. **Children Array**: Use `children` array to maintain tree hierarchy (no need for componentId in VO)
+5. **Simplified Recursion**: Pass `parentId` parameter through recursion, use pre-generated UUIDs
+6. **Auto-detect Query**: Return template with pre-generated UUIDs if `benchmark_details` is empty
+7. **Auto-detect Save**: First save = INSERT (using pre-generated UUIDs), subsequent saves = UPDATE
+8. **Simplified Frontend**: Frontend uses pre-generated UUIDs directly, checks `isTemplate` field
 
 ### Advantages
-- **Flexibility**: Template structure can be configured dynamically, no code changes needed
-- **Multi-Type Support**: Same template code can exist for different benchmark types
-- **No Conflicts**: Dynamic UUID generation prevents ID conflicts
-- **User-friendly**: Auto-initialize structure, users only fill weights
+- **Simplified Logic**: No need to generate temp IDs in frontend or new UUIDs in backend insert
+- **Consistent IDs**: Same UUID used from template load to database insert
+- **Clear Distinction**: `isTemplate` field explicitly marks template vs real data
+- **User-friendly**: Auto-initialize structure with pre-generated IDs, users only fill weights
 - **Smart**: Auto-detect INSERT/UPDATE, users don't need to care
 - **Scalable**: Supports arbitrary levels of tree structure
-- **Maintainable**: Template codes are human-readable (e.g., `PB_FI_GD_EUR`)
+- **Maintainable**: Component IDs are human-readable (e.g., `FI_GD_EUR`, `EQUITY_DM`)
+- **Simplified Design**: Universal template instead of type-specific templates
 
-### Key Differences from v1.0
-| Aspect | v1.0 (Fixed UUID) | v2.0 (Template Code) |
-|--------|------------------|----------------------|
-| Template ID | Fixed UUID | Auto-generated UUID |
-| Hierarchy | `parent_id` | `parent_template_code` |
-| Multi-Type Support | ❌ No | ✅ Yes (via `benchmark_type`) |
-| Parent Relationship | Direct UUID reference | Map-based dynamic lookup |
-| Conflict Risk | ⚠️ High (UUID conflicts) | ✅ Low (template codes) |
+### Key Differences from v2.0
+| Aspect | v2.0 (Template Code) | v3.0 (Hybrid Approach) |
+|--------|----------------------|------------------------|
+| Template ID in Query | `null` | Pre-generated UUID |
+| Template Marker | Check `id === null` | Check `isTemplate === true` |
+| Frontend Temp ID | Frontend generates | Not needed (use pre-generated) |
+| Insert UUID | Backend generates new | Backend uses pre-generated |
+| Multi-Type Support | ✅ Yes (via `benchmark_type`) | ❌ No (universal template) |
+| Table Name | `benchmark_details_template` | `benchmark_grouping` |
+| Business Identifier | `template_code` | `componentId` |
+| Complexity | Medium | ✅ Low (simplified) |
 
 ---
 
-**Document Version**: v2.0
-**Last Updated**: 2025-10-21
+**Document Version**: v3.0
+**Last Updated**: 2025-10-22
 **Maintainer**: Claude Code

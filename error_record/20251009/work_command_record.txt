@@ -140,15 +140,20 @@ double totalWeight = updateReqVO.stream()
  回答4: 这个肯定要加条件过滤，查询del_flag=0和对应benchmark_id的数据
 
 
-
-
-
 ###########################################################################
 在这里回答你：  回答1： Benchmark_detail表不要del_flag字段； 回答2： 改为查询Benchmark_detail表来验证是否初始化，不会有这个情况；回答3： 如果是初始化，record_version全部设置为0，不管它之前是啥;  回答4: 这个肯定要加条件过滤，查询del_flag=0和对应benchmark_id的数据
 
 
 ###########################################################################
-
+flowable框架为什么要引入活动这个概念？ 我怎么感觉流程这个概念已经够了
+| **PROCESS_STARTED** | 流程启动时 |
+| **PROCESS_COMPLETED** | 流程完成时 |
+| **PROCESS_CANCELLED** | 流程取消时 |
+| **TASK_CREATED** | 任务创建时 |
+| **TASK_ASSIGNED** | 任务分配时 |
+| **TASK_COMPLETED** | 任务完成时 |
+| **ACTIVITY_STARTED** | 活动开始时 |
+| **ACTIVITY_COMPLETED** | 活动完成时 |
 
 ###########################################################################
 

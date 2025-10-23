@@ -1,0 +1,132 @@
+ACT_RE_PROCDEF:
+
+表名解析：
+
+ACT: Flowable框架的前身Activiti6框架的分支
+RE:  Repository，即存儲層;
+PROCDEF:  Process Definition 流程定義
+
+
+ACT_RU_EXECUTION:
+
+ACT:
+RU: Runtime 即運行時，這些表存儲流程實例在執行過程中的動態數據;
+EXECUTION: 指流程執行實例，記錄流程實例的運行狀態;
+
+
+ACT_ID_USER:
+
+ACT:
+ID: Identity  即身份管理模塊，用於存儲與用戶和組織相關的身份數據;
+USER: 只用戶，具體表示該表存儲用戶信息;
+
+
+ACT_HI_ACTINST:
+
+ACT:
+HI: History 即歷史數據，這些表用於存儲流程執行過程中的歷史記錄;
+ACTINST: Activity Instance的縮寫，即活動實例（例如任務，網關，事件）
+
+
+ACT_GE_BYTEARRAY:
+
+ACT:
+GE: 即General,表示通用數據，這些表存儲與流程引擎相關的通用資源或數據
+BYTEARRAY: 指二進制數組，表明該表用於存儲二進制數據(文件或資源的内容)
+
+ACT_EVT_LOG:
+
+ACT:
+EVT: Event,表示時間相關數據;
+LOG: 指日志，表示該表用於記錄事件日志;
+
+ACT_HI_ENTITYLINK:
+用於存儲流程執行過程中與流程實例或任務相關的實體鏈接的歷史數據。這些鏈接通常表示流程或任務與某些業務對象之間的關係，
+常用於追蹤任務的參與，負責人或相關業務數據的歷史記錄。例如：
+記錄某個用戶或組與流程實例的關聯（例如任務的指派者、候選人等）。
+存儲流程實例與外部業對象的關聯（如果有自定義實體鏈接）。
+
+ACT:
+HI: History, 表示歷史數據，用於存儲流程執行過程中的歷史記錄;
+ENTITYLINK: 指實體鏈接，表明該表用於記錄流程實例或任務與其他實體(例如用戶，組或其他業務對象)之間的關聯;
+
+
+ACT_HI_VARINST:
+用於存儲流程執行過程中變量的歷史數據。每當流程實例或任務中創建、修改或刪除變量時，該表會記錄這些變量的歷史狀態。
+這些變量可以是流程實例級別或任務級別的，用於存儲流程運行時的動態數據（例如表達數據，業務參數等）.
+
+ACT:
+HI:
+VARINST: Variable INstance,指流程變量實例。
+
+
+ACT_ID_PRIV_MAPPING:
+
+ACT:
+ID:
+PRIV_MAPPING: Privilege Mapping 指權限映射，表示該表用於存儲用戶或組與特定權限之間的映射關係;
+
+
+FLW_CHANNEL_DEFINITION:
+
+FLW: 表示與Flowable的事件注冊表（Event Registry）相關的數據表前綴，區別於傳統的ACT_前綴，用於時間和通道相關的數據。
+CHANNEL：通道（Channel）， 表示時間數據的傳輸路徑，例如通過Kafka，JMS或RabbitMQ等消息系統接受或發送事件。
+DEFINITION: 表示定義，該表存儲通道的靜態定義數據。
+
+
+ACT_RU_SUSPENDED_JOB:
+
+SUSPENDED_JOB: 觀其的作業，表示該表用於存儲因流程實例或作業被挂起而暫停執行的作業數據。
+
+
+ACT_DE_MODEL:
+
+ACT:
+DE: Designer  與Flowable的模型設計器相關
+MODEL: 表示模型，存儲設計器的模型定義
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
