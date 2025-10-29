@@ -309,6 +309,7 @@ Ale222  20
 
 ###########################################################################
 可以帮我修改一下当前目录下的benchmark_three_level_test_data_sqlserver1.sql文件吗？
+让它可以生成很多的数据sql，像benchmark_three_level_test_data_sqlserver1.sql文件里面的sql; 用for循环的方式;
 改为一个sql脚本，可以指定输入插入benchmark的数据条数，相应的生成对应的12条benchmark_detail条数，包括一级树，二级树，三级树节点
 首先生成一个uuid为benchmark表的id，用变量的形式，因为后面所有插入的benchmark_detail表里的benchmark_id要和该值相同
 benchmark表里的business_id字段用为BS-MIXED-20251029-当前循环的变量i
