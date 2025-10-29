@@ -14,7 +14,7 @@
 -- benchmark_id: b1b2c3d4-5678-90ab-cdef-000000000001
 -- business_id: BM-MIXED-2025102002
 INSERT INTO benchmark (id, business_id, process_instance_id, name, status, business_type, benchmark_type, maker, maker_datetime, maker_business_date, checker, checker_datetime, checker_business_date, record_version, valid_start_datetime, valid_end_datetime, del_flag, system_version)
-VALUES (N'b1b2c3d4-5678-90ab-cdef-000000000001', N'BM-MIXED-2025102002', NULL, N'Test003', 0, 1, 1, N'admin', N'2025-10-20 15:00:00', NULL, NULL, NULL, NULL, 0, N'2025-10-20 15:00:00', NULL, 0, 0);
+VALUES (N'b1b2c3d4-5678-90ab-cdef-000000000001', N'BM-MIXED-2025102002', NULL, N'', 0, 1, 1, N'', N'2025-10-20 15:00:00', NULL, NULL, NULL, NULL, 0, N'2025-10-20 15:00:00', NULL, 0, 0);
 
 -- ====================================================================
 -- 2. 插入 benchmark_details 详情数据（混合层级树结构）
