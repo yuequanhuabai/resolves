@@ -1,0 +1,177 @@
+ ---
+  📊 当前路由跳转逻辑详细分析
+
+  1️⃣ 路由结构
+
+  根据路由配置 (remaining.ts:251-272)：
+
+  {
+    path: '/benchmark',
+    component: Layout,
+    name: 'BenchmarkDetail',
+    meta: { hidden: true },
+    children: [
+      {
+        path: 'detail',  // 完整路径: /benchmark/detail
+        component: () => import('../../views/benchmark/detail/index.vue'),
+        meta: {
+          title: 'Benchmark 详情',
+          noCache: false,
+          hidden: true,
+          canTo: true,
+          icon: 'ep:pie-chart',
+          activeMenu: '/benchmark'  // ← 指向主菜单项
+        }
+      }
+    ]
+  }
+
+  2️⃣ 问题根源
+
+  detail/index.vue 中的 goBack() 函数 (第671-712行)
+
+  const goBack = async () => {
+    // ...
+    try {
+      // ⚠️ 问题：硬编码路由路径
+      await router.push('/business/benchmark')  // ← 第693行
+
+      await nextTick()
+      tagsViewStore.delView(route)
+    } catch (error) {
+      // 失败则跳转首页
+      await router.push('/')
+      // ...
+    }
+  }
+
+  保存后的调用流程：
+
+  // submitForm 函数 (第822-863行)
+  await BenchmarkApi.updateBenchmark(submitData)
+  ElMessage.success("Save successful")
+
+  isEditMode.value = false
+  setTimeout(() => {
+    goBack()  // ← 1秒后调用goBack
+  }, 1000)
+
+  3️⃣ 问题表现
+
+  - 期望行为：从 Private Banking 列表页 → 详情页 → 保存后返回 Private Banking 列表页
+  - 实际行为：从 Private Banking 列表页 → 详情页 → 保存后跳转到 /business/benchmark (可能是错误路径或不存在)
+
+  4️⃣ Private Banking 列表页的实际路径
+
+  根据 activeMenu: '/benchmark' 和文件结构，列表页可能是：
+  - /benchmark/privateBank (最可能)
+  - 或通过后端动态路由配置的其他路径
+
+  但 goBack() 硬编码跳转到 /business/benchmark，这显然不匹配。
+
+  ---
+  🔧 解决方案建议
+
+  有以下几种修复方案：
+
+  方案 1：使用 router.back() (最简单)
+
+  直接返回上一页（浏览器历史记录）
+
+  const goBack = async () => {
+    if (isEditMode.value) {
+      // ... 确认对话框 ...
+    }
+
+    // 直接返回上一页
+    router.back()
+
+    // 关闭当前标签页
+    await nextTick()
+    tagsViewStore.delView(route)
+  }
+
+  优点：简单直接，不需要知道来源路径缺点：如果用户是通过外部链接直接进入详情页，返回可能不符合预期
+
+  方案 2：从路由参数中获取来源页（推荐）
+
+  修改列表页跳转逻辑，传递 from 参数：
+
+  列表页 (privateBank/index.vue) 修改：
+  router.push({
+    path: '/benchmark/detail',
+    query: {
+      id: row.id,
+      name: row.name,
+      // ... 其他参数 ...
+      from: '/benchmark/privateBank'  // ← 新增来源路径
+    }
+  })
+
+  详情页 (detail/index.vue) 修改：
+  const goBack = async () => {
+    if (isEditMode.value) {
+      // ... 确认对话框 ...
+    }
+
+    // 从路由参数获取来源路径，默认返回 /benchmark
+    const fromPath = route.query.from || '/benchmark'
+
+    try {
+      await router.push(fromPath)
+      await nextTick()
+      tagsViewStore.delView(route)
+    } catch (error) {
+      // 失败则返回上一页
+      router.back()
+    }
+  }
+
+  优点：明确知道返回路径，适用于多种来源缺点：需要修改所有调用详情页的地方
+
+  方案 3：动态判断 benchmarkType
+
+  根据 benchmark 类型判断返回路径：
+
+  const goBack = async () => {
+    if (isEditMode.value) {
+      // ... 确认对话框 ...
+    }
+
+    // 根据 benchmarkType 判断返回路径
+    const benchmarkType = route.query.benchmarkType
+    let returnPath = '/benchmark'
+
+    if (benchmarkType === '1') {  // 私人银行
+      returnPath = '/benchmark/privateBank'
+    } else if (benchmarkType === '2') {  // 零售银行
+      returnPath = '/benchmark/retailBank'
+    }
+
+    try {
+      await router.push(returnPath)
+      await nextTick()
+      tagsViewStore.delView(route)
+    } catch (error) {
+      router.back()
+    }
+  }
+
+  ---
+  📝 需要确认的信息
+
+  为了给你提供最准确的修复方案，我需要确认：
+
+  1. Private Banking 列表页的实际路由路径是什么？
+    - 是 /benchmark/privateBank 吗？
+    - 还是 /business/benchmark/privateBank？
+    - 或者其他路径？
+  2. 详情页是否可能从多个列表页进入？
+    - 只从 Private Banking 进入？
+    - 还是也可能从 Retail Banking 等其他列表页进入？
+  3. 你更倾向于哪种解决方案？
+    - 方案1：简单使用 router.back()
+    - 方案2：通过路由参数传递来源
+    - 方案3：根据业务类型判断
+
+  请告诉我这些信息，我将为你提供精确的修复代码！
