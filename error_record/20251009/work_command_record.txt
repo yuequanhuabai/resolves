@@ -392,7 +392,6 @@ sum[9-9]=arr[9]+arr[10-9]
 ###########################################################################
 回到递归数组的求和逻辑的解析拆解，当前目录下的command.md文件是我看了你的思路后的理解，但是我还是无法具体细化拆解，核心在关系和基线那里吧，你可以辅助我拆解吗？回复的内容生成在当前目录，文档名为recursive_help1.md;
 
-
 ###########################################################################
 The terminal process failed to launch: A native exception occured during launch (Unable to start terminal process: CreateProcess failed).
 
