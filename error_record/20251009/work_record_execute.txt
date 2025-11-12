@@ -165,7 +165,7 @@ src/views/benchmark/detail/index.vue,
 
 ###########################################################################
 再看看这个页面结构和功能，暂时忽略css部分:src/views/benchmark/privateBank/index.vue,
-
+和src/views/benchmark/detail/index.vue这个页面有什么关联吗
 
 ###########################################################################
 
