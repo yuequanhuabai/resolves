@@ -1,0 +1,266 @@
+ 📄 页面结构与功能分析：detail/index.vue
+
+  这是一个 Benchmark 详情页，主要用于查看和编辑资产分类权重数据。
+
+  ---
+  一、页面布局结构（Template）
+
+  1. 页面头部 (Lines 4-48)
+
+  ┌─────────────────────────────────────────────────┐
+  │ [← Back to]  Benchmark Details                  │
+  │              Benchmark名称 [状态标签]           │
+  │                           [Edit] [Export]       │
+  └─────────────────────────────────────────────────┘
+
+  | 元素          | 功能        | 触发条件              |
+  |-------------|-----------|-------------------|
+  | Back to 按钮  | 返回列表页     | 点击时会检查是否在编辑模式     |
+  | Benchmark名称 | 显示当前业务名称  | 从路由参数获取           |
+  | 状态标签        | 显示审批状态    | 根据 status 值显示不同颜色 |
+  | Edit 按钮     | 进入编辑模式    | 非只读 + 有权限时显示      |
+  | Export 按钮   | 导出 CSV 文件 | 始终可用              |
+
+  ---
+  2. 主内容区域 - 左右布局 (Lines 56-127)
+
+  ┌───────────────────┬─────────────────────────┐
+  │                   │    %Weight              │
+  │   饼状图          │  树形结构               │
+  │   (ECharts)       │  ├─ Stock   [40.00]    │
+  │                   │  ├─ Bond    [30.00]    │
+  │                   │  └─ Cash    [30.00]    │
+  └───────────────────┴─────────────────────────┘
+
+  左侧：饼状图 (Lines 64-74)
+
+  - 组件：ECharts 饼图
+  - 功能：可视化展示各资产类别的权重占比
+  - 数据源：Treedata.value 的根节点数据
+
+  右侧：树形表格 (Lines 77-126)
+
+  - 组件：Element Plus Tree 组件
+  - 功能：
+    - 查看模式：显示资产分类层级和权重（只读）
+    - 编辑模式：
+        - ✅ 叶子节点：显示数字输入框，可修改权重
+      - ❌ 父节点：权重自动计算（子节点之和），标记"自动计算"
+
+  树节点结构示例：
+  {
+    id: '1',
+    label: 'Stock',           // 资产分类名称
+    weight: 40.00,            // 权重百分比
+    children: [               // 子节点
+      { id: '1-1', label: 'Equity', weight: 25.00 },
+      { id: '1-2', label: 'Fund', weight: 15.00 }
+    ]
+  }
+
+  ---
+  3. 编辑模式底部按钮 (Lines 130-145)
+
+  ┌─────────────────────────────────────────────────┐
+  │                            [Save] [Cancel]      │
+  └─────────────────────────────────────────────────┘
+
+  | 按钮     | 功能         | 显示条件       |
+  |--------|------------|------------|
+  | Save   | 保存权重修改     | 编辑模式 + 非只读 |
+  | Cancel | 取消编辑，恢复原数据 | 编辑模式 + 非只读 |
+
+  ---
+  4. 固定悬浮的总权重显示 (Lines 149-152)
+
+  ┌─────────────────┐
+  │ Total: 100.00% │  ← 固定在右下角
+  └─────────────────┘
+  - 功能：实时显示所有根节点权重总和
+  - 校验：总和不等于 100% 时显示为红色（error 样式）
+
+  ---
+  二、核心功能逻辑（Script）
+
+  1. 页面模式（2种）
+
+  | 模式   | 触发方式                         | 特点        |
+  |------|------------------------------|-----------|
+  | 普通模式 | 从列表页点击进入                     | 可编辑（有权限时） |
+  | 审批模式 | 通过 props.isApprovalMode=true | 只读，用于审批流程 |
+
+  // 审批模式判断
+  if (props.isApprovalMode) {
+    isReadOnly.value = true
+    pageTitle.value = 'Benchmark审批详情'
+  }
+
+  ---
+  2. 数据流转
+
+  路由参数 → initPageData() → loadDetailData() → 后端API
+                  ↓
+            处理树形数据 (processTreeData)
+                  ↓
+            ┌─────────┬─────────┐
+            ↓         ↓         ↓
+         Treedata   图表数据   页面显示
+
+  关键数据：
+  Treedata.value = [
+    {
+      id: '1',
+      label: 'Stock',
+      weight: 40.00,
+      businessId: 'biz_001',
+      assetLevel: 1,
+      children: [...]
+    },
+    // ...
+  ]
+
+  ---
+  3. 核心功能方法
+
+  A. 编辑模式切换 (toggleEditMode)
+
+  // 行为：717-744
+  - 进入编辑模式：展开所有树节点
+  - 退出编辑模式：折叠所有树节点
+
+  B. 权重修改 (handleWeightChange)
+
+  // 行为：747-770
+  1. 用户修改叶子节点权重
+  2. 递归向上更新所有父节点权重（子节点之和）
+  3. 校验总权重是否等于 100%
+  4. 更新饼图
+
+  权重计算逻辑：
+  修改 "Equity" (25%)
+      ↓
+  更新父节点 "Stock" = Equity + Fund
+      ↓
+  更新根节点总和
+      ↓
+  校验是否等于 100%
+
+  C. 保存提交 (submitForm)
+
+  // 行为：826-866
+  1. 二次确认弹窗
+  2. 校验总权重 = 100%
+  3. 转换数据格式 (prepareSubmitData)
+  4. 调用 BenchmarkApi.updateBenchmark()
+  5. 成功后返回列表页
+
+  提交数据格式：
+  [
+    {
+      id: '1',
+      benchmarkId: 'xxx',
+      businessId: 'biz_001',
+      parentComponentId: null,  // 根节点为 null
+      assetClassification: 'Stock',
+      weight: '40.00',
+      recordVersion: 1,
+      children: [
+        {
+          parentComponentId: 'biz_001',  // 父节点的 businessId
+          // ...
+        }
+      ]
+    }
+  ]
+
+  D. 导出 CSV (handleExport)
+
+  // 行为：941-986
+  1. 遍历树形数据，扁平化为二维数组
+  2. 生成 CSV 字符串
+  3. 创建 Blob 对象
+  4. 触发浏览器下载
+
+  导出内容：
+  Asset Classification,Weight,Type
+  Stock,40.00,Parent
+  Equity,25.00,Child
+  Fund,15.00,Child
+
+  ---
+  4. 特殊功能
+
+  A. 数据缓存机制 (Lines 195-426)
+
+  // 5分钟缓存，避免标签页切换时重复请求
+  globalCache = {
+    data: Map,           // 缓存的树数据
+    timestamp: Map       // 缓存时间戳
+  }
+
+  缓存场景：
+  - 标签页切换回来时，5分钟内使用缓存
+  - 强制刷新时 (forceRefresh=true) 清除缓存
+
+  B. 权重校验
+
+  // 校验总和是否等于 100%（容差 0.1%）
+  if (Math.abs(sum - 100) > 0.1) {
+    ElMessage.warning(`权重总和为 ${sum}%，请调整为100%`)
+  }
+
+  ---
+  三、页面状态管理
+
+  状态变量
+
+  | 变量         | 类型        | 作用               |
+  |------------|-----------|------------------|
+  | isEditMode | boolean   | 是否处于编辑模式         |
+  | isReadOnly | boolean   | 是否只读（审批模式或已通过状态） |
+  | loading    | boolean   | 页面加载中            |
+  | submitting | boolean   | 提交中（防止重复提交）      |
+  | Treedata   | Array     | 树形数据源            |
+  | myChart    | ECharts实例 | 饼图对象             |
+
+  计算属性
+
+  // 总权重（自动计算）
+  totalWeight = computed(() => {
+    return Treedata.value.reduce((sum, node) => sum + (node.weight || 0), 0)
+  })
+
+  // 过滤后的树数据（编辑模式显示全部，查看模式过滤权重>=0）
+  filteredTreeData = computed(() => {
+    return isEditMode.value ? Treedata.value : Treedata.value.filter(node => node.weight >= 0)
+  })
+
+  ---
+  四、业务流程图
+
+  查看模式
+
+  用户进入页面 → 加载数据 → 显示饼图+树形结构 → [导出CSV]
+
+  编辑模式
+
+  点击 Edit → 展开所有节点 → 修改叶子节点权重
+      ↓
+  父节点自动计算 → 实时校验总权重 → 饼图同步更新
+      ↓
+  点击 Save → 二次确认 → 提交到后端 → 返回列表
+      ↓
+  点击 Cancel → 确认放弃 → 重新加载原数据
+
+  ---
+  五、关键技术点
+
+  1. 树形数据的递归处理：支持任意层级的资产分类
+  2. 权重的自动计算：父节点 = 子节点之和
+  3. ECharts 图表集成：动态更新饼图
+  4. 数据缓存优化：减少不必要的 API 调用
+  5. 权限控制：通过 checkPermi 检查编辑权限
+  6. 审批模式支持：可作为审批流程的查看组件
+
+  ---
+  这个页面的核心是资产权重的树形管理和可视化，支持查看、编辑、导出三大功能，同时兼顾审批场景的只读需求。
