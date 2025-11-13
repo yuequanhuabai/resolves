@@ -449,18 +449,20 @@ Retail Banking: http://localhost:8080/business/benchmark/benchmark
 Private Banking: http://localhost:8080/business/benchmark/benchmark/privateBank
 Retail Banking: http://localhost:8080/business/benchmark/benchmark/retailBank
 
-
+###########################################################################
+我想在当前项目的buylist页面上加一个导入csv的功能
+前端代码在poc-pro-ui/src/views/buylist/目录下
+后端代码在pocpro的BuyListController里面
+技术点要求:用easyexcel技术实现csv的导入
+导入逻辑：
+1. 需要给出一个导入模板，供业务人员进行数据的初始化，导入模板就buylist的两列Asset Type和Product Code;
 
 
 ###########################################################################
-
-
-###########################################################################
-
-
+现在的buylist页面上有个upload，可以上传导入功能，你帮我看看，我要完善这个功能的前后端代码
 
 ###########################################################################
-
+我有时候会在朋友过来的时候去海鲜店和牛排
 
 ###########################################################################
 
