@@ -1,0 +1,169 @@
+ 好的！让我先给您详细的方案对比，您评估后再决定。
+
+  问题分析
+
+  当前代码在 BuyListServiceImpl.java:293-329 使用简单的 split(",")
+  解析CSV，只能处理纯文本CSV格式。用户用Excel/WPS打开CSV后，另存为默认会变成.xlsx或.xls格式，导致解析失败。
+
+  ---
+  解决方案对比
+
+  方案1：后端同时支持 CSV + Excel 格式（推荐 ⭐⭐⭐⭐⭐）
+
+  原理： 根据文件类型自动选择解析方式───────────────────────────────────────────────────────────────────────────────────
+  - CSV文件 → 使用现有的 BufferedReader + split
+  - Excel文件（.xlsx/.xls）→ 使用 EasyExcel 库解析
+  -- INSERT --
+  优点：
+  - ✅ 用户体验最好，支持任意格式上传
+  - ✅ 用户可以直接用Excel编辑后上传，不需要手动转换
+  - ✅ 项目已有EasyExcel依赖，无需额外引入
+  - ✅ 兼容现有CSV流程
+
+  缺点：
+  - ⚠️ 需要修改后端代码
+  - ⚠️ 需要给DTO类添加EasyExcel注解
+
+  需要修改的文件：
+  1. BuyListImportDTO.java - 添加EasyExcel注解标注字段
+  2. BuyListServiceImpl.java - 修改解析逻辑，根据文件类型分发
+  3. 可选：创建 BuyListExcelListener.java - Excel读取监听器
+
+  工作量： 约30分钟
+
+  ---
+  方案2：前端强制下载Excel模板 + 上传Excel（推荐 ⭐⭐⭐⭐）
+
+  原理： 改变业务流程，不再使用CSV
+  - 前端提供Excel模板下载（而不是CSV）
+  - 用户用Excel编辑后上传
+  - 后端只支持Excel解析
+
+  优点：
+  - ✅ 符合用户习惯（大部分企业用户习惯用Excel）
+  - ✅ Excel格式更规范，支持数据验证、下拉框等
+  - ✅ 项目已有EasyExcel依赖
+
+  缺点：
+  - ⚠️ 需要同时修改前后端
+  - ⚠️ 完全废弃CSV支持
+  - ⚠️ 如果有其他系统集成CSV接口会受影响
+
+  需要修改：
+  1. 后端：修改解析逻辑为只支持Excel
+  2. 前端：修改模板下载接口，生成.xlsx文件
+  3. 前端：修改上传文件类型限制
+
+  工作量： 约1-2小时
+
+  ---
+  方案3：前端提示 + 文件类型验证（不推荐 ⭐⭐）
+
+  原理： 保持CSV格式，但加强前端引导
+  - 前端下载CSV时弹窗提示：请使用记事本或专业CSV编辑器，不要用Excel打开
+  - 前端上传时检查文件扩展名必须是.csv
+
+  优点：
+  - ✅ 无需修改后端代码
+  - ✅ 保持原有架构
+
+  缺点：
+  - ❌ 用户体验差，经常会忘记或不理解提示
+  - ❌ 治标不治本，无法阻止用户用Excel编辑
+  - ❌ 技术上不够专业
+
+  ---
+  方案4：提供专业CSV编辑器推荐（临时方案 ⭐）
+
+  原理： 指导用户使用正确的工具
+
+  推荐工具：
+  - VSCode + CSV扩展插件（免费）
+  - Notepad++（免费）
+  - LibreOffice Calc（免费，可另存为CSV）
+  - Excel 但需教育用户：编辑后选择"另存为" → "CSV UTF-8"
+
+  优点：
+  - ✅ 无需修改代码
+
+  缺点：
+  - ❌ 需要培训用户，成本高
+  - ❌ 用户容易操作错误
+
+  ---
+  我的推荐
+
+● 首选：方案1（后端同时支持CSV + Excel）
+
+  理由：
+  1. 项目已有EasyExcel依赖，改动成本低
+  2. 向后兼容，不影响现有CSV流程
+  3. 用户可以自由选择编辑工具
+  4. 符合"健壮性原则"（宽进严出）
+
+  实施步骤：
+
+  1. 修改 BuyListImportDTO.java
+     - 添加 @ExcelProperty 注解标注字段映射
+
+  2. 修改 BuyListServiceImpl.java
+     - 添加方法：parseExcelFile() - 处理Excel文件
+     - 修改方法：parseAndValidateFile() - 根据文件类型分发
+     - 判断逻辑：根据文件扩展名或MIME类型识别
+
+  3. 可选优化（如果需要）
+     - 创建 BuyListExcelListener.java 监听器类
+
+  是否需要修改前端： 否（前端无感知）
+
+  ---
+  具体实施细节（方案1）
+
+  如果您选择方案1，我会进行以下修改：
+
+  文件1：BuyListImportDTO.java
+
+  // 添加EasyExcel注解
+  @Data
+  public class BuyListImportDTO {
+      @ExcelProperty(value = "资产类型", index = 0)
+      private String assetType;
+
+      @ExcelProperty(value = "产品代码", index = 1)
+      private String productCode;
+  }
+
+  文件2：BuyListServiceImpl.java
+
+  添加方法：
+  - parseExcelFile() - 使用EasyExcel解析xlsx/xls
+  - 修改 parseAndValidateFile() - 根据文件后缀名选择解析器
+
+  伪代码逻辑：
+  if (filename.endsWith(".csv")) {
+      return parseCsvFile(file);
+  } else if (filename.endsWith(".xlsx") || filename.endsWith(".xls")) {
+      return parseExcelFile(file);
+  } else {
+      throw new Exception("不支持的文件格式，请上传CSV或Excel文件");
+  }
+
+  文件3：（可选）创建 BuyListExcelListener.java
+
+  EasyExcel的数据读取监听器，负责逐行处理Excel数据。
+
+  ---
+  请您决策
+
+  请告诉我：
+  1. 您倾向于哪个方案？（方案1 / 方案2 / 其他）
+  2. 是否接受修改后端代码？
+  3. 是否需要废弃CSV支持？（如果选方案2）
+  4. 是否需要我提供更详细的代码实现？
+
+  我会根据您的选择进行实施。
+
+  Todos
+  [ ] 修改BuyListServiceImpl，添加Excel文件解析支持
+  [ ] 创建Excel监听器类处理Excel文件读取
+  [ ] 更新前端API文档说明（如需要）
