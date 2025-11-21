@@ -1,7 +1,9 @@
 {
   "securities": [
     {
-      "identifiers": {
+
+      "identifiers":
+      {
         "cusip": "SBF7P0024",
         "sedol": "BF7P002",
         "isin": "AU0000013070",
