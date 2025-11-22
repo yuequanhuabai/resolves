@@ -124,3 +124,69 @@ Todos
 [ ] 實現 Discovery 端點
 [ ] 實現 JWKS 端點
 [ ] 添加 UserInfo 端點
+
+
+
+
+
+--------------------------------------------------------------------------------
+
+
+
+好的，我先實現了整個流程再說吧，這個注冊不是主要的事情吧？
+
+● 完全同意！你說得對。
+
+註冊流程確實不是主要的事情。實際上，客户端信息可以先硬編碼或者用簡單的方式存儲（比如直接在數據庫中插入測試數據），然後專注於實現核心的 OAuth 2.0
+流程。
+
+等整個 OAuth 2.0 流程完全跑通了，再回頭優化客户端註冊的功能。
+
+  ---
+簡化的開發策略
+
+第 0 階段：準備數據（5 分鐘）
+
+直接在數據庫中插入測試客户端信息：
+INSERT INTO oauth_clients
+VALUES (1, 'myapp_client_123', 'secret_xyz...', 'My App',
+'https://localhost:3001/callback', 'read,write');
+
+第 1 階段：實現核心流程（重點）
+
+1. 搭建 oauth2-common
+2. 搭建 oauth2-server-backend
+3. 搭建 oauth2-server-frontend
+4. 實現 /authorize → /token → /userinfo
+5. 搭建 my-app-backend
+6. 搭建 my-app-frontend
+7. 完整測試整個 OAuth 流程
+
+  ---
+讓我們開始吧！你想先從哪個項目開始？
+
+我建議：先從 oauth2-common（Java 工具庫）開始，因為它是基礎，其他兩個後端都要依賴它。
+
+要不要我幫你設計一下 oauth2-common 應該包含哪些類和方法？
+
+Todos
+[ ] 搭建 oauth2-common (Java 工具庫)
+[ ] 搭建 oauth2-server-backend (SpringBoot)
+[ ] 設計和創建數據庫表結構
+[ ] 實現客户端註冊端點 (/admin/clients/register)
+[ ] 搭建 oauth2-server-frontend (React SPA)
+[ ] 實現客户端註冊頁面和表單
+[ ] 實現登錄頁面
+[ ] 實現授權確認頁面
+[ ] 實現 /authorize 端點
+[ ] 實現 /token 端點
+[ ] 實現 /userinfo 端點
+[ ] 實現 Discovery 端點
+[ ] 實現 JWKS 端點
+[ ] 搭建 my-app-backend (SpringBoot)
+[ ] 實現 /login 端點
+[ ] 實現 /callback 端點
+[ ] 實現 Token 交換邏輯
+[ ] 搭建 my-app-frontend (React SPA)
+[ ] 實現登錄頁面
+[ ] 實現業務頁面和集成測試
