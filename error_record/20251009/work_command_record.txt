@@ -664,7 +664,9 @@ http://localhost:9090/oauth/authorize?client_id=client123&redirect_uri=http%3A%2
 还是生成在当前目录下，命名为analysis_all_module_detail.md
 
 ###########################################################################
+claude code:
 
+ ctrl-g to edit prompt in Notepad
 
 
 ###########################################################################
