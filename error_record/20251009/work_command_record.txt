@@ -613,25 +613,42 @@ select count(field1 (has null value)) from table1
 select count(field1 (hasn't null value)) from table1
 
 ###########################################################################
-
-
-###########################################################################
-
-
+你给下oauth2的原理步骤，不依赖spring security，它的本质步骤，生成在当前目录下，命名为principle.md
 
 ###########################################################################
-
-
-
-###########################################################################
-
-
+你可以帮我把当前的两个纯后端的项目改为四个项目吗？client包括前端和后端，server也包括前端和后端，client名称oauth2-client-ui,oauth2-client-backend;server的名称:oauth2-server-ui,oauth2-server-backend
+后端的技术架构不变，前端用react实现，前端保持代码简洁，尽量最少的代码保证功能即可，尽量减少css,保证功能即可，不要炫丽的前端ui展示,如果可以不用css就不用css，
+新项目放在当前目录的fourPro目录下
 
 ###########################################################################
+我在启动的oauth2-client-ui项目的前端点击使用oauth2登录，但是前端发起了两次换这个请求：
+http://localhost:9090/oauth/authorize?client_id=client123&redirect_uri=http%3A%2F%2Flocalhost%3A3001%2Fcallback&response_type=code&state=ec74fa31-ec77-47fc-8ab3-d192ef42d758
+http://localhost:9090/oauth/authorize?client_id=client123&redirect_uri=http%3A%2F%2Flocalhost%3A3001%2Fcallback&response_type=code&state=ec74fa31-ec77-47fc-8ab3-d192ef42d758
 
+第一次的返回值：
+{
+    "valid": true,
+    "redirect_uri": "http://localhost:3001/callback",
+    "state": "ec74fa31-ec77-47fc-8ab3-d192ef42d758",
+    "client_id": "client123"
+}
+第二次的返回值：
+{
+    "valid": true,
+    "redirect_uri": "http://localhost:3001/callback",
+    "state": "ec74fa31-ec77-47fc-8ab3-d192ef42d758",
+    "client_id": "client123"
+}
+你帮我分析一下为什么会发起两次？你可以帮我看看前端代码吗？
 
 ###########################################################################
+那我使用方案二吧，用cleanup，你把代码改回去吧
 
+###########################################################################
+前端有没有view和js分离的写法，在react里面，我看你把页面的展示和行为全部写在一起了，这样不好区分，如果后期项目变的复杂的话
+
+###########################################################################
+基于当前目录下的代码，你帮我分析一下当前项目
 
 
 ###########################################################################
