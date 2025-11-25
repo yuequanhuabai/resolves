@@ -752,37 +752,52 @@ continue
 
 
 ###########################################################################
-
-
-
-###########################################################################
-
+可以把當前目錄下的兩個後端項目oauth2-client-backend，oauth2-server-backend用spring-security來實現oauth2嗎？你先給我列出更改點，我審核后再決定要不要更改
 
 
 ###########################################################################
+oauth2-server-backend也有報錯：Cannot resolve method 'getConfigurer(Class<OAuth2AuthorizationServerConfiguration>)'
+AuthorizationServerConfig類的authorizationServerSecurityFilterChain方法裏
 
 
 ###########################################################################
+你怎麽把頁面寫道後端代碼中了，前端有專門的項目，在當前目錄下：oauth2_server_ui和oauth2-client-ui
+client的前端你也寫了嗎？要改回來，前端要單獨寫一個項目，你看看目前前端需要修改嗎？我剛才沒和你説，我覺得只要改後端就行了，
+我的目的是把原生的oauth2的實現改爲用spring-security去實現，理論上前端應該不會改動才對
 
+###########################################################################
+我現在已經啓動了client和server的前後端，點擊了“使用OAuth2登錄”，但是接口http://localhost:9090/oauth2/authorize?response_type=code&client_id=client123&scope=openid%20profile%20email&state=XmtcSVhfG-jnAkSVztbg-40sTCuUaD9VKAHsn1S1Jgo%3D&redirect_uri=http://localhost:9091/login/oauth2/code/oauth2-server&nonce=eIpgYIL9japDfVLIdr-5rzUfvVz8AhkOAQMxzxDoKOA報錯了，403Borbidden
 
 
 ###########################################################################
-
-
-
-###########################################################################
-
+點擊了“使用OAuth2登錄”，還是報錯：接口：http://localhost:9090/oauth2/authorize?response_type=code&client_id=client123&scope=openid%20profile%20email&state=veVxrLhiVoReF96jGPUgPP_4xKN_fta1r8M52OoXIGU%3D&redirect_uri=http://localhost:9091/login/oauth2/code/oauth2-server&nonce=Rh6_G7vlUeu-DiBYQVbUABmC32Ip4CoAwNFyVnpKPxU
+報錯302Found
 
 
 ###########################################################################
+還是失敗：
+彈窗的報錯内容：localhost:3001 says
+獲取授權URL失敗
+
+###########################################################################
+使用賬號密碼登錄后，顯示的頁面是不是有問題，
+我這裏顯示
+Login with OAuth 2.0
+[authorization_request_not_found]
+
+OAuth2 Server
+
+OAuth2 Server 按鈕又會跳轉到賬號密碼登錄入口
+
+###########################################################################
+不對，沒有出現consent頁面，錯誤和之前是一樣的
 
 
 ###########################################################################
-
-
-
-###########################################################################
-
+現在我點擊登錄直接這樣了：
+Whitelabel Error Page
+This application has no explicit mapping for /error, so you are seeing this as a fallback Wed Noy26 01:08:26 CST2025
+There was an unexpected error (type=Bad Request, status=400).
 
 
 ###########################################################################
