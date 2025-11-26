@@ -230,7 +230,10 @@ saml2的配置文件里面的那几关键请求是啥？
 chrome浏览器开发者模式F12，Preserve log 是啥？
 
 ###########################################################################
-
+帮我看看当前目录下的项目，包括了前端和后端:poc-pro-ui和pocpro
+在前端页面的benchmark页面的retail banking页面的表单缺少了busissId列，位置在这里：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\benchmark\retailBank
+private Banking的是正常的，解决方案，我想把private的代码直接复制过来可不可行；因为我看了接口的返回值，返回数据里有businessId字段
+另外的一个要求：你帮我整体分析一下benchmark这个页面的代码
 
 
 ###########################################################################
