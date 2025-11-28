@@ -332,11 +332,15 @@ git remote add origin git@github.com:yuequanhuabai/oidc-client-fronted.git
 git branch -M main
 git push -u origin main
 ###########################################################################
-
+token由这三部分组成，用户获取公钥去验证token里面的签名信息是否和token里的header和payload一致
+这个公钥信息是存储在哪里？程序如何获取？
+如何黑客修改了内容并用自己的私钥加密了，然后在验证的时候能不能也误导程序用黑客自己的公钥？
 
 
 ###########################################################################
-
+密钥对生成:
+ openssl genrsa -out private.pem 2048
+ openssl rsa -in private.pem -pubout -out public.pem
 
 
 ###########################################################################
