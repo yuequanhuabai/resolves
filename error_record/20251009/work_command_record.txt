@@ -807,7 +807,81 @@ There was an unexpected error (type=Bad Request, status=400).
 
 
 ###########################################################################
+现在业务需求由变化，需要修改一下对应的逻辑
+表的变化，buy_list_details,多了一个client_id字段
+逻辑变化：
+从原来的直接，解析，校验数据，导入
+改为：
+解析，校验，导入；
+1.在前端区分了private banking和retail banking，需要基于前端所处的对应页面传递的business_type，private banking 是1，retail banking则是2
+2.对导入的数据校验需要动态查表来确认校验,如下，表的前缀是SECURITY_MASTER，后面有个基于assetType动态规则拼接一个字符串，例如下表就是拼接BND，private banking后面再拼接business_type:1
+找到SECURITY_MASTER表里面的ISIP或者其它对应的字段和csv或者excel解析后的productCode比较，如果解析的productCode==isin，则取其client_id，赋值给buy_list_detail里的client_id字段，就是我们上面buy_list_details表新增的client_id字段，
+而不是直接导入productCode字段到buy_list_details的product_code字段;
+CREATE TABLE testflow.dbo.SECURITY_MASTER_BND_1 (
+	SECURITY_MASTER_OID bigint NOT NULL,
+	CLIENT_ID nvarchar(60) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CUSIP nvarchar(9) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	ISIN nvarchar(20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	SEDOL nvarchar(20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	TICKER nvarchar(16) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	PRICE decimal(21,9) NULL,
+	[DATE] date NULL,
+	[SOURCE] nvarchar(5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CLIENT_SEC_TYPE nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CLIENT_SEC_TYPE2 nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CD_INSTMT_TYPE nvarchar(60) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	DESC_INSTMT nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	DESC_INSTMT_HANT nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	DESC_INSTMT_HANS nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	ISSUE_COUNTRY nvarchar(2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CURRENCY nvarchar(3) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	COUPON decimal(9,6) NULL,
+	COUP_FREQ char(1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	MATURITY date NULL,
+	ISSUER nvarchar(300) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	MUNI_STATE char(1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	PUT_CALL nvarchar(4) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	EXERCISE_TYPE char(1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	OPTION_STRIKE decimal(10,0) NULL,
+	UNDERLYING_ID nvarchar(10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	UNDERLYING_ID_TYPE nvarchar(5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	UNDERLYING_DESCRIPTION nvarchar(10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	UNDERLYING_PRICE decimal(10,0) NULL,
+	CONTRACT_SIZE decimal(10,0) NULL,
+	RIC nvarchar(15) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	OCC nvarchar(21) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FX_TRADE_DATE date NULL,
+	FX_TRADE_CURRENCY nvarchar(3) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	NDF_TYPE char(1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CONTRACT_CODE nvarchar(10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	STANDARD_CONTRACT char(1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	ACCRUAL_DT date NULL,
+	RED_CODE nvarchar(5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	EFFECTIVE_DATE date NULL,
+	COUP_FREQ_PAY nvarchar(3) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	COUP_FREQ_RCY nvarchar(3) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CURRENCY_PAY nvarchar(3) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	CURRENCY_RCY nvarchar(3) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	PAY_LEG nvarchar(3) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	REC_LEG nvarchar(3) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	FIXED_RATE decimal(10,0) NULL,
+	UNDERLYING_TERM decimal(10,0) NULL,
+	INDEX_NAME_PAY nvarchar(10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	INDEX_NAME_RVY nvarchar(10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	TERM decimal(10,0) NULL,
+	INDEX_NAME nvarchar(10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	IRS_TYPE nvarchar(5) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	PROXY_SECTOR nvarchar(60) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	ATTR_NAME nvarchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	PRODUCT_RISK_RATING decimal(1,0) NULL,
+	CONSTRAINT PK__SECURITY__DB91FF368B7EDD25 PRIMARY KEY (SECURITY_MASTER_OID)
+);
 
+我有一个想法，就是先把所有的SECURITY_MASTER_*的表的数据先查出来放在redis，后续从redis取数，再和csv或excel的productCode进行对比，
+如果redis有对应的isin和导入的product_code相等，就把SECURITY_MASTER_*表的同行的client_id写入到buy_list_details表的client_id中，导入的asset_type也写入到buy_list_details表的asset_type里
+
+你能够理解这个业务逻辑吗？
+你先复述一下你对我上面问题解决方案的理解
 
 
 ###########################################################################
