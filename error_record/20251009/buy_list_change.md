@@ -110,10 +110,23 @@
 
 **status (approval_status) - 审批状态：**
 ```
-0 = 待提交（初始）
+0 = 待提交（已废弃，不再使用）
 1 = 审批中（PENDING）
-2 = 已通过（APPROVED）
+2 = 已通过（APPROVED）← 默认初始状态
 3 = 已驳回（REJECTED）
+```
+
+**⚠️ 重要优化说明：**
+```
+原方案：status默认值 = 0（待提交）
+问题：需要特殊判断 status=0 是否可编辑
+
+优化方案：status默认值 = 2（APPROVED）
+优势：
+  1. 语义明确：status=2 统一表示"可编辑"状态
+  2. 通过 biz_status=0 区分"初始未提交"和"审批已生效"
+  3. 逻辑统一：所有可编辑记录都是 status=2
+  4. 前端判断简化：不需要特殊处理 status=0
 ```
 
 **biz_status - 业务状态：**
@@ -145,7 +158,7 @@ APPROVED记录 → 指向上一个PENDING的id
 ```
 场景                    │ status │ biz_status │ 说明
 ─────────────────────────────────────────────────────────
-初始状态                │   0    │     0      │ 未提交
+初始状态                │   2    │     0      │ 默认可编辑（关键改动！）
 首次提交                │   1    │     1      │ 审批中
 审批通过（首次）        │   2    │     2      │ 已生效
 审批驳回                │   3    │     3      │ 已驳回
@@ -154,6 +167,7 @@ APPROVED记录 → 指向上一个PENDING的id
 ```
 
 **关键区别：**
+- `status=2, biz_status=0`：初始状态（默认可编辑）← 新设计
 - `status=1, biz_status=1`：首次提交审批中
 - `status=1, biz_status=4`：再次发起审批中 ← 通过biz_status区分
 
@@ -162,13 +176,21 @@ APPROVED记录 → 指向上一个PENDING的id
 -- 将现有记录的biz_status初始化
 UPDATE buy_list
 SET biz_status = CASE
-    WHEN status = 2 THEN 2  -- APPROVED
-    WHEN status = 1 THEN 1  -- PENDING
-    ELSE 0                   -- 初始状态
+    WHEN status = 2 THEN 2  -- APPROVED（已生效）
+    WHEN status = 1 THEN 1  -- PENDING（审批中）
+    WHEN status = 3 THEN 3  -- REJECTED（已驳回）
+    ELSE 0                   -- 未提交（默认）
+END,
+status = CASE
+    WHEN status = 0 THEN 2  -- 将旧的status=0改为2（APPROVED）
+    ELSE status              -- 保持其他状态不变
 END,
 edit_flag = 0,              -- 默认可编辑
 history_id = NULL           -- 旧数据无历史链
 WHERE biz_status IS NULL;
+
+-- 如果需要修改表默认值（可选）
+ALTER TABLE buy_list ALTER COLUMN status SET DEFAULT 2;
 ```
 
 ---
