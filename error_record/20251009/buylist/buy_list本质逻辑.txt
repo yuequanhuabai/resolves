@@ -1,0 +1,112 @@
+前提：基于当前目录下的pocpro后端和前端poc-pro-ui，对现有的buy_list模块进行修改，修改逻辑如下：
+
+业务操作员maker无论是新增还是修改:（需要记录他的所有操作记录，把旧数据保留，用del_flag=1来做逻辑删除，
+新数据全量新政，del_flg=0给审批人员展示最新数据，如果业务操作员有多次操作，就全量新增多次，del_flag=0,旧的改为1,最新的那批数据为0,供审批人员chcker查看）
+同时新增数据的版本基于旧数据版本record_version+1;
+
+流程状态status由
+0(default)->1(pending)->2(approved)
+0(default)->1(pending)->3(reject)
+改为：
+2(approved)->1(pending)->2(approved)
+2(approved)->1(pending)->3(reject).
+
+其他改变：
+1.审批过后还可以继续进行编辑发起流程,在审批后重新发起新流程时，
+2.需要在前端显示原approved状态的数据和新的pending状态数据;
+   但是approved状态的数据为审批页的数据，为不可编辑，pending状态为编辑页面的可编辑的数据，新加了个edit_flag来标识
+3.额外添加biz_status来描述业务状态：
+    0(system_default)->1(submit)->2(approval)
+    0(system_default)->1(submit)->3(reject)
+在审批通过或者拒绝后再次发起流程(后续可以无限的对完成审批后(同意或拒绝)进行再次发起)：
+    0(system_default)->1(submit)->2(approval)->4(restart)->2(approval)
+    0(system_default)->1(submit)->2(approval)->4(restart)->3(reject)
+
+后续可以无限的对完成审批后(同意或拒绝)进行再次发起
+0(system_default)->1(submit)->2(approval)->4(restart)->2(approval)->4(restart)->2(approval).............（省略后续的无数次重新发起后同意或拒绝）
+0(system_default)->1(submit)->2(approval)->4(restart)->2(approval)->4(restart)->3(reject).............（省略后续的无数次重新发起后同意或拒绝）
+0(system_default)->1(submit)->2(approval)->4(restart)->3(reject)->4(restart)->2(approval).............（省略后续的无数次重新发起后同意或拒绝）
+0(system_default)->1(submit)->2(approval)->4(restart)->3(reject)->4(restart)->3(reject).............（省略后续的无数次重新发起后同意或拒绝）
+
+4. 在每次checker审批同意或拒绝的时候把当前数据的checker_datetime,valid_start_datetime改为当前时间，
+同时把从当前流程approved到流程开始，或者当前流程approved-->上一个流程approved的中间版本的所有数据的valid_end_datetime改为当前审批的时间
+
+5. 还有一个history_id问题，因为多个版本更替，需要记住上一个版本的id，需要注意的是只有系统输审批状态为approved的数据id
+和最后一条pending数据的id(如果maker中间做了多次更新的话)才能为另一条数据history_id
+
+6. 审批流是基于flowable流程引擎来实现的，具体可以看代码
+
+
+以下是核心表的建表语句：
+
+CREATE TABLE buy_list (
+    id nvarchar(64) NOT NULL PRIMARY KEY,
+    business_id nvarchar(64)  NOT NULL,
+    name nvarchar(64) DEFAULT NULL NULL,
+    business_type tinyint DEFAULT NULL NULL,
+    process_instance_id nvarchar(64) DEFAULT NULL NULL,
+    status tinyint DEFAULT NULL NULL,
+    maker nvarchar(32) DEFAULT NULL NULL,
+    maker_datetime datetime2 DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    maker_business_date datetime2 DEFAULT NULL NULL,
+    checker nvarchar(32) DEFAULT NULL NULL,
+    checker_datetime datetime2 DEFAULT NULL NULL,
+    checker_business_date datetime2 DEFAULT NULL NULL,
+    record_version int DEFAULT '0' NULL,
+    valid_start_datetime datetime2 DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    valid_end_datetime datetime2 DEFAULT NULL NULL,
+    del_flag tinyint DEFAULT '0' NULL,
+    system_version int DEFAULT '0' NULL,
+    biz_status tinyint default null,
+    history_id nvarchar(64) default null,
+    edit_flag tinyint default null
+)
+表中的status是流程状态，biz_status是新加的业务状态
+
+CREATE TABLE buy_list_details (
+    id nvarchar(64) NOT NULL PRIMARY KEY,
+    business_id nvarchar(64) DEFAULT NULL NULL,
+    buy_list_id nvarchar(64) DEFAULT NULL NULL,
+    record_version int DEFAULT '0' NULL,
+    asset_type nvarchar(64) DEFAULT NULL NULL,
+    product_code nvarchar(100) DEFAULT NULL NULL,
+    client_id nvarchar(64) DEFAULT NULL
+)
+  
+你帮我基于上面的业务逻辑和buy_list的现有前后端的代码做一个自然语言的伪代码逻辑的实现，生成在当前目录下，命名为buy_list_implement.md，
+后续我会基于你的伪代码逻辑，进行代码的编写操作；伪代码逻辑全部用自然语言表达
+
+
+
+
+###################################################################################################################################################
+
+全部基于biz_status状态来确认当前对主表和详情表的操作;
+1.null==biz_status||0==biz_status
+  旧数据变动： 改主表的del_flag=1, 入库
+  新数据变动： 复制上一条原数据，修改del_flag=0,修改maker用户，maker操作时间 ，入库
+2.1==biz_status(submit)
+  旧数据变动:改主表的del_flag=1, 入库
+  新数据变动:复制上一条原数据，修改del_flag=0,修改maker用户，maker操作时间，record_version+1,
+           添加history_id为上一条数据的id(有问题，如果当前审批状态为pending,则查上一次审批状态为Approved状态的数据的id(需要获取当前buy_list表的所有数据，从后往前的第一个Approved数据的id，如果有多个Approved的话)
+           如果当前审批状态为apprved，则查上一次审批状态为pending的数据id);(需要获取所)
+
+2.1==biz_status(submit)
+  旧数据变动： 改主表的del_flag=1, 入库
+  新数据变动： 复制上一条原数据，修改del_flag=0,修改maker用户，maker操作时间，record_version+1,添加history_id为上一条数据的id;
+
+2.1==biz_status(submit)
+  旧数据变动： 改主表的del_flag=1, 入库
+  新数据变动： 复制上一条原数据，修改del_flag=0,修改maker用户，maker操作时间，record_version+1,添加history_id为上一条数据的id;
+
+
+3.2==biz_status(approval)
+
+
+
+
+
+
+
+
+

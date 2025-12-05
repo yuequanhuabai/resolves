@@ -971,9 +971,15 @@ CREATE TABLE testflow.dbo.SECURITY_MASTER_BND_1 (
 你整合一下之前的逻辑，总结一下整个业务流程，要求精简，简洁，本质；
 
 ###########################################################################
-
+帮我看看BenchmarkServiceImpl类的createNewBenchmarkVersion方法，详细分析以下这个方法的行为，可能需要联系Benchmark对应的前后端代码
 
 ###########################################################################
+我要进行主表的备份操作，我得知道当前流程的状态以及业务的状态吧？
+如果是初始状态，可以不用进行额外操作，只要把它的del_flag改为1即可;
+但是如果是其他的状态，可能要改其他的字段
+例如在appending状态，就得记录history_id,把上条数据的id;
+再关联biz_status的业务状态是否为approval和reject，来确认是不是要把当前流程一个循环的前面记录的所有时间统一改下，
+即如果biz_status的业务状态是否为approval和reject，需要修改上个流程循环（approved->pending...pending->approved,中间可能有多个pending状态的数据）中间的valid_end_datetime和当前审批数据的checker_datetime和valid_start_datetime
 
 
 
