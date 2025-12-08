@@ -88,10 +88,11 @@ CREATE TABLE buy_list_details (
 2.1==biz_status(submit)
   旧数据变动:改主表的del_flag=1, 入库
   新数据变动:复制上一条原数据，修改del_flag=0,修改maker用户，maker操作时间，record_version+1,
-           添加history_id为上一条数据的id(有问题，如果当前审批状态为pending,则查上一次审批状态为Approved状态的数据的id(需要获取当前buy_list表的所有数据，从后往前的第一个Approved数据的id，如果有多个Approved的话)
+           添加history_id为上一条数据的id(有问题，如果当前审批状态为pending,则查上一次审批状态为Approved状态的数据的id
+           (需要获取当前buy_list表的所有数据，从后往前的第一个Approved数据的id，如果有多个Approved的话)
            如果当前审批状态为apprved，则查上一次审批状态为pending的数据id);(需要获取所)
 
-2.1==biz_status(submit)
+2.2==biz_status(approval)
   旧数据变动： 改主表的del_flag=1, 入库
   新数据变动： 复制上一条原数据，修改del_flag=0,修改maker用户，maker操作时间，record_version+1,添加history_id为上一条数据的id;
 
