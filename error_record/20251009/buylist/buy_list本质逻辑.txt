@@ -82,26 +82,34 @@ CREATE TABLE buy_list_details (
 ###################################################################################################################################################
 
 全部基于biz_status状态来确认当前对主表和详情表的操作;
-1.null==biz_status||0==biz_status
+
+操作员的处理逻辑：
+
+一.null==biz_status||0==biz_status
   旧数据变动： 改主表的del_flag=1, 入库
   新数据变动： 复制上一条原数据，修改del_flag=0,修改maker用户，maker操作时间 ，入库
-2.1==biz_status(submit)
+二.1==biz_status(submit)
   旧数据变动:改主表的del_flag=1, 入库
   新数据变动:复制上一条原数据，修改del_flag=0,修改maker用户，maker操作时间，record_version+1,
            添加history_id为上一条数据的id(有问题，如果当前审批状态为pending,则查上一次审批状态为Approved状态的数据的id
            (需要获取当前buy_list表的所有数据，从后往前的第一个Approved数据的id，如果有多个Approved的话)
            如果当前审批状态为apprved，则查上一次审批状态为pending的数据id);(需要获取所)
-
-2.2==biz_status(approval)
-  旧数据变动： 改主表的del_flag=1, 入库
-  新数据变动： 复制上一条原数据，修改del_flag=0,修改maker用户，maker操作时间，record_version+1,添加history_id为上一条数据的id;
-
-2.1==biz_status(submit)
+三.4==biz_status(submit)
   旧数据变动： 改主表的del_flag=1, 入库
   新数据变动： 复制上一条原数据，修改del_flag=0,修改maker用户，maker操作时间，record_version+1,添加history_id为上一条数据的id;
 
 
-3.2==biz_status(approval)
+审批员的处理逻辑：
+四.2==biz_status(approval)
+  旧数据变动： 改主表的del_flag=1, 入库
+  新数据变动： 复制上一条原数据，修改del_flag=0,修改maker用户，maker操作时间，record_version+1,添加history_id为上一条数据的id;
+
+五.3==biz_status(submit)
+  旧数据变动： 改主表的del_flag=1, 入库
+  新数据变动： 复制上一条原数据，修改del_flag=0,修改maker用户，maker操作时间，record_version+1,添加history_id为上一条数据的id;
+
+
+
 
 
 
