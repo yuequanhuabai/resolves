@@ -994,22 +994,61 @@ CREATE TABLE testflow.dbo.SECURITY_MASTER_BND_1 (
 
 
 ###########################################################################
+上面我说的有点问题，应该是下面这集中情况：
+0(初始)，1(发起)，5(二次提交,中间可以有多次，基于发起)，  2(审批同意)，3(审批驳回)，4(重新发起)，
+1和4可以合并，2和3可以合并
+操作用户： 0，1和4，5  三种情况
+审批用户： 2和3   一种情况
+共四种情况
 
-
-
-###########################################################################
-
-
-###########################################################################
-
-
-
-###########################################################################
-
+是不是直接用biz_status可以实现，不用审批的状态status
 
 
 ###########################################################################
+// 详情表操作总体逻辑;
+        Integer bizStatus = originalList.getBizStatus();
+        // 审批用户操作
+        if (StatusEnum.approval.getValue().equals(bizStatus) || StatusEnum.reject.getValue().equals(bizStatus)) {
 
+        } else { // 编辑用户操作;
+            if (StatusEnum.system.getValue().equals(bizStatus)) {
+
+            } else if (StatusEnum.submit.getValue().equals(bizStatus) || StatusEnum.restart.getValue().equals(bizStatus)) {
+
+            } else if (StatusEnum.modify.getValue().equals(bizStatus)) {
+
+            } else {
+                throw new Exception("error biz status");
+            }
+        }
+
+###########################################################################
+基于当前目录的前后端项目：后端propoc和前端poc-pro-ui,
+我要了解buyList的业务代码查询逻辑(包括前后端的)，后端代码在BuyListController里，前端的view代码在这里：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+
+###########################################################################
+我想重新改写一下这个查询逻辑，用xml手动sql的方式
+service重新加一个方法吧，不用原来的方法，用这个：queryBuyListPage
+mapper方法也别用原来的mapper了，新建一个mapper接口方法，queryBuyListPage；
+然后再xml里面手写sql来实现，不用mybatis-plus，
+
+要求实现逻辑：
+前端 条件：  Asset Type，Buy List ID, Buy List Name, Status, 四个参数；首次查询这四个参数默认为null，
+                但是会带上对应的businessType来区分private banking还是retail banking；
+               要求Buy List ID 字段支持右模糊查询，Buy List Name字段也是，支持右模糊查询  例如  A%
+               查询结果用cn.bochk.pap.server.business.vo.resp.BuyListRespVO保持不变，
+               但是在前端表单的表头上，有展示字段的排序，点击上下小箭头会触发排序重新查询；
+               表头字段有：Buy List ID, Buy List Name, Asset Type，Status, Maker，Last Mod DateTime，  Checker，Last Mod DateTime
+              对查询结果需要有分页组件，prev，next，每页默认10条吧，可以切换20，30条，如果展示不出来，要出现下拉，可以下拉查看
+上面是要求的效果，总体查询逻辑是：
+查询buy_list主表信息，但是要可以基于AssetType进行查询，但是AssetType字段是buy_list_details表的；需要联表;
+
+你先复述一下你对我上面查询需求的理解：
+
+###########################################################################
+1. 审批后可以重新发起的问题
+2.导入问题回显，编辑和新增的问题
 
 
 ###########################################################################
