@@ -1052,10 +1052,17 @@ mapper方法也别用原来的mapper了，新建一个mapper接口方法，query
 
 
 ###########################################################################
-
+SELECT DISTINCT bl.id, bl.name, bl.business_id, bl.business_type, bl.status, bl.maker, bl.maker_datetime, bl.checker_datetime, bl.maker_business_date, bl.checker_business_date, bl.checker, bl.record_version, bl.valid_start_datetime, bl.valid_end_datetime, bl.del_flag, bl.system_version, bl.process_instance_id, bl.biz_status, bl.history_id, bl.edit_flag
+FROM ( SELECT * FROM buy_list WHERE del_flag = 0 AND business_type = ? ) bl
+WHERE bl.business_id LIKE ? + '%'
+ORDER BY bl.valid_start_datetime DESC
+OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
 
 ###########################################################################
-
+SELECT DISTINCT bl.id, bl.name, bl.business_id, bl.business_type, bl.status, bl.maker, bl.maker_datetime, bl.checker_datetime, bl.maker_business_date, bl.checker_business_date, bl.checker, bl.record_version, bl.valid_start_datetime, bl.valid_end_datetime, bl.del_flag, bl.system_version, bl.process_instance_id, bl.biz_status, bl.history_id, bl.edit_flag
+FROM ( SELECT * FROM buy_list WHERE del_flag = 0 AND business_type = ? ) bl
+ORDER BY bl.valid_start_datetime DESC
+OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
 
 
 ###########################################################################
