@@ -1079,7 +1079,20 @@ OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
 
 
 ###########################################################################
+當前項目的buyList業務有一個問題：
+原現象：審批過後的數據不可以二次發起流程
+現在：審批後的數據（不管是審批同意或失敗），可以發起二次流程；
+問題： 發起二次流程後，審批者進入頁面和發起者進入頁面一致，全部是發起者的頁面；
+解決後達到的效果： 審批者頁面還是保持之前的審批頁，發起者責從原來不可以二次發起變爲可以二次進入發起流程
+buyList的前後端代碼：
+後端：cn.bochk.pap.server.business.controller.BuyListController
+前端：D:\software\develop_tools\git\gitee\pap\poc-pro-ui\src\views\buylist
 
+參考代碼：ModelPortfolio模塊
+後端：cn.bochk.pap.server.business.controller.ModelPortfolioController
+前端：D:\software\develop_tools\git\gitee\pap\poc-pro-ui\src\views\modelportfolio目錄下
+
+提示：只要參考ModelPortfolio模塊後端的返回值以及遷對應的ModelPortfolio模塊前端的處理邏輯，因爲具體的後端代碼我們的實現不一樣，不需要你去仔細分析糾結;
 
 
 ###########################################################################
