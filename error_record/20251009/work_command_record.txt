@@ -1066,7 +1066,16 @@ OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
 
 
 ###########################################################################
-
+你读取当前目录下的项目，pocpro后端，poc-pro-ui前端
+我想在buylist业务逻辑下获取，上条确认的数据；
+上条确认的数据的定义是：
+如果当前操作是编辑提交操作，那上调数据id就是审批同意或者失败的数据id，如果是首次，则historyId为null;
+如果当前操作是审批操作，那上条数据就是最后一次编辑提交的数据id（可能会有多次编辑操作，在未审批之前，前面也会有很多审批和编辑的数据，有很多轮）
+我该如何获取上次的数据？
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+后端代码位置：cn.bochk.pap.server.business.controller.BuyListController
+在这个方法里面添加获取上调数据的逻辑吧BuyListServiceImpl.updateOldAndInsertnewByBizStatus
+你可以给个思路吗？
 
 
 ###########################################################################
