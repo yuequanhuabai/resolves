@@ -1,0 +1,107 @@
+// 查询两次审批之间的数据变化
+            queryApprovalDataChanges(newBuyList);
+    /**
+     * 更新两次审批之间数据的有效结束时间
+     * 逻辑：
+     * 1. 如果有上一个 bizStatus=2 或 3 的版本：查询 [上一个审批版本, 当前版本) 的所有数据
+     * 2. 如果没有上一个审批：查询 [第一个版本, 当前版本) 的所有数据
+     * 3. 更新这些数据的 validEndDatetime 为当前时间
+     *
+     * @param newBuyList 当前审批的 BuyList
+     */
+    private void queryApprovalDataChanges(BuyListDO newBuyList) {
+        log.info("========== 开始更新审批数据的有效结束时间 ==========");
+        log.info("当前审批 - businessId: {}, recordVersion: {}, bizStatus: {}",
+                newBuyList.getBusinessId(),
+                newBuyList.getRecordVersion(),
+                newBuyList.getBizStatus());
+
+        // 1. 查找上一个 bizStatus=2 或 3 的记录
+        String previousApprovalId = findLastApprovedOrRejectedRecord(
+                newBuyList.getBusinessId(),
+                newBuyList.getRecordVersion()
+        );
+
+        Integer startVersion;
+        String scenario;
+
+        if (previousApprovalId == null) {
+            // 场景：初始化 -> 审批（没有上一次审批）
+            startVersion = 0;  // 从第一个版本开始
+            scenario = newBuyList.getBizStatus() == 2 ? "初始化 -> 审批同意" : "初始化 -> 审批拒绝";
+            log.info("场景: {}", scenario);
+            log.info("查询范围: recordVersion >= {} AND recordVersion < {}", startVersion, newBuyList.getRecordVersion());
+        } else {
+            // 场景：上一次审批 -> 当前审批
+            BuyListDO previousBuyList = listMapper.selectById(previousApprovalId);
+            startVersion = previousBuyList.getRecordVersion();
+            String prevStatus = previousBuyList.getBizStatus() == 2 ? "审批同意" : "审批拒绝";
+            String currStatus = newBuyList.getBizStatus() == 2 ? "审批同意" : "审批拒绝";
+            scenario = prevStatus + " -> " + currStatus;
+            log.info("场景: {}", scenario);
+            log.info("上一次审批: recordVersion={}, bizStatus={}", previousBuyList.getRecordVersion(), previousBuyList.getBizStatus());
+            log.info("查询范围: recordVersion >= {} AND recordVersion < {}", startVersion, newBuyList.getRecordVersion());
+        }
+
+        // 2. 查询范围内的所有 BuyList 数据
+        List<BuyListDO> buyListsToUpdate = queryBuyListBetweenVersions(
+                newBuyList.getBusinessId(),
+                startVersion,
+                newBuyList.getRecordVersion()
+        );
+
+        log.info("查询到 {} 条 BuyList 记录需要更新 validEndDatetime", buyListsToUpdate.size());
+
+        // 3. 更新这些记录的 validEndDatetime 为当前时间
+        if (!buyListsToUpdate.isEmpty()) {
+            LocalDateTime currentTime = LocalDateTime.now();
+            int updatedCount = 0;
+
+            for (BuyListDO buyList : buyListsToUpdate) {
+                buyList.setValidEndDatetime(currentTime);
+                int result = listMapper.updateById(buyList);
+                if (result > 0) {
+                    updatedCount++;
+                    log.info("  更新版本 {} - validEndDatetime 设置为: {}",
+                            buyList.getRecordVersion(),
+                            currentTime);
+                }
+            }
+
+            log.info("成功更新 {} 条记录的 validEndDatetime", updatedCount);
+        } else {
+            log.info("没有需要更新的记录");
+        }
+
+        log.info("========== 审批数据有效结束时间更新完成 ==========");
+    }
+
+    /**
+     * 查询指定版本范围内的所有 BuyList 数据
+     *
+     * @param businessId   业务ID
+     * @param startVersion 起始版本（包含）
+     * @param endVersion   结束版本（不包含）
+     * @return BuyList 列表
+     */
+    private List<BuyListDO> queryBuyListBetweenVersions(String businessId, Integer startVersion, Integer endVersion) {
+        LambdaQueryWrapper<BuyListDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BuyListDO::getBusinessId, businessId)
+                .ge(BuyListDO::getRecordVersion, startVersion)  // >= 起始版本（包含上一次审批）
+                .lt(BuyListDO::getRecordVersion, endVersion)    // < 当前版本（不包含当前审批）
+                .orderByAsc(BuyListDO::getRecordVersion);
+
+        return listMapper.selectList(wrapper);
+    }
+
+    /**
+     * 查询指定 BuyList 的所有 Details 数据
+     *
+     * @param buyListId BuyList ID
+     * @return Details 列表
+     */
+    private List<BuyListDetailsDo> queryBuyListDetailsByBuyListId(String buyListId) {
+        LambdaQueryWrapper<BuyListDetailsDo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BuyListDetailsDo::getBuyListId, buyListId);
+        return detailsMapper.selectList(wrapper);
+    }
