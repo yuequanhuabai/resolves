@@ -1211,14 +1211,40 @@ checker:
 
 
 ###########################################################################
-### SQL: SELECT             bl.id,             bl.name,             bl.business_id,             bl.business_type,             bl.approval_status,             bl.maker,             bl.maker_datetime,             bl.checker_datetime,             bl.maker_business_date,             bl.checker_business_date,             bl.checker,             bl.record_version,             bl.valid_start_datetime,             bl.valid_end_datetime,             bl.del_flag,             bl.system_version,             bl.process_instance_id,             bl.biz_status,             bl.history_id,             bl.edit_flag,             bld.asset_type         FROM (             SELECT * FROM buy_list             WHERE del_flag = 0 AND business_type = ?         ) bl         OUTER APPLY (             SELECT TOP 1 asset_type             FROM buy_list_details             WHERE buy_list_id = bl.id   AND asset_type = ?   ORDER BY id         ) bld          AND bld.asset_type IS NOT NULL       ORDER BY bl.valid_start_datetime DESC       OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+我现有的逻辑是:
+1.更新主表buy_list,然后再在主表buy_list插入一条新数据;
+2.在详情表buy_list_details插入新操作数据;
+3.然后把新旧版本同时存在时的旧版本数据的del_flag置为1（逻辑删除标识），
+4.把上一个审批状态(或初始状态)的valid_end_datetime置为当前审批操作的操作时间;
+
+我想把步骤3,4用异步线程去执行，这个操作不会在前端有明显的影响;
+具体方法在BuyListServiceImpl.updateOtherOperation方法里面;
+还有一个更新valid_end_datetime的逻辑在BuyListServiceImpl.updateOldBuyList方法的
+checker操作分支里面，因为第一次审批操作的时候需要修改初始状态biz_status=0的valid_end_datetime,
+而我BuyListServiceImpl.updateOtherOperation方法里面的代码没有包含这个逻辑，它只修改了biz_status=1,2,3的
+代码如下：
+if(StatusEnum.submit.getValue().equals(originalBuyListDo.getBizStatus())){
+                BuyListDO systemUpdateDO = new BuyListDO();
+                systemUpdateDO.setId(originalBuyListDo.getHistoryId());
+                systemUpdateDO.setValidEndDatetime(now);
+                listMapper.updateById(systemUpdateDO);
+            }
+这个逻辑可以移植到BuyListServiceImpl.updateOtherOperation方法里面，统一用异步线程的逻辑；
+你先给出这个移植的思路，后面再给下异步的逻辑思路，先不改代码
 
 ###########################################################################
-
+我还有一个问题，就是关于注解失效的问题，注解的底层是基于cglib来实现的，如果遇到注解嵌套的问题，它的调用对象是代理对象而非当前类的实例对象；
+你考虑了这个场景吗？
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.AssetClassificationController
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\AssetClassification
 
+需求:
+帮我分析一下当前AssetClassification模块的前后端代码
 
 
 ###########################################################################
