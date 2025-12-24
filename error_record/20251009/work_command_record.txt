@@ -1248,7 +1248,7 @@ if(StatusEnum.submit.getValue().equals(originalBuyListDo.getBizStatus())){
 
 
 ###########################################################################
-select * from table_switch_log where
+
 
 
 ###########################################################################
