@@ -1248,14 +1248,29 @@ if(StatusEnum.submit.getValue().equals(originalBuyListDo.getBizStatus())){
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+               cn.bochk.pap.server.business.service.SecurityMasterCacheService
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
 
+问题：
+现在的问题时SecurityMasterCacheService类的查询操作涉及到外系统的表下发，每个工作日会有刷新；我目前的效果时启动初始化查询一次，永久保存；
+因为依赖外系统的下发数据，我的查询结果就有问题了，应该在外系统下发数据的时候统一做一次redis的初始化查询；再下次初始化的时候做第二次初始化redis数据；
+我想做成凌晨6点基于系统时间自动刷新查询可以吗？
 
 
 ###########################################################################
+我这里有个关于flowable框架的报错，你帮我看看什么原因：
+启动流程失败，业务ID：0a73529e-f130-41c1-be23-d0ae4a9ba903,错误信息：org.flowable.common.engine.api.FlowableException:
+Query return 2 results instead of max 1
 
 
 ###########################################################################
-
+这个是啥意思？帮我解释一下回返的参数
+info keyspace
+#Keyspace
+db1: keys=43,expires=43,avg_ttl=1596306,subexpiry=0;
 
 
 ###########################################################################
