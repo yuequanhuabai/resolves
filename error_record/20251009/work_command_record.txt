@@ -1274,6 +1274,19 @@ db1: keys=43,expires=43,avg_ttl=1596306,subexpiry=0;
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+               cn.bochk.pap.server.business.service.SecurityMasterCacheService
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+问题：
+SecurityMasterCacheService里面缓存的初始化需要依赖外系统的表BATCH_BUSINESS_DATE_RESULT，它时每个工作日会下发数据；获取最新的日期
+然后在基于日期在TABLE_SWITCH_LOG表里面获取表名，最后再基于表名查询对应的数据;缓存到redis中;
+
+我想额外添加一个接口，用来刷新缓存，在前端用户登录操作的时候做一次缓存刷新，而不依赖第三方系统;
+就是BuyListController里面的refresh方法，在前端登录初始化的时候做一次统一的刷新;
+你帮我分析一下可行性？先不改代码
 
 
 

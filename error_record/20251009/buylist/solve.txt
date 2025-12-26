@@ -1,0 +1,3960 @@
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+               cn.bochk.pap.server.business.service.SecurityMasterCacheService
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+问题：
+SecurityMasterCacheService里面缓存的初始化需要依赖外系统的表BATCH_BUSINESS_DATE_RESULT，它时每个工作日会下发数据；获
+取最新的日期
+然后在基于日期在TABLE_SWITCH_LOG表里面获取表名，最后再基于表名查询对应的数据;缓存到redis中;
+
+我想额外添加一个接口，用来刷新缓存，在前端用户登录操作的时候做一次缓存刷新，而不依赖第三方系统;
+就是BuyListController里面的refresh方法，在前端登录初始化的时候做一次统一的刷新;
+你帮我分析一下可行性？先不改代码
+
+● 我来帮你分析这个需求的可行性。首先需要阅读相关代码来理解当前的实现逻辑。
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\controller\BuyListController.java)
+  ⎿  Read 114 lines
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\SecurityMasterCacheService.java)
+  ⎿  Read 296 lines
+
+● 让我继续查看 BatchBusinessDateResultService 和前端登录相关代码：
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\BatchBusinessDateResultService.java)
+  ⎿  Read 9 lines
+
+● Search(pattern: "**/poc-pro-ui/src/**/login*.{vue,ts,js}")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Search(pattern: "**/poc-pro-ui/src/**/permission*.{ts,js}")
+  ⎿  Found 3 files (ctrl+o to expand)
+
+● Read(poc-pro-ui\src\permission.ts)
+  ⎿  Read 111 lines
+
+● Search(pattern: "class BatchBusinessDateResultServiceImpl", path: "pocpro")
+  ⎿  Found 0 files
+
+● Search(pattern: "**/poc-pro-ui/src/views/Login/**/*.vue")
+  ⎿  Found 8 files (ctrl+o to expand)
+
+● Search(pattern: "implements BatchBusinessDateResultService", path: "pocpro")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Read(poc-pro-ui\src\store\modules\user.ts)
+  ⎿  Read 109 lines
+
+
+● 现在我对整个链路有了清晰的理解。让我为你做一个完整的可行性分析：
+
+  ---
+  可行性分析报告
+
+  一、当前实现架构
+
+  用户登录
+      ↓
+  BuyListController.refresh()
+      ↓
+  SecurityMasterCacheService.refreshCache()
+      ↓
+  ┌─────────────────────────────────────────────────────────────┐
+  │  initCache() 执行步骤:                                        │
+  │  1. clearAllCacheOnStartup()   - 清空 Redis 缓存              │
+  │  2. getBusinessDate()          - 从 BATCH_BUSINESS_DATE_RESULT │
+  │     ↓                            获取最新业务日期               │
+  │  3. 查询 TABLE_SWITCH_LOG      - 根据日期获取表名映射            │
+  │  4. 查询 ASSET_TYPE            - 获取启用 BuyList 的配置         │
+  │  5. 查询 SECURITY_MASTER_*     - 加载数据到 Redis               │
+  └─────────────────────────────────────────────────────────────┘
+
+  二、核心问题：依赖链未断开
+
+  当前 refresh 方法的问题：刷新缓存时仍然调用 getBusinessDate()：
+
+  private Date getBusinessDate() {
+      return batchBusinessDateResultService.getBuinessDate();
+  }
+
+  而 getBuinessDate() 的查询条件（BatchBusinessDateResultImpl:26-34）：
+  - type = 'P'
+  - status = 'S'
+  - systemDate = 昨天
+
+  如果 BATCH_BUSINESS_DATE_RESULT 表当天没有外系统下发数据，getBusinessDate() 返回 null，整个刷新将失败。
+
+  三、可行性评估
+
+  | 评估项         | 状态 | 说明                                   |
+  |----------------|------|----------------------------------------|
+  | 接口已存在     | ✅   | BuyListController.refresh() 已实现     |
+  | 前端调用时机   | ✅   | permission.ts 中有明确的登录初始化钩子 |
+  | 依赖第三方系统 | ❌   | 仍依赖 BATCH_BUSINESS_DATE_RESULT 表   |
+  | 权限控制       | ❌   | refresh 接口缺少 @PreAuthorize         |
+  | 并发安全       | ⚠️   | 多用户同时登录会并发刷新               |
+  | 性能影响       | ⚠️   | 每次登录都全量刷新，数据库压力大       |
+
+  四、关键风险点
+
+  1. 依赖链未真正解耦
+
+  当前方案不能实现"不依赖第三方系统"的目标。因为：
+  - 刷新逻辑内部调用 getBusinessDate() 仍需查询 BATCH_BUSINESS_DATE_RESULT
+  - 如果该表没有当天数据，刷新无效
+
+  2. @Lazy 注解的影响
+
+  SecurityMasterCacheService 标注了 @Lazy（第30行），意味着：
+  - 应用启动时 @PostConstruct 不会立即执行
+  - 只有首次使用该 Bean 时才会初始化
+  - 这可能是故意设计的，因为启动时外系统数据可能还没就绪
+
+  3. 安全风险
+
+  @PostMapping("/refresh")
+  @Operation(summary = "解析并校验CSV文件")  // 注释不正确
+  public CommonResult<ParseResultVO> refresh() {
+      // 没有 @PreAuthorize，任何人都可调用
+  }
+
+  4. 并发风险
+
+  假设 100 个用户同时登录：
+  - 100 次并发调用 refreshCache()
+  - 100 次 clearAllCache() 和 initCache()
+  - 可能导致缓存闪烁、数据不一致
+
+  五、可行的解决方案建议
+
+  如果你想实现"前端登录时刷新缓存，不依赖第三方系统"，需要考虑以下改进：
+
+  方案 A：使用缓存中已有的日期
+
+  // 刷新时不重新获取日期，使用上次成功加载时的日期
+  // 添加一个 lastSuccessBusinessDate 字段保存
+
+  方案 B：提供手动指定日期的刷新接口
+
+  @PostMapping("/refresh")
+  public CommonResult<Boolean> refresh(@RequestParam(required = false) Date businessDate) {
+      if (businessDate == null) {
+          // 使用默认逻辑
+      } else {
+          // 使用指定日期刷新
+      }
+  }
+
+  方案 C：只刷新不清空（增量刷新）
+
+  // 仅在有新数据时更新，不清空旧缓存
+  public void refreshCacheIfAvailable() {
+      Date newDate = getBusinessDate();
+      if (newDate != null && !newDate.equals(lastLoadedDate)) {
+          refreshCache();
+      }
+  }
+
+  方案 D：定时任务 + 登录检查
+
+  - 后台定时任务尝试刷新（有数据就刷新）
+  - 前端登录时只检查缓存是否存在，不主动刷新
+
+  六、结论
+
+  当前方案（直接调用 refresh）不可行，原因：
+  1. 核心依赖链未解耦，仍需 BATCH_BUSINESS_DATE_RESULT 表有数据
+  2. 缺少权限控制和并发保护
+  3. 性能影响较大
+
+  建议：如果你想继续推进，需要先明确：
+  1. 外系统数据不可用时，应该使用什么备选策略？
+  2. 是否接受使用"上次成功加载的日期"继续刷新？
+  3. 刷新频率如何控制（每次登录还是有条件刷新）？
+
+  你希望我针对哪个方案进一步分析或给出具体实现思路？
+
+> 即使时定时任务，如果用户在查询的时候刚好清空了redis缓存，这个又该如何？
+
+● 这是一个非常关键的问题。当前代码存在缓存击穿窗口期：
+
+  public void refreshCache() {
+      log.info("手动刷新 SecurityMaster 缓存...");
+      clearAllCache();  // ← 清空缓存
+      // ⚠️ 危险窗口期：此时用户查询会返回 null
+      initCache();      // ← 重新加载（可能需要几秒甚至更长）
+  }
+
+  问题分析
+
+  当前代码的风险场景
+
+  时间线:
+  ─────────────────────────────────────────────────────────────→
+       │                    │                         │
+   clearAllCache()     用户查询                   initCache()完成
+       │                    │                         │
+       └────── 危险窗口期 ───┘                         │
+             缓存为空                                  │
+             查询返回 null                            │
+
+  当前的容错机制（不完善）
+
+  代码中有重试逻辑（SecurityMasterCacheService:196-199）：
+
+  public String getTableName(String assetType, Integer businessType) {
+      Object tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      if (tableName != null) {
+          return (String) tableName;
+      }
+      // 如果缓存不存在，尝试重新加载
+      log.info("找不到映射缓存，尝试重新加载 SecurityMaster 缓存...");
+      refreshCache();  // ⚠️ 如果正在刷新中，这里会导致重复刷新
+      tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      return tableName != null ? (String) tableName : null;
+  }
+
+  问题：如果刷新正在进行中，用户查询会触发另一次 refreshCache()，导致：
+  1. 重复刷新，浪费资源
+  2. 刷新叠加，窗口期更长
+  3. 可能的死循环或数据不一致
+
+  ---
+  解决方案
+
+  方案一：双缓存切换（推荐）
+
+  原理：维护两套缓存，加载完成后原子切换
+
+  活跃缓存: security_master:v1:*  ← 用户读取这套
+  备用缓存: security_master:v2:*  ← 后台加载新数据
+
+  加载完成后:
+    当前版本指针: v1 → v2  (原子切换)
+    异步清理 v1 数据
+
+  优点：
+  - 零停机刷新
+  - 用户查询不受影响
+
+  方案二：先写后删 + RENAME
+
+  原理：加载到临时 key，完成后原子替换
+
+  public void refreshCacheSafe() {
+      String tempPrefix = "security_master:temp:";
+      String activePrefix = "security_master:";
+
+      // 1. 加载数据到临时 key
+      loadDataToTempKeys(tempPrefix);
+
+      // 2. 原子替换（使用 Lua 脚本保证原子性）
+      atomicSwapKeys(tempPrefix, activePrefix);
+
+      // 3. 删除旧的临时 key（如果有）
+      cleanupOldKeys();
+  }
+
+  方案三：刷新锁 + 降级策略
+
+  原理：刷新时加锁，查询时检测锁状态
+
+  private volatile boolean isRefreshing = false;
+  private final ReentrantLock refreshLock = new ReentrantLock();
+
+  public void refreshCache() {
+      if (!refreshLock.tryLock()) {
+          log.info("缓存正在刷新中，跳过本次请求");
+          return;
+      }
+      try {
+          isRefreshing = true;
+          // 刷新逻辑...
+      } finally {
+          isRefreshing = false;
+          refreshLock.unlock();
+      }
+  }
+
+  public String getTableName(String assetType, Integer businessType) {
+      Object tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      if (tableName != null) {
+          return (String) tableName;
+      }
+
+      // 如果正在刷新中，等待而不是触发新的刷新
+      if (isRefreshing) {
+          // 等待刷新完成或返回降级值
+          waitForRefreshComplete();
+          tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      } else {
+          // 缓存确实不存在，触发刷新
+          refreshCache();
+          tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      }
+      return tableName != null ? (String) tableName : null;
+  }
+
+  方案四：不清空，直接覆盖
+
+  原理：不执行 clearAllCache()，直接用新数据覆盖
+
+  public void refreshCache() {
+      log.info("刷新 SecurityMaster 缓存（增量覆盖模式）...");
+      // 不清空，直接重新加载（会覆盖同 key 的数据）
+      initCacheWithoutClear();
+  }
+
+  优点：简单，无窗口期
+  缺点：如果某些数据被删除，旧数据会残留
+
+  ---
+  方案对比
+
+  | 方案        | 复杂度 | 零停机   | 数据一致性 | 适用场景       |
+  |-------------|--------|----------|------------|----------------|
+  | 双缓存切换  | 高     | ✅       | ✅         | 生产环境首选   |
+  | 先写后删    | 中     | ✅       | ✅         | 数据量不大时   |
+  | 刷新锁+等待 | 中     | ⚠️有延迟 | ✅         | 刷新频率低时   |
+  | 直接覆盖    | 低     | ✅       | ⚠️可能残留 | 数据只增不删时 |
+
+  ---
+  我的建议
+
+  考虑到你的场景（SecurityMaster 数据量可能较大，且业务关键），建议采用方案一（双缓存切换）或方案三（刷新锁）：
+
+  1. 如果刷新频率低（每天一次），方案三足够
+  2. 如果需要频繁刷新或对可用性要求极高，用方案一
+
+  你希望我针对哪个方案给出具体的实现设计？
+
+> 讲讲双缓存切换的具体实现，不改代码
+
+● 双缓存切换实现方案详解
+
+  一、核心思想
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                         Redis 结构                               │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                  │
+  │  版本指针 (永久有效)                                              │
+  │  ┌──────────────────────────┐                                   │
+  │  │ security_master:current  │ ──→ 值: "v1" 或 "v2"              │
+  │  └──────────────────────────┘                                   │
+  │                                                                  │
+  │  v1 版本缓存                        v2 版本缓存                   │
+  │  ┌────────────────────────┐       ┌────────────────────────┐    │
+  │  │ security_master:v1:    │       │ security_master:v2:    │    │
+  │  │   mapping              │       │   mapping              │    │
+  │  │   data:TABLE_A         │       │   data:TABLE_A         │    │
+  │  │   data:TABLE_B         │       │   data:TABLE_B         │    │
+  │  └────────────────────────┘       └────────────────────────┘    │
+  │         ↑                                   ↑                    │
+  │      活跃版本                             备用版本                │
+  │    (用户读取)                          (后台加载)                 │
+  │                                                                  │
+  └─────────────────────────────────────────────────────────────────┘
+
+  二、刷新流程
+
+  时间线:
+  ══════════════════════════════════════════════════════════════════════►
+
+  阶段1: 正常服务                  阶段2: 后台加载                阶段3: 切换完成
+  ┌──────────────────┐          ┌──────────────────┐          ┌──────────────────┐
+  │ current → "v1"   │          │ current → "v1"   │          │ current → "v2"   │
+  │                  │          │                  │          │                  │
+  │ 用户读 v1 ✓     │          │ 用户读 v1 ✓     │          │ 用户读 v2 ✓     │
+  │                  │          │ 后台写 v2       │          │                  │
+  │ v2: 空/旧数据    │          │ v2: 加载中...   │          │ v1: 待清理       │
+  └──────────────────┘          └──────────────────┘          └──────────────────┘
+        │                              │                              │
+        │                              │                              │
+     用户无感知                     用户无感知                     用户无感知
+
+  三、详细步骤分解
+
+  步骤 1：确定当前版本和目标版本
+
+  读取 security_master:current 的值
+
+  如果是 "v1" → 目标版本 = "v2"
+  如果是 "v2" → 目标版本 = "v1"
+  如果不存在  → 当前版本 = "v1", 目标版本 = "v1" (初始化场景)
+
+  步骤 2：加载数据到目标版本
+
+  目标版本 = "v2"
+
+  写入的 Key:
+    security_master:v2:mapping           → {映射关系}
+    security_master:v2:data:TABLE_A      → {表A数据}
+    security_master:v2:data:TABLE_B      → {表B数据}
+    ...
+
+  此时用户仍在读取 v1，完全不受影响
+
+  步骤 3：原子切换版本指针
+
+  SET security_master:current "v2"
+
+  这是一个原子操作，切换瞬间完成
+  切换后，所有新查询立即读取 v2
+
+  步骤 4：异步清理旧版本
+
+  等待一段时间（如 30 秒），确保进行中的 v1 查询完成
+
+  然后删除:
+    security_master:v1:mapping
+    security_master:v1:data:*
+
+  四、查询流程
+
+  用户查询 getClientId("EQ", 1, "AAPL")
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 1. 读取版本指针                  │
+  │    GET security_master:current  │
+  │    返回: "v1"                   │
+  └─────────────────────────────────┘
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 2. 读取映射关系                  │
+  │    HGET security_master:v1:     │
+  │         mapping "1:EQ"          │
+  │    返回: "TABLE_EQ_1_20231225"  │
+  └─────────────────────────────────┘
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 3. 读取实际数据                  │
+  │    HGET security_master:v1:     │
+  │         data:TABLE_EQ_1_20231225│
+  │         "AAPL"                  │
+  │    返回: "CLIENT_123"           │
+  └─────────────────────────────────┘
+            │
+            ▼
+       返回 "CLIENT_123"
+
+  五、并发安全分析
+
+  场景：刷新过程中用户查询
+
+  时刻 T1: 用户A 读取 current = "v1"
+  时刻 T2: 后台完成加载，SET current = "v2"
+  时刻 T3: 用户A 继续读取 v1:mapping (仍然有效！)
+  时刻 T4: 用户A 完成查询，返回正确结果
+
+  结论: 用户A 读到的是 v1 的完整数据，不受切换影响
+
+  场景：切换瞬间的查询
+
+  时刻 T1: 用户A 读取 current = "v1"
+  时刻 T1: 用户B 读取 current = "v2" (刚切换)
+
+  用户A → 读 v1 数据 → 返回旧数据 ✓
+  用户B → 读 v2 数据 → 返回新数据 ✓
+
+  两个用户都能得到完整、一致的数据
+  最多存在短暂的"数据版本不一致"，但每个用户看到的都是完整版本
+
+  六、Redis Key 设计
+
+  # 版本控制
+  security_master:current                    # 当前活跃版本 "v1" 或 "v2"
+  security_master:last_refresh_time          # 上次刷新时间 (可选)
+  security_master:refresh_lock               # 刷新锁 (防止并发刷新)
+
+  # v1 版本数据
+  security_master:v1:mapping                 # Hash: {businessType:assetType → tableName}
+  security_master:v1:data:TABLE_A            # Hash: {productCode → clientId}
+  security_master:v1:data:TABLE_B            # Hash: {productCode → clientId}
+
+  # v2 版本数据
+  security_master:v2:mapping                 # Hash: {businessType:assetType → tableName}
+  security_master:v2:data:TABLE_A            # Hash: {productCode → clientId}
+  security_master:v2:data:TABLE_B            # Hash: {productCode → clientId}
+
+  七、异常处理
+
+  情况 1：加载过程中失败
+
+  加载到 v2 时发生异常
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ current 仍然指向 v1             │
+  │ v2 数据不完整                   │
+  │                                 │
+  │ 处理: 清理 v2 的不完整数据       │
+  │       用户继续使用 v1           │
+  │       记录错误日志              │
+  └─────────────────────────────────┘
+
+  用户完全无感知
+
+  情况 2：清理旧版本时失败
+
+  v2 已激活，清理 v1 时失败
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 影响: v1 数据残留               │
+  │ 风险: 占用额外内存              │
+  │                                 │
+  │ 处理: 下次刷新时会覆盖 v1       │
+  │       或设置 TTL 自动过期       │
+  └─────────────────────────────────┘
+
+  不影响业务，仅占用空间
+
+  八、优化建议
+
+  1. 添加刷新锁防止并发
+
+  刷新前:
+    SETNX security_master:refresh_lock "1" EX 300
+    如果返回 0 → 已有刷新在进行，退出
+
+  刷新后:
+    DEL security_master:refresh_lock
+
+  2. 版本元数据
+
+  security_master:v1:meta = {
+      "loadTime": "2024-01-15 10:00:00",
+      "businessDate": "2024-01-14",
+      "tableCount": 15,
+      "recordCount": 50000
+  }
+
+  方便排查问题和监控
+
+  3. 设置 TTL 兜底
+
+  旧版本数据设置 TTL = 1 小时
+
+  即使清理失败，也会自动过期
+  避免内存无限增长
+
+  九、与当前代码的对比
+
+  | 对比项         | 当前实现   | 双缓存方案           |
+  |----------------|------------|----------------------|
+  | 刷新时用户查询 | 返回 null  | 正常返回旧数据       |
+  | 刷新失败影响   | 缓存被清空 | 无影响，继续用旧版本 |
+  | 内存占用       | 1x         | 约 2x（刷新期间）    |
+  | 实现复杂度     | 低         | 中                   |
+  | 数据一致性     | 有窗口期   | 每个版本内部一致     |
+
+  十、总结
+
+  双缓存切换的核心是：
+
+  1. 空间换时间：用双倍内存换取零停机
+  2. 版本隔离：每个版本独立完整，互不干扰
+  3. 原子切换：只切换指针，不移动数据
+  4. 异步清理：延迟清理旧版本，确保进行中的查询完成
+
+  这是生产环境中处理缓存刷新的标准做法，Redis、数据库连接池、配置中心等都采用类似思路。
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────> 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  -- INSERT --
+
+ * ▐▛███▜▌ *   Claude Code v2.0.76
+* ▝▜█████▛▘ *  Opus 4.5 · Claude Pro
+ *  ▘▘ ▝▝  *   D:\software\developmentTools\Git\gitee\newpap\pap
+
+> 基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+               cn.bochk.pap.server.business.service.SecurityMasterCacheService
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+问题：
+SecurityMasterCacheService里面缓存的初始化需要依赖外系统的表BATCH_BUSINESS_DATE_RESULT，它时每个工作日会下发数据；获
+取最新的日期
+然后在基于日期在TABLE_SWITCH_LOG表里面获取表名，最后再基于表名查询对应的数据;缓存到redis中;
+
+我想额外添加一个接口，用来刷新缓存，在前端用户登录操作的时候做一次缓存刷新，而不依赖第三方系统;
+就是BuyListController里面的refresh方法，在前端登录初始化的时候做一次统一的刷新;
+你帮我分析一下可行性？先不改代码
+
+● 我来帮你分析这个需求的可行性。首先需要阅读相关代码来理解当前的实现逻辑。
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\controller\BuyListController.java)
+  ⎿  Read 114 lines
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\SecurityMasterCacheService.java)
+  ⎿  Read 296 lines
+
+● 让我继续查看 BatchBusinessDateResultService 和前端登录相关代码：
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\BatchBusinessDateResultService.java)
+  ⎿  Read 9 lines
+
+● Search(pattern: "**/poc-pro-ui/src/**/login*.{vue,ts,js}")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Search(pattern: "**/poc-pro-ui/src/**/permission*.{ts,js}")
+  ⎿  Found 3 files (ctrl+o to expand)
+
+● Read(poc-pro-ui\src\permission.ts)
+  ⎿  Read 111 lines
+
+● Search(pattern: "class BatchBusinessDateResultServiceImpl", path: "pocpro")
+  ⎿  Found 0 files
+
+● Search(pattern: "**/poc-pro-ui/src/views/Login/**/*.vue")
+  ⎿  Found 8 files (ctrl+o to expand)
+
+● Search(pattern: "implements BatchBusinessDateResultService", path: "pocpro")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Read(poc-pro-ui\src\store\modules\user.ts)
+  ⎿  Read 109 lines
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\Impl\BatchBusinessDateResultImpl.java)
+  ⎿  Read 37 lines
+
+● 现在我对整个链路有了清晰的理解。让我为你做一个完整的可行性分析：
+
+  ---
+  可行性分析报告
+
+  一、当前实现架构
+
+  用户登录
+      ↓
+  BuyListController.refresh()
+      ↓
+  SecurityMasterCacheService.refreshCache()
+      ↓
+  ┌─────────────────────────────────────────────────────────────┐
+  │  initCache() 执行步骤:                                        │
+  │  1. clearAllCacheOnStartup()   - 清空 Redis 缓存              │
+  │  2. getBusinessDate()          - 从 BATCH_BUSINESS_DATE_RESULT │
+  │     ↓                            获取最新业务日期               │
+  │  3. 查询 TABLE_SWITCH_LOG      - 根据日期获取表名映射            │
+  │  4. 查询 ASSET_TYPE            - 获取启用 BuyList 的配置         │
+  │  5. 查询 SECURITY_MASTER_*     - 加载数据到 Redis               │
+  └─────────────────────────────────────────────────────────────┘
+
+  二、核心问题：依赖链未断开
+
+  当前 refresh 方法的问题：刷新缓存时仍然调用 getBusinessDate()：
+
+  private Date getBusinessDate() {
+      return batchBusinessDateResultService.getBuinessDate();
+  }
+
+  而 getBuinessDate() 的查询条件（BatchBusinessDateResultImpl:26-34）：
+  - type = 'P'
+  - status = 'S'
+  - systemDate = 昨天
+
+  如果 BATCH_BUSINESS_DATE_RESULT 表当天没有外系统下发数据，getBusinessDate() 返回 null，整个刷新将失败。
+
+  三、可行性评估
+
+  | 评估项         | 状态 | 说明                                   |
+  |----------------|------|----------------------------------------|
+  | 接口已存在     | ✅   | BuyListController.refresh() 已实现     |
+  | 前端调用时机   | ✅   | permission.ts 中有明确的登录初始化钩子 |
+  | 依赖第三方系统 | ❌   | 仍依赖 BATCH_BUSINESS_DATE_RESULT 表   |
+  | 权限控制       | ❌   | refresh 接口缺少 @PreAuthorize         |
+  | 并发安全       | ⚠️   | 多用户同时登录会并发刷新               |
+  | 性能影响       | ⚠️   | 每次登录都全量刷新，数据库压力大       |
+
+  四、关键风险点
+
+  1. 依赖链未真正解耦
+
+  当前方案不能实现"不依赖第三方系统"的目标。因为：
+  - 刷新逻辑内部调用 getBusinessDate() 仍需查询 BATCH_BUSINESS_DATE_RESULT
+  - 如果该表没有当天数据，刷新无效
+
+  2. @Lazy 注解的影响
+
+  SecurityMasterCacheService 标注了 @Lazy（第30行），意味着：
+  - 应用启动时 @PostConstruct 不会立即执行
+  - 只有首次使用该 Bean 时才会初始化
+  - 这可能是故意设计的，因为启动时外系统数据可能还没就绪
+
+  3. 安全风险
+
+  @PostMapping("/refresh")
+  @Operation(summary = "解析并校验CSV文件")  // 注释不正确
+  public CommonResult<ParseResultVO> refresh() {
+      // 没有 @PreAuthorize，任何人都可调用
+  }
+
+  4. 并发风险
+
+  假设 100 个用户同时登录：
+  - 100 次并发调用 refreshCache()
+  - 100 次 clearAllCache() 和 initCache()
+  - 可能导致缓存闪烁、数据不一致
+
+  五、可行的解决方案建议
+
+  如果你想实现"前端登录时刷新缓存，不依赖第三方系统"，需要考虑以下改进：
+
+  方案 A：使用缓存中已有的日期
+
+  // 刷新时不重新获取日期，使用上次成功加载时的日期
+  // 添加一个 lastSuccessBusinessDate 字段保存
+
+  方案 B：提供手动指定日期的刷新接口
+
+  @PostMapping("/refresh")
+  public CommonResult<Boolean> refresh(@RequestParam(required = false) Date businessDate) {
+      if (businessDate == null) {
+          // 使用默认逻辑
+      } else {
+          // 使用指定日期刷新
+      }
+  }
+
+  方案 C：只刷新不清空（增量刷新）
+
+  // 仅在有新数据时更新，不清空旧缓存
+  public void refreshCacheIfAvailable() {
+      Date newDate = getBusinessDate();
+      if (newDate != null && !newDate.equals(lastLoadedDate)) {
+          refreshCache();
+      }
+  }
+
+  方案 D：定时任务 + 登录检查
+
+  - 后台定时任务尝试刷新（有数据就刷新）
+  - 前端登录时只检查缓存是否存在，不主动刷新
+
+  六、结论
+
+  当前方案（直接调用 refresh）不可行，原因：
+  1. 核心依赖链未解耦，仍需 BATCH_BUSINESS_DATE_RESULT 表有数据
+  2. 缺少权限控制和并发保护
+  3. 性能影响较大
+
+  建议：如果你想继续推进，需要先明确：
+  1. 外系统数据不可用时，应该使用什么备选策略？
+  2. 是否接受使用"上次成功加载的日期"继续刷新？
+  3. 刷新频率如何控制（每次登录还是有条件刷新）？
+
+  你希望我针对哪个方案进一步分析或给出具体实现思路？
+
+> 即使时定时任务，如果用户在查询的时候刚好清空了redis缓存，这个又该如何？
+
+● 这是一个非常关键的问题。当前代码存在缓存击穿窗口期：
+
+  public void refreshCache() {
+      log.info("手动刷新 SecurityMaster 缓存...");
+      clearAllCache();  // ← 清空缓存
+      // ⚠️ 危险窗口期：此时用户查询会返回 null
+      initCache();      // ← 重新加载（可能需要几秒甚至更长）
+  }
+
+  问题分析
+
+  当前代码的风险场景
+
+  时间线:
+  ─────────────────────────────────────────────────────────────→
+       │                    │                         │
+   clearAllCache()     用户查询                   initCache()完成
+       │                    │                         │
+       └────── 危险窗口期 ───┘                         │
+             缓存为空                                  │
+             查询返回 null                            │
+
+  当前的容错机制（不完善）
+
+  代码中有重试逻辑（SecurityMasterCacheService:196-199）：
+
+  public String getTableName(String assetType, Integer businessType) {
+      Object tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      if (tableName != null) {
+          return (String) tableName;
+      }
+      // 如果缓存不存在，尝试重新加载
+      log.info("找不到映射缓存，尝试重新加载 SecurityMaster 缓存...");
+      refreshCache();  // ⚠️ 如果正在刷新中，这里会导致重复刷新
+      tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      return tableName != null ? (String) tableName : null;
+  }
+
+  问题：如果刷新正在进行中，用户查询会触发另一次 refreshCache()，导致：
+  1. 重复刷新，浪费资源
+  2. 刷新叠加，窗口期更长
+  3. 可能的死循环或数据不一致
+
+  ---
+  解决方案
+
+  方案一：双缓存切换（推荐）
+
+  原理：维护两套缓存，加载完成后原子切换
+
+  活跃缓存: security_master:v1:*  ← 用户读取这套
+  备用缓存: security_master:v2:*  ← 后台加载新数据
+
+  加载完成后:
+    当前版本指针: v1 → v2  (原子切换)
+    异步清理 v1 数据
+
+  优点：
+  - 零停机刷新
+  - 用户查询不受影响
+
+  方案二：先写后删 + RENAME
+
+  原理：加载到临时 key，完成后原子替换
+
+  public void refreshCacheSafe() {
+      String tempPrefix = "security_master:temp:";
+      String activePrefix = "security_master:";
+
+      // 1. 加载数据到临时 key
+      loadDataToTempKeys(tempPrefix);
+
+      // 2. 原子替换（使用 Lua 脚本保证原子性）
+      atomicSwapKeys(tempPrefix, activePrefix);
+
+      // 3. 删除旧的临时 key（如果有）
+      cleanupOldKeys();
+  }
+
+  方案三：刷新锁 + 降级策略
+
+  原理：刷新时加锁，查询时检测锁状态
+
+  private volatile boolean isRefreshing = false;
+  private final ReentrantLock refreshLock = new ReentrantLock();
+
+  public void refreshCache() {
+      if (!refreshLock.tryLock()) {
+          log.info("缓存正在刷新中，跳过本次请求");
+          return;
+      }
+      try {
+          isRefreshing = true;
+          // 刷新逻辑...
+      } finally {
+          isRefreshing = false;
+          refreshLock.unlock();
+      }
+  }
+
+  public String getTableName(String assetType, Integer businessType) {
+      Object tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      if (tableName != null) {
+          return (String) tableName;
+      }
+
+      // 如果正在刷新中，等待而不是触发新的刷新
+      if (isRefreshing) {
+          // 等待刷新完成或返回降级值
+          waitForRefreshComplete();
+          tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      } else {
+          // 缓存确实不存在，触发刷新
+          refreshCache();
+          tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      }
+      return tableName != null ? (String) tableName : null;
+  }
+
+  方案四：不清空，直接覆盖
+
+  原理：不执行 clearAllCache()，直接用新数据覆盖
+
+  public void refreshCache() {
+      log.info("刷新 SecurityMaster 缓存（增量覆盖模式）...");
+      // 不清空，直接重新加载（会覆盖同 key 的数据）
+      initCacheWithoutClear();
+  }
+
+  优点：简单，无窗口期
+  缺点：如果某些数据被删除，旧数据会残留
+
+  ---
+  方案对比
+
+  | 方案        | 复杂度 | 零停机   | 数据一致性 | 适用场景       |
+  |-------------|--------|----------|------------|----------------|
+  | 双缓存切换  | 高     | ✅       | ✅         | 生产环境首选   |
+  | 先写后删    | 中     | ✅       | ✅         | 数据量不大时   |
+  | 刷新锁+等待 | 中     | ⚠️有延迟 | ✅         | 刷新频率低时   |
+  | 直接覆盖    | 低     | ✅       | ⚠️可能残留 | 数据只增不删时 |
+
+  ---
+  我的建议
+
+  考虑到你的场景（SecurityMaster 数据量可能较大，且业务关键），建议采用方案一（双缓存切换）或方案三（刷新锁）：
+
+  1. 如果刷新频率低（每天一次），方案三足够
+  2. 如果需要频繁刷新或对可用性要求极高，用方案一
+
+  你希望我针对哪个方案给出具体的实现设计？
+
+> 讲讲双缓存切换的具体实现，不改代码
+
+● 双缓存切换实现方案详解
+
+  一、核心思想
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                         Redis 结构                               │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                  │
+  │  版本指针 (永久有效)                                              │
+  │  ┌──────────────────────────┐                                   │
+  │  │ security_master:current  │ ──→ 值: "v1" 或 "v2"              │
+  │  └──────────────────────────┘                                   │
+  │                                                                  │
+  │  v1 版本缓存                        v2 版本缓存                   │
+  │  ┌────────────────────────┐       ┌────────────────────────┐    │
+  │  │ security_master:v1:    │       │ security_master:v2:    │    │
+  │  │   mapping              │       │   mapping              │    │
+  │  │   data:TABLE_A         │       │   data:TABLE_A         │    │
+  │  │   data:TABLE_B         │       │   data:TABLE_B         │    │
+  │  └────────────────────────┘       └────────────────────────┘    │
+  │         ↑                                   ↑                    │
+  │      活跃版本                             备用版本                │
+  │    (用户读取)                          (后台加载)                 │
+  │                                                                  │
+  └─────────────────────────────────────────────────────────────────┘
+
+  二、刷新流程
+
+  时间线:
+  ══════════════════════════════════════════════════════════════════════►
+
+  阶段1: 正常服务                  阶段2: 后台加载                阶段3: 切换完成
+  ┌──────────────────┐          ┌──────────────────┐          ┌──────────────────┐
+  │ current → "v1"   │          │ current → "v1"   │          │ current → "v2"   │
+  │                  │          │                  │          │                  │
+  │ 用户读 v1 ✓     │          │ 用户读 v1 ✓     │          │ 用户读 v2 ✓     │
+  │                  │          │ 后台写 v2       │          │                  │
+  │ v2: 空/旧数据    │          │ v2: 加载中...   │          │ v1: 待清理       │
+  └──────────────────┘          └──────────────────┘          └──────────────────┘
+        │                              │                              │
+        │                              │                              │
+     用户无感知                     用户无感知                     用户无感知
+
+  三、详细步骤分解
+
+  步骤 1：确定当前版本和目标版本
+
+  读取 security_master:current 的值
+
+  如果是 "v1" → 目标版本 = "v2"
+  如果是 "v2" → 目标版本 = "v1"
+  如果不存在  → 当前版本 = "v1", 目标版本 = "v1" (初始化场景)
+
+  步骤 2：加载数据到目标版本
+
+  目标版本 = "v2"
+
+  写入的 Key:
+    security_master:v2:mapping           → {映射关系}
+    security_master:v2:data:TABLE_A      → {表A数据}
+    security_master:v2:data:TABLE_B      → {表B数据}
+    ...
+
+  此时用户仍在读取 v1，完全不受影响
+
+  步骤 3：原子切换版本指针
+
+  SET security_master:current "v2"
+
+  这是一个原子操作，切换瞬间完成
+  切换后，所有新查询立即读取 v2
+
+  步骤 4：异步清理旧版本
+
+  等待一段时间（如 30 秒），确保进行中的 v1 查询完成
+
+  然后删除:
+    security_master:v1:mapping
+    security_master:v1:data:*
+
+  四、查询流程
+
+  用户查询 getClientId("EQ", 1, "AAPL")
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 1. 读取版本指针                  │
+  │    GET security_master:current  │
+  │    返回: "v1"                   │
+  └─────────────────────────────────┘
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 2. 读取映射关系                  │
+  │    HGET security_master:v1:     │
+  │         mapping "1:EQ"          │
+  │    返回: "TABLE_EQ_1_20231225"  │
+  └─────────────────────────────────┘
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 3. 读取实际数据                  │
+  │    HGET security_master:v1:     │
+  │         data:TABLE_EQ_1_20231225│
+  │         "AAPL"                  │
+  │    返回: "CLIENT_123"           │
+  └─────────────────────────────────┘
+            │
+            ▼
+       返回 "CLIENT_123"
+
+  五、并发安全分析
+
+  场景：刷新过程中用户查询
+
+  时刻 T1: 用户A 读取 current = "v1"
+  时刻 T2: 后台完成加载，SET current = "v2"
+  时刻 T3: 用户A 继续读取 v1:mapping (仍然有效！)
+  时刻 T4: 用户A 完成查询，返回正确结果
+
+  结论: 用户A 读到的是 v1 的完整数据，不受切换影响
+
+  场景：切换瞬间的查询
+
+  时刻 T1: 用户A 读取 current = "v1"
+  时刻 T1: 用户B 读取 current = "v2" (刚切换)
+
+  用户A → 读 v1 数据 → 返回旧数据 ✓
+  用户B → 读 v2 数据 → 返回新数据 ✓
+
+  两个用户都能得到完整、一致的数据
+  最多存在短暂的"数据版本不一致"，但每个用户看到的都是完整版本
+
+  六、Redis Key 设计
+
+  # 版本控制
+  security_master:current                    # 当前活跃版本 "v1" 或 "v2"
+  security_master:last_refresh_time          # 上次刷新时间 (可选)
+  security_master:refresh_lock               # 刷新锁 (防止并发刷新)
+
+  # v1 版本数据
+  security_master:v1:mapping                 # Hash: {businessType:assetType → tableName}
+  security_master:v1:data:TABLE_A            # Hash: {productCode → clientId}
+  security_master:v1:data:TABLE_B            # Hash: {productCode → clientId}
+
+  # v2 版本数据
+  security_master:v2:mapping                 # Hash: {businessType:assetType → tableName}
+  security_master:v2:data:TABLE_A            # Hash: {productCode → clientId}
+  security_master:v2:data:TABLE_B            # Hash: {productCode → clientId}
+
+  七、异常处理
+
+  情况 1：加载过程中失败
+
+  加载到 v2 时发生异常
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ current 仍然指向 v1             │
+  │ v2 数据不完整                   │
+  │                                 │
+  │ 处理: 清理 v2 的不完整数据       │
+  │       用户继续使用 v1           │
+  │       记录错误日志              │
+  └─────────────────────────────────┘
+
+  用户完全无感知
+
+  情况 2：清理旧版本时失败
+
+  v2 已激活，清理 v1 时失败
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 影响: v1 数据残留               │
+  │ 风险: 占用额外内存              │
+  │                                 │
+  │ 处理: 下次刷新时会覆盖 v1       │
+  │       或设置 TTL 自动过期       │
+  └─────────────────────────────────┘
+
+  不影响业务，仅占用空间
+
+  八、优化建议
+
+  1. 添加刷新锁防止并发
+
+  刷新前:
+    SETNX security_master:refresh_lock "1" EX 300
+    如果返回 0 → 已有刷新在进行，退出
+
+  刷新后:
+    DEL security_master:refresh_lock
+
+  2. 版本元数据
+
+  security_master:v1:meta = {
+      "loadTime": "2024-01-15 10:00:00",
+      "businessDate": "2024-01-14",
+      "tableCount": 15,
+      "recordCount": 50000
+  }
+
+  方便排查问题和监控
+
+  3. 设置 TTL 兜底
+
+  旧版本数据设置 TTL = 1 小时
+
+  即使清理失败，也会自动过期
+  避免内存无限增长
+
+  九、与当前代码的对比
+
+  | 对比项         | 当前实现   | 双缓存方案           |
+  |----------------|------------|----------------------|
+  | 刷新时用户查询 | 返回 null  | 正常返回旧数据       |
+  | 刷新失败影响   | 缓存被清空 | 无影响，继续用旧版本 |
+  | 内存占用       | 1x         | 约 2x（刷新期间）    |
+  | 实现复杂度     | 低         | 中                   |
+  | 数据一致性     | 有窗口期   | 每个版本内部一致     |
+
+  十、总结
+
+  双缓存切换的核心是：
+
+  1. 空间换时间：用双倍内存换取零停机
+  2. 版本隔离：每个版本独立完整，互不干扰
+  3. 原子切换：只切换指针，不移动数据
+  4. 异步清理：延迟清理旧版本，确保进行中的查询完成
+
+  这是生产环境中处理缓存刷新的标准做法，Redis、数据库连接池、配置中心等都采用类似思路。
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+> 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  -- INSERT --
+
+ * ▐▛███▜▌ *   Claude Code v2.0.76
+* ▝▜█████▛▘ *  Opus 4.5 · Claude Pro
+ *  ▘▘ ▝▝  *   D:\software\developmentTools\Git\gitee\newpap\pap
+
+> 基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+               cn.bochk.pap.server.business.service.SecurityMasterCacheService
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+问题：
+SecurityMasterCacheService里面缓存的初始化需要依赖外系统的表BATCH_BUSINESS_DATE_RESULT，它时每个工作日会下发数据；获
+取最新的日期
+然后在基于日期在TABLE_SWITCH_LOG表里面获取表名，最后再基于表名查询对应的数据;缓存到redis中;
+
+我想额外添加一个接口，用来刷新缓存，在前端用户登录操作的时候做一次缓存刷新，而不依赖第三方系统;
+就是BuyListController里面的refresh方法，在前端登录初始化的时候做一次统一的刷新;
+你帮我分析一下可行性？先不改代码
+
+● 我来帮你分析这个需求的可行性。首先需要阅读相关代码来理解当前的实现逻辑。
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\controller\BuyListController.java)
+  ⎿  Read 114 lines
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\SecurityMasterCacheService.java)
+  ⎿  Read 296 lines
+
+● 让我继续查看 BatchBusinessDateResultService 和前端登录相关代码：
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\BatchBusinessDateResultService.java)
+  ⎿  Read 9 lines
+
+● Search(pattern: "**/poc-pro-ui/src/**/login*.{vue,ts,js}")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Search(pattern: "**/poc-pro-ui/src/**/permission*.{ts,js}")
+  ⎿  Found 3 files (ctrl+o to expand)
+
+● Read(poc-pro-ui\src\permission.ts)
+  ⎿  Read 111 lines
+
+● Search(pattern: "class BatchBusinessDateResultServiceImpl", path: "pocpro")
+  ⎿  Found 0 files
+
+● Search(pattern: "**/poc-pro-ui/src/views/Login/**/*.vue")
+  ⎿  Found 8 files (ctrl+o to expand)
+
+● Search(pattern: "implements BatchBusinessDateResultService", path: "pocpro")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Read(poc-pro-ui\src\store\modules\user.ts)
+  ⎿  Read 109 lines
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\Impl\BatchBusinessDateResultImpl.java)
+  ⎿  Read 37 lines
+
+● 现在我对整个链路有了清晰的理解。让我为你做一个完整的可行性分析：
+
+  ---
+  可行性分析报告
+
+  一、当前实现架构
+
+  用户登录
+      ↓
+  BuyListController.refresh()
+      ↓
+  SecurityMasterCacheService.refreshCache()
+      ↓
+  ┌─────────────────────────────────────────────────────────────┐
+  │  initCache() 执行步骤:                                        │
+  │  1. clearAllCacheOnStartup()   - 清空 Redis 缓存              │
+  │  2. getBusinessDate()          - 从 BATCH_BUSINESS_DATE_RESULT │
+  │     ↓                            获取最新业务日期               │
+  │  3. 查询 TABLE_SWITCH_LOG      - 根据日期获取表名映射            │
+  │  4. 查询 ASSET_TYPE            - 获取启用 BuyList 的配置         │
+  │  5. 查询 SECURITY_MASTER_*     - 加载数据到 Redis               │
+  └─────────────────────────────────────────────────────────────┘
+
+  二、核心问题：依赖链未断开
+
+  当前 refresh 方法的问题：刷新缓存时仍然调用 getBusinessDate()：
+
+  private Date getBusinessDate() {
+      return batchBusinessDateResultService.getBuinessDate();
+  }
+
+  而 getBuinessDate() 的查询条件（BatchBusinessDateResultImpl:26-34）：
+  - type = 'P'
+  - status = 'S'
+  - systemDate = 昨天
+
+  如果 BATCH_BUSINESS_DATE_RESULT 表当天没有外系统下发数据，getBusinessDate() 返回 null，整个刷新将失败。
+
+  三、可行性评估
+
+  | 评估项         | 状态 | 说明                                   |
+  |----------------|------|----------------------------------------|
+  | 接口已存在     | ✅   | BuyListController.refresh() 已实现     |
+  | 前端调用时机   | ✅   | permission.ts 中有明确的登录初始化钩子 |
+  | 依赖第三方系统 | ❌   | 仍依赖 BATCH_BUSINESS_DATE_RESULT 表   |
+  | 权限控制       | ❌   | refresh 接口缺少 @PreAuthorize         |
+  | 并发安全       | ⚠️   | 多用户同时登录会并发刷新               |
+  | 性能影响       | ⚠️   | 每次登录都全量刷新，数据库压力大       |
+
+  四、关键风险点
+
+  1. 依赖链未真正解耦
+
+  当前方案不能实现"不依赖第三方系统"的目标。因为：
+  - 刷新逻辑内部调用 getBusinessDate() 仍需查询 BATCH_BUSINESS_DATE_RESULT
+  - 如果该表没有当天数据，刷新无效
+
+  2. @Lazy 注解的影响
+
+  SecurityMasterCacheService 标注了 @Lazy（第30行），意味着：
+  - 应用启动时 @PostConstruct 不会立即执行
+  - 只有首次使用该 Bean 时才会初始化
+  - 这可能是故意设计的，因为启动时外系统数据可能还没就绪
+
+  3. 安全风险
+
+  @PostMapping("/refresh")
+  @Operation(summary = "解析并校验CSV文件")  // 注释不正确
+  public CommonResult<ParseResultVO> refresh() {
+      // 没有 @PreAuthorize，任何人都可调用
+  }
+
+  4. 并发风险
+
+  假设 100 个用户同时登录：
+  - 100 次并发调用 refreshCache()
+  - 100 次 clearAllCache() 和 initCache()
+  - 可能导致缓存闪烁、数据不一致
+
+  五、可行的解决方案建议
+
+  如果你想实现"前端登录时刷新缓存，不依赖第三方系统"，需要考虑以下改进：
+
+  方案 A：使用缓存中已有的日期
+
+  // 刷新时不重新获取日期，使用上次成功加载时的日期
+  // 添加一个 lastSuccessBusinessDate 字段保存
+
+  方案 B：提供手动指定日期的刷新接口
+
+  @PostMapping("/refresh")
+  public CommonResult<Boolean> refresh(@RequestParam(required = false) Date businessDate) {
+      if (businessDate == null) {
+          // 使用默认逻辑
+      } else {
+          // 使用指定日期刷新
+      }
+  }
+
+  方案 C：只刷新不清空（增量刷新）
+
+  // 仅在有新数据时更新，不清空旧缓存
+  public void refreshCacheIfAvailable() {
+      Date newDate = getBusinessDate();
+      if (newDate != null && !newDate.equals(lastLoadedDate)) {
+          refreshCache();
+      }
+  }
+
+  方案 D：定时任务 + 登录检查
+
+  - 后台定时任务尝试刷新（有数据就刷新）
+  - 前端登录时只检查缓存是否存在，不主动刷新
+
+  六、结论
+
+  当前方案（直接调用 refresh）不可行，原因：
+  1. 核心依赖链未解耦，仍需 BATCH_BUSINESS_DATE_RESULT 表有数据
+  2. 缺少权限控制和并发保护
+  3. 性能影响较大
+
+  建议：如果你想继续推进，需要先明确：
+  1. 外系统数据不可用时，应该使用什么备选策略？
+  2. 是否接受使用"上次成功加载的日期"继续刷新？
+  3. 刷新频率如何控制（每次登录还是有条件刷新）？
+
+  你希望我针对哪个方案进一步分析或给出具体实现思路？
+
+> 即使时定时任务，如果用户在查询的时候刚好清空了redis缓存，这个又该如何？
+
+● 这是一个非常关键的问题。当前代码存在缓存击穿窗口期：
+
+  public void refreshCache() {
+      log.info("手动刷新 SecurityMaster 缓存...");
+      clearAllCache();  // ← 清空缓存
+      // ⚠️ 危险窗口期：此时用户查询会返回 null
+      initCache();      // ← 重新加载（可能需要几秒甚至更长）
+  }
+
+  问题分析
+
+  当前代码的风险场景
+
+  时间线:
+  ─────────────────────────────────────────────────────────────→
+       │                    │                         │
+   clearAllCache()     用户查询                   initCache()完成
+       │                    │                         │
+       └────── 危险窗口期 ───┘                         │
+             缓存为空                                  │
+             查询返回 null                            │
+
+  当前的容错机制（不完善）
+
+  代码中有重试逻辑（SecurityMasterCacheService:196-199）：
+
+  public String getTableName(String assetType, Integer businessType) {
+      Object tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      if (tableName != null) {
+          return (String) tableName;
+      }
+      // 如果缓存不存在，尝试重新加载
+      log.info("找不到映射缓存，尝试重新加载 SecurityMaster 缓存...");
+      refreshCache();  // ⚠️ 如果正在刷新中，这里会导致重复刷新
+      tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      return tableName != null ? (String) tableName : null;
+  }
+
+  问题：如果刷新正在进行中，用户查询会触发另一次 refreshCache()，导致：
+  1. 重复刷新，浪费资源
+  2. 刷新叠加，窗口期更长
+  3. 可能的死循环或数据不一致
+
+  ---
+  解决方案
+
+  方案一：双缓存切换（推荐）
+
+  原理：维护两套缓存，加载完成后原子切换
+
+  活跃缓存: security_master:v1:*  ← 用户读取这套
+  备用缓存: security_master:v2:*  ← 后台加载新数据
+
+  加载完成后:
+    当前版本指针: v1 → v2  (原子切换)
+    异步清理 v1 数据
+
+  优点：
+  - 零停机刷新
+  - 用户查询不受影响
+
+  方案二：先写后删 + RENAME
+
+  原理：加载到临时 key，完成后原子替换
+
+  public void refreshCacheSafe() {
+      String tempPrefix = "security_master:temp:";
+      String activePrefix = "security_master:";
+
+      // 1. 加载数据到临时 key
+      loadDataToTempKeys(tempPrefix);
+
+      // 2. 原子替换（使用 Lua 脚本保证原子性）
+      atomicSwapKeys(tempPrefix, activePrefix);
+
+      // 3. 删除旧的临时 key（如果有）
+      cleanupOldKeys();
+  }
+
+  方案三：刷新锁 + 降级策略
+
+  原理：刷新时加锁，查询时检测锁状态
+
+  private volatile boolean isRefreshing = false;
+  private final ReentrantLock refreshLock = new ReentrantLock();
+
+  public void refreshCache() {
+      if (!refreshLock.tryLock()) {
+          log.info("缓存正在刷新中，跳过本次请求");
+          return;
+      }
+      try {
+          isRefreshing = true;
+          // 刷新逻辑...
+      } finally {
+          isRefreshing = false;
+          refreshLock.unlock();
+      }
+  }
+
+  public String getTableName(String assetType, Integer businessType) {
+      Object tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      if (tableName != null) {
+          return (String) tableName;
+      }
+
+      // 如果正在刷新中，等待而不是触发新的刷新
+      if (isRefreshing) {
+          // 等待刷新完成或返回降级值
+          waitForRefreshComplete();
+          tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      } else {
+          // 缓存确实不存在，触发刷新
+          refreshCache();
+          tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      }
+      return tableName != null ? (String) tableName : null;
+  }
+
+  方案四：不清空，直接覆盖
+
+  原理：不执行 clearAllCache()，直接用新数据覆盖
+
+  public void refreshCache() {
+      log.info("刷新 SecurityMaster 缓存（增量覆盖模式）...");
+      // 不清空，直接重新加载（会覆盖同 key 的数据）
+      initCacheWithoutClear();
+  }
+
+  优点：简单，无窗口期
+  缺点：如果某些数据被删除，旧数据会残留
+
+  ---
+  方案对比
+
+  | 方案        | 复杂度 | 零停机   | 数据一致性 | 适用场景       |
+  |-------------|--------|----------|------------|----------------|
+  | 双缓存切换  | 高     | ✅       | ✅         | 生产环境首选   |
+  | 先写后删    | 中     | ✅       | ✅         | 数据量不大时   |
+  | 刷新锁+等待 | 中     | ⚠️有延迟 | ✅         | 刷新频率低时   |
+  | 直接覆盖    | 低     | ✅       | ⚠️可能残留 | 数据只增不删时 |
+
+  ---
+  我的建议
+
+  考虑到你的场景（SecurityMaster 数据量可能较大，且业务关键），建议采用方案一（双缓存切换）或方案三（刷新锁）：
+
+  1. 如果刷新频率低（每天一次），方案三足够
+  2. 如果需要频繁刷新或对可用性要求极高，用方案一
+
+  你希望我针对哪个方案给出具体的实现设计？
+
+> 讲讲双缓存切换的具体实现，不改代码
+
+● 双缓存切换实现方案详解
+
+  一、核心思想
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                         Redis 结构                               │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                  │
+  │  版本指针 (永久有效)                                              │
+  │  ┌──────────────────────────┐                                   │
+  │  │ security_master:current  │ ──→ 值: "v1" 或 "v2"              │
+  │  └──────────────────────────┘                                   │
+  │                                                                  │
+  │  v1 版本缓存                        v2 版本缓存                   │
+  │  ┌────────────────────────┐       ┌────────────────────────┐    │
+  │  │ security_master:v1:    │       │ security_master:v2:    │    │
+  │  │   mapping              │       │   mapping              │    │
+  │  │   data:TABLE_A         │       │   data:TABLE_A         │    │
+  │  │   data:TABLE_B         │       │   data:TABLE_B         │    │
+  │  └────────────────────────┘       └────────────────────────┘    │
+  │         ↑                                   ↑                    │
+  │      活跃版本                             备用版本                │
+  │    (用户读取)                          (后台加载)                 │
+  │                                                                  │
+  └─────────────────────────────────────────────────────────────────┘
+
+  二、刷新流程
+
+  时间线:
+  ══════════════════════════════════════════════════════════════════════►
+
+  阶段1: 正常服务                  阶段2: 后台加载                阶段3: 切换完成
+  ┌──────────────────┐          ┌──────────────────┐          ┌──────────────────┐
+  │ current → "v1"   │          │ current → "v1"   │          │ current → "v2"   │
+  │                  │          │                  │          │                  │
+  │ 用户读 v1 ✓     │          │ 用户读 v1 ✓     │          │ 用户读 v2 ✓     │
+  │                  │          │ 后台写 v2       │          │                  │
+  │ v2: 空/旧数据    │          │ v2: 加载中...   │          │ v1: 待清理       │
+  └──────────────────┘          └──────────────────┘          └──────────────────┘
+        │                              │                              │
+        │                              │                              │
+     用户无感知                     用户无感知                     用户无感知
+
+  三、详细步骤分解
+
+  步骤 1：确定当前版本和目标版本
+
+  读取 security_master:current 的值
+
+  如果是 "v1" → 目标版本 = "v2"
+  如果是 "v2" → 目标版本 = "v1"
+  如果不存在  → 当前版本 = "v1", 目标版本 = "v1" (初始化场景)
+
+  步骤 2：加载数据到目标版本
+
+  目标版本 = "v2"
+
+  写入的 Key:
+    security_master:v2:mapping           → {映射关系}
+    security_master:v2:data:TABLE_A      → {表A数据}
+    security_master:v2:data:TABLE_B      → {表B数据}
+    ...
+
+  此时用户仍在读取 v1，完全不受影响
+
+  步骤 3：原子切换版本指针
+
+  SET security_master:current "v2"
+
+  这是一个原子操作，切换瞬间完成
+  切换后，所有新查询立即读取 v2
+
+  步骤 4：异步清理旧版本
+
+  等待一段时间（如 30 秒），确保进行中的 v1 查询完成
+
+  然后删除:
+    security_master:v1:mapping
+    security_master:v1:data:*
+
+  四、查询流程
+
+  用户查询 getClientId("EQ", 1, "AAPL")
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 1. 读取版本指针                  │
+  │    GET security_master:current  │
+  │    返回: "v1"                   │
+  └─────────────────────────────────┘
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 2. 读取映射关系                  │
+  │    HGET security_master:v1:     │
+  │         mapping "1:EQ"          │
+  │    返回: "TABLE_EQ_1_20231225"  │
+  └─────────────────────────────────┘
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 3. 读取实际数据                  │
+  │    HGET security_master:v1:     │
+  │         data:TABLE_EQ_1_20231225│
+  │         "AAPL"                  │
+  │    返回: "CLIENT_123"           │
+  └─────────────────────────────────┘
+            │
+            ▼
+       返回 "CLIENT_123"
+
+  五、并发安全分析
+
+  场景：刷新过程中用户查询
+
+  时刻 T1: 用户A 读取 current = "v1"
+  时刻 T2: 后台完成加载，SET current = "v2"
+  时刻 T3: 用户A 继续读取 v1:mapping (仍然有效！)
+  时刻 T4: 用户A 完成查询，返回正确结果
+
+  结论: 用户A 读到的是 v1 的完整数据，不受切换影响
+
+  场景：切换瞬间的查询
+
+  时刻 T1: 用户A 读取 current = "v1"
+  时刻 T1: 用户B 读取 current = "v2" (刚切换)
+
+  用户A → 读 v1 数据 → 返回旧数据 ✓
+  用户B → 读 v2 数据 → 返回新数据 ✓
+
+  两个用户都能得到完整、一致的数据
+  最多存在短暂的"数据版本不一致"，但每个用户看到的都是完整版本
+
+  六、Redis Key 设计
+
+  # 版本控制
+  security_master:current                    # 当前活跃版本 "v1" 或 "v2"
+  security_master:last_refresh_time          # 上次刷新时间 (可选)
+  security_master:refresh_lock               # 刷新锁 (防止并发刷新)
+
+  # v1 版本数据
+  security_master:v1:mapping                 # Hash: {businessType:assetType → tableName}
+  security_master:v1:data:TABLE_A            # Hash: {productCode → clientId}
+  security_master:v1:data:TABLE_B            # Hash: {productCode → clientId}
+
+  # v2 版本数据
+  security_master:v2:mapping                 # Hash: {businessType:assetType → tableName}
+  security_master:v2:data:TABLE_A            # Hash: {productCode → clientId}
+  security_master:v2:data:TABLE_B            # Hash: {productCode → clientId}
+
+  七、异常处理
+
+  情况 1：加载过程中失败
+
+  加载到 v2 时发生异常
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ current 仍然指向 v1             │
+  │ v2 数据不完整                   │
+  │                                 │
+  │ 处理: 清理 v2 的不完整数据       │
+  │       用户继续使用 v1           │
+  │       记录错误日志              │
+  └─────────────────────────────────┘
+
+  用户完全无感知
+
+  情况 2：清理旧版本时失败
+
+  v2 已激活，清理 v1 时失败
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 影响: v1 数据残留               │
+  │ 风险: 占用额外内存              │
+  │                                 │
+  │ 处理: 下次刷新时会覆盖 v1       │
+  │       或设置 TTL 自动过期       │
+  └─────────────────────────────────┘
+
+  不影响业务，仅占用空间
+
+  八、优化建议
+
+  1. 添加刷新锁防止并发
+
+  刷新前:
+    SETNX security_master:refresh_lock "1" EX 300
+    如果返回 0 → 已有刷新在进行，退出
+
+  刷新后:
+    DEL security_master:refresh_lock
+
+  2. 版本元数据
+
+  security_master:v1:meta = {
+      "loadTime": "2024-01-15 10:00:00",
+      "businessDate": "2024-01-14",
+      "tableCount": 15,
+      "recordCount": 50000
+  }
+
+  方便排查问题和监控
+
+  3. 设置 TTL 兜底
+
+  旧版本数据设置 TTL = 1 小时
+
+  即使清理失败，也会自动过期
+  避免内存无限增长
+
+  九、与当前代码的对比
+
+  | 对比项         | 当前实现   | 双缓存方案           |
+  |----------------|------------|----------------------|
+  | 刷新时用户查询 | 返回 null  | 正常返回旧数据       |
+  | 刷新失败影响   | 缓存被清空 | 无影响，继续用旧版本 |
+  | 内存占用       | 1x         | 约 2x（刷新期间）    |
+  | 实现复杂度     | 低         | 中                   |
+  | 数据一致性     | 有窗口期   | 每个版本内部一致     |
+
+  十、总结
+
+  双缓存切换的核心是：
+
+  1. 空间换时间：用双倍内存换取零停机
+  2. 版本隔离：每个版本独立完整，互不干扰
+  3. 原子切换：只切换指针，不移动数据
+  4. 异步清理：延迟清理旧版本，确保进行中的查询完成
+
+  这是生产环境中处理缓存刷新的标准做法，Redis、数据库连接池、配置中心等都采用类似思路。
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────> 
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  -- INSERT --
+
+ * ▐▛███▜▌ *   Claude Code v2.0.76
+* ▝▜█████▛▘ *  Opus 4.5 · Claude Pro
+ *  ▘▘ ▝▝  *   D:\software\developmentTools\Git\gitee\newpap\pap
+
+> 基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+               cn.bochk.pap.server.business.service.SecurityMasterCacheService
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+问题：
+SecurityMasterCacheService里面缓存的初始化需要依赖外系统的表BATCH_BUSINESS_DATE_RESULT，它时每个工作日会下发数据；获
+取最新的日期
+然后在基于日期在TABLE_SWITCH_LOG表里面获取表名，最后再基于表名查询对应的数据;缓存到redis中;
+
+我想额外添加一个接口，用来刷新缓存，在前端用户登录操作的时候做一次缓存刷新，而不依赖第三方系统;
+就是BuyListController里面的refresh方法，在前端登录初始化的时候做一次统一的刷新;
+你帮我分析一下可行性？先不改代码
+
+● 我来帮你分析这个需求的可行性。首先需要阅读相关代码来理解当前的实现逻辑。
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\controller\BuyListController.java)
+  ⎿  Read 114 lines
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\SecurityMasterCacheService.java)
+  ⎿  Read 296 lines
+
+● 让我继续查看 BatchBusinessDateResultService 和前端登录相关代码：
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\BatchBusinessDateResultService.java)
+  ⎿  Read 9 lines
+
+● Search(pattern: "**/poc-pro-ui/src/**/login*.{vue,ts,js}")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Search(pattern: "**/poc-pro-ui/src/**/permission*.{ts,js}")
+  ⎿  Found 3 files (ctrl+o to expand)
+
+● Read(poc-pro-ui\src\permission.ts)
+  ⎿  Read 111 lines
+
+● Search(pattern: "class BatchBusinessDateResultServiceImpl", path: "pocpro")
+  ⎿  Found 0 files
+
+● Search(pattern: "**/poc-pro-ui/src/views/Login/**/*.vue")
+  ⎿  Found 8 files (ctrl+o to expand)
+
+● Search(pattern: "implements BatchBusinessDateResultService", path: "pocpro")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Read(poc-pro-ui\src\store\modules\user.ts)
+  ⎿  Read 109 lines
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\Impl\BatchBusinessDateResultImpl.java)
+  ⎿  Read 37 lines
+
+● 现在我对整个链路有了清晰的理解。让我为你做一个完整的可行性分析：
+
+  ---
+  可行性分析报告
+
+  一、当前实现架构
+
+  用户登录
+      ↓
+  BuyListController.refresh()
+      ↓
+  SecurityMasterCacheService.refreshCache()
+      ↓
+  ┌─────────────────────────────────────────────────────────────┐
+  │  initCache() 执行步骤:                                        │
+  │  1. clearAllCacheOnStartup()   - 清空 Redis 缓存              │
+  │  2. getBusinessDate()          - 从 BATCH_BUSINESS_DATE_RESULT │
+  │     ↓                            获取最新业务日期               │
+  │  3. 查询 TABLE_SWITCH_LOG      - 根据日期获取表名映射            │
+  │  4. 查询 ASSET_TYPE            - 获取启用 BuyList 的配置         │
+  │  5. 查询 SECURITY_MASTER_*     - 加载数据到 Redis               │
+  └─────────────────────────────────────────────────────────────┘
+
+  二、核心问题：依赖链未断开
+
+  当前 refresh 方法的问题：刷新缓存时仍然调用 getBusinessDate()：
+
+  private Date getBusinessDate() {
+      return batchBusinessDateResultService.getBuinessDate();
+  }
+
+  而 getBuinessDate() 的查询条件（BatchBusinessDateResultImpl:26-34）：
+  - type = 'P'
+  - status = 'S'
+  - systemDate = 昨天
+
+  如果 BATCH_BUSINESS_DATE_RESULT 表当天没有外系统下发数据，getBusinessDate() 返回 null，整个刷新将失败。
+
+  三、可行性评估
+
+  | 评估项         | 状态 | 说明                                   |
+  |----------------|------|----------------------------------------|
+  | 接口已存在     | ✅   | BuyListController.refresh() 已实现     |
+  | 前端调用时机   | ✅   | permission.ts 中有明确的登录初始化钩子 |
+  | 依赖第三方系统 | ❌   | 仍依赖 BATCH_BUSINESS_DATE_RESULT 表   |
+  | 权限控制       | ❌   | refresh 接口缺少 @PreAuthorize         |
+  | 并发安全       | ⚠️   | 多用户同时登录会并发刷新               |
+  | 性能影响       | ⚠️   | 每次登录都全量刷新，数据库压力大       |
+
+  四、关键风险点
+
+  1. 依赖链未真正解耦
+
+  当前方案不能实现"不依赖第三方系统"的目标。因为：
+  - 刷新逻辑内部调用 getBusinessDate() 仍需查询 BATCH_BUSINESS_DATE_RESULT
+  - 如果该表没有当天数据，刷新无效
+
+  2. @Lazy 注解的影响
+
+  SecurityMasterCacheService 标注了 @Lazy（第30行），意味着：
+  - 应用启动时 @PostConstruct 不会立即执行
+  - 只有首次使用该 Bean 时才会初始化
+  - 这可能是故意设计的，因为启动时外系统数据可能还没就绪
+
+  3. 安全风险
+
+  @PostMapping("/refresh")
+  @Operation(summary = "解析并校验CSV文件")  // 注释不正确
+  public CommonResult<ParseResultVO> refresh() {
+      // 没有 @PreAuthorize，任何人都可调用
+  }
+
+  4. 并发风险
+
+  假设 100 个用户同时登录：
+  - 100 次并发调用 refreshCache()
+  - 100 次 clearAllCache() 和 initCache()
+  - 可能导致缓存闪烁、数据不一致
+
+  五、可行的解决方案建议
+
+  如果你想实现"前端登录时刷新缓存，不依赖第三方系统"，需要考虑以下改进：
+
+  方案 A：使用缓存中已有的日期
+
+  // 刷新时不重新获取日期，使用上次成功加载时的日期
+  // 添加一个 lastSuccessBusinessDate 字段保存
+
+  方案 B：提供手动指定日期的刷新接口
+
+  @PostMapping("/refresh")
+  public CommonResult<Boolean> refresh(@RequestParam(required = false) Date businessDate) {
+      if (businessDate == null) {
+          // 使用默认逻辑
+      } else {
+          // 使用指定日期刷新
+      }
+  }
+
+  方案 C：只刷新不清空（增量刷新）
+
+  // 仅在有新数据时更新，不清空旧缓存
+  public void refreshCacheIfAvailable() {
+      Date newDate = getBusinessDate();
+      if (newDate != null && !newDate.equals(lastLoadedDate)) {
+          refreshCache();
+      }
+  }
+
+  方案 D：定时任务 + 登录检查
+
+  - 后台定时任务尝试刷新（有数据就刷新）
+  - 前端登录时只检查缓存是否存在，不主动刷新
+
+  六、结论
+
+  当前方案（直接调用 refresh）不可行，原因：
+  1. 核心依赖链未解耦，仍需 BATCH_BUSINESS_DATE_RESULT 表有数据
+  2. 缺少权限控制和并发保护
+  3. 性能影响较大
+
+  建议：如果你想继续推进，需要先明确：
+  1. 外系统数据不可用时，应该使用什么备选策略？
+  2. 是否接受使用"上次成功加载的日期"继续刷新？
+  3. 刷新频率如何控制（每次登录还是有条件刷新）？
+
+  你希望我针对哪个方案进一步分析或给出具体实现思路？
+
+> 即使时定时任务，如果用户在查询的时候刚好清空了redis缓存，这个又该如何？
+
+● 这是一个非常关键的问题。当前代码存在缓存击穿窗口期：
+
+  public void refreshCache() {
+      log.info("手动刷新 SecurityMaster 缓存...");
+      clearAllCache();  // ← 清空缓存
+      // ⚠️ 危险窗口期：此时用户查询会返回 null
+      initCache();      // ← 重新加载（可能需要几秒甚至更长）
+  }
+
+  问题分析
+
+  当前代码的风险场景
+
+  时间线:
+  ─────────────────────────────────────────────────────────────→
+       │                    │                         │
+   clearAllCache()     用户查询                   initCache()完成
+       │                    │                         │
+       └────── 危险窗口期 ───┘                         │
+             缓存为空                                  │
+             查询返回 null                            │
+
+  当前的容错机制（不完善）
+
+  代码中有重试逻辑（SecurityMasterCacheService:196-199）：
+
+  public String getTableName(String assetType, Integer businessType) {
+      Object tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      if (tableName != null) {
+          return (String) tableName;
+      }
+      // 如果缓存不存在，尝试重新加载
+      log.info("找不到映射缓存，尝试重新加载 SecurityMaster 缓存...");
+      refreshCache();  // ⚠️ 如果正在刷新中，这里会导致重复刷新
+      tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      return tableName != null ? (String) tableName : null;
+  }
+
+  问题：如果刷新正在进行中，用户查询会触发另一次 refreshCache()，导致：
+  1. 重复刷新，浪费资源
+  2. 刷新叠加，窗口期更长
+  3. 可能的死循环或数据不一致
+
+  ---
+  解决方案
+
+  方案一：双缓存切换（推荐）
+
+  原理：维护两套缓存，加载完成后原子切换
+
+  活跃缓存: security_master:v1:*  ← 用户读取这套
+  备用缓存: security_master:v2:*  ← 后台加载新数据
+
+  加载完成后:
+    当前版本指针: v1 → v2  (原子切换)
+    异步清理 v1 数据
+
+  优点：
+  - 零停机刷新
+  - 用户查询不受影响
+
+  方案二：先写后删 + RENAME
+
+  原理：加载到临时 key，完成后原子替换
+
+  public void refreshCacheSafe() {
+      String tempPrefix = "security_master:temp:";
+      String activePrefix = "security_master:";
+
+      // 1. 加载数据到临时 key
+      loadDataToTempKeys(tempPrefix);
+
+      // 2. 原子替换（使用 Lua 脚本保证原子性）
+      atomicSwapKeys(tempPrefix, activePrefix);
+
+      // 3. 删除旧的临时 key（如果有）
+      cleanupOldKeys();
+  }
+
+  方案三：刷新锁 + 降级策略
+
+  原理：刷新时加锁，查询时检测锁状态
+
+  private volatile boolean isRefreshing = false;
+  private final ReentrantLock refreshLock = new ReentrantLock();
+
+  public void refreshCache() {
+      if (!refreshLock.tryLock()) {
+          log.info("缓存正在刷新中，跳过本次请求");
+          return;
+      }
+      try {
+          isRefreshing = true;
+          // 刷新逻辑...
+      } finally {
+          isRefreshing = false;
+          refreshLock.unlock();
+      }
+  }
+
+  public String getTableName(String assetType, Integer businessType) {
+      Object tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      if (tableName != null) {
+          return (String) tableName;
+      }
+
+      // 如果正在刷新中，等待而不是触发新的刷新
+      if (isRefreshing) {
+          // 等待刷新完成或返回降级值
+          waitForRefreshComplete();
+          tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      } else {
+          // 缓存确实不存在，触发刷新
+          refreshCache();
+          tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      }
+      return tableName != null ? (String) tableName : null;
+  }
+
+  方案四：不清空，直接覆盖
+
+  原理：不执行 clearAllCache()，直接用新数据覆盖
+
+  public void refreshCache() {
+      log.info("刷新 SecurityMaster 缓存（增量覆盖模式）...");
+      // 不清空，直接重新加载（会覆盖同 key 的数据）
+      initCacheWithoutClear();
+  }
+
+  优点：简单，无窗口期
+  缺点：如果某些数据被删除，旧数据会残留
+
+  ---
+  方案对比
+
+  | 方案        | 复杂度 | 零停机   | 数据一致性 | 适用场景       |
+  |-------------|--------|----------|------------|----------------|
+  | 双缓存切换  | 高     | ✅       | ✅         | 生产环境首选   |
+  | 先写后删    | 中     | ✅       | ✅         | 数据量不大时   |
+  | 刷新锁+等待 | 中     | ⚠️有延迟 | ✅         | 刷新频率低时   |
+  | 直接覆盖    | 低     | ✅       | ⚠️可能残留 | 数据只增不删时 |
+
+  ---
+  我的建议
+
+  考虑到你的场景（SecurityMaster 数据量可能较大，且业务关键），建议采用方案一（双缓存切换）或方案三（刷新锁）：
+
+  1. 如果刷新频率低（每天一次），方案三足够
+  2. 如果需要频繁刷新或对可用性要求极高，用方案一
+
+  你希望我针对哪个方案给出具体的实现设计？
+
+> 讲讲双缓存切换的具体实现，不改代码
+
+● 双缓存切换实现方案详解
+
+  一、核心思想
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                         Redis 结构                               │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                  │
+  │  版本指针 (永久有效)                                              │
+  │  ┌──────────────────────────┐                                   │
+  │  │ security_master:current  │ ──→ 值: "v1" 或 "v2"              │
+  │  └──────────────────────────┘                                   │
+  │                                                                  │
+  │  v1 版本缓存                        v2 版本缓存                   │
+  │  ┌────────────────────────┐       ┌────────────────────────┐    │
+  │  │ security_master:v1:    │       │ security_master:v2:    │    │
+  │  │   mapping              │       │   mapping              │    │
+  │  │   data:TABLE_A         │       │   data:TABLE_A         │    │
+  │  │   data:TABLE_B         │       │   data:TABLE_B         │    │
+  │  └────────────────────────┘       └────────────────────────┘    │
+  │         ↑                                   ↑                    │
+  │      活跃版本                             备用版本                │
+  │    (用户读取)                          (后台加载)                 │
+  │                                                                  │
+  └─────────────────────────────────────────────────────────────────┘
+
+  二、刷新流程
+
+  时间线:
+  ══════════════════════════════════════════════════════════════════════►
+
+  阶段1: 正常服务                  阶段2: 后台加载                阶段3: 切换完成
+  ┌──────────────────┐          ┌──────────────────┐          ┌──────────────────┐
+  │ current → "v1"   │          │ current → "v1"   │          │ current → "v2"   │
+  │                  │          │                  │          │                  │
+  │ 用户读 v1 ✓     │          │ 用户读 v1 ✓     │          │ 用户读 v2 ✓     │
+  │                  │          │ 后台写 v2       │          │                  │
+  │ v2: 空/旧数据    │          │ v2: 加载中...   │          │ v1: 待清理       │
+  └──────────────────┘          └──────────────────┘          └──────────────────┘
+        │                              │                              │
+        │                              │                              │
+     用户无感知                     用户无感知                     用户无感知
+
+  三、详细步骤分解
+
+  步骤 1：确定当前版本和目标版本
+
+  读取 security_master:current 的值
+
+  如果是 "v1" → 目标版本 = "v2"
+  如果是 "v2" → 目标版本 = "v1"
+  如果不存在  → 当前版本 = "v1", 目标版本 = "v1" (初始化场景)
+
+  步骤 2：加载数据到目标版本
+
+  目标版本 = "v2"
+
+  写入的 Key:
+    security_master:v2:mapping           → {映射关系}
+    security_master:v2:data:TABLE_A      → {表A数据}
+    security_master:v2:data:TABLE_B      → {表B数据}
+    ...
+
+  此时用户仍在读取 v1，完全不受影响
+
+  步骤 3：原子切换版本指针
+
+  SET security_master:current "v2"
+
+  这是一个原子操作，切换瞬间完成
+  切换后，所有新查询立即读取 v2
+
+  步骤 4：异步清理旧版本
+
+  等待一段时间（如 30 秒），确保进行中的 v1 查询完成
+
+  然后删除:
+    security_master:v1:mapping
+    security_master:v1:data:*
+
+  四、查询流程
+
+  用户查询 getClientId("EQ", 1, "AAPL")
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 1. 读取版本指针                  │
+  │    GET security_master:current  │
+  │    返回: "v1"                   │
+  └─────────────────────────────────┘
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 2. 读取映射关系                  │
+  │    HGET security_master:v1:     │
+  │         mapping "1:EQ"          │
+  │    返回: "TABLE_EQ_1_20231225"  │
+  └─────────────────────────────────┘
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 3. 读取实际数据                  │
+  │    HGET security_master:v1:     │
+  │         data:TABLE_EQ_1_20231225│
+  │         "AAPL"                  │
+  │    返回: "CLIENT_123"           │
+  └─────────────────────────────────┘
+            │
+            ▼
+       返回 "CLIENT_123"
+
+  五、并发安全分析
+
+  场景：刷新过程中用户查询
+
+  时刻 T1: 用户A 读取 current = "v1"
+  时刻 T2: 后台完成加载，SET current = "v2"
+  时刻 T3: 用户A 继续读取 v1:mapping (仍然有效！)
+  时刻 T4: 用户A 完成查询，返回正确结果
+
+  结论: 用户A 读到的是 v1 的完整数据，不受切换影响
+
+  场景：切换瞬间的查询
+
+  时刻 T1: 用户A 读取 current = "v1"
+  时刻 T1: 用户B 读取 current = "v2" (刚切换)
+
+  用户A → 读 v1 数据 → 返回旧数据 ✓
+  用户B → 读 v2 数据 → 返回新数据 ✓
+
+  两个用户都能得到完整、一致的数据
+  最多存在短暂的"数据版本不一致"，但每个用户看到的都是完整版本
+
+  六、Redis Key 设计
+
+  # 版本控制
+  security_master:current                    # 当前活跃版本 "v1" 或 "v2"
+  security_master:last_refresh_time          # 上次刷新时间 (可选)
+  security_master:refresh_lock               # 刷新锁 (防止并发刷新)
+
+  # v1 版本数据
+  security_master:v1:mapping                 # Hash: {businessType:assetType → tableName}
+  security_master:v1:data:TABLE_A            # Hash: {productCode → clientId}
+  security_master:v1:data:TABLE_B            # Hash: {productCode → clientId}
+
+  # v2 版本数据
+  security_master:v2:mapping                 # Hash: {businessType:assetType → tableName}
+  security_master:v2:data:TABLE_A            # Hash: {productCode → clientId}
+  security_master:v2:data:TABLE_B            # Hash: {productCode → clientId}
+
+  七、异常处理
+
+  情况 1：加载过程中失败
+
+  加载到 v2 时发生异常
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ current 仍然指向 v1             │
+  │ v2 数据不完整                   │
+  │                                 │
+  │ 处理: 清理 v2 的不完整数据       │
+  │       用户继续使用 v1           │
+  │       记录错误日志              │
+  └─────────────────────────────────┘
+
+  用户完全无感知
+
+  情况 2：清理旧版本时失败
+
+  v2 已激活，清理 v1 时失败
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 影响: v1 数据残留               │
+  │ 风险: 占用额外内存              │
+  │                                 │
+  │ 处理: 下次刷新时会覆盖 v1       │
+  │       或设置 TTL 自动过期       │
+  └─────────────────────────────────┘
+
+  不影响业务，仅占用空间
+
+  八、优化建议
+
+  1. 添加刷新锁防止并发
+
+  刷新前:
+    SETNX security_master:refresh_lock "1" EX 300
+    如果返回 0 → 已有刷新在进行，退出
+
+  刷新后:
+    DEL security_master:refresh_lock
+
+  2. 版本元数据
+
+  security_master:v1:meta = {
+      "loadTime": "2024-01-15 10:00:00",
+      "businessDate": "2024-01-14",
+      "tableCount": 15,
+      "recordCount": 50000
+  }
+
+  方便排查问题和监控
+
+  3. 设置 TTL 兜底
+
+  旧版本数据设置 TTL = 1 小时
+
+  即使清理失败，也会自动过期
+  避免内存无限增长
+
+  九、与当前代码的对比
+
+  | 对比项         | 当前实现   | 双缓存方案           |
+  |----------------|------------|----------------------|
+  | 刷新时用户查询 | 返回 null  | 正常返回旧数据       |
+  | 刷新失败影响   | 缓存被清空 | 无影响，继续用旧版本 |
+  | 内存占用       | 1x         | 约 2x（刷新期间）    |
+  | 实现复杂度     | 低         | 中                   |
+  | 数据一致性     | 有窗口期   | 每个版本内部一致     |
+
+  十、总结
+
+  双缓存切换的核心是：
+
+  1. 空间换时间：用双倍内存换取零停机
+  2. 版本隔离：每个版本独立完整，互不干扰
+  3. 原子切换：只切换指针，不移动数据
+  4. 异步清理：延迟清理旧版本，确保进行中的查询完成
+
+  这是生产环境中处理缓存刷新的标准做法，Redis、数据库连接池、配置中心等都采用类似思路。
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+> 
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  -- INSERT --
+
+ * ▐▛███▜▌ *   Claude Code v2.0.76
+* ▝▜█████▛▘ *  Opus 4.5 · Claude Pro
+ *  ▘▘ ▝▝  *   D:\software\developmentTools\Git\gitee\newpap\pap
+
+> 基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+               cn.bochk.pap.server.business.service.SecurityMasterCacheService
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+问题：
+SecurityMasterCacheService里面缓存的初始化需要依赖外系统的表BATCH_BUSINESS_DATE_RESULT，它时每个工作日会下发数据；获
+取最新的日期
+然后在基于日期在TABLE_SWITCH_LOG表里面获取表名，最后再基于表名查询对应的数据;缓存到redis中;
+
+我想额外添加一个接口，用来刷新缓存，在前端用户登录操作的时候做一次缓存刷新，而不依赖第三方系统;
+就是BuyListController里面的refresh方法，在前端登录初始化的时候做一次统一的刷新;
+你帮我分析一下可行性？先不改代码
+
+● 我来帮你分析这个需求的可行性。首先需要阅读相关代码来理解当前的实现逻辑。
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\controller\BuyListController.java)
+  ⎿  Read 114 lines
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\SecurityMasterCacheService.java)
+  ⎿  Read 296 lines
+
+● 让我继续查看 BatchBusinessDateResultService 和前端登录相关代码：
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\BatchBusinessDateResultService.java)
+  ⎿  Read 9 lines
+
+● Search(pattern: "**/poc-pro-ui/src/**/login*.{vue,ts,js}")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Search(pattern: "**/poc-pro-ui/src/**/permission*.{ts,js}")
+  ⎿  Found 3 files (ctrl+o to expand)
+
+● Read(poc-pro-ui\src\permission.ts)
+  ⎿  Read 111 lines
+
+● Search(pattern: "class BatchBusinessDateResultServiceImpl", path: "pocpro")
+  ⎿  Found 0 files
+
+● Search(pattern: "**/poc-pro-ui/src/views/Login/**/*.vue")
+  ⎿  Found 8 files (ctrl+o to expand)
+
+● Search(pattern: "implements BatchBusinessDateResultService", path: "pocpro")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Read(poc-pro-ui\src\store\modules\user.ts)
+  ⎿  Read 109 lines
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\Impl\BatchBusinessDateResultImpl.java)
+  ⎿  Read 37 lines
+
+● 现在我对整个链路有了清晰的理解。让我为你做一个完整的可行性分析：
+
+  ---
+  可行性分析报告
+
+  一、当前实现架构
+
+  用户登录
+      ↓
+  BuyListController.refresh()
+      ↓
+  SecurityMasterCacheService.refreshCache()
+      ↓
+  ┌─────────────────────────────────────────────────────────────┐
+  │  initCache() 执行步骤:                                        │
+  │  1. clearAllCacheOnStartup()   - 清空 Redis 缓存              │
+  │  2. getBusinessDate()          - 从 BATCH_BUSINESS_DATE_RESULT │
+  │     ↓                            获取最新业务日期               │
+  │  3. 查询 TABLE_SWITCH_LOG      - 根据日期获取表名映射            │
+  │  4. 查询 ASSET_TYPE            - 获取启用 BuyList 的配置         │
+  │  5. 查询 SECURITY_MASTER_*     - 加载数据到 Redis               │
+  └─────────────────────────────────────────────────────────────┘
+
+  二、核心问题：依赖链未断开
+
+  当前 refresh 方法的问题：刷新缓存时仍然调用 getBusinessDate()：
+
+  private Date getBusinessDate() {
+      return batchBusinessDateResultService.getBuinessDate();
+  }
+
+  而 getBuinessDate() 的查询条件（BatchBusinessDateResultImpl:26-34）：
+  - type = 'P'
+  - status = 'S'
+  - systemDate = 昨天
+
+  如果 BATCH_BUSINESS_DATE_RESULT 表当天没有外系统下发数据，getBusinessDate() 返回 null，整个刷新将失败。
+
+  三、可行性评估
+
+  | 评估项         | 状态 | 说明                                   |
+  |----------------|------|----------------------------------------|
+  | 接口已存在     | ✅   | BuyListController.refresh() 已实现     |
+  | 前端调用时机   | ✅   | permission.ts 中有明确的登录初始化钩子 |
+  | 依赖第三方系统 | ❌   | 仍依赖 BATCH_BUSINESS_DATE_RESULT 表   |
+  | 权限控制       | ❌   | refresh 接口缺少 @PreAuthorize         |
+  | 并发安全       | ⚠️   | 多用户同时登录会并发刷新               |
+  | 性能影响       | ⚠️   | 每次登录都全量刷新，数据库压力大       |
+
+  四、关键风险点
+
+  1. 依赖链未真正解耦
+
+  当前方案不能实现"不依赖第三方系统"的目标。因为：
+  - 刷新逻辑内部调用 getBusinessDate() 仍需查询 BATCH_BUSINESS_DATE_RESULT
+  - 如果该表没有当天数据，刷新无效
+
+  2. @Lazy 注解的影响
+
+  SecurityMasterCacheService 标注了 @Lazy（第30行），意味着：
+  - 应用启动时 @PostConstruct 不会立即执行
+  - 只有首次使用该 Bean 时才会初始化
+  - 这可能是故意设计的，因为启动时外系统数据可能还没就绪
+
+  3. 安全风险
+
+  @PostMapping("/refresh")
+  @Operation(summary = "解析并校验CSV文件")  // 注释不正确
+  public CommonResult<ParseResultVO> refresh() {
+      // 没有 @PreAuthorize，任何人都可调用
+  }
+
+  4. 并发风险
+
+  假设 100 个用户同时登录：
+  - 100 次并发调用 refreshCache()
+  - 100 次 clearAllCache() 和 initCache()
+  - 可能导致缓存闪烁、数据不一致
+
+  五、可行的解决方案建议
+
+  如果你想实现"前端登录时刷新缓存，不依赖第三方系统"，需要考虑以下改进：
+
+  方案 A：使用缓存中已有的日期
+
+  // 刷新时不重新获取日期，使用上次成功加载时的日期
+  // 添加一个 lastSuccessBusinessDate 字段保存
+
+  方案 B：提供手动指定日期的刷新接口
+
+  @PostMapping("/refresh")
+  public CommonResult<Boolean> refresh(@RequestParam(required = false) Date businessDate) {
+      if (businessDate == null) {
+          // 使用默认逻辑
+      } else {
+          // 使用指定日期刷新
+      }
+  }
+
+  方案 C：只刷新不清空（增量刷新）
+
+  // 仅在有新数据时更新，不清空旧缓存
+  public void refreshCacheIfAvailable() {
+      Date newDate = getBusinessDate();
+      if (newDate != null && !newDate.equals(lastLoadedDate)) {
+          refreshCache();
+      }
+  }
+
+  方案 D：定时任务 + 登录检查
+
+  - 后台定时任务尝试刷新（有数据就刷新）
+  - 前端登录时只检查缓存是否存在，不主动刷新
+
+  六、结论
+
+  当前方案（直接调用 refresh）不可行，原因：
+  1. 核心依赖链未解耦，仍需 BATCH_BUSINESS_DATE_RESULT 表有数据
+  2. 缺少权限控制和并发保护
+  3. 性能影响较大
+
+  建议：如果你想继续推进，需要先明确：
+  1. 外系统数据不可用时，应该使用什么备选策略？
+  2. 是否接受使用"上次成功加载的日期"继续刷新？
+  3. 刷新频率如何控制（每次登录还是有条件刷新）？
+
+  你希望我针对哪个方案进一步分析或给出具体实现思路？
+
+> 即使时定时任务，如果用户在查询的时候刚好清空了redis缓存，这个又该如何？
+
+● 这是一个非常关键的问题。当前代码存在缓存击穿窗口期：
+
+  public void refreshCache() {
+      log.info("手动刷新 SecurityMaster 缓存...");
+      clearAllCache();  // ← 清空缓存
+      // ⚠️ 危险窗口期：此时用户查询会返回 null
+      initCache();      // ← 重新加载（可能需要几秒甚至更长）
+  }
+
+  问题分析
+
+  当前代码的风险场景
+
+  时间线:
+  ─────────────────────────────────────────────────────────────→
+       │                    │                         │
+   clearAllCache()     用户查询                   initCache()完成
+       │                    │                         │
+       └────── 危险窗口期 ───┘                         │
+             缓存为空                                  │
+             查询返回 null                            │
+
+  当前的容错机制（不完善）
+
+  代码中有重试逻辑（SecurityMasterCacheService:196-199）：
+
+  public String getTableName(String assetType, Integer businessType) {
+      Object tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      if (tableName != null) {
+          return (String) tableName;
+      }
+      // 如果缓存不存在，尝试重新加载
+      log.info("找不到映射缓存，尝试重新加载 SecurityMaster 缓存...");
+      refreshCache();  // ⚠️ 如果正在刷新中，这里会导致重复刷新
+      tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      return tableName != null ? (String) tableName : null;
+  }
+
+  问题：如果刷新正在进行中，用户查询会触发另一次 refreshCache()，导致：
+  1. 重复刷新，浪费资源
+  2. 刷新叠加，窗口期更长
+  3. 可能的死循环或数据不一致
+
+  ---
+  解决方案
+
+  方案一：双缓存切换（推荐）
+
+  原理：维护两套缓存，加载完成后原子切换
+
+  活跃缓存: security_master:v1:*  ← 用户读取这套
+  备用缓存: security_master:v2:*  ← 后台加载新数据
+
+  加载完成后:
+    当前版本指针: v1 → v2  (原子切换)
+    异步清理 v1 数据
+
+  优点：
+  - 零停机刷新
+  - 用户查询不受影响
+
+  方案二：先写后删 + RENAME
+
+  原理：加载到临时 key，完成后原子替换
+
+  public void refreshCacheSafe() {
+      String tempPrefix = "security_master:temp:";
+      String activePrefix = "security_master:";
+
+      // 1. 加载数据到临时 key
+      loadDataToTempKeys(tempPrefix);
+
+      // 2. 原子替换（使用 Lua 脚本保证原子性）
+      atomicSwapKeys(tempPrefix, activePrefix);
+
+      // 3. 删除旧的临时 key（如果有）
+      cleanupOldKeys();
+  }
+
+  方案三：刷新锁 + 降级策略
+
+  原理：刷新时加锁，查询时检测锁状态
+
+  private volatile boolean isRefreshing = false;
+  private final ReentrantLock refreshLock = new ReentrantLock();
+
+  public void refreshCache() {
+      if (!refreshLock.tryLock()) {
+          log.info("缓存正在刷新中，跳过本次请求");
+          return;
+      }
+      try {
+          isRefreshing = true;
+          // 刷新逻辑...
+      } finally {
+          isRefreshing = false;
+          refreshLock.unlock();
+      }
+  }
+
+  public String getTableName(String assetType, Integer businessType) {
+      Object tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      if (tableName != null) {
+          return (String) tableName;
+      }
+
+      // 如果正在刷新中，等待而不是触发新的刷新
+      if (isRefreshing) {
+          // 等待刷新完成或返回降级值
+          waitForRefreshComplete();
+          tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      } else {
+          // 缓存确实不存在，触发刷新
+          refreshCache();
+          tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      }
+      return tableName != null ? (String) tableName : null;
+  }
+
+  方案四：不清空，直接覆盖
+
+  原理：不执行 clearAllCache()，直接用新数据覆盖
+
+  public void refreshCache() {
+      log.info("刷新 SecurityMaster 缓存（增量覆盖模式）...");
+      // 不清空，直接重新加载（会覆盖同 key 的数据）
+      initCacheWithoutClear();
+  }
+
+  优点：简单，无窗口期
+  缺点：如果某些数据被删除，旧数据会残留
+
+  ---
+  方案对比
+
+  | 方案        | 复杂度 | 零停机   | 数据一致性 | 适用场景       |
+  |-------------|--------|----------|------------|----------------|
+  | 双缓存切换  | 高     | ✅       | ✅         | 生产环境首选   |
+  | 先写后删    | 中     | ✅       | ✅         | 数据量不大时   |
+  | 刷新锁+等待 | 中     | ⚠️有延迟 | ✅         | 刷新频率低时   |
+  | 直接覆盖    | 低     | ✅       | ⚠️可能残留 | 数据只增不删时 |
+
+  ---
+  我的建议
+
+  考虑到你的场景（SecurityMaster 数据量可能较大，且业务关键），建议采用方案一（双缓存切换）或方案三（刷新锁）：
+
+  1. 如果刷新频率低（每天一次），方案三足够
+  2. 如果需要频繁刷新或对可用性要求极高，用方案一
+
+  你希望我针对哪个方案给出具体的实现设计？
+
+> 讲讲双缓存切换的具体实现，不改代码
+
+● 双缓存切换实现方案详解
+
+  一、核心思想
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                         Redis 结构                               │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                  │
+  │  版本指针 (永久有效)                                              │
+  │  ┌──────────────────────────┐                                   │
+  │  │ security_master:current  │ ──→ 值: "v1" 或 "v2"              │
+  │  └──────────────────────────┘                                   │
+  │                                                                  │
+  │  v1 版本缓存                        v2 版本缓存                   │
+  │  ┌────────────────────────┐       ┌────────────────────────┐    │
+  │  │ security_master:v1:    │       │ security_master:v2:    │    │
+  │  │   mapping              │       │   mapping              │    │
+  │  │   data:TABLE_A         │       │   data:TABLE_A         │    │
+  │  │   data:TABLE_B         │       │   data:TABLE_B         │    │
+  │  └────────────────────────┘       └────────────────────────┘    │
+  │         ↑                                   ↑                    │
+  │      活跃版本                             备用版本                │
+  │    (用户读取)                          (后台加载)                 │
+  │                                                                  │
+  └─────────────────────────────────────────────────────────────────┘
+
+  二、刷新流程
+
+  时间线:
+  ══════════════════════════════════════════════════════════════════════►
+
+  阶段1: 正常服务                  阶段2: 后台加载                阶段3: 切换完成
+  ┌──────────────────┐          ┌──────────────────┐          ┌──────────────────┐
+  │ current → "v1"   │          │ current → "v1"   │          │ current → "v2"   │
+  │                  │          │                  │          │                  │
+  │ 用户读 v1 ✓     │          │ 用户读 v1 ✓     │          │ 用户读 v2 ✓     │
+  │                  │          │ 后台写 v2       │          │                  │
+  │ v2: 空/旧数据    │          │ v2: 加载中...   │          │ v1: 待清理       │
+  └──────────────────┘          └──────────────────┘          └──────────────────┘
+        │                              │                              │
+        │                              │                              │
+     用户无感知                     用户无感知                     用户无感知
+
+  三、详细步骤分解
+
+  步骤 1：确定当前版本和目标版本
+
+  读取 security_master:current 的值
+
+  如果是 "v1" → 目标版本 = "v2"
+  如果是 "v2" → 目标版本 = "v1"
+  如果不存在  → 当前版本 = "v1", 目标版本 = "v1" (初始化场景)
+
+  步骤 2：加载数据到目标版本
+
+  目标版本 = "v2"
+
+  写入的 Key:
+    security_master:v2:mapping           → {映射关系}
+    security_master:v2:data:TABLE_A      → {表A数据}
+    security_master:v2:data:TABLE_B      → {表B数据}
+    ...
+
+  此时用户仍在读取 v1，完全不受影响
+
+  步骤 3：原子切换版本指针
+
+  SET security_master:current "v2"
+
+  这是一个原子操作，切换瞬间完成
+  切换后，所有新查询立即读取 v2
+
+  步骤 4：异步清理旧版本
+
+  等待一段时间（如 30 秒），确保进行中的 v1 查询完成
+
+  然后删除:
+    security_master:v1:mapping
+    security_master:v1:data:*
+
+  四、查询流程
+
+  用户查询 getClientId("EQ", 1, "AAPL")
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 1. 读取版本指针                  │
+  │    GET security_master:current  │
+  │    返回: "v1"                   │
+  └─────────────────────────────────┘
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 2. 读取映射关系                  │
+  │    HGET security_master:v1:     │
+  │         mapping "1:EQ"          │
+  │    返回: "TABLE_EQ_1_20231225"  │
+  └─────────────────────────────────┘
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 3. 读取实际数据                  │
+  │    HGET security_master:v1:     │
+  │         data:TABLE_EQ_1_20231225│
+  │         "AAPL"                  │
+  │    返回: "CLIENT_123"           │
+  └─────────────────────────────────┘
+            │
+            ▼
+       返回 "CLIENT_123"
+
+  五、并发安全分析
+
+  场景：刷新过程中用户查询
+
+  时刻 T1: 用户A 读取 current = "v1"
+  时刻 T2: 后台完成加载，SET current = "v2"
+  时刻 T3: 用户A 继续读取 v1:mapping (仍然有效！)
+  时刻 T4: 用户A 完成查询，返回正确结果
+
+  结论: 用户A 读到的是 v1 的完整数据，不受切换影响
+
+  场景：切换瞬间的查询
+
+  时刻 T1: 用户A 读取 current = "v1"
+  时刻 T1: 用户B 读取 current = "v2" (刚切换)
+
+  用户A → 读 v1 数据 → 返回旧数据 ✓
+  用户B → 读 v2 数据 → 返回新数据 ✓
+
+  两个用户都能得到完整、一致的数据
+  最多存在短暂的"数据版本不一致"，但每个用户看到的都是完整版本
+
+  六、Redis Key 设计
+
+  # 版本控制
+  security_master:current                    # 当前活跃版本 "v1" 或 "v2"
+  security_master:last_refresh_time          # 上次刷新时间 (可选)
+  security_master:refresh_lock               # 刷新锁 (防止并发刷新)
+
+  # v1 版本数据
+  security_master:v1:mapping                 # Hash: {businessType:assetType → tableName}
+  security_master:v1:data:TABLE_A            # Hash: {productCode → clientId}
+  security_master:v1:data:TABLE_B            # Hash: {productCode → clientId}
+
+  # v2 版本数据
+  security_master:v2:mapping                 # Hash: {businessType:assetType → tableName}
+  security_master:v2:data:TABLE_A            # Hash: {productCode → clientId}
+  security_master:v2:data:TABLE_B            # Hash: {productCode → clientId}
+
+  七、异常处理
+
+  情况 1：加载过程中失败
+
+  加载到 v2 时发生异常
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ current 仍然指向 v1             │
+  │ v2 数据不完整                   │
+  │                                 │
+  │ 处理: 清理 v2 的不完整数据       │
+  │       用户继续使用 v1           │
+  │       记录错误日志              │
+  └─────────────────────────────────┘
+
+  用户完全无感知
+
+  情况 2：清理旧版本时失败
+
+  v2 已激活，清理 v1 时失败
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 影响: v1 数据残留               │
+  │ 风险: 占用额外内存              │
+  │                                 │
+  │ 处理: 下次刷新时会覆盖 v1       │
+  │       或设置 TTL 自动过期       │
+  └─────────────────────────────────┘
+
+  不影响业务，仅占用空间
+
+  八、优化建议
+
+  1. 添加刷新锁防止并发
+
+  刷新前:
+    SETNX security_master:refresh_lock "1" EX 300
+    如果返回 0 → 已有刷新在进行，退出
+
+  刷新后:
+    DEL security_master:refresh_lock
+
+  2. 版本元数据
+
+  security_master:v1:meta = {
+      "loadTime": "2024-01-15 10:00:00",
+      "businessDate": "2024-01-14",
+      "tableCount": 15,
+      "recordCount": 50000
+  }
+
+  方便排查问题和监控
+
+  3. 设置 TTL 兜底
+
+  旧版本数据设置 TTL = 1 小时
+
+  即使清理失败，也会自动过期
+  避免内存无限增长
+
+  九、与当前代码的对比
+
+  | 对比项         | 当前实现   | 双缓存方案           |
+  |----------------|------------|----------------------|
+  | 刷新时用户查询 | 返回 null  | 正常返回旧数据       |
+  | 刷新失败影响   | 缓存被清空 | 无影响，继续用旧版本 |
+  | 内存占用       | 1x         | 约 2x（刷新期间）    |
+  | 实现复杂度     | 低         | 中                   |
+  | 数据一致性     | 有窗口期   | 每个版本内部一致     |
+
+  十、总结
+
+  双缓存切换的核心是：
+
+  1. 空间换时间：用双倍内存换取零停机
+  2. 版本隔离：每个版本独立完整，互不干扰
+  3. 原子切换：只切换指针，不移动数据
+  4. 异步清理：延迟清理旧版本，确保进行中的查询完成
+
+  这是生产环境中处理缓存刷新的标准做法，Redis、数据库连接池、配置中心等都采用类似思路。
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+> 
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  -- INSERT --
+
+ * ▐▛███▜▌ *   Claude Code v2.0.76
+* ▝▜█████▛▘ *  Opus 4.5 · Claude Pro
+ *  ▘▘ ▝▝  *   D:\software\developmentTools\Git\gitee\newpap\pap
+
+> 基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+               cn.bochk.pap.server.business.service.SecurityMasterCacheService
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+问题：
+SecurityMasterCacheService里面缓存的初始化需要依赖外系统的表BATCH_BUSINESS_DATE_RESULT，它时每个工作日会下发数据；获
+取最新的日期
+然后在基于日期在TABLE_SWITCH_LOG表里面获取表名，最后再基于表名查询对应的数据;缓存到redis中;
+
+我想额外添加一个接口，用来刷新缓存，在前端用户登录操作的时候做一次缓存刷新，而不依赖第三方系统;
+就是BuyListController里面的refresh方法，在前端登录初始化的时候做一次统一的刷新;
+你帮我分析一下可行性？先不改代码
+
+● 我来帮你分析这个需求的可行性。首先需要阅读相关代码来理解当前的实现逻辑。
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\controller\BuyListController.java)
+  ⎿  Read 114 lines
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\SecurityMasterCacheService.java)
+  ⎿  Read 296 lines
+
+● 让我继续查看 BatchBusinessDateResultService 和前端登录相关代码：
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\BatchBusinessDateResultService.java)
+  ⎿  Read 9 lines
+
+● Search(pattern: "**/poc-pro-ui/src/**/login*.{vue,ts,js}")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Search(pattern: "**/poc-pro-ui/src/**/permission*.{ts,js}")
+  ⎿  Found 3 files (ctrl+o to expand)
+
+● Read(poc-pro-ui\src\permission.ts)
+  ⎿  Read 111 lines
+
+● Search(pattern: "class BatchBusinessDateResultServiceImpl", path: "pocpro")
+  ⎿  Found 0 files
+
+● Search(pattern: "**/poc-pro-ui/src/views/Login/**/*.vue")
+  ⎿  Found 8 files (ctrl+o to expand)
+
+● Search(pattern: "implements BatchBusinessDateResultService", path: "pocpro")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Read(poc-pro-ui\src\store\modules\user.ts)
+  ⎿  Read 109 lines
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\Impl\BatchBusinessDateResultImpl.java)
+  ⎿  Read 37 lines
+
+● 现在我对整个链路有了清晰的理解。让我为你做一个完整的可行性分析：
+
+  ---
+  可行性分析报告
+
+  一、当前实现架构
+
+  用户登录
+      ↓
+  BuyListController.refresh()
+      ↓
+  SecurityMasterCacheService.refreshCache()
+      ↓
+  ┌─────────────────────────────────────────────────────────────┐
+  │  initCache() 执行步骤:                                        │
+  │  1. clearAllCacheOnStartup()   - 清空 Redis 缓存              │
+  │  2. getBusinessDate()          - 从 BATCH_BUSINESS_DATE_RESULT │
+  │     ↓                            获取最新业务日期               │
+  │  3. 查询 TABLE_SWITCH_LOG      - 根据日期获取表名映射            │
+  │  4. 查询 ASSET_TYPE            - 获取启用 BuyList 的配置         │
+  │  5. 查询 SECURITY_MASTER_*     - 加载数据到 Redis               │
+  └─────────────────────────────────────────────────────────────┘
+
+  二、核心问题：依赖链未断开
+
+  当前 refresh 方法的问题：刷新缓存时仍然调用 getBusinessDate()：
+
+  private Date getBusinessDate() {
+      return batchBusinessDateResultService.getBuinessDate();
+  }
+
+  而 getBuinessDate() 的查询条件（BatchBusinessDateResultImpl:26-34）：
+  - type = 'P'
+  - status = 'S'
+  - systemDate = 昨天
+
+  如果 BATCH_BUSINESS_DATE_RESULT 表当天没有外系统下发数据，getBusinessDate() 返回 null，整个刷新将失败。
+
+  三、可行性评估
+
+  | 评估项         | 状态 | 说明                                   |
+  |----------------|------|----------------------------------------|
+  | 接口已存在     | ✅   | BuyListController.refresh() 已实现     |
+  | 前端调用时机   | ✅   | permission.ts 中有明确的登录初始化钩子 |
+  | 依赖第三方系统 | ❌   | 仍依赖 BATCH_BUSINESS_DATE_RESULT 表   |
+  | 权限控制       | ❌   | refresh 接口缺少 @PreAuthorize         |
+  | 并发安全       | ⚠️   | 多用户同时登录会并发刷新               |
+  | 性能影响       | ⚠️   | 每次登录都全量刷新，数据库压力大       |
+
+  四、关键风险点
+
+  1. 依赖链未真正解耦
+
+  当前方案不能实现"不依赖第三方系统"的目标。因为：
+  - 刷新逻辑内部调用 getBusinessDate() 仍需查询 BATCH_BUSINESS_DATE_RESULT
+  - 如果该表没有当天数据，刷新无效
+
+  2. @Lazy 注解的影响
+
+  SecurityMasterCacheService 标注了 @Lazy（第30行），意味着：
+  - 应用启动时 @PostConstruct 不会立即执行
+  - 只有首次使用该 Bean 时才会初始化
+  - 这可能是故意设计的，因为启动时外系统数据可能还没就绪
+
+  3. 安全风险
+
+  @PostMapping("/refresh")
+  @Operation(summary = "解析并校验CSV文件")  // 注释不正确
+  public CommonResult<ParseResultVO> refresh() {
+      // 没有 @PreAuthorize，任何人都可调用
+  }
+
+  4. 并发风险
+
+  假设 100 个用户同时登录：
+  - 100 次并发调用 refreshCache()
+  - 100 次 clearAllCache() 和 initCache()
+  - 可能导致缓存闪烁、数据不一致
+
+  五、可行的解决方案建议
+
+  如果你想实现"前端登录时刷新缓存，不依赖第三方系统"，需要考虑以下改进：
+
+  方案 A：使用缓存中已有的日期
+
+  // 刷新时不重新获取日期，使用上次成功加载时的日期
+  // 添加一个 lastSuccessBusinessDate 字段保存
+
+  方案 B：提供手动指定日期的刷新接口
+
+  @PostMapping("/refresh")
+  public CommonResult<Boolean> refresh(@RequestParam(required = false) Date businessDate) {
+      if (businessDate == null) {
+          // 使用默认逻辑
+      } else {
+          // 使用指定日期刷新
+      }
+  }
+
+  方案 C：只刷新不清空（增量刷新）
+
+  // 仅在有新数据时更新，不清空旧缓存
+  public void refreshCacheIfAvailable() {
+      Date newDate = getBusinessDate();
+      if (newDate != null && !newDate.equals(lastLoadedDate)) {
+          refreshCache();
+      }
+  }
+
+  方案 D：定时任务 + 登录检查
+
+  - 后台定时任务尝试刷新（有数据就刷新）
+  - 前端登录时只检查缓存是否存在，不主动刷新
+
+  六、结论
+
+  当前方案（直接调用 refresh）不可行，原因：
+  1. 核心依赖链未解耦，仍需 BATCH_BUSINESS_DATE_RESULT 表有数据
+  2. 缺少权限控制和并发保护
+  3. 性能影响较大
+
+  建议：如果你想继续推进，需要先明确：
+  1. 外系统数据不可用时，应该使用什么备选策略？
+  2. 是否接受使用"上次成功加载的日期"继续刷新？
+  3. 刷新频率如何控制（每次登录还是有条件刷新）？
+
+  你希望我针对哪个方案进一步分析或给出具体实现思路？
+
+> 即使时定时任务，如果用户在查询的时候刚好清空了redis缓存，这个又该如何？
+
+● 这是一个非常关键的问题。当前代码存在缓存击穿窗口期：
+
+  public void refreshCache() {
+      log.info("手动刷新 SecurityMaster 缓存...");
+      clearAllCache();  // ← 清空缓存
+      // ⚠️ 危险窗口期：此时用户查询会返回 null
+      initCache();      // ← 重新加载（可能需要几秒甚至更长）
+  }
+
+  问题分析
+
+  当前代码的风险场景
+
+  时间线:
+  ─────────────────────────────────────────────────────────────→
+       │                    │                         │
+   clearAllCache()     用户查询                   initCache()完成
+       │                    │                         │
+       └────── 危险窗口期 ───┘                         │
+             缓存为空                                  │
+             查询返回 null                            │
+
+  当前的容错机制（不完善）
+
+  代码中有重试逻辑（SecurityMasterCacheService:196-199）：
+
+  public String getTableName(String assetType, Integer businessType) {
+      Object tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      if (tableName != null) {
+          return (String) tableName;
+      }
+      // 如果缓存不存在，尝试重新加载
+      log.info("找不到映射缓存，尝试重新加载 SecurityMaster 缓存...");
+      refreshCache();  // ⚠️ 如果正在刷新中，这里会导致重复刷新
+      tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      return tableName != null ? (String) tableName : null;
+  }
+
+  问题：如果刷新正在进行中，用户查询会触发另一次 refreshCache()，导致：
+  1. 重复刷新，浪费资源
+  2. 刷新叠加，窗口期更长
+  3. 可能的死循环或数据不一致
+
+  ---
+  解决方案
+
+  方案一：双缓存切换（推荐）
+
+  原理：维护两套缓存，加载完成后原子切换
+
+  活跃缓存: security_master:v1:*  ← 用户读取这套
+  备用缓存: security_master:v2:*  ← 后台加载新数据
+
+  加载完成后:
+    当前版本指针: v1 → v2  (原子切换)
+    异步清理 v1 数据
+
+  优点：
+  - 零停机刷新
+  - 用户查询不受影响
+
+  方案二：先写后删 + RENAME
+
+  原理：加载到临时 key，完成后原子替换
+
+  public void refreshCacheSafe() {
+      String tempPrefix = "security_master:temp:";
+      String activePrefix = "security_master:";
+
+      // 1. 加载数据到临时 key
+      loadDataToTempKeys(tempPrefix);
+
+      // 2. 原子替换（使用 Lua 脚本保证原子性）
+      atomicSwapKeys(tempPrefix, activePrefix);
+
+      // 3. 删除旧的临时 key（如果有）
+      cleanupOldKeys();
+  }
+
+  方案三：刷新锁 + 降级策略
+
+  原理：刷新时加锁，查询时检测锁状态
+
+  private volatile boolean isRefreshing = false;
+  private final ReentrantLock refreshLock = new ReentrantLock();
+
+  public void refreshCache() {
+      if (!refreshLock.tryLock()) {
+          log.info("缓存正在刷新中，跳过本次请求");
+          return;
+      }
+      try {
+          isRefreshing = true;
+          // 刷新逻辑...
+      } finally {
+          isRefreshing = false;
+          refreshLock.unlock();
+      }
+  }
+
+  public String getTableName(String assetType, Integer businessType) {
+      Object tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      if (tableName != null) {
+          return (String) tableName;
+      }
+
+      // 如果正在刷新中，等待而不是触发新的刷新
+      if (isRefreshing) {
+          // 等待刷新完成或返回降级值
+          waitForRefreshComplete();
+          tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      } else {
+          // 缓存确实不存在，触发刷新
+          refreshCache();
+          tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+      }
+      return tableName != null ? (String) tableName : null;
+  }
+
+  方案四：不清空，直接覆盖
+
+  原理：不执行 clearAllCache()，直接用新数据覆盖
+
+  public void refreshCache() {
+      log.info("刷新 SecurityMaster 缓存（增量覆盖模式）...");
+      // 不清空，直接重新加载（会覆盖同 key 的数据）
+      initCacheWithoutClear();
+  }
+
+  优点：简单，无窗口期
+  缺点：如果某些数据被删除，旧数据会残留
+
+  ---
+  方案对比
+
+  | 方案        | 复杂度 | 零停机   | 数据一致性 | 适用场景       |
+  |-------------|--------|----------|------------|----------------|
+  | 双缓存切换  | 高     | ✅       | ✅         | 生产环境首选   |
+  | 先写后删    | 中     | ✅       | ✅         | 数据量不大时   |
+  | 刷新锁+等待 | 中     | ⚠️有延迟 | ✅         | 刷新频率低时   |
+  | 直接覆盖    | 低     | ✅       | ⚠️可能残留 | 数据只增不删时 |
+
+  ---
+  我的建议
+
+  考虑到你的场景（SecurityMaster 数据量可能较大，且业务关键），建议采用方案一（双缓存切换）或方案三（刷新锁）：
+
+  1. 如果刷新频率低（每天一次），方案三足够
+  2. 如果需要频繁刷新或对可用性要求极高，用方案一
+
+  你希望我针对哪个方案给出具体的实现设计？
+
+> 讲讲双缓存切换的具体实现，不改代码
+
+● 双缓存切换实现方案详解
+
+  一、核心思想
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                         Redis 结构                               │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                  │
+  │  版本指针 (永久有效)                                              │
+  │  ┌──────────────────────────┐                                   │
+  │  │ security_master:current  │ ──→ 值: "v1" 或 "v2"              │
+  │  └──────────────────────────┘                                   │
+  │                                                                  │
+  │  v1 版本缓存                        v2 版本缓存                   │
+  │  ┌────────────────────────┐       ┌────────────────────────┐    │
+  │  │ security_master:v1:    │       │ security_master:v2:    │    │
+  │  │   mapping              │       │   mapping              │    │
+  │  │   data:TABLE_A         │       │   data:TABLE_A         │    │
+  │  │   data:TABLE_B         │       │   data:TABLE_B         │    │
+  │  └────────────────────────┘       └────────────────────────┘    │
+  │         ↑                                   ↑                    │
+  │      活跃版本                             备用版本                │
+  │    (用户读取)                          (后台加载)                 │
+  │                                                                  │
+  └─────────────────────────────────────────────────────────────────┘
+
+  二、刷新流程
+
+  时间线:
+  ══════════════════════════════════════════════════════════════════════►
+
+  阶段1: 正常服务                  阶段2: 后台加载                阶段3: 切换完成
+  ┌──────────────────┐          ┌──────────────────┐          ┌──────────────────┐
+  │ current → "v1"   │          │ current → "v1"   │          │ current → "v2"   │
+  │                  │          │                  │          │                  │
+  │ 用户读 v1 ✓     │          │ 用户读 v1 ✓     │          │ 用户读 v2 ✓     │
+  │                  │          │ 后台写 v2       │          │                  │
+  │ v2: 空/旧数据    │          │ v2: 加载中...   │          │ v1: 待清理       │
+  └──────────────────┘          └──────────────────┘          └──────────────────┘
+        │                              │                              │
+        │                              │                              │
+     用户无感知                     用户无感知                     用户无感知
+
+  三、详细步骤分解
+
+  步骤 1：确定当前版本和目标版本
+
+  读取 security_master:current 的值
+
+  如果是 "v1" → 目标版本 = "v2"
+  如果是 "v2" → 目标版本 = "v1"
+  如果不存在  → 当前版本 = "v1", 目标版本 = "v1" (初始化场景)
+
+  步骤 2：加载数据到目标版本
+
+  目标版本 = "v2"
+
+  写入的 Key:
+    security_master:v2:mapping           → {映射关系}
+    security_master:v2:data:TABLE_A      → {表A数据}
+    security_master:v2:data:TABLE_B      → {表B数据}
+    ...
+
+  此时用户仍在读取 v1，完全不受影响
+
+  步骤 3：原子切换版本指针
+
+  SET security_master:current "v2"
+
+  这是一个原子操作，切换瞬间完成
+  切换后，所有新查询立即读取 v2
+
+  步骤 4：异步清理旧版本
+
+  等待一段时间（如 30 秒），确保进行中的 v1 查询完成
+
+  然后删除:
+    security_master:v1:mapping
+    security_master:v1:data:*
+
+  四、查询流程
+
+  用户查询 getClientId("EQ", 1, "AAPL")
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 1. 读取版本指针                  │
+  │    GET security_master:current  │
+  │    返回: "v1"                   │
+  └─────────────────────────────────┘
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 2. 读取映射关系                  │
+  │    HGET security_master:v1:     │
+  │         mapping "1:EQ"          │
+  │    返回: "TABLE_EQ_1_20231225"  │
+  └─────────────────────────────────┘
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 3. 读取实际数据                  │
+  │    HGET security_master:v1:     │
+  │         data:TABLE_EQ_1_20231225│
+  │         "AAPL"                  │
+  │    返回: "CLIENT_123"           │
+  └─────────────────────────────────┘
+            │
+            ▼
+       返回 "CLIENT_123"
+
+  五、并发安全分析
+
+  场景：刷新过程中用户查询
+
+  时刻 T1: 用户A 读取 current = "v1"
+  时刻 T2: 后台完成加载，SET current = "v2"
+  时刻 T3: 用户A 继续读取 v1:mapping (仍然有效！)
+  时刻 T4: 用户A 完成查询，返回正确结果
+
+  结论: 用户A 读到的是 v1 的完整数据，不受切换影响
+
+  场景：切换瞬间的查询
+
+  时刻 T1: 用户A 读取 current = "v1"
+  时刻 T1: 用户B 读取 current = "v2" (刚切换)
+
+  用户A → 读 v1 数据 → 返回旧数据 ✓
+  用户B → 读 v2 数据 → 返回新数据 ✓
+
+  两个用户都能得到完整、一致的数据
+  最多存在短暂的"数据版本不一致"，但每个用户看到的都是完整版本
+
+  六、Redis Key 设计
+
+  # 版本控制
+  security_master:current                    # 当前活跃版本 "v1" 或 "v2"
+  security_master:last_refresh_time          # 上次刷新时间 (可选)
+  security_master:refresh_lock               # 刷新锁 (防止并发刷新)
+
+  # v1 版本数据
+  security_master:v1:mapping                 # Hash: {businessType:assetType → tableName}
+  security_master:v1:data:TABLE_A            # Hash: {productCode → clientId}
+  security_master:v1:data:TABLE_B            # Hash: {productCode → clientId}
+
+  # v2 版本数据
+  security_master:v2:mapping                 # Hash: {businessType:assetType → tableName}
+  security_master:v2:data:TABLE_A            # Hash: {productCode → clientId}
+  security_master:v2:data:TABLE_B            # Hash: {productCode → clientId}
+
+  七、异常处理
+
+  情况 1：加载过程中失败
+
+  加载到 v2 时发生异常
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ current 仍然指向 v1             │
+  │ v2 数据不完整                   │
+  │                                 │
+  │ 处理: 清理 v2 的不完整数据       │
+  │       用户继续使用 v1           │
+  │       记录错误日志              │
+  └─────────────────────────────────┘
+
+  用户完全无感知
+
+  情况 2：清理旧版本时失败
+
+  v2 已激活，清理 v1 时失败
+            │
+            ▼
+  ┌─────────────────────────────────┐
+  │ 影响: v1 数据残留               │
+  │ 风险: 占用额外内存              │
+  │                                 │
+  │ 处理: 下次刷新时会覆盖 v1       │
+  │       或设置 TTL 自动过期       │
+  └─────────────────────────────────┘
+
+  不影响业务，仅占用空间
+
+  八、优化建议
+
+  1. 添加刷新锁防止并发
+
+  刷新前:
+    SETNX security_master:refresh_lock "1" EX 300
+    如果返回 0 → 已有刷新在进行，退出
+
+  刷新后:
+    DEL security_master:refresh_lock
+
+  2. 版本元数据
+
+  security_master:v1:meta = {
+      "loadTime": "2024-01-15 10:00:00",
+      "businessDate": "2024-01-14",
+      "tableCount": 15,
+      "recordCount": 50000
+  }
+
+  方便排查问题和监控
+
+  3. 设置 TTL 兜底
+
+  旧版本数据设置 TTL = 1 小时
+
+  即使清理失败，也会自动过期
+  避免内存无限增长
+
+  九、与当前代码的对比
+
+  | 对比项         | 当前实现   | 双缓存方案           |
+  |----------------|------------|----------------------|
+  | 刷新时用户查询 | 返回 null  | 正常返回旧数据       |
+  | 刷新失败影响   | 缓存被清空 | 无影响，继续用旧版本 |
+  | 内存占用       | 1x         | 约 2x（刷新期间）    |
+  | 实现复杂度     | 低         | 中                   |
+  | 数据一致性     | 有窗口期   | 每个版本内部一致     |
+
+  十、总结
+
+  双缓存切换的核心是：
+
+  1. 空间换时间：用双倍内存换取零停机
+  2. 版本隔离：每个版本独立完整，互不干扰
+  3. 原子切换：只切换指针，不移动数据
+  4. 异步清理：延迟清理旧版本，确保进行中的查询完成
+
+  这是生产环境中处理缓存刷新的标准做法，Redis、数据库连接池、配置中心等都采用类似思路。
+
+> 目前SecurityMasterCacheService类上加了@Lazy，也没有在其它地方初始化SecurityMasterCacheService实例对象，排除刚加的Buy
+ListController.refresh方法这里，
+是不是永久不会加载了？
+
+● 你的分析很敏锐。让我确认一下 SecurityMasterCacheService 在其他地方是否有被引用：
+
+● Search(pattern: "SecurityMasterCacheService", path: "pocpro", output_mode: "content")
+  ⎿  Found 10 lines (ctrl+o to expand)
+
+● 有引用。让我看看 BuyListServiceImpl 中是如何使用的：
+
+● Search(pattern: "securityMasterCacheService\.", path:
+        "pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\Impl\BuyListServiceImpl.java", output_mode:
+        "content")
+  ⎿  Found 38 lines (ctrl+o to expand)
+
+● 现在清楚了。实际情况是：
+
+  分析结果
+
+  引用链
+
+  BuyListServiceImpl (被 Controller 使用)
+      │
+      └── @Resource
+          private SecurityMasterCacheService securityMasterCacheService;
+                            │
+                            ▼
+                 ┌─────────────────────────────┐
+                 │ @Lazy                        │
+                 │ @Service                     │
+                 │ SecurityMasterCacheService  │
+                 │                              │
+                 │   @PostConstruct            │
+                 │   initCache()               │
+                 └─────────────────────────────┘
+
+  实际触发时机
+
+  不是永远不加载，而是延迟到首次使用时加载：
+
+  应用启动
+      │
+      ▼
+  BuyListServiceImpl 被创建
+      │
+      ▼ (securityMasterCacheService 此时只是一个代理，Bean 未真正初始化)
+
+  ... 等待用户访问 ...
+
+  用户首次调用 BuyList 相关功能
+      │
+      ▼
+  调用 securityMasterCacheService.getTableName()
+      │
+      ▼
+  Spring 发现 Bean 尚未初始化，开始创建
+      │
+      ▼
+  执行 @PostConstruct initCache()  ← 此时才加载缓存
+      │
+      ▼
+  返回查询结果
+
+  这带来的问题
+
+  | 问题             | 说明                                                           |
+  |------------------|----------------------------------------------------------------|
+  | 首次请求慢       | 第一个用户需要等待缓存加载完成（可能几秒到几十秒）             |
+  | 初始化时机不可控 | 不知道哪个用户会"踩雷"                                         |
+  | 依赖外系统更严重 | 如果首次使用时 BATCH_BUSINESS_DATE_RESULT 没数据，缓存加载失败 |
+  | 错误难排查       | 问题不在启动时暴露，而是在运行时随机出现                       |
+
+  为什么加 @Lazy？
+
+  推测原因：
+  1. 启动时外系统数据可能还没就绪
+  2. 避免启动时阻塞太久
+  3. 可能是临时方案，后续忘记调整
+
+  建议
+
+  如果确实需要延迟加载，更好的做法是：
+
+  方案 A: 应用启动后异步初始化
+          启动完成 → 后台线程加载缓存 → 加载完成前查询走数据库
+
+  方案 B: 健康检查触发
+          K8s/负载均衡健康检查时触发初始化
+
+  方案 C: 定时任务兜底
+          每隔 5 分钟检查缓存是否存在，不存在则加载
+
+  当前的 @Lazy + 用户触发 是最差的方案——既不能保证启动时加载，又让用户承担首次加载的延迟。
+
+> 按照目前的方式，懒加载来实现，按照1个小时失效（这个代码被我屏蔽了），失效后会不会重新查询数据库加载？
+
+● 让我再仔细看一下缓存失效后的处理逻辑：
+
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\SecurityMasterCacheService.java)
+  ⎿  Read 60 lines
+
+● 分析结果：会重新加载，但有问题
+
+  当前代码的重载机制
+
+  缓存过期 (TTL 1小时后)
+           │
+           ▼
+  用户查询 getTableName() 或 getClientId()
+           │
+           ▼
+  Redis 返回 null (key 已过期删除)
+           │
+           ▼
+  触发 refreshCache()
+           │
+           ├── clearAllCache()
+           └── initCache()  ← 重新从数据库加载
+           │
+           ▼
+  再次查询 Redis，返回结果
+
+  是的，会重新加载。 代码逻辑（第195-198行）已经处理了这种情况：
+
+  if (tableName != null) {
+      return (String) tableName;
+  }
+  // 如果缓存不存在（可能已过期），尝试重新加载一次缓存
+  log.info("找不到映射缓存，尝试重新加载 SecurityMaster 缓存...");
+  refreshCache();
+  tableName = redisTemplate.opsForHash().get(REDIS_KEY_MAPPING, mappingField);
+
+  ---
+  但存在几个严重问题
+
+  问题 1：重复刷新
+
+  一次查询可能触发多次刷新：
+
+  用户调用 getClientId(assetType, businessType, productCode)
+           │
+           ▼
+  步骤1: getTableName()
+           │ mapping 过期
+           └── 触发 refreshCache() 【第1次刷新】
+           │
+           ▼
+  步骤2: getClientId(tableName, productCode)
+           │ data:* 刚被 clearAllCache() 清掉，还没加载完
+           └── 触发 refreshCache() 【第2次刷新】
+
+  问题 2：并发雪崩
+
+  TTL 过期瞬间，10个用户同时查询
+           │
+           ▼
+  10个请求同时发现缓存不存在
+           │
+           ▼
+  10次并发 refreshCache()
+           │
+           ├── 10次 clearAllCache()
+           └── 10次 initCache()
+           │
+           ▼
+  数据库被打爆 💥
+
+  问题 3：TTL 不同步
+
+  如果你恢复被注释的代码：
+
+  // 第147行 - 数据缓存
+  redisTemplate.expire(dataKey, 1, TimeUnit.HOURS);
+
+  // 第169行 - 映射缓存
+  redisTemplate.expire(REDIS_KEY_MAPPING, 1, TimeUnit.HOURS);
+
+  问题：每个 key 的 TTL 是独立的
+
+  时刻 T0: 加载完成
+           mapping          TTL=1h，过期时刻=T0+1h
+           data:TABLE_A     TTL=1h，过期时刻=T0+1h
+           data:TABLE_B     TTL=1h，过期时刻=T0+1h （假设加载有延迟）
+
+  时刻 T0+1h: mapping 过期
+           └── 触发刷新，重置所有 TTL
+
+  时刻 T0+1h+1s: data:TABLE_A 过期（刷新还没完成）
+           └── 又触发刷新
+
+  问题 4：仍依赖外系统
+
+  TTL 过期 → refreshCache() → initCache() → getBusinessDate()
+                                                │
+                                                ▼
+                                查询 BATCH_BUSINESS_DATE_RESULT
+                                                │
+                                如果没数据 → 返回 null → 加载失败
+
+  ---
+  流程图：最坏情况
+
+                 缓存过期
+                    │
+      ┌─────────────┼─────────────┐
+      │             │             │
+    用户A         用户B         用户C
+      │             │             │
+      ▼             ▼             ▼
+  getTableName  getTableName  getTableName
+      │             │             │
+   发现null      发现null      发现null
+      │             │             │
+      ▼             ▼             ▼
+  refreshCache  refreshCache  refreshCache
+      │             │             │
+  clearAllCache clearAllCache clearAllCache  ← 互相干扰
+      │             │             │
+   initCache     initCache     initCache     ← 重复加载
+      │             │             │
+      └─────────────┼─────────────┘
+                    │
+                    ▼
+             getClientId()
+                    │
+              发现null (还在加载中)
+                    │
+                    ▼
+             refreshCache()  ← 又刷一次
+
+  ---
+  总结
+
+  | 问题             | 严重程度 | 说明                                      |
+  |------------------|----------|-------------------------------------------|
+  | 会重新加载吗？   | ✅ 会    | 代码逻辑支持                              |
+  | 单次请求多次刷新 | 🔴 高    | getTableName + getClientId 可能各触发一次 |
+  | 并发刷新         | 🔴 高    | 无锁保护，多用户同时触发                  |
+  | TTL 不同步       | 🟡 中    | 不同 key 独立过期                         |
+  | 仍依赖外系统     | 🔴 高    | 刷新时仍需查 BATCH_BUSINESS_DATE_RESULT   |
+  | 首次请求延迟     | 🟡 中    | "踩雷"用户需等待加载完成                  |
+
+  当前代码虽然有重载逻辑，但缺少并发控制和防重复刷新机制，在生产环境可能导致问题。
+
+> 那如何防止并发加载现象？有什么解决方案吗?
+
+● 防止并发加载的解决方案
+
+  方案一：分布式锁（推荐）
+
+  原理：只允许一个实例执行刷新，其他请求等待或返回旧数据
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │                        Redis 分布式锁                         │
+  ├──────────────────────────────────────────────────────────────┤
+  │                                                              │
+  │   用户A ──→ 尝试获取锁 ──→ 成功 ──→ 执行 refreshCache()      │
+  │                                        │                     │
+  │   用户B ──→ 尝试获取锁 ──→ 失败 ──→ 等待/返回旧值            │
+  │                                        │                     │
+  │   用户C ──→ 尝试获取锁 ──→ 失败 ──→ 等待/返回旧值            │
+  │                                        │                     │
+  │                                        ▼                     │
+  │                                   释放锁                      │
+  │                                        │                     │
+  │   用户B、C ──────────────────────→ 读取新缓存                │
+  │                                                              │
+  └──────────────────────────────────────────────────────────────┘
+
+  实现要点：
+
+  1. 使用 Redis SETNX 或 Redisson 分布式锁
+  2. 锁的 key: security_master:refresh_lock
+  3. 锁的超时时间: 5分钟（防止死锁）
+  4. 获取锁失败的处理:
+     - 方式A: 等待锁释放后读取新缓存
+     - 方式B: 直接返回 null，让上层重试
+     - 方式C: 查数据库兜底
+
+  ---
+  方案二：双重检查锁（DCL）
+
+  原理：获取锁后再检查一次缓存，避免重复加载
+
+  查询缓存
+      │
+      ▼
+  ┌─────────┐
+  │ 有数据？ │──→ 是 ──→ 直接返回
+  └─────────┘
+      │ 否
+      ▼
+  尝试获取锁
+      │
+      ▼
+  ┌─────────┐
+  │ 获取成功？│──→ 否 ──→ 等待后重新查缓存
+  └─────────┘
+      │ 是
+      ▼
+  【第二次检查】再查一次缓存  ← 关键！
+      │
+      ▼
+  ┌─────────┐
+  │ 有数据？ │──→ 是 ──→ 释放锁，返回数据（别人已加载）
+  └─────────┘
+      │ 否
+      ▼
+  执行 refreshCache()
+      │
+      ▼
+  释放锁，返回数据
+
+  为什么需要第二次检查：
+
+  时刻T1: 用户A 发现缓存空，准备获取锁
+  时刻T2: 用户B 已获取锁，正在加载
+  时刻T3: 用户B 加载完成，释放锁
+  时刻T4: 用户A 获取到锁
+
+  如果没有第二次检查:
+    用户A 会重复加载一次（浪费）
+
+  有第二次检查:
+    用户A 发现缓存已有数据，直接返回
+
+  ---
+  方案三：本地锁 + 状态标记
+
+  原理：用 JVM 锁 + volatile 状态标记，适合单实例
+
+  ┌─────────────────────────────────────────┐
+  │            SecurityMasterCacheService    │
+  ├─────────────────────────────────────────┤
+  │  volatile boolean isRefreshing = false  │
+  │  ReentrantLock refreshLock              │
+  ├─────────────────────────────────────────┤
+  │                                         │
+  │  refreshCache():                        │
+  │    if (!refreshLock.tryLock())          │
+  │      return  // 已有线程在刷新          │
+  │                                         │
+  │    try:                                 │
+  │      isRefreshing = true                │
+  │      clearAllCache()                    │
+  │      initCache()                        │
+  │    finally:                             │
+  │      isRefreshing = false               │
+  │      refreshLock.unlock()               │
+  │                                         │
+  │  getTableName():                        │
+  │    value = redis.get(key)               │
+  │    if (value != null) return value      │
+  │                                         │
+  │    if (isRefreshing)                    │
+  │      // 正在刷新，等待或返回null        │
+  │      waitForRefresh() 或 return null    │
+  │    else                                 │
+  │      refreshCache()                     │
+  │      return redis.get(key)              │
+  │                                         │
+  └─────────────────────────────────────────┘
+
+  局限：多实例部署时无效，需改用分布式锁
+
+  ---
+  方案四：缓存永不过期 + 异步刷新
+
+  原理：缓存不设 TTL，后台定时异步刷新
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │                     缓存永不主动过期                          │
+  ├─────────────────────────────────────────────────────────────┤
+  │                                                             │
+  │  用户查询 ──→ 永远能读到数据（可能是旧的）                    │
+  │                                                             │
+  │  后台定时任务（如每小时）:                                    │
+  │    ┌─────────────────────────────────────────────┐          │
+  │    │ 1. 获取分布式锁                              │          │
+  │    │ 2. 加载新数据到临时 key                      │          │
+  │    │ 3. 原子切换（双缓存方案）                    │          │
+  │    │ 4. 清理旧数据                               │          │
+  │    │ 5. 释放锁                                   │          │
+  │    └─────────────────────────────────────────────┘          │
+  │                                                             │
+  │  优点: 用户请求永远不触发刷新，零延迟                         │
+  │  缺点: 数据有最大1小时延迟                                   │
+  │                                                             │
+  └─────────────────────────────────────────────────────────────┘
+
+  ---
+  方案五：Semaphore 限制并发数
+
+  原理：允许有限数量的并发刷新（通常设为1）
+
+  Semaphore refreshSemaphore = new Semaphore(1)
+
+  refreshCache():
+      if (!refreshSemaphore.tryAcquire())
+          // 已有刷新在进行
+          waitForCurrentRefresh()
+          return
+
+      try:
+          doRefresh()
+      finally:
+          refreshSemaphore.release()
+
+  ---
+  方案对比
+
+  | 方案          | 复杂度 | 多实例支持 | 用户体验       | 适用场景         |
+  |---------------|--------|------------|----------------|------------------|
+  | 分布式锁      | 中     | ✅         | 等待或降级     | 生产环境首选     |
+  | 双重检查锁    | 中     | ✅         | 等待           | 配合分布式锁使用 |
+  | 本地锁+状态   | 低     | ❌         | 等待或降级     | 单实例开发环境   |
+  | 永不过期+异步 | 高     | ✅         | 最佳（无感知） | 高可用生产环境   |
+  | Semaphore     | 低     | ❌         | 等待           | 单实例简单场景   |
+
+  ---
+  推荐组合方案
+
+  生产环境最佳实践：分布式锁 + 双重检查 + 等待机制
+
+  getTableName(assetType, businessType):
+      │
+      ▼
+  ┌──────────────────────┐
+  │ 1. 查询 Redis 缓存    │
+  └──────────────────────┘
+      │
+      ├── 有数据 ──→ 直接返回 ✓
+      │
+      ▼ 无数据
+  ┌──────────────────────┐
+  │ 2. 尝试获取分布式锁   │
+  │    SETNX lock 300s   │
+  └──────────────────────┘
+      │
+      ├── 获取成功 ──→ 执行步骤3
+      │
+      ▼ 获取失败（别人在刷新）
+  ┌──────────────────────┐
+  │ 等待锁释放 (最多30s)  │
+  │ 或轮询检查缓存        │
+  └──────────────────────┘
+      │
+      ▼
+      重新查询缓存并返回
+
+
+  步骤3（获取锁成功）:
+  ┌──────────────────────┐
+  │ 3. 【双重检查】       │
+  │    再查一次缓存       │
+  └──────────────────────┘
+      │
+      ├── 有数据 ──→ 释放锁，返回（别人已加载）
+      │
+      ▼ 确实无数据
+  ┌──────────────────────┐
+  │ 4. 执行 refreshCache │
+  └──────────────────────┘
+      │
+      ▼
+  ┌──────────────────────┐
+  │ 5. 释放锁，返回数据   │
+  └──────────────────────┘
+
+  ---
+  等待机制的实现方式
+
+  获取锁失败后，如何等待？
+
+  方式A: 轮询等待
+  ┌─────────────────────────────────┐
+  │ while (重试次数 < 10):          │
+  │     sleep(500ms)               │
+  │     value = redis.get(key)     │
+  │     if (value != null)         │
+  │         return value           │
+  │ return null  // 超时           │
+  └─────────────────────────────────┘
+
+  方式B: 订阅通知（Redis Pub/Sub）
+  ┌─────────────────────────────────┐
+  │ 刷新完成后发布消息              │
+  │ 等待方订阅消息，收到后查缓存    │
+  └─────────────────────────────────┘
+
+  方式C: 直接返回 null + 上层重试
+  ┌─────────────────────────────────┐
+  │ 锁被占用 → 返回 null           │
+  │ 上层业务稍后重试                │
+  └─────────────────────────────────┘
+
+  ---
+  总结
+
+  针对你当前的场景，建议：
+
+  1. 短期：加本地锁（ReentrantLock）+ 状态标记，快速止血
+  2. 中期：改用 Redisson 分布式锁 + 双重检查
+  3. 长期：采用双缓存切换 + 后台异步刷新，彻底解决问题
+
+  需要我针对某个方案详细展开吗？
