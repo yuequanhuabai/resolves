@@ -1291,7 +1291,16 @@ SecurityMasterCacheService里面缓存的初始化需要依赖外系统的表BAT
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
 
+问题：
+我在前端添加Bond和对应的productCode的时候发现XS937663002，XS937663004，XS937663003里面
+XS937663004可以在redis中获取到对应的clientId，但是XS937663003，XS937663002获取不到对应的clientId，
+但是我看了 redis的数据，这三个都有对应的clientId，你可以帮我排查一下原因吗？你也可以连接redis查询对应的key里面的值验证
+核心代码在：BuyListServiceImpl.insertBuyListDetail方法
 
 
 ###########################################################################

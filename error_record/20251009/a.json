@@ -1,0 +1,34 @@
+[
+  {
+    "id": "7a03eb80ab26444ea7c2589aad2c702b",
+    "businessId": "PVBLIST_BND_THM_1",
+    "buyListId": "87994b22-e821-48be-92b0-4be3a2ad7e94",
+    "recordVersion": 1,
+    "assetType": "1",
+    "productCode": "XS937663003",
+    "clientId": null,
+    "processInstanceId": "ae23f779-e232-11f0-8ede-5eea1d7fcc1d",
+    "taskId": null,
+    "businessType": 1
+  },
+  {
+    "id": null,
+    "buyListId": "87994b22-e821-48be-92b0-4be3a2ad7e94",
+    "assetType": "1",
+    "productCode": "XS937663002",
+    "clientId": "",
+    "approvalStatus": 1,
+    "recordVersion": 1,
+    "businessType": 1
+  },
+  {
+    "id": null,
+    "buyListId": "87994b22-e821-48be-92b0-4be3a2ad7e94",
+    "assetType": "1",
+    "productCode": "XS937663001",
+    "clientId": "",
+    "approvalStatus": 1,
+    "recordVersion": 1,
+    "businessType": 1
+  }
+]
