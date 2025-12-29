@@ -1,4 +1,18 @@
 
+ * ▐▛███▜▌ *   Claude Code v2.0.76
+* ▝▜█████▛▘ *  Opus 4.5 · Claude Pro
+ *  ▘▘ ▝▝  *   D:\software\developmentTools\Git\gitee\newpap\pap
+
+  A gift for you
+  Your rate limits are 2x higher through 12/31. Enjoy the extra room to think!
+
+> 帮我梳理一下当前目录下项目的前端部分的架构：
+是这个目录：poc-pro-ui
+不是这个pocpro，这个是后端的
+
+● Explore(探索前端项目架构)
+  ⎿  Done (70 tool uses · 64.7k tokens · 5m 13s)
+
 ● PAP 前端项目架构分析
 
   一、项目概览
@@ -359,6 +373,566 @@
   | 进度反馈     | 顶部进度条 + 页面加载动画          |
 
   这个文件是整个前端权限控制的核心，确保用户只能访问有权限的页面。
+
+> /export  a.md
+  ⎿  Conversation exported to: a.txt
+
+> 你帮我梳理一下字典的加载过程逻辑，过程流程要稍微详细一点;
+
+● Read(poc-pro-ui\src\store\modules\dict.ts)
+  ⎿  Read 105 lines
+
+● Search(pattern: "**/api/**/dict*.ts", path: "poc-pro-ui")
+  ⎿  Found 2 files (ctrl+o to expand)
+
+● Read(poc-pro-ui\src\utils\dict.ts)
+  ⎿  Read 165 lines
+
+● Read(poc-pro-ui\src\api\system\dict\dict.data.ts)
+  ⎿  Read 50 lines
+
+● Read(poc-pro-ui\src\hooks\web\useCache.ts)
+  ⎿  Read 42 lines
+
+● 字典加载过程详解
+
+  ---
+  一、整体架构图
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │                         字典系统架构                                 │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │   ┌───────────┐    ┌───────────┐    ┌───────────┐    ┌───────────┐ │
+  │   │ 页面组件   │───→│ 工具函数   │───→│ Dict Store │───→│ API 接口  │ │
+  │   │ (views)   │    │ (utils)   │    │ (Pinia)   │    │ (axios)   │ │
+  │   └───────────┘    └───────────┘    └───────────┘    └───────────┘ │
+  │         │                │                │                │       │
+  │         │                │                │                │       │
+  │         ▼                ▼                ▼                ▼       │
+  │   使用字典数据      getDictOptions   dictMap 缓存     后端接口      │
+  │                    getDictLabel     sessionStorage   /dict-data   │
+  │                                                                     │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  ---
+  二、涉及的核心文件
+
+  | 文件            | 路径                         | 职责                         |
+  |-----------------|------------------------------|------------------------------|
+  | dict.ts (Store) | store/modules/dict.ts        | Pinia 状态管理，核心加载逻辑 |
+  | dict.ts (Utils) | utils/dict.ts                | 字典工具函数，供组件调用     |
+  | dict.data.ts    | api/system/dict/dict.data.ts | API 接口定义                 |
+  | useCache.ts     | hooks/web/useCache.ts        | 缓存 Hook，封装 Web Storage  |
+  | permission.ts   | permission.ts                | 路由守卫，触发字典加载       |
+
+  ---
+  三、加载触发时机
+
+  用户首次访问任意页面
+           │
+           ▼
+    permission.ts (beforeEach)
+           │
+           ▼
+    检查 Token 存在 && 用户未初始化
+           │
+           ▼
+  ┌────────────────────────────────┐
+  │  if (!dictStore.getIsSetDict)  │  ← 检查字典是否已加载
+  │    await dictStore.setDictMap()│  ← 触发字典加载
+  └────────────────────────────────┘
+
+  关键代码 (permission.ts:75-77):
+  const dictStore = useDictStoreWithOut()
+  if (!dictStore.getIsSetDict) {
+    await dictStore.setDictMap()  // 加载字典
+  }
+
+  ---
+  四、核心加载流程 (setDictMap)
+
+                      setDictMap() 开始
+                             │
+                             ▼
+              ┌──────────────────────────────┐
+              │ 1. 检查 sessionStorage 缓存   │
+              │    wsCache.get(DICT_CACHE)   │
+              └──────────────────────────────┘
+                             │
+                ┌────────────┴────────────┐
+                │                         │
+                ▼ 缓存存在                 ▼ 缓存不存在
+      ┌─────────────────────┐   ┌─────────────────────────┐
+      │ 2a. 直接使用缓存     │   │ 2b. 调用后端 API        │
+      │ this.dictMap = cache│   │ getSimpleDictDataList() │
+      │ this.isSetDict=true │   │ GET /dict-data/simple-list│
+      └─────────────────────┘   └─────────────────────────┘
+                                           │
+                                           ▼
+                                ┌─────────────────────────┐
+                                │ 3. 转换数据格式          │
+                                │ 后端数组 → dictType Map  │
+                                └─────────────────────────┘
+                                           │
+                                           ▼
+                                ┌─────────────────────────┐
+                                │ 4. 存入 Store 和缓存     │
+                                │ this.dictMap = data     │
+                                │ this.isSetDict = true   │
+                                │ wsCache.set(..., 60秒)  │
+                                └─────────────────────────┘
+                                           │
+                                           ▼
+                                     加载完成
+
+  ---
+  五、详细代码解析
+
+  1. Store 状态定义 (store/modules/dict.ts)
+
+  export interface DictState {
+    dictMap: Map<string, any>  // 字典数据 Map
+    isSetDict: boolean          // 是否已加载标识
+  }
+
+  export const useDictStore = defineStore('dict', {
+    state: (): DictState => ({
+      dictMap: new Map<string, any>(),
+      isSetDict: false
+    }),
+    // ...
+  })
+
+  2. 核心加载方法 setDictMap()
+
+  async setDictMap() {
+    // Step 1: 检查 sessionStorage 缓存
+    const dictMap = wsCache.get(CACHE_KEY.DICT_CACHE)
+
+    if (dictMap) {
+      // Step 2a: 缓存命中，直接使用
+      this.dictMap = dictMap
+      this.isSetDict = true
+    } else {
+      // Step 2b: 缓存未命中，请求后端
+      const res = await getSimpleDictDataList()
+
+      // Step 3: 数据转换（扁平数组 → 按 dictType 分组的 Map）
+      const dictDataMap = new Map<string, any>()
+      res.forEach((dictData: DictDataVO) => {
+        // 初始化该 dictType 的数组
+        if (!dictDataMap[dictData.dictType]) {
+          dictDataMap[dictData.dictType] = []
+        }
+        // 添加字典项
+        dictDataMap[dictData.dictType].push({
+          value: dictData.value,
+          label: dictData.label,
+          colorType: dictData.colorType,
+          cssClass: dictData.cssClass
+        })
+      })
+
+      // Step 4: 存入 Store
+      this.dictMap = dictDataMap
+      this.isSetDict = true
+
+      // Step 5: 写入缓存（60秒过期）
+      wsCache.set(CACHE_KEY.DICT_CACHE, dictDataMap, { exp: 60 })
+    }
+  }
+
+  3. 后端 API 接口
+
+  // api/system/dict/dict.data.ts
+  export const getSimpleDictDataList = () => {
+    return request.get({ url: '/system/dict-data/simple-list' })
+  }
+
+  后端返回数据格式（扁平数组）:
+  [
+    { "dictType": "common_status", "value": "0", "label": "开启", "colorType": "success" },
+    { "dictType": "common_status", "value": "1", "label": "关闭", "colorType": "danger" },
+    { "dictType": "system_user_sex", "value": "1", "label": "男", "colorType": "" },
+    { "dictType": "system_user_sex", "value": "2", "label": "女", "colorType": "" }
+  ]
+
+  转换后的数据格式（按 dictType 分组）:
+  {
+    "common_status": [
+      { value: "0", label: "开启", colorType: "success", cssClass: "" },
+      { value: "1", label: "关闭", colorType: "danger", cssClass: "" }
+    ],
+    "system_user_sex": [
+      { value: "1", label: "男", colorType: "", cssClass: "" },
+      { value: "2", label: "女", colorType: "", cssClass: "" }
+    ]
+  }
+
+  ---
+  六、缓存机制
+
+  缓存 Key 定义
+
+  // hooks/web/useCache.ts
+  export const CACHE_KEY = {
+    DICT_CACHE: 'dictCache',  // 字典缓存 Key
+    // ...其他缓存
+  }
+
+  缓存存储方式
+
+  // 使用 sessionStorage（会话级别）
+  const { wsCache } = useCache('sessionStorage')
+
+  // 存入缓存，60秒过期
+  wsCache.set(CACHE_KEY.DICT_CACHE, dictDataMap, { exp: 60 })
+
+  | 特性     | 说明                                               |
+  |----------|----------------------------------------------------|
+  | 存储位置 | sessionStorage（浏览器会话存储）                   |
+  | 过期时间 | 60 秒                                              |
+  | 清除时机 | 关闭浏览器标签页 / 过期自动清除 / 调用 resetDict() |
+
+  ---
+  七、字典使用方式
+
+  1. 工具函数 (utils/dict.ts)
+
+  // 获取字典选项列表
+  export const getDictOptions = (dictType: string) => {
+    return dictStore.getDictByType(dictType) || []
+  }
+
+  // 获取整数类型字典（value 转 number）
+  export const getIntDictOptions = (dictType: string): NumberDictDataType[]
+
+  // 获取字符串类型字典（value 转 string）
+  export const getStrDictOptions = (dictType: string): StringDictDataType[]
+
+  // 获取布尔类型字典（value 转 boolean）
+  export const getBoolDictOptions = (dictType: string)
+
+  // 根据 value 获取 label
+  export const getDictLabel = (dictType: string, value: any): string
+
+  // 根据 value 获取完整字典对象
+  export const getDictObj = (dictType: string, value: any): DictDataType
+
+  2. 组件中使用示例
+
+  <template>
+    <!-- 下拉选择框 -->
+    <el-select v-model="form.status">
+      <el-option
+        v-for="dict in getIntDictOptions(DICT_TYPE.COMMON_STATUS)"
+        :key="dict.value"
+        :label="dict.label"
+        :value="dict.value"
+      />
+    </el-select>
+
+    <!-- 显示标签 -->
+    <span>{{ getDictLabel(DICT_TYPE.COMMON_STATUS, row.status) }}</span>
+  </template>
+
+  <script setup>
+  import { DICT_TYPE, getDictLabel, getIntDictOptions } from '@/utils/dict'
+  </script>
+
+  3. 预定义字典类型枚举
+
+  // utils/dict.ts
+  export enum DICT_TYPE {
+    // 通用
+    COMMON_STATUS = 'common_status',
+
+    // 系统模块
+    SYSTEM_USER_SEX = 'system_user_sex',
+    SYSTEM_MENU_TYPE = 'system_menu_type',
+
+    // BPM 模块
+    BPM_PROCESS_INSTANCE_STATUS = 'bpm_process_instance_status',
+    BPM_TASK_STATUS = 'bpm_task_status',
+
+    // 业务模块
+    BENCHMARK_TYPE = 'benchmark_type',
+    ASSET_TYPE = 'asset_type',
+    // ...
+  }
+
+  ---
+  八、刷新/重置字典
+
+  // store/modules/dict.ts
+  async resetDict() {
+    // 1. 清除缓存
+    wsCache.delete(CACHE_KEY.DICT_CACHE)
+
+    // 2. 重新请求后端
+    const res = await getSimpleDictDataList()
+
+    // 3. 转换并存储
+    const dictDataMap = new Map<string, any>()
+    res.forEach((dictData) => {
+      // ...转换逻辑同 setDictMap
+    })
+
+    this.dictMap = dictDataMap
+    this.isSetDict = true
+
+    // 4. 重新写入缓存
+    wsCache.set(CACHE_KEY.DICT_CACHE, dictDataMap, { exp: 60 })
+  }
+
+  使用场景: 管理员在后台修改了字典数据后，需要刷新前端缓存。
+
+  ---
+  九、完整时序图
+
+  ┌──────┐     ┌────────────┐     ┌───────────┐     ┌─────────┐     ┌────────┐
+  │ 用户  │     │ permission │     │ dictStore │     │ wsCache │     │ 后端API │
+  └──┬───┘     └─────┬──────┘     └─────┬─────┘     └────┬────┘     └───┬────┘
+     │               │                   │                │              │
+     │ 访问页面       │                   │                │              │
+     │──────────────>│                   │                │              │
+     │               │                   │                │              │
+     │               │ getIsSetDict      │                │              │
+     │               │──────────────────>│                │              │
+     │               │                   │                │              │
+     │               │    false          │                │              │
+     │               │<──────────────────│                │              │
+     │               │                   │                │              │
+     │               │ setDictMap()      │                │              │
+     │               │──────────────────>│                │              │
+     │               │                   │                │              │
+     │               │                   │ get(DICT_CACHE)│              │
+     │               │                   │───────────────>│              │
+     │               │                   │                │              │
+     │               │                   │     null       │              │
+     │               │                   │<───────────────│              │
+     │               │                   │                │              │
+     │               │                   │ GET /dict-data/simple-list   │
+     │               │                   │─────────────────────────────>│
+     │               │                   │                │              │
+     │               │                   │     [字典数组]                │
+     │               │                   │<─────────────────────────────│
+     │               │                   │                │              │
+     │               │                   │ 数据转换        │              │
+     │               │                   │ (数组→Map)     │              │
+     │               │                   │                │              │
+     │               │                   │ set(DICT_CACHE, data, 60s)   │
+     │               │                   │───────────────>│              │
+     │               │                   │                │              │
+     │               │  完成              │                │              │
+     │               │<──────────────────│                │              │
+     │               │                   │                │              │
+     │  页面渲染      │                   │                │              │
+     │<──────────────│                   │                │              │
+     │               │                   │                │              │
+
+  ---
+  十、关键点总结
+
+  | 特性     | 说明                                                       |
+  |----------|------------------------------------------------------------|
+  | 加载时机 | 路由守卫首次进入时（懒加载）                               |
+  | 缓存策略 | sessionStorage + 60秒过期                                  |
+  | 数据结构 | { dictType: [{ value, label, colorType, cssClass }] }      |
+  | 获取方式 | getDictOptions(dictType) / getDictLabel(dictType, value)   |
+  | 类型转换 | getIntDictOptions / getStrDictOptions / getBoolDictOptions |
+  | 刷新机制 | dictStore.resetDict() 强制刷新                             |
+
+> 再帮我看看dict.ts里面的wsCache这个变量，是useCache.ts文件内返回的
+
+● Web Search("web-storage-cache npm package usage API")
+  ⎿  Did 1 search in 30s
+
+● Search(pattern: "wsCache\.", path: "poc-pro-ui\src", output_mode: "content",
+        head_limit: 30)
+  ⎿  Found 30 lines (ctrl+o to expand)
+
+● wsCache 详解
+
+  ---
+  一、wsCache 是什么
+
+  wsCache 是基于 https://www.npmjs.com/package/web-storage-cache 库的封装，扩展了原生 localStorage / sessionStorage，增加了：
+
+  - ✅ 过期时间支持 - 可设置缓存有效期
+  - ✅ 对象序列化 - 自动 JSON 序列化/反序列化
+  - ✅ 过期自动清理 - 访问过期数据时自动删除
+
+  ---
+  二、useCache Hook 实现
+
+  // hooks/web/useCache.ts
+  import WebStorageCache from 'web-storage-cache'
+
+  type CacheType = 'localStorage' | 'sessionStorage'
+
+  // 缓存 Key 常量
+  export const CACHE_KEY = {
+    ROLE_ROUTERS: 'roleRouters',   // 角色路由
+    USER: 'user',                   // 用户信息
+    DICT_CACHE: 'dictCache',        // 字典缓存
+    IS_DARK: 'isDark',              // 暗黑模式
+    LANG: 'lang',                   // 语言
+    THEME: 'theme',                 // 主题
+    LAYOUT: 'layout',               // 布局
+    LoginForm: 'loginForm',         // 登录表单
+    TenantId: 'tenantId',           // 租户ID
+    VisitTenantId: 'visitTenantId'  // 访问租户ID
+  }
+
+  // Hook 函数
+  export const useCache = (type: CacheType = 'localStorage') => {
+    const wsCache: WebStorageCache = new WebStorageCache({
+      storage: type  // 'localStorage' 或 'sessionStorage'
+    })
+    return { wsCache }
+  }
+
+  ---
+  三、在 dict.ts 中的使用
+
+  // store/modules/dict.ts
+  import { CACHE_KEY, useCache } from '@/hooks/web/useCache'
+
+  // 使用 sessionStorage（会话级存储）
+  const { wsCache } = useCache('sessionStorage')
+
+  注意: dict.ts 使用的是 sessionStorage，关闭浏览器标签页后缓存会清除。
+
+  ---
+  四、wsCache API 方法
+
+  | 方法                     | 说明                    | 示例                                  |
+  |--------------------------|-------------------------|---------------------------------------|
+  | get(key)                 | 获取缓存，过期返回 null | wsCache.get('dictCache')              |
+  | set(key, value, options) | 设置缓存，可设过期时间  | wsCache.set('key', data, { exp: 60 }) |
+  | delete(key)              | 删除指定缓存            | wsCache.delete('dictCache')           |
+  | clear()                  | 清空所有缓存            | wsCache.clear()                       |
+  | touch(key, exp)          | 更新过期时间            | wsCache.touch('key', 120)             |
+  | deleteAllExpires()       | 删除所有过期项          | wsCache.deleteAllExpires()            |
+
+  ---
+  五、dict.ts 中的具体用法
+
+  1. 读取缓存
+
+  // dict.ts:43
+  const dictMap = wsCache.get(CACHE_KEY.DICT_CACHE)
+  // 如果缓存存在且未过期，返回缓存数据
+  // 如果过期或不存在，返回 null
+
+  2. 写入缓存（带过期时间）
+
+  // dict.ts:67
+  wsCache.set(CACHE_KEY.DICT_CACHE, dictDataMap, { exp: 60 })
+  //                   Key              Value        60秒过期
+
+  3. 删除缓存
+
+  // dict.ts:77
+  wsCache.delete(CACHE_KEY.DICT_CACHE)
+
+  ---
+  六、过期时间设置方式
+
+  // 方式1: 秒数
+  wsCache.set('key', data, { exp: 60 })  // 60秒后过期
+
+  // 方式2: Date 对象
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  wsCache.set('key', data, { exp: tomorrow })  // 明天过期
+
+  // 方式3: 不设过期（永久）
+  wsCache.set('key', data)  // 无过期时间
+
+  ---
+  七、项目中 wsCache 使用汇总
+
+  | 模块      | 存储类型       | Key          | 过期时间 | 用途     |
+  |-----------|----------------|--------------|----------|----------|
+  | dict.ts   | sessionStorage | dictCache    | 60秒     | 字典数据 |
+  | user.ts   | localStorage   | user         | 永久     | 用户信息 |
+  | user.ts   | localStorage   | roleRouters  | 永久     | 角色路由 |
+  | locale.ts | localStorage   | lang         | 永久     | 语言设置 |
+  | app.ts    | localStorage   | theme        | 永久     | 主题配置 |
+  | app.ts    | localStorage   | layout       | 永久     | 布局配置 |
+  | app.ts    | localStorage   | isDark       | 永久     | 暗黑模式 |
+  | auth.ts   | localStorage   | ACCESS_TOKEN | 永久     | 访问令牌 |
+
+  ---
+  八、两种存储的区别
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │                    localStorage                              │
+  ├─────────────────────────────────────────────────────────────┤
+  │ • 持久存储，关闭浏览器不清除                                  │
+  │ • 同源所有标签页共享                                         │
+  │ • 适合: 用户设置、主题、语言、Token                          │
+  │ • 项目使用: useCache('localStorage') 或 useCache()          │
+  └─────────────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │                   sessionStorage                             │
+  ├─────────────────────────────────────────────────────────────┤
+  │ • 会话存储，关闭标签页即清除                                  │
+  │ • 仅当前标签页可用                                           │
+  │ • 适合: 字典缓存、临时数据                                   │
+  │ • 项目使用: useCache('sessionStorage')                      │
+  └─────────────────────────────────────────────────────────────┘
+
+  ---
+  九、字典缓存的完整流程
+
+  ┌────────────────────────────────────────────────────────────────┐
+  │                      字典缓存流程                               │
+  └────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+                      wsCache.get('dictCache')
+                                │
+                ┌───────────────┴───────────────┐
+                │                               │
+                ▼                               ▼
+         缓存存在且未过期                    缓存不存在或已过期
+                │                               │
+                ▼                               ▼
+         直接返回缓存数据              请求后端 API 获取数据
+                                                │
+                                                ▼
+                                        转换数据格式
+                                                │
+                                                ▼
+                                  wsCache.set('dictCache', data, { exp: 60 })
+                                                │
+                                                ▼
+                                        存入 sessionStorage
+                                                │
+                                                ▼
+                                  ┌─────────────────────────────┐
+                                  │    60秒后自动过期            │
+                                  │    或关闭标签页时清除        │
+                                  └─────────────────────────────┘
+
+  ---
+  十、为什么字典用 sessionStorage + 60秒过期？
+
+  | 设计考虑       | 说明                                           |
+  |----------------|------------------------------------------------|
+  | sessionStorage | 每个标签页独立，避免多标签数据冲突             |
+  | 60秒过期       | 平衡性能和数据新鲜度，避免长时间使用旧数据     |
+  | 频繁刷新       | 管理员修改字典后，用户最多等60秒就能获取新数据 |
+  | 首屏优化       | 60秒内多次刷新页面，复用缓存减少请求           |
+
+  Sources:
+  - https://www.npmjs.com/package/web-storage-cache
+  - https://github.com/wuchangming/web-storage-cache/blob/master/README_en.md
 
 
 
