@@ -1,0 +1,102 @@
+ 好的，我先整理完整的实现方案供您审核。
+
+  ---
+  实现方案
+
+  一、数据结构变更
+
+  | 项目         | 原设计                                   | 新设计                                            |
+  |--------------|------------------------------------------|---------------------------------------------------|
+  | 缓存数据结构 | Map<isin, client_id>                     | Map<isin, List<client_id>>                        |
+  | Redis Key    | security_master:data:{tableName}         | security_master:data:{customerTierId}:{assetType} |
+  | 映射关系     | {customerTierId}:{assetType} → tableName | 可移除（直接用assetType作为key）                  |
+
+  二、核心逻辑变更
+
+  原流程：
+  ASSET_TYPE表 → 逐条处理 → 一个assetType对应一个表 → 存Redis
+
+  新流程：
+  ASSET_TYPE表 → 按(customerTierId, assetType)分组 →
+  每组可能对应多个表 → 查询并合并 → 存Redis
+
+  三、代码变更点
+
+  1. initCache() 方法重构
+
+  // 步骤1: 按 (customerTierId, assetType) 分组
+  Map<String, List<AssetTypeDo>> groupedConfigs = assetTypeConfigs.stream()
+      .collect(Collectors.groupingBy(
+          config -> config.getCustomerTierId() + ":" + config.getAssetType()
+      ));
+
+  // 步骤2: 遍历每个分组
+  for (Map.Entry<String, List<AssetTypeDo>> entry : groupedConfigs.entrySet()) {
+      String groupKey = entry.getKey();  // 如 "1:Equities"
+      List<AssetTypeDo> configs = entry.getValue();  // 可能有多条记录（多个表）
+
+      // 步骤3: 合并多个表的数据
+      Map<String, List<String>> mergedDataMap = new HashMap<>();
+
+      for (AssetTypeDo config : configs) {
+          String fullTableName = getFullTableName(config, tableSwitchLogMap);
+          String matchField = config.getField();
+
+          // 查询该表数据
+          List<Map<String, Object>> dataList = securityMasterMapper
+              .selectSecurityMasterData(fullTableName, matchField);
+
+          // 合并到 mergedDataMap
+          for (Map<String, Object> row : dataList) {
+              String isin = (String) row.get("match_field_value");
+              String clientId = (String) row.get("CLIENT_ID");
+
+              if (isin != null && clientId != null) {
+                  mergedDataMap.computeIfAbsent(isin, k -> new ArrayList<>())
+                      .add(clientId);
+              }
+          }
+      }
+
+      // 步骤4: 存入Redis（新Key格式）
+      String dataKey = REDIS_KEY_PREFIX_DATA + groupKey;  // security_master:data:1:Equities
+      redisTemplate.opsForHash().putAll(dataKey, mergedDataMap);
+  }
+
+  2. 查询方法变更
+
+  // 原方法（返回单个）
+  public String getClientId(String assetType, Integer businessType, String productCode);
+
+  // 新方法（返回列表）
+  public List<String> getClientIds(String assetType, Integer businessType, String productCode);
+
+  3. Redis 存储格式
+
+  Key: security_master:data:1:Equities
+  Type: Hash
+  Value: {
+    "ABC123": ["C001", "C002", "C003"],
+    "DEF456": ["C004"],
+    ...
+  }
+
+  四、影响范围
+
+  | 影响点                     | 说明                                      |
+  |----------------------------|-------------------------------------------|
+  | SecurityMasterCacheService | 主要修改文件                              |
+  | getClientId() 方法调用方   | 需要适配返回值从 String 变为 List<String> |
+  | Redis 数据格式             | 需要清空旧缓存重新加载                    |
+
+  五、需要确认的问题
+
+  1. 调用方如何处理多个client_id？
+    - 需要检查哪些地方调用了 getClientId() 方法，评估影响
+  2. 是否需要保留原方法兼容？
+    - 可以提供 getFirstClientId() 方法返回第一个值，保持向后兼容
+
+  ---
+  请审核以上方案，确认后我再编写代码。
+
+  如需要，我可以先查找所有调用 getClientId() 的地方，评估影响范围。

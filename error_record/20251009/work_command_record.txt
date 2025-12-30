@@ -1324,8 +1324,35 @@ XS937663004可以在redis中获取到对应的clientId，但是XS937663003，XS9
 ###########################################################################
 你再用等价的java语法帮我解析一下dict.ts文件;
 
-
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+
+核心代碼： cn.bochk.pap.server.business.service.SecurityMasterCacheService
+
+问题：
+核心代碼： cn.bochk.pap.server.business.service.SecurityMasterCacheService
+因爲業務變動，需要修改緩存的加載邏輯：
+現邏輯：查詢ASSET_TYPE表獲取對 ASSET_TYPE,SYSTEM_CODE,FIELD字段
+然後基於ASSET_TYPE找到對應的SYSTEM_CODE，拼接BR_SECURITY_MASTER+“_"+SystemCode+"_1";形成最終的表名
+Asset_Type和system_code的對應關係是一對一，也就是AssetType和表的對應關係是一對一，
+獲取<assetType,tableName>和<tableName,field>這兩個Map結構
+ 然後查詢對應的表BR_SECURITY_MASTER+“_"+SystemCode+"_1"， 查詢字段是 第二個map的field裏面的值（該值是一個動態的字段，不同的表，這個字段不一樣，會在第一次的表Asset_type表中固定）和client_id(表裏面一定會有的字段)；
+ 例如： select isin,client_id  from  BR_SECURITY_MASTER_BND_1
+ 把查詢的結果返回到Map<isin,client_id>中  ，然後緩存到redis中；
+
+ 業務問題：
+ 現在可能出現： 一個assetType對應兩個表的情況，例如Equities --》BR_SECURITY_MASTER_BND_1和BR_SECURITY_MASTER_SMS_1兩個表，
+ 表中的字段也可能重複，例如BR_SECURITY_MASTER_BND_1中有相同的一個isin對應兩個client_id值存在；另一個表也是，也可能存在有相同的一個isin對應兩個client_id值存在
+ 需要合并兩個表的結果，存儲到redis中；
+ 需要注意的是，并不是所有的assetType都會有兩個表；就是即存在assetType對應一個表的情況也存在assetType對應兩個表的情況，需要額外處理兩個表的情況；
+ 還需要額外處理一個表中存在一個key，對應兩個值的情況；
+ 然後合并結果集，存儲redis中；
+
+ 你先查看代碼，理解邏輯，再看我的問題；然後復述一遍你對我的問題的需求理解：
+
+
 
 
 ###########################################################################
