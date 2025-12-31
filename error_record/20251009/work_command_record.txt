@@ -1375,9 +1375,21 @@ Windwos 的Remote Procedure Call （RPC）是什么服务？
 
 
 ###########################################################################
+assetType ---> assetTypeTable
+
+assetTypeTable  --->  {br_security_master_bnd_1, br_security_master_sms_1 ...}
+
+br_security_master_bnd_1 -->  { <isin1,client_id1>,<isin1,client_id2> ...}
+
+br_security_master_sms_1 -->  { <isin1,client_id2>,<isin2,client_id2>,<isin2,client_id3> ...}
+
+assetType  -->  {<isin1,[client_id1,client_id2]>,<isin2,[client_id2,client_id3]> ...}
+
+
+
 
 ###########################################################################
-
+https://h.app.coc.10086.cn/cmcc-app/pc-pages/tariffZonePers.html
 
 
 ###########################################################################
