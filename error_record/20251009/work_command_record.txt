@@ -1485,8 +1485,25 @@ PAP负责业务实现和Aladdin交互，把基于Aladdin的分析结果提供给
 
 ###########################################################################
 
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+核心代碼： cn.bochk.pap.server.business.service.SecurityMasterCacheService
+
+问题在后端代码：
+核心代碼： cn.bochk.pap.server.business.service.SecurityMasterCacheService
+业务场景在getMultiAssetTypeClientIdMap方法里面的 List<Map<String, Object>> tempDataList = securityMasterMapper.selectSecurityMasterData(fullTableName, matchField);
+代码位置需要修改一下sql的查询逻辑：
+目前的sql是：SELECT ${matchField} AS match_field_value, CLIENT_ID FROM ${tableName} WHERE ${matchField} IS NOT NULL AND ${matchField} != ''
+需要修改的问题是: 因为业务变动，需要额外添加一些查询逻辑，拼接在已有的查询逻辑后，我打算放在List<AssetTypeDo> assetTypeConfigs 参数里面，
+也就是List<AssetTypeDo> assetTypeConfigs = assetTypeMapper.selectBuyListEnabledAssetTypes();这个数据库查询操作，
+我想在asset_type表里面再加一列condition字段做一个额外的条件，拼接在已有的sql后面，当然这个是针对同一资产类型的不同SYSTEM_CODE,而形成的不同表;
+
+你可以理解我上面的逻辑吗？你先复述一遍你对我上面逻辑的理解;
 
 
+sms: and CLIENT_SEC_TYPE = 'Equities' and CLIENT_SEC_TYPE2 in ('Stocks','Debt Security','Synthetic ETF','Trust (Non-Synthetic ETF)','US Equities','US ETF','Warrant','Rights')
+pvb: and CLIENT_SEC_TYPE = 'Equities' and CLIENT_SET_TYPE2 IN ('JP Equities','SG Equities','SG ETF')
 ###########################################################################
 
 
