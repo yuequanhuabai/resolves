@@ -1503,7 +1503,7 @@ PAP负责业务实现和Aladdin交互，把基于Aladdin的分析结果提供给
 
 
 sms: and CLIENT_SEC_TYPE = 'Equities' and CLIENT_SEC_TYPE2 in ('Stocks','Debt Security','Synthetic ETF','Trust (Non-Synthetic ETF)','US Equities','US ETF','Warrant','Rights')
-pvb: and CLIENT_SEC_TYPE = 'Equities' and CLIENT_SET_TYPE2 IN ('JP Equities','SG Equities','SG ETF')
+pvb: and CLIENT_SEC_TYPE = 'Equities' and CLIENT_SEC_TYPE2 IN ('JP Equities','SG Equities','SG ETF')
 ###########################################################################
 
 
