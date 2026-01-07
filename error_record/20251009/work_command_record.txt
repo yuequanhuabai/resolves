@@ -1605,10 +1605,15 @@ redis的初始化的代码在cn.bochk.pap.server.business.service.SecurityMaster
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
 
 
 ###########################################################################
-
+PvB Fund Thematic 3
 
 
 ###########################################################################
