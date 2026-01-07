@@ -1508,22 +1508,112 @@ pvb: and CLIENT_SEC_TYPE = 'Equities' and CLIENT_SEC_TYPE2 IN ('JP Equities','SG
 
 
 ###########################################################################
+● 好的，我已经阅读了相关代码，现在复述一下我对你需求的理解：
+
+  ---
+  我的理解
+
+  现有代码分析
+
+  目前 BuyListServiceImpl.parseAndValidateFile 已经实现了：
+  1. 解析 CSV/Excel 文件
+  2. 调用 validateRows 方法进行校验
+  3. 校验逻辑：通过 securityMasterCacheService.getClientIdSet(assetType, productCode) 验证 productCode 是否存在于 Redis 缓存中
+
+  你的需求
+
+  场景1：首次导入校验（已有）
+  用户上传CSV → 解析文件 → 校验 productCode → 返回 ParseResultVO（包含校验结果+数据）→ 前端反显
+
+  场景2：二次校验（需要新增）
+  用户在前端编辑/添加/删除数据 → 提交修改后的数据列表 → 再次校验 productCode → 返回校验结果
+
+  校验核心逻辑（两个场景共用）
+
+  对于每条数据：
+  1. 根据 assetType 查询 Redis 缓存
+  2. 验证 productCode 是否存在于该 assetType 对应的缓存数据中
+  3. 如果存在，校验通过，回填 clientId
+  4. 如果不存在，返回错误信息
+
+  需要新增的内容
+
+  1. 新增 Controller 接口：POST /admin-api/buyList/validate
+    - 接收：用户编辑后的数据列表 List<BuyListImportDTO>
+    - 返回：ParseResultVO（包含校验结果）
+  2. 新增 Service 方法：validateImportData(List<BuyListImportDTO> dataList)
+    - 复用现有的 validateRows 校验逻辑
+    - 返回校验结果
+  3. 可能需要增强 BuyListImportDTO：
+    - 添加 rowIndex 字段，用于标识前端编辑的行号
+    - 添加 valid 字段，标识该行是否校验通过
+    - 添加 errorMessage 字段，存储具体错误信息
+
+  数据流程图
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                        首次导入                                  │
+  │  CSV文件 → parseAndValidateFile → validateRows → ParseResultVO  │
+  │                           ↓                                     │
+  │                      前端反显数据                                 │
+  │                           ↓                                     │
+  │                   用户编辑/添加/删除                              │
+  │                           ↓                                     │
+  │              二次校验接口 validateImportData                      │
+  │                           ↓                                     │
+  │               复用 validateRows 逻辑                             │
+  │                           ↓                                     │
+  │                   返回校验结果给前端                              │
+  └─────────────────────────────────────────────────────────────────┘
+
+  ---
+  请确认：
+  1. 我的理解是否正确？
+  2. 二次校验接口的入参是否需要包含 businessType？
+  3. 是否需要在 BuyListImportDTO 中添加额外字段（如 rowIndex、valid、errorMessage）用于前端展示？
+  4. 二次校验后，是直接保存数据，还是只返回校验结果等待用户确认后再保存？
+
+
+###########################################################################
+ 请确认：
+  1. 我的理解是否正确？
+  2. 二次校验接口的入参是否需要包含 businessType？
+  3. 是否需要在 BuyListImportDTO 中添加额外字段（如 rowIndex、valid、errorMessage）用于前端展示？
+  4. 二次校验后，是直接保存数据，还是只返回校验结果等待用户确认后再保存？
+
+确认：
+总体逻辑：
+导入csv文件的方法：parseFile，核心功能是先校验，再反显；如果校验数据有问题，先把所有的问题数据返回，错误信息精确到csv的每行，然后返回给前端;
+如果没问题，就直接把解析的数据反显到前端,供用户编辑，增删改等操作;
+当用户点击Save提交的时候，需要再次校验用户编辑，增删改等操作后的数据，如果有问题，把所有有问题的数据返回，错误信息显示有问题的productCode;
+
+二次校验接口应该不需要businessType，核心是校验前端保存的数据productCode字段是否在redis中对应assetType的Map<match_field_value,client_id>中的match_field_value集合中；
+可以在 BuyListImportDTO 中添加额外字段（如 rowIndex、valid、errorMessage）用于前端展示
+
+
+###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+核心代碼： cn.bochk.pap.server.business.service.SecurityMasterCacheService
+
+需求：
+redis的初始化的代码在cn.bochk.pap.server.business.service.SecurityMasterCacheService中；
+我说的是BuyListServiceImpl里的updateList方法，里面需要添加对用户提交数据的校验，该校验需要从已有的redis数据中获取；
+  对用户提交的productCode进行校验;判断提交的assetType的product在redis中的数据是否存在;
+  我在updateList方法中添加了checkDataInRedis(updateReqVO);但是还是没有添加方法体;
+
+
+###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
 
 
 
 ###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-###########################################################################
-
+PvB Fund Thematic 3
 
 
 ###########################################################################
