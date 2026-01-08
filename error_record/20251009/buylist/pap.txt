@@ -1,0 +1,8 @@
+pap数据:
+FFI ：30
+SSI ：30
+WSI：15
+IPC：60
+PvB Head：5
+PvB IC：40
+PvB RM：90
