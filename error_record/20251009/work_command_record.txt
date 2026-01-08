@@ -1617,11 +1617,33 @@ PvB Fund Thematic 3
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
 
+后端问题：
+maker第一次在前端保存，遇到一个AssetType对应两个表的情况，会存储两条或者多条数据;
+在checker进行审批后，maker进行二次编辑修改，对新增的可以映射多条的数据进行和第一次一样，但是对于原来已经提交的数据，它的数据量翻倍了，或者三倍（取决于redis中获取的同一个productCode(matche_field)对应的clientId的数量），maker会查询redis中的数据
+这样会有很大的问题;
+具体代码位置：cn.bochk.pap.server.business.service.Impl.BuyListServiceImpl的insertBuyListDetail方法调用的getBuyListDetailsDoForMaker方法
+
+你可以理解我的问题吗？你先复述一遍你的理解;
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
 
+前端问题：
+现状：maker第一次在buyList页面进行保存提交后，页面跳转会到上一级；
+问题：原页面没有关闭，maker还是可以重新进入该页面，但是会出现一系列问题，例如该页面的数据为上一个操作的缓存数据，提交保存后会有一些版本等数据变化;
+
+想要实现的效果： maker在buyList页面保存提交后，把原Tab关闭，返回到Buylist查询页面；
+
+你可以理解我的需求吗？ 你先复述一遍你的理解
 
 
 ###########################################################################
