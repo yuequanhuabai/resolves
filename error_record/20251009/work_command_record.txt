@@ -1645,9 +1645,15 @@ maker第一次在前端保存，遇到一个AssetType对应两个表的情况，
 
 你可以理解我的需求吗？ 你先复述一遍你的理解
 
-
 ###########################################################################
-
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\houseViewList
+前端问题：
+D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\houseViewList
+帮我看看HouseView List Maintenance页面的Asset Type的下拉框的数据是从哪里获取的
 
 ###########################################################################
 
