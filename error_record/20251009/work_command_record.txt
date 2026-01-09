@@ -1593,6 +1593,7 @@ pvb: and CLIENT_SEC_TYPE = 'Equities' and CLIENT_SEC_TYPE2 IN ('JP Equities','SG
 
 ###########################################################################
 
+
 基本条件：
 基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
 后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
@@ -1604,13 +1605,11 @@ redis的初始化的代码在cn.bochk.pap.server.business.service.SecurityMaster
   对用户提交的productCode进行校验;判断提交的assetType的product在redis中的数据是否存在;
   我在updateList方法中添加了checkDataInRedis(updateReqVO);但是还是没有添加方法体;
 
-
 ###########################################################################
 基本条件：
 基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
 后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
 前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
-
 
 
 ###########################################################################
@@ -1663,11 +1662,33 @@ Lovelycutepiggy
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+核心代碼： cn.bochk.pap.server.business.service.SecurityMasterCacheService
 
+需求：
+redis的初始化的代码在cn.bochk.pap.server.business.service.SecurityMasterCacheService中；
+我说的是BuyListServiceImpl里的updateList方法，里面需要添加对用户提交数据的校验，该校验需要从已有的redis数据中获取；
+  对用户提交的productCode进行校验;判断提交的assetType的product在redis中的数据是否存在;
+  我在updateList方法中添加了checkDataInRedis(updateReqVO);但是还是没有添加方法体;
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
 
+前提：
+现状：maker第一次在buyList页面进行保存提交后，页面跳转会到上一级；
+问题：原页面没有关闭，maker还是可以重新进入该页面，但是会出现一系列问题，例如该页面的数据为上一个操作的缓存数据，提交保存后会有一些版本等数据变化;
+想要实现的效果： maker在buyList页面保存提交后，把原Tab关闭，返回到Buylist查询页面;
+目前buyList昨天已经改好了
+
+要解决的问题：要改的是modelportfolio模块的前端,我昨天也改了，但是跳转还是有些问题，跳转的url好像有问题，你可以基于前后端，数据库数据，帮我排查一下吗？
+上面的代码位置只供参考,我用buyList模块来举例，实际应该查看modelportfolio的代码和动态菜单url的代码;
+你可以理解我的需求吗？ 你先复述一遍你的理解
 
 
 ###########################################################################
