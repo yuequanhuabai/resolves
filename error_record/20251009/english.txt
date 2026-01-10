@@ -28,10 +28,38 @@ Galactica
 
 
 ###########################################################################
+這個不理解：
 
+ 密碼對比不是簡單的 MD5
 
+  // ? 錯誤：直接比較 MD5
+  if (md5(inputPassword).equals(storedPassword)) { }
+
+  // ? 正確：使用 BCrypt（帶鹽值，每次加密結果不同）
+  // 輸入: "123456"
+  // 數據庫: "$2a$10$N9qo8uLOickgx2ZMRZoMy..."
+  passwordEncoder.matches("123456", "$2a$10$N9qo8uLOickgx2ZMRZoMy...")
+  // BCrypt 內部會提取鹽值，重新計算，再比較
+
+具體是怎麼比較的？這個代碼：passwordEncoder.matches("123456", "$2a$10$N9qo8uLOickgx2ZMRZoMy...")
+如果直接傳輸明文密碼不是有風險嗎？ 我理解是前端直接在輸入後馬上md5加密了，中間傳入也是md5後的字符串;
 
 ###########################################################################
+權限檢查是基於url的角色檢查,
+先獲取第一步認證後的授權：[role_user]
+再基於該url，獲取擁有訪問該url的角色，role_admin
+然後檢查 [role_user]裏面有沒有這個角色;
+然後通過或者是異常，
+
+不同的url不一樣，有些是認證過即可，有些url需要額外的角色權限纔可以;
+
+授權規則配置
+  http.authorizeHttpRequests(auth -> auth
+      .requestMatchers("/public/**").permitAll()      // 所有人可訪問
+      .requestMatchers("/user/**").authenticated()    // 登錄即可
+      .requestMatchers("/admin/**").hasRole("ADMIN")  // 需要 ADMIN 角色
+      .requestMatchers("/api/**").hasAuthority("API_ACCESS")  // 需要特定權限
+  );
 
 
 
