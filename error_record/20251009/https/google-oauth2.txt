@@ -1,0 +1,93 @@
+ 還有一個問題，如果我要把現在的http協議改爲https，要如何做呢？
+
+● 配置 HTTPS 需要修改前端、后端和 GCC 配置。
+
+  整体变化
+
+  HTTP (当前)                    HTTPS (目标)
+  ─────────────────────────────────────────────────
+  前端: http://localhost:3000  → https://localhost:3000
+  后端: http://localhost:8080  → https://localhost:8080
+  GCC redirect URI 也要改
+
+  步骤一：生成 SSL 证书
+
+  本地开发用自签名证书即可：
+
+  # 在 backend 目录下执行
+  cd backend
+  keytool -genkeypair -alias oauth2demo -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore keystore.p12 -validity 365
+   -storepass changeit
+
+  执行时会问几个问题，可以随便填或直接回车跳过。
+
+  步骤二：后端配置
+
+  修改 application.yml：
+
+  server:
+    port: 8080
+    ssl:
+      key-store: classpath:keystore.p12
+      key-store-password: changeit
+      key-store-type: PKCS12
+      key-alias: oauth2demo
+
+  然后把 keystore.p12 移动到 src/main/resources/ 目录下。
+
+  步骤三：前端配置
+
+  修改 vite.config.js：
+
+  import { defineConfig } from 'vite'
+  import react from '@vitejs/plugin-react'
+  import fs from 'fs'
+  import path from 'path'
+
+  export default defineConfig({
+    plugins: [react()],
+    server: {
+      port: 3000,
+      https: {
+        key: fs.readFileSync(path.resolve(__dirname, 'cert/key.pem')),
+        cert: fs.readFileSync(path.resolve(__dirname, 'cert/cert.pem')),
+      }
+    }
+  })
+
+  生成前端证书：
+
+  cd frontend
+  mkdir cert
+  openssl req -x509 -newkey rsa:2048 -keyout cert/key.pem -out cert/cert.pem -days 365 -nodes -subj "/CN=localhost"
+
+  步骤四：更新前端 API 地址
+
+  修改 App.jsx：
+
+  const API_BASE = 'https://localhost:8080'
+
+  步骤五：更新 GCC 配置
+
+  在 Google Cloud Console 中更新：
+  ┌───────────────────────────────┬─────────────────────────────────────────────────┐
+  │            配置项             │                      新值                       │
+  ├───────────────────────────────┼─────────────────────────────────────────────────┤
+  │ Authorized JavaScript origins │ https://localhost:3000                          │
+  ├───────────────────────────────┼─────────────────────────────────────────────────┤
+  │ Authorized redirect URIs      │ https://localhost:8080/login/oauth2/code/google │
+  └───────────────────────────────┴─────────────────────────────────────────────────┘
+  步骤六：后端 Security 配置更新
+
+  修改 SecurityConfig.java 中的 frontendUrl：
+
+  private String frontendUrl = "https://localhost:3000";
+
+  ---
+  注意事项
+
+  1. 浏览器警告：自签名证书会显示"不安全"警告，点击"继续访问"即可
+  2. 生产环境：需要用正规 CA 签发的证书（如 Let's Encrypt）
+
+  ---
+  要我帮你执行这些配置吗？
