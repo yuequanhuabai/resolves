@@ -1,0 +1,158 @@
+好的，让我详细讲解 OAuth2 授权码流程（Authorization Code Flow）。
+
+  OAuth2 授权码流程详解
+
+  ┌──────────┐                                           ┌──────────┐
+  │          │                                           │          │
+  │   用户    │                                           │  Google  │
+  │ (浏览器)  │                                           │  OAuth2  │
+  │          │                                           │  Server  │
+  └────┬─────┘                                           └────┬─────┘
+       │                                                      │
+       │  ┌─────────────┐              ┌─────────────────┐    │
+       │  │   React     │              │  Spring Boot    │    │
+       │  │  Frontend   │              │   Backend       │    │
+       │  └──────┬──────┘              └────────┬────────┘    │
+       │         │                              │             │
+       │         │                              │             │
+  ═════╪═════════╪══════════════════════════════╪═════════════╪═════
+       │         │                              │             │
+       │ STEP 1: 点击"Google登录"按钮            │             │
+       │────────?│                              │             │
+       │         │                              │             │
+       │         │ STEP 2: 重定向到后端OAuth入口  │             │
+       │         │─────────────────────────────?│             │
+       │         │  GET /oauth2/authorization/google          │
+       │         │                              │             │
+       │         │                              │ STEP 3: 302重定向
+       │?────────────────────────────────────────────────────?│
+       │              重定向到 Google 授权页面                  │
+       │              (携带 client_id, redirect_uri,          │
+       │               scope, state)                          │
+       │                                                      │
+       │ STEP 4: 用户在Google页面登录并授权                     │
+       │─────────────────────────────────────────────────────?│
+       │                                                      │
+       │ STEP 5: Google重定向回后端callback                    │
+       │?─────────────────────────────────────────────────────│
+       │         │  (携带 authorization_code, state)          │
+       │         │                              │?────────────│
+       │         │                              │             │
+       │         │                              │ STEP 6: 后端用code换token
+       │         │                              │────────────?│
+       │         │                              │  POST /token │
+       │         │                              │  (code, client_id,
+       │         │                              │   client_secret)
+       │         │                              │             │
+       │         │                              │?────────────│
+       │         │                              │ 返回 access_token
+       │         │                              │    refresh_token
+       │         │                              │             │
+       │         │                              │ STEP 7: 用token获取用户信息
+       │         │                              │────────────?│
+       │         │                              │ GET /userinfo│
+       │         │                              │             │
+       │         │                              │?────────────│
+       │         │                              │ 返回用户资料  │
+       │         │                              │             │
+       │         │ STEP 8: 创建会话，重定向前端    │             │
+       │         │?─────────────────────────────│             │
+       │?────────│  (设置Session/Cookie或返回JWT) │             │
+       │         │                              │             │
+       │ STEP 9: 前端获取用户信息显示             │             │
+       │────────?│ GET /api/user                │             │
+       │         │─────────────────────────────?│             │
+       │         │?─────────────────────────────│             │
+       │?────────│  返回当前登录用户信息          │             │
+       │         │                              │             │
+  ═════╪═════════╪══════════════════════════════╪═════════════╪═════
+
+  各步骤详解
+
+  Step 1-2: 发起授权请求
+
+  用户点击登录 → 前端跳转到:
+  http://localhost:8080/oauth2/authorization/google
+
+  Step 3: 重定向到 Google
+
+  后端构造 Google 授权 URL：
+  https://accounts.google.com/o/oauth2/v2/auth?
+    client_id=你的CLIENT_ID
+    &redirect_uri=http://localhost:8080/login/oauth2/code/google
+    &response_type=code
+    &scope=openid profile email
+    &state=随机字符串(防CSRF)
+
+  Step 4-5: 用户授权，Google 回调
+
+  用户同意后，Google 重定向：
+  http://localhost:8080/login/oauth2/code/google?
+    code=4/P7q7W91...授权码...
+    &state=之前的state值
+
+  Step 6: 用授权码换 Token
+
+  后端向 Google 发 POST 请求：
+  POST https://oauth2.googleapis.com/token
+
+  client_id=xxx
+  client_secret=xxx
+  code=授权码
+  redirect_uri=http://localhost:8080/login/oauth2/code/google
+  grant_type=authorization_code
+
+  Google 返回：
+  {
+    "access_token": "ya29.a0AfH6SM...",
+    "expires_in": 3599,
+    "refresh_token": "1//0eXx...",
+    "scope": "openid profile email",
+    "token_type": "Bearer",
+    "id_token": "eyJhbGciOi..."
+  }
+
+  Step 7: 获取用户信息
+
+  GET https://www.googleapis.com/oauth2/v3/userinfo
+  Authorization: Bearer ya29.a0AfH6SM...
+
+  返回：
+  {
+    "sub": "1234567890",
+    "name": "张三",
+    "email": "zhangsan@gmail.com",
+    "picture": "https://lh3.googleusercontent.com/..."
+  }
+
+  Step 8-9: 建立会话
+
+  后端创建 Session 或 JWT，前端后续请求携带凭证访问受保护资源。
+
+  ---
+  关键安全机制
+  ┌───────────────────┬──────────────────────────────────────┐
+  │       机制        │                 作用                 │
+  ├───────────────────┼──────────────────────────────────────┤
+  │ state             │ 防止 CSRF 攻击                       │
+  ├───────────────────┼──────────────────────────────────────┤
+  │ code 换 token     │ 授权码只能用一次，且需 client_secret │
+  ├───────────────────┼──────────────────────────────────────┤
+  │ client_secret     │ 只存在后端，前端不可见               │
+  ├───────────────────┼──────────────────────────────────────┤
+  │ redirect_uri 校验 │ 必须与 GCC 配置一致                  │
+  └───────────────────┴──────────────────────────────────────┘
+  ---
+  你的 GCC 配置对应关系
+  ┌───────────────────────────────┬──────────────────────────────┐
+  │          GCC 配置项           │           对应流程           │
+  ├───────────────────────────────┼──────────────────────────────┤
+  │ Client ID                     │ Step 3, 6 - 标识你的应用     │
+  ├───────────────────────────────┼──────────────────────────────┤
+  │ Client Secret                 │ Step 6 - 后端换 token 时使用 │
+  ├───────────────────────────────┼──────────────────────────────┤
+  │ Authorized redirect URIs      │ Step 5 - Google 回调地址     │
+  ├───────────────────────────────┼──────────────────────────────┤
+  │ Authorized JavaScript origins │ 前端域名（用于某些场景）     │
+  └───────────────────────────────┴──────────────────────────────┘
+  ---
