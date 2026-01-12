@@ -1,0 +1,51 @@
+步骤
+
+  在 Git Bash 中执行（不是 PowerShell）：
+
+  # 1. 进入前端目录
+  cd /d/software/develop_tools/git/github/workspace/google-oauth2/frontend
+
+  # 2. 删除之前不完整的文件
+  rm -rf cert
+
+  # 3. 重新创建目录
+  mkdir cert
+
+  # 4. 生成证书（一条命令）
+  openssl req -x509 -newkey rsa:2048 -keyout cert/key.pem -out cert/cert.pem -days 365 -nodes -subj "/CN=localhost"
+
+  # 5. 验证生成成功
+  ls -la cert/
+
+  应该看到两个文件：
+  cert/
+  ├── cert.pem   ← 证书
+  └── key.pem    ← 私钥
+
+
+
+  ============================================
+
+  这是 Git Bash 的路径转换问题。它把 /CN=localhost 误解为路径，转换成了 C:/Program Files/Git/CN=localhost。
+
+    解决方法
+
+    使用双斜杠 // 来阻止转换：
+
+    openssl req -x509 -newkey rsa:2048 -keyout cert/key.pem -out cert/cert.pem -days 365 -nodes -subj "//CN=localhost"
+
+    或者设置环境变量禁用路径转换：
+
+    MSYS_NO_PATHCONV=1 openssl req -x509 -newkey rsa:2048 -keyout cert/key.pem -out cert/cert.pem -days 365 -nodes -subj
+    "/CN=localhost"
+
+    完整步骤
+
+    # 先删除不完整的文件
+    rm cert/key.pem
+
+    # 重新生成（注意双斜杠）
+    openssl req -x509 -newkey rsa:2048 -keyout cert/key.pem -out cert/cert.pem -days 365 -nodes -subj "//CN=localhost"
+
+    # 验证
+    ls -la cert/
