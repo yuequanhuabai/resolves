@@ -1714,9 +1714,24 @@ redis的初始化的代码在cn.bochk.pap.server.business.service.SecurityMaster
   └────────────────────────┴────────────────────┴────────────────────────────────┘
 
 我想知道這個順序是誰定義的？在哪裏可以看到定義的詳情？
+CLIENT LIST
+info keyspace
+
 
 ###########################################################################
-FilterOrderRegistration.FilterOrderRegistration
+
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+关键代码:cn.bochk.pap.server.business.service.SecurityMasterCacheService,这里是初始化的核心
+cn.bochk.pap.server.business.service.Impl.BuyListServiceImpl#insertBuyListDetail方法这里，
+如果用户在前端删除一个一个AssetType对应多个clientId的具体AssetType，例如Equities，还会留下另一个，但是在用户提交的时候，
+还是会有两个，因为后端是基于AssetType来操作的，而不是clientId;
+
+你可以理解我的需求吗？你先复述一遍你的理解？
+
 
 
 ###########################################################################
@@ -1725,7 +1740,7 @@ FilterOrderRegistration.FilterOrderRegistration
 要求每個步驟裏面的描述要準確，核心，簡潔：
 
 ###########################################################################
-
+FilterOrderRegistration.FilterOrderRegistration
 
 ###########################################################################
 
