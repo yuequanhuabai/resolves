@@ -1731,8 +1731,12 @@ cn.bochk.pap.server.business.service.Impl.BuyListServiceImpl#insertBuyListDetail
 还是会有两个，因为后端是基于AssetType来操作的，而不是clientId;
 
 你可以理解我的需求吗？你先复述一遍你的理解？
+###########################################################################
+and CLIENT_SEC_TYPE = 'Equities' and CLIENT_SET_TYPE2 IN ('JP Equities','SG Equities','SG ETF')
+这个上面的CLIENT_SET_TYPE2改为CLIENT_SEC_TYPE2，下面这个是正确的
+and CLIENT_SEC_TYPE = 'Equities' and CLIENT_SEC_TYPE2 IN ('JP Equities','SG Equities','SG ETF')
 
-
+我要改表中的这个带有单引号的值
 
 ###########################################################################
 你可以給我講講SAML2的核心架構嗎？要求準確，核心，簡潔
