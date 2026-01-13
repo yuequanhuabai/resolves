@@ -1840,9 +1840,23 @@ XS937663004
 PVBQ000104
 
 
-
 ###########################################################################
+$ git log
+commit 5a6072ac5ef5f5fb04a18f92d150f15712ab8fb8 (HEAD -> xs_import2, origin/xs_import2)
+Author: baiyingwaming <baiyingwaming@foxmail.com>
+Date:   Mon Jan 12 17:59:22 2026 +0800
 
+    用户修改
+
+commit 9a0202fd6e14cd4a2a48f1323025164e3662f97d
+Author: baiyingwaming <baiyingwaming@foxmail.com>
+Date:   Thu Jan 8 17:24:38 2026 +0800
+
+    assetType
+
+以上面两个git log 为例，
+commit msg:用户修改 对应的是：5a6072ac5ef5f5fb04a18f92d150f15712ab8fb8 这个commit点吗？
+commit msg: assetType  对应的是： 9a0202fd6e14cd4a2a48f1323025164e3662f97d 这commit点吗？
 
 ###########################################################################
 
