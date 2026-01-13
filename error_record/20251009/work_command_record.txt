@@ -1731,8 +1731,12 @@ cn.bochk.pap.server.business.service.Impl.BuyListServiceImpl#insertBuyListDetail
 还是会有两个，因为后端是基于AssetType来操作的，而不是clientId;
 
 你可以理解我的需求吗？你先复述一遍你的理解？
+###########################################################################
+and CLIENT_SEC_TYPE = 'Equities' and CLIENT_SET_TYPE2 IN ('JP Equities','SG Equities','SG ETF')
+这个上面的CLIENT_SET_TYPE2改为CLIENT_SEC_TYPE2，下面这个是正确的
+and CLIENT_SEC_TYPE = 'Equities' and CLIENT_SEC_TYPE2 IN ('JP Equities','SG Equities','SG ETF')
 
-
+我要改表中的这个带有单引号的值
 
 ###########################################################################
 你可以給我講講SAML2的核心架構嗎？要求準確，核心，簡潔
@@ -1833,12 +1837,32 @@ keytool -genkeypair -alias oauth2demo -keyalg RSA -keysize 2048 -storetype PKCS1
 ###########################################################################
 git rm --cached backend/src/main/resources/auth0-saml-metadata.xml
 
+###########################################################################
+XS937663004
+
+PVBQ000104
+
 
 ###########################################################################
+$ git log
+commit 5a6072ac5ef5f5fb04a18f92d150f15712ab8fb8 (HEAD -> xs_import2, origin/xs_import2)
+Author: baiyingwaming <baiyingwaming@foxmail.com>
+Date:   Mon Jan 12 17:59:22 2026 +0800
 
+    用户修改
+
+commit 9a0202fd6e14cd4a2a48f1323025164e3662f97d
+Author: baiyingwaming <baiyingwaming@foxmail.com>
+Date:   Thu Jan 8 17:24:38 2026 +0800
+
+    assetType
+
+以上面两个git log 为例，
+commit msg:用户修改 对应的是：5a6072ac5ef5f5fb04a18f92d150f15712ab8fb8 这个commit点吗？
+commit msg: assetType  对应的是： 9a0202fd6e14cd4a2a48f1323025164e3662f97d 这commit点吗？
 
 ###########################################################################
-
+git rm --cached backend/src/main/resources/auth0-saml-metadata.xml
 
 
 ###########################################################################
