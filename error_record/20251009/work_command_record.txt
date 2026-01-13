@@ -1831,7 +1831,7 @@ keytool -genkeypair -alias oauth2demo -keyalg RSA -keysize 2048 -storetype PKCS1
 
 
 ###########################################################################
-
+git rm --cached backend/src/main/resources/auth0-saml-metadata.xml
 
 
 ###########################################################################

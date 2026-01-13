@@ -1,0 +1,86 @@
+ 对，创建 Application。按以下步骤操作：
+
+  步骤一：创建应用
+
+  左侧菜单 Applications → Applications → Create Application
+      ↓
+  填写：
+  ┌────────────────────────────────────────────────┐
+  │ Name: saml2-demo                               │
+  │                                                │
+  │ Choose an application type:                    │
+  │ → Regular Web Applications                     │
+  │                                                │
+  │ → Create                                       │
+  └────────────────────────────────────────────────┘
+
+  步骤二：启用 SAML2
+
+  创建完成后：
+
+  进入应用 → Addons 标签页
+      ↓
+  找到 SAML2 Web App → 开启（点击开关）
+      ↓
+  弹出配置窗口，填写：
+  ┌────────────────────────────────────────────────┐
+  │ Application Callback URL:                      │
+  │ http://localhost:8080/login/saml2/sso/auth0   │
+  │                                                │
+  │ → 其他保持默认                                  │
+  │ → Save                                         │
+  └────────────────────────────────────────────────┘
+
+  步骤三：获取元数据
+
+  在 SAML2 配置窗口底部，找到：
+  - Identity Provider Metadata 链接（下载或复制 URL）
+
+  ---
+  完成后把 Metadata URL 发给我，我帮你创建 Spring Boot SAML2 项目。
+
+  =========================================================================================================
+
+
+
+
+  这是两个不同的用户体系：
+
+    区别
+
+    ┌─────────────────────────────────────────────────────────────┐
+    │  1. Auth0 管理后台 (manage.auth0.com)                       │
+    │     用户 = Auth0 开发者账户                                  │
+    │     你用 Gmail 登录 = 登录 Auth0 公司的系统                  │
+    │     ? 成功                                                  │
+    └─────────────────────────────────────────────────────────────┘
+
+    ┌─────────────────────────────────────────────────────────────┐
+    │  2. 你的租户 (dev-xxx.us.auth0.com)                         │
+    │     用户 = 你应用的用户（独立的用户库）                       │
+    │     这里还没有用户！需要你创建                               │
+    │     ? 失败                                                  │
+    └─────────────────────────────────────────────────────────────┘
+
+    解决方案
+
+    方案一：在租户中创建测试用户
+
+    Auth0 管理后台 → User Management → Users → Create User
+      Email: test@example.com
+      Password: 你设置一个
+      Connection: Username-Password-Authentication
+
+    然后用这个账号登录测试。
+
+    方案二：启用 Google 社交登录
+
+    Auth0 管理后台 → Authentication → Social → Create Connection
+      选择 Google
+      配置 Google OAuth 凭据
+
+    然后在 Applications → 你的应用 → Connections
+      启用 Google 连接
+
+    ---
+    推荐方案一，更简单。先创建一个测试用户试试。
