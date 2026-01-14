@@ -1866,7 +1866,41 @@ git rm --cached backend/src/main/resources/auth0-saml-metadata.xml
 
 
 ###########################################################################
+git revert 5a6072ac5ef5f5fb04a18f92d150f15712ab8fb8
 
+git push
+
+###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+帮我看看buyList模块的BuyListController的validateImportData 这个接口前端有没有调用？
+
+###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+问题：
+BuyListController#parseFile方法不完善;
+整体导入校验逻辑应该是：
+1.校验buyList上传文件csv或excel 的Asset Type字段是否再asset_type表里面的buy_list='Y'的所有assetType
+而且还要校验自身上传的productCode数据是否重复;
+2.校验excel/csv 提交的数据是否再redis中存在，这个校验已有了，在BuyListServiceImpl#checkDataInRedis方法里面;
+需要把这个校验移植过来，在用户导入的时候做一次校验，或者调用者方法，但是方法的入参好像不一样;
+
+你看看这种实现可行吗？ 先不改代码
+
+
+###########################################################################
+帮我再BuyListServiceImpl#updateList方法里面也加上刚才的校验吧
+1.150条数据的这个校验校验
+2.因为是前端是通过下拉框选中AssetType的，所以不用对AssetType进行校验；但是需要对同一个AssetType的productCode和clientId进行重复校验;
+就是相同的assetType+productCode唯一确定一个clientId，如果clientId也相同，就是相同的记录;
+3.
 
 ###########################################################################
 
