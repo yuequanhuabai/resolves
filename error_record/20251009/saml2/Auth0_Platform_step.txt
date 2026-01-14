@@ -67,8 +67,8 @@
     方案一：在租户中创建测试用户
 
     Auth0 管理后台 → User Management → Users → Create User
-      Email: test@example.com
-      Password: 你设置一个
+      Email: test@test.com
+      Password: Test1234!
       Connection: Username-Password-Authentication
 
     然后用这个账号登录测试。
