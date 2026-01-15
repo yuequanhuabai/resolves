@@ -50,7 +50,6 @@
   ---
   在 CMD 中执行这个命令（Windows 用一行）：
 
-  docker run -p 8180:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:latest
-  start-dev
+  docker run -p 8180:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:latest start-dev
 
   第一次运行会下载镜像，需要等待几分钟。

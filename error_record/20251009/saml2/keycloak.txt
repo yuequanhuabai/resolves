@@ -33,7 +33,7 @@
   ×ó²à²Ëµ¥ ¡ú Clients ¡ú Create client
 
   1. Client type: SAML
-     Client ID: spring-saml-client
+     Client ID: https://localhost:8080/saml2/metadata/keycloak
      ¡ú Next
 
   2. ÅäÖÃÒ³ÃæÌîĞ´£º

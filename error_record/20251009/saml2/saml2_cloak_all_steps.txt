@@ -1,0 +1,70 @@
+前提：先用docker 啓動 keycloak;
+啓動命令：
+
+docker run -p 8180:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:latest start-dev
+
+/存儲數據，不然下面的步驟需要在每次啓動的時候重新創建;
+docker run -p 8180:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin -v keycloak_data:/opt/keycloak/data quay.io/keycloak/keycloak:latest start-dev
+
+
+
+  步骤一：创建 Realm
+
+  左侧菜单上方下拉框（显示 "master"）
+  → Create realm
+  → Realm name: saml-demo
+  → Create
+
+  步骤二：创建 SAML2 Client
+
+  左侧菜单 → Clients → Create client
+
+  1. Client type: SAML
+     Client ID: https://localhost:8080/saml2/metadata/keycloak
+     → Next
+
+  2. 配置页面填写：
+     Root URL: https://localhost:8080
+     Home URL: https://localhost:8080
+     Valid redirect URIs: https://localhost:8080/*
+     → Save
+
+  步骤三：配置 Client 详细设置
+
+  创建后进入 Client 详情页，确认以下配置：
+
+  Settings 标签页：
+  - Name ID format: email
+  - Force name ID format: ON
+  - Sign assertions: ON
+
+  步骤四：创建测试用户
+
+  左侧菜单 → Users → Add user
+  - Username: testuser
+  - Email: test@test.com
+  - First name: Test
+  - Last name: User
+  → Create
+
+  创建后 → Credentials 标签页
+  → Set password
+  - Password: test123
+  - Temporary: OFF
+  → Save
+
+  步骤五：获取 IdP 元数据
+
+  左侧菜单 → Realm settings → General 标签页
+  → 找到 "Endpoints" 部分
+  → 点击 "SAML 2.0 Identity Provider Metadata" 链接
+  → 保存为 keycloak-saml-metadata.xml
+
+  //生成後放在resource目錄下，改爲keycloak-saml-metadata.xml
+  如果還有問題的話，需要導入證書：
+登錄url: http://localhost:8180
+輸入帳號密碼： admin/admin
+點擊左側的Clients
+-->Clients list（選中我們自己創建的client）
+--->點擊Key （下拉到Certificate，點擊Import key，Archive format選擇 Certificate PEM，把本地的saml-signing.crt上傳上去）
+
