@@ -104,3 +104,10 @@
     - https://zhuanlan.zhihu.com/p/693040305
     - https://zhuanlan.zhihu.com/p/17632613057
     - https://bayase.com/en/post/best-virtual-visa-mastercard-guide/
+
+claude pay:
+
+https://cantgpt.com/2024/11/12/claudeapi/
+
+minimax:
+https://platform.minimax.io/user-center/basic-information/interface-key
