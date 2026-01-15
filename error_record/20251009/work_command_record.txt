@@ -1905,11 +1905,11 @@ BuyListController#parseFile方法不完善;
 ###########################################################################
 基本条件：
 基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
-后端代码入口位置：cn.bochk.pap.server.business.controller.BuyListController
-前端代码位置：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
-缓存初始化代码：
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+缓存初始化代码:
 现象：
-对于buylist模块的导入和maker用户在前端新增数据时；
+对于buylist模块的导入和maker用户在前端新增数据时;
 可能会添加一条productCode对应多个client_id的情况;
 目前的方案是基于clientId的条数来先显示详情数据;即同一个productCode，对应的clientId有多少个，就在前端buyList详情页显示的时候显示对应多个数据;
 
@@ -1924,9 +1924,23 @@ BuyListController#parseFile方法不完善;
 你可以理解我的需求吗？你先复述一遍你的理解;
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+问题：
+你帮我看看现在的BuyListController#updateList里面的版本控制代码，这个方法：validateRecordVersion
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: cn.bochk.pap.server.business.controller.BenchmarkController
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\benchmark
+
+问题：
+你帮我看看benchmark模块的BenchmarkDO种的historyId的意义？
 
 
 
