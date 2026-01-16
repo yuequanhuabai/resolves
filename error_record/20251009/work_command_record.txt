@@ -1942,18 +1942,85 @@ BuyListController#parseFile方法不完善;
 问题：
 你帮我看看benchmark模块的BenchmarkDO种的historyId的意义？
 
+###########################################################################
+我确认一下：
+场景一,审批通过场景:
+1.初始化数据id=initId, historyId=null
+2.maker用户首次提交 id=submit1，historyId是？
+3.maker用户再次提交 id=submit2， historyId 是？
+4.checker用户审批同意, id=submit3, historyId 是？
 
+场景二,审批拒绝场景:
+1.初始化数据id=initId, historyId=null
+2.maker用户首次提交 id=submit1，historyId是？
+3.maker用户再次提交 id=submit2， historyId 是？
+4.checker用户审批拒绝, id=submit3, historyId 是？
+
+场景三,maker用户提交后重新二次编辑审批通过场景:
+1.初始化数据id=initId, historyId=null
+2.maker用户首次提交 id=submit1，historyId是？
+3.maker用户再次提交 id=submit2， historyId 是？
+4.maker用户再次提交 id=submit3， historyId 是？
+5.checker用户审批同意, id=submit4, historyId 是？
+
+场景四,maker用户提交后重新二次编辑审批拒绝场景:
+1.初始化数据id=initId, historyId=null
+2.maker用户首次提交 id=submit1，historyId是？
+3.maker用户再次提交 id=submit2， historyId 是？
+4.maker用户再次提交 id=submit3， historyId 是？
+5.checker用户审批拒绝, id=submit4, historyId 是？
+
+场景五,maker用户单次提交后审批拒绝，maker用户重新修改再次发起流程，审批通过场景:
+1.初始化数据id=initId, historyId=null
+2.maker用户首次提交 id=submit1，historyId是？
+3.maker用户再次提交 id=submit2， historyId 是？
+4.maker用户再次提交 id=submit3， historyId 是？
+5.checker用户审批拒绝, id=submit4, historyId 是？
+6.maker用户修改提交 id=submit5， historyId 是？
+7.checker用户审批通过, id=submit4, historyId 是？
+
+场景六,maker用户单次提交后审批拒绝，maker用户重新修改再次发起流程，审批拒绝场景:
+1.初始化数据id=initId, historyId=null
+2.maker用户首次提交 id=submit1，historyId是？
+3.maker用户再次提交 id=submit2， historyId 是？
+4.maker用户再次提交 id=submit3， historyId 是？
+5.checker用户审批拒绝, id=submit4, historyId 是？
+6.maker用户修改提交 id=submit5， historyId 是？
+7.checker用户审批拒绝, id=submit6, historyId 是？
+
+
+基于上面的这些场景historyId分别是多少？
+你再总结一下，historyId得本质得值是什么？
+例如当前bizStatus是1时，用户上次操作时首次提交，现在操作可能是再次提交或者审批操作，historyId会基于审批操作后(同意或拒绝)，新增得数据得historyId是那条的id
+等等...这些
+我就是想知道benchmark模块的historyId的抽象逻辑
+###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+benchmark模块的代码
+后端代码入口位置: cn.bochk.pap.server.business.controller.BenchmarkController
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\benchmark
+
+buyList模块的代码：
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+要求：
+你再看看buyList模块的代码，要把buyList模块的代码改成benchmark模块代码的逻辑，
+主要是historyId这里，buyList模块把historyId用作了sourceId，永远存储第一条初始数据的Id，
+然后基于这条Id去查找所有数据种的bizStatus=1,2,3的数据，基于版本降序排序，获取最近一条数据，来实现了benchmark模块的功能;
+现在要实现historyId的意义一致，要求buyList模块也要改成benchmark模块的逻辑;
+
+你可以理解我的需求吗？
 
 ###########################################################################
+需要修改的内容
 
-
-
-###########################################################################
-
-
-
-###########################################################################
-
+  1. insertNewBuyListByOriginalBizStatus 方法：增加 historyId 的设置逻辑，参考 Benchmark 的 createInsertBenchmark 方法
+  2. updateOldBuyList 方法：调整 historyId 的设置逻辑
+  3. insertBuyListDetail 方法：审批拒绝时的数据回溯逻辑，从"查询 sourceId 下所有版本取最新"改为"直接使用 historyId 定位"
+  4. getLastBuyListDo 方法：可能需要删除或重构，因为不再需要这种查询方式
+  5. 相关的 deleteData、updateValidEndDatetime、dealInit 方法：需要相应调整
 
 ###########################################################################
 
