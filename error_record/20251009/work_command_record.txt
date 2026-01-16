@@ -2045,15 +2045,42 @@ Fund
 XS937661012
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+benchmark模块的代码
+后端代码入口位置: cn.bochk.pap.server.business.controller.BenchmarkController
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\benchmark
+缓存初始化代码：cn.bochk.pap.server.business.service.SecurityMasterCacheService
 
+问题：
+我要问的问题是后端问题:
+我有一个关于redis的问题，就是在redis更新缓存的时候，我可以直接用put取覆盖吗？而不是先delete后put;
+
+###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+benchmark模块的代码
+后端代码入口位置: cn.bochk.pap.server.business.controller.BenchmarkController
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\benchmark
+
+前端问题：
+在buylist模块，前端的导入模块里面需要帮我修改下：
+现状：导入文件有问题，需要再次导入新的excel或csv文件，需要手动点击X删除已经导入的文件；
+要达成的效果：每次导入都以新导入的excel或者csv文件为准，新文件自动覆盖旧文件;
+
+你可以理解我的需求吗? 你先复述一遍你的理解;
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+benchmark模块的代码
+后端代码入口位置: cn.bochk.pap.server.business.controller.BenchmarkController
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\benchmark
 
-
-
-###########################################################################
-
+后端问题：
+帮我看看BuyListServiceImpl#validateProductCodeDuplicate方法，校验AssetType的相同productCode
+我想确认一下这个参数可以不可以去掉？isFirstImport
 
 ###########################################################################
 
