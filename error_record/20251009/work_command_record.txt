@@ -2023,8 +2023,26 @@ buyList模块的代码：
   5. 相关的 deleteData、updateValidEndDatetime、dealInit 方法：需要相应调整
 
 ###########################################################################
+LIST_BND_THM_2
+Pvb BondList-Thematic2
 
 
+Certificate of Deposits
+XS937663003
+XS937663004
+
+Structured Investment
+PVBQ000303
+
+Equities
+
+
+Bond
+XS937663004
+XS937663003
+
+Fund
+XS937661012
 
 ###########################################################################
 
