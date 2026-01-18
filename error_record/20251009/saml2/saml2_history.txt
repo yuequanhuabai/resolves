@@ -1,0 +1,246 @@
+SAML 2.0 概述
+
+  起源
+
+  SAML (Security Assertion Markup Language) 由 OASIS 组织开发：
+  - SAML 1.0：2002年发布
+  - SAML 1.1：2003年发布
+  - SAML 2.0：2005年发布，合并了 Shibboleth 和 Liberty Alliance 的方案，成为事实标准
+
+  核心目的
+
+  解决 跨域单点登录 (SSO) 问题——让用户在一个系统登录后，无需重复认证即可访问其他受信任系统。
+
+  核心角色
+  ┌─────────────────────────┬───────────────────────────────────────────────┐
+  │          角色           │                     说明                      │
+  ├─────────────────────────┼───────────────────────────────────────────────┤
+  │ IdP (Identity Provider) │ 身份提供者，负责认证用户（如 Okta、Azure AD） │
+  ├─────────────────────────┼───────────────────────────────────────────────┤
+  │ SP (Service Provider)   │ 服务提供者，即你的应用                        │
+  ├─────────────────────────┼───────────────────────────────────────────────┤
+  │ Principal               │ 用户本身                                      │
+  └─────────────────────────┴───────────────────────────────────────────────┘
+  核心流程（SP-Initiated）
+
+  用户 → SP → 重定向到 IdP → 用户登录 → IdP 生成 SAML Assertion → 回传 SP → SP 验证后授权
+
+  核心概念
+
+  - Assertion：XML 格式的安全声明，包含用户身份、属性、权限
+  - Binding：传输方式（HTTP Redirect、HTTP POST、SOAP 等）
+  - Metadata：SP 和 IdP 之间交换配置信息的 XML 文件
+
+  优缺点
+
+  优点：
+  - 企业级标准，广泛支持
+  - 安全性高（XML 签名 + 加密）
+
+  缺点：
+  - XML 臃肿，实现复杂
+  - 不适合移动端/API 场景
+
+  现状
+
+  SAML 2.0 仍是企业 SSO 的主流方案，但在新项目中逐渐被 OAuth 2.0 / OpenID Connect 取代（更轻量、JSON 格式、移动友好）
+
+  ===============================================================================================================================================================
+
+
+● SAML 2.0 SP-Initiated 详细流程
+
+  ┌──────┐         ┌──────┐         ┌──────┐
+  │ User │         │  SP  │         │ IdP  │
+  └──┬───┘         └──┬───┘         └──┬───┘
+     │                │                │
+     │ ① 访问资源     │                │
+     │───────────────>│                │
+     │                │                │
+     │ ② 302 重定向   │                │
+     │<───────────────│                │
+     │    (AuthnRequest)               │
+     │                                 │
+     │ ③ 携带 AuthnRequest 访问 IdP    │
+     │────────────────────────────────>│
+     │                                 │
+     │ ④ 显示登录页面                   │
+     │<────────────────────────────────│
+     │                                 │
+     │ ⑤ 提交用户名/密码               │
+     │────────────────────────────────>│
+     │                                 │
+     │ ⑥ 验证成功，返回表单页面          │
+     │<────────────────────────────────│
+     │    (含 SAMLResponse)            │
+     │                │                │
+     │ ⑦ 自动 POST SAMLResponse        │
+     │───────────────>│                │
+     │                │                │
+     │                │ ⑧ 验证签名/解析 │
+     │                │                │
+     │ ⑨ 授权成功，返回资源             │
+     │<───────────────│                │
+     │                │                │
+
+  各步骤详解
+
+  ① 用户访问 SP 受保护资源
+
+  GET https://app.example.com/dashboard
+  用户未登录，SP 检测到无有效会话。
+
+  ---
+  ② SP 生成 AuthnRequest 并重定向
+
+  SP 构造 SAML 认证请求，通过浏览器重定向到 IdP：
+
+  <samlp:AuthnRequest
+      ID="_abc123"
+      Version="2.0"
+      IssueInstant="2026-01-19T10:00:00Z"
+      Destination="https://idp.example.com/sso"
+      AssertionConsumerServiceURL="https://app.example.com/acs">
+      <saml:Issuer>https://app.example.com</saml:Issuer>
+  </samlp:AuthnRequest>
+
+  实际重定向 URL（Base64 编码 + 压缩）：
+  HTTP 302 Location:
+  https://idp.example.com/sso?SAMLRequest=fZJNT8MwDIb...&RelayState=/dashboard
+
+  - SAMLRequest：Base64 编码的 AuthnRequest
+  - RelayState：用户原本想访问的路径，登录后跳回
+
+  ---
+  ③ 浏览器携带请求访问 IdP
+
+  浏览器自动跳转到 IdP 的 SSO 端点，IdP 解析 AuthnRequest。
+
+  ---
+  ④ IdP 显示登录页面
+
+  IdP 检查用户是否已有会话：
+  - 有会话：跳过登录，直接到步骤 ⑥
+  - 无会话：显示登录表单
+
+  ---
+  ⑤ 用户提交凭证
+
+  POST https://idp.example.com/login
+  username=john&password=secret123
+  IdP 验证用户名密码（或 MFA）。
+
+  ---
+  ⑥ IdP 生成 SAMLResponse 并返回
+
+  验证成功后，IdP 构造包含 Assertion 的响应：
+
+  <samlp:Response ID="_xyz789" InResponseTo="_abc123">
+      <saml:Assertion ID="_def456">
+          <!-- 签发者 -->
+          <saml:Issuer>https://idp.example.com</saml:Issuer>
+
+          <!-- 数字签名 -->
+          <ds:Signature>...</ds:Signature>
+
+          <!-- 主题：用户是谁 -->
+          <saml:Subject>
+              <saml:NameID>john@example.com</saml:NameID>
+              <saml:SubjectConfirmation Method="bearer">
+                  <saml:SubjectConfirmationData
+                      NotOnOrAfter="2026-01-19T10:05:00Z"
+                      Recipient="https://app.example.com/acs"/>
+              </saml:SubjectConfirmation>
+          </saml:Subject>
+
+          <!-- 条件：有效期、受众限制 -->
+          <saml:Conditions
+              NotBefore="2026-01-19T10:00:00Z"
+              NotOnOrAfter="2026-01-19T10:05:00Z">
+              <saml:AudienceRestriction>
+                  <saml:Audience>https://app.example.com</saml:Audience>
+              </saml:AudienceRestriction>
+          </saml:Conditions>
+
+          <!-- 认证声明 -->
+          <saml:AuthnStatement AuthnInstant="2026-01-19T10:00:00Z">
+              <saml:AuthnContext>
+                  <saml:AuthnContextClassRef>
+                      urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
+                  </saml:AuthnContextClassRef>
+              </saml:AuthnContext>
+          </saml:AuthnStatement>
+
+          <!-- 属性声明 -->
+          <saml:AttributeStatement>
+              <saml:Attribute Name="email">
+                  <saml:AttributeValue>john@example.com</saml:AttributeValue>
+              </saml:Attribute>
+              <saml:Attribute Name="role">
+                  <saml:AttributeValue>admin</saml:AttributeValue>
+              </saml:Attribute>
+          </saml:AttributeStatement>
+      </saml:Assertion>
+  </samlp:Response>
+
+  IdP 返回一个自动提交的 HTML 表单：
+
+  <html>
+  <body onload="document.forms[0].submit()">
+      <form method="POST" action="https://app.example.com/acs">
+          <input type="hidden" name="SAMLResponse" value="PHNhbWxwOl..."/>
+          <input type="hidden" name="RelayState" value="/dashboard"/>
+      </form>
+  </body>
+  </html>
+
+  ---
+  ⑦ 浏览器自动 POST 到 SP 的 ACS
+
+  表单自动提交，将 SAMLResponse 发送到 SP 的 Assertion Consumer Service (ACS) 端点。
+
+  ---
+  ⑧ SP 验证 SAMLResponse
+
+  SP 执行严格验证：
+  ┌────────────────┬─────────────────────────────────────────┐
+  │     验证项     │                  说明                   │
+  ├────────────────┼─────────────────────────────────────────┤
+  │ 签名验证       │ 用 IdP 公钥验证 XML 签名，确保未被篡改  │
+  ├────────────────┼─────────────────────────────────────────┤
+  │ 时间验证       │ 检查 NotBefore / NotOnOrAfter，防止重放 │
+  ├────────────────┼─────────────────────────────────────────┤
+  │ 受众验证       │ Audience 必须是自己的 EntityID          │
+  ├────────────────┼─────────────────────────────────────────┤
+  │ Recipient 验证 │ 必须匹配自己的 ACS URL                  │
+  ├────────────────┼─────────────────────────────────────────┤
+  │ InResponseTo   │ 匹配之前发送的 AuthnRequest ID          │
+  └────────────────┴─────────────────────────────────────────┘
+  ---
+  ⑨ 创建会话，返回资源
+
+  验证通过后：
+  1. SP 从 Assertion 提取用户信息 (NameID, Attributes)
+  2. 创建本地会话（设置 Session Cookie）
+  3. 重定向到 RelayState 指定的原始页面
+
+  HTTP 302 Location: https://app.example.com/dashboard
+  Set-Cookie: session=eyJhbGciOiJIUzI1NiIs...; HttpOnly; Secure
+
+  用户成功访问 /dashboard。
+
+  ---
+  关键安全机制
+  ┌───────────────┬───────────────────────────────┐
+  │     机制      │             作用              │
+  ├───────────────┼───────────────────────────────┤
+  │ XML 签名      │ 防篡改                        │
+  ├───────────────┼───────────────────────────────┤
+  │ 时间窗口      │ 防重放攻击                    │
+  ├───────────────┼───────────────────────────────┤
+  │ Audience 限制 │ 防止 Assertion 被其他 SP 冒用 │
+  ├───────────────┼───────────────────────────────┤
+  │ HTTPS         │ 传输层加密                    │
+  ├───────────────┼───────────────────────────────┤
+  │ InResponseTo  │ 绑定请求和响应，防伪造        │
+  └───────────────┴───────────────────────────────┘
