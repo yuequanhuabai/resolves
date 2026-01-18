@@ -244,3 +244,292 @@ SAML 2.0 概述
   ├───────────────┼───────────────────────────────┤
   │ InResponseTo  │ 绑定请求和响应，防伪造        │
   └───────────────┴───────────────────────────────┘
+
+
+  ======================================================================================================================================================
+  ● SAML 2.0 三大核心概念详解
+
+    ---
+    一、Assertion（断言）
+
+    是什么？
+
+    Assertion 是 SAML 的核心载体，一段由 IdP 签发的 XML 数据，相当于 IdP 给用户开的"介绍信"。
+
+    包含三种声明
+
+    <saml:Assertion>
+
+        <!-- 1. Authentication Statement（认证声明）-->
+        <!-- "这个用户是谁，何时、用什么方式认证的" -->
+        <saml:AuthnStatement AuthnInstant="2026-01-19T10:00:00Z">
+            <saml:AuthnContext>
+                <saml:AuthnContextClassRef>
+                    urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport
+                </saml:AuthnContextClassRef>
+            </saml:AuthnContext>
+        </saml:AuthnStatement>
+
+        <!-- 2. Attribute Statement（属性声明）-->
+        <!-- "这个用户有哪些属性" -->
+        <saml:AttributeStatement>
+            <saml:Attribute Name="email">
+                <saml:AttributeValue>john@example.com</saml:AttributeValue>
+            </saml:Attribute>
+            <saml:Attribute Name="department">
+                <saml:AttributeValue>Engineering</saml:AttributeValue>
+            </saml:Attribute>
+            <saml:Attribute Name="roles">
+                <saml:AttributeValue>admin</saml:AttributeValue>
+                <saml:AttributeValue>developer</saml:AttributeValue>
+            </saml:Attribute>
+        </saml:AttributeStatement>
+
+        <!-- 3. Authorization Decision Statement（授权决策声明）-->
+        <!-- "这个用户能否访问某资源"（较少使用）-->
+        <saml:AuthzDecisionStatement
+            Resource="https://app.example.com/reports"
+            Decision="Permit">
+            <saml:Action>read</saml:Action>
+        </saml:AuthzDecisionStatement>
+
+    </saml:Assertion>
+
+    作用
+    ┌──────────┬─────────────────────────────────────────┐
+    │   作用   │                  说明                   │
+    ├──────────┼─────────────────────────────────────────┤
+    │ 身份证明 │ 证明用户已通过 IdP 认证                 │
+    ├──────────┼─────────────────────────────────────────┤
+    │ 属性传递 │ 将用户信息（邮箱、角色、部门等）传给 SP │
+    ├──────────┼─────────────────────────────────────────┤
+    │ 防篡改   │ 通过 XML 签名保证完整性                 │
+    ├──────────┼─────────────────────────────────────────┤
+    │ 时效控制 │ NotBefore/NotOnOrAfter 限制有效期       │
+    └──────────┴─────────────────────────────────────────┘
+    在流程中的位置
+
+    步骤 ⑥ ─── IdP 生成 Assertion，放入 SAMLResponse
+    步骤 ⑦ ─── 浏览器将 Assertion 传递给 SP
+    步骤 ⑧ ─── SP 验证并解析 Assertion
+    步骤 ⑨ ─── SP 根据 Assertion 中的信息创建会话
+
+    ---
+    二、Binding（绑定）
+
+    是什么？
+
+    Binding 定义了 SAML 消息如何在网络上传输，即协议消息与底层传输协议的映射方式。
+
+    常用 Binding 类型
+    ┌───────────────┬────────────────────┬────────────────────────────────────────────┬────────────────────┐
+    │    Binding    │      传输方式      │                    特点                    │      典型用途      │
+    ├───────────────┼────────────────────┼────────────────────────────────────────────┼────────────────────┤
+    │ HTTP-Redirect │ URL Query 参数     │ 消息需压缩+Base64，受 URL 长度限制（~2KB） │ AuthnRequest       │
+    ├───────────────┼────────────────────┼────────────────────────────────────────────┼────────────────────┤
+    │ HTTP-POST     │ HTML 表单隐藏字段  │ 支持大消息，Base64 编码                    │ SAMLResponse       │
+    ├───────────────┼────────────────────┼────────────────────────────────────────────┼────────────────────┤
+    │ HTTP-Artifact │ 传引用而非消息本身 │ 安全性高，需后端回调获取                   │ 高安全场景         │
+    ├───────────────┼────────────────────┼────────────────────────────────────────────┼────────────────────┤
+    │ SOAP          │ SOAP 消息体        │ 后端直接通信                               │ SLO、Artifact 解析 │
+    └───────────────┴────────────────────┴────────────────────────────────────────────┴────────────────────┘
+    HTTP-Redirect Binding 示例（步骤 ②）
+
+    HTTP/1.1 302 Found
+    Location: https://idp.example.com/sso
+        ?SAMLRequest=fZJNT8MwDIbvSPwHlHu...   ← 压缩 + Base64
+        &RelayState=%2Fdashboard              ← 原始路径
+        &SigAlg=http://www.w3.org/2001/04/xmldsig-more#rsa-sha256
+        &Signature=GpAL3O...                  ← 可选签名
+
+    HTTP-POST Binding 示例（步骤 ⑥⑦）
+
+    <!-- IdP 返回的自动提交表单 -->
+    <form method="POST" action="https://app.example.com/acs">
+        <input type="hidden" name="SAMLResponse"
+               value="PHNhbWxwOlJlc3BvbnNlIH..."/>  ← Base64（无压缩）
+        <input type="hidden" name="RelayState"
+               value="/dashboard"/>
+    </form>
+    <script>document.forms[0].submit();</script>
+
+    作用
+    ┌──────────┬──────────────────────────────────────────┐
+    │   作用   │                   说明                   │
+    ├──────────┼──────────────────────────────────────────┤
+    │ 灵活性   │ 适配不同场景（浏览器、后端、防火墙限制） │
+    ├──────────┼──────────────────────────────────────────┤
+    │ 安全分级 │ Artifact 更安全，敏感数据不经浏览器      │
+    ├──────────┼──────────────────────────────────────────┤
+    │ 兼容性   │ 不同系统可选择支持的 Binding             │
+    └──────────┴──────────────────────────────────────────┘
+    在流程中的位置
+
+    步骤 ② ─── HTTP-Redirect Binding（SP → IdP 的 AuthnRequest）
+    步骤 ⑥⑦ ── HTTP-POST Binding（IdP → SP 的 SAMLResponse）
+
+    为什么 Request 用 Redirect，Response 用 POST？
+    ┌──────────────┬────────────────────────────────┬───────────────┬────────────────────┐
+    │   消息类型   │              大小              │ 选择 Binding  │        原因        │
+    ├──────────────┼────────────────────────────────┼───────────────┼────────────────────┤
+    │ AuthnRequest │ 小（~1KB）                     │ HTTP-Redirect │ 简单，无需渲染页面 │
+    ├──────────────┼────────────────────────────────┼───────────────┼────────────────────┤
+    │ SAMLResponse │ 大（含签名、证书，可达 10KB+） │ HTTP-POST     │ 突破 URL 长度限制  │
+    └──────────────┴────────────────────────────────┴───────────────┴────────────────────┘
+    ---
+    三、Metadata（元数据）
+
+    是什么？
+
+    Metadata 是 SP 和 IdP 的配置描述文件（XML 格式），包含双方建立信任所需的所有信息。
+
+    SP Metadata 示例
+
+    <EntityDescriptor entityID="https://app.example.com">
+
+        <SPSSODescriptor
+            AuthnRequestsSigned="true"
+            WantAssertionsSigned="true"
+            protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+
+            <!-- SP 的公钥证书（用于 IdP 加密 Assertion）-->
+            <KeyDescriptor use="encryption">
+                <ds:KeyInfo>
+                    <ds:X509Data>
+                        <ds:X509Certificate>MIIC...</ds:X509Certificate>
+                    </ds:X509Data>
+                </ds:KeyInfo>
+            </KeyDescriptor>
+
+            <!-- SP 的签名证书（用于 IdP 验证 AuthnRequest 签名）-->
+            <KeyDescriptor use="signing">
+                <ds:KeyInfo>
+                    <ds:X509Data>
+                        <ds:X509Certificate>MIID...</ds:X509Certificate>
+                    </ds:X509Data>
+                </ds:KeyInfo>
+            </KeyDescriptor>
+
+            <!-- 单点登出端点 -->
+            <SingleLogoutService
+                Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+                Location="https://app.example.com/slo"/>
+
+            <!-- ACS 端点：接收 SAMLResponse 的地址 -->
+            <AssertionConsumerService
+                Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                Location="https://app.example.com/acs"
+                index="0" isDefault="true"/>
+
+        </SPSSODescriptor>
+
+    </EntityDescriptor>
+
+    IdP Metadata 示例
+
+    <EntityDescriptor entityID="https://idp.example.com">
+
+        <IDPSSODescriptor
+            WantAuthnRequestsSigned="false"
+            protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+
+            <!-- IdP 的签名证书（SP 用它验证 SAMLResponse 签名）-->
+            <KeyDescriptor use="signing">
+                <ds:KeyInfo>
+                    <ds:X509Data>
+                        <ds:X509Certificate>MIIE...</ds:X509Certificate>
+                    </ds:X509Data>
+                </ds:KeyInfo>
+            </KeyDescriptor>
+
+            <!-- SSO 端点：接收 AuthnRequest 的地址 -->
+            <SingleSignOnService
+                Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+                Location="https://idp.example.com/sso"/>
+
+            <SingleSignOnService
+                Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                Location="https://idp.example.com/sso"/>
+
+        </IDPSSODescriptor>
+
+    </EntityDescriptor>
+
+    Metadata 包含的关键信息
+    ┌────────────────┬────────────────────┬────────────────────┐
+    │      字段      │    SP Metadata     │    IdP Metadata    │
+    ├────────────────┼────────────────────┼────────────────────┤
+    │ EntityID       │ SP 的唯一标识      │ IdP 的唯一标识     │
+    ├────────────────┼────────────────────┼────────────────────┤
+    │ 证书           │ 加密/签名公钥      │ 签名公钥           │
+    ├────────────────┼────────────────────┼────────────────────┤
+    │ 端点 URL       │ ACS、SLO           │ SSO、SLO           │
+    ├────────────────┼────────────────────┼────────────────────┤
+    │ 支持的 Binding │ POST、Redirect 等  │ POST、Redirect 等  │
+    ├────────────────┼────────────────────┼────────────────────┤
+    │ NameID 格式    │ 期望的用户标识格式 │ 支持的用户标识格式 │
+    └────────────────┴────────────────────┴────────────────────┘
+    作用
+    ┌──────────┬───────────────────────────────────────┐
+    │   作用   │                 说明                  │
+    ├──────────┼───────────────────────────────────────┤
+    │ 建立信任 │ 交换证书，双方可验证签名              │
+    ├──────────┼───────────────────────────────────────┤
+    │ 自动配置 │ 导入 Metadata 即可完成大部分配置      │
+    ├──────────┼───────────────────────────────────────┤
+    │ 端点发现 │ 知道对方的 SSO/ACS/SLO URL            │
+    ├──────────┼───────────────────────────────────────┤
+    │ 能力协商 │ 了解对方支持哪些 Binding、NameID 格式 │
+    └──────────┴───────────────────────────────────────┘
+    在流程中的位置
+
+    步骤 ? ─── 配置阶段（流程开始前）
+               SP 管理员将 SP Metadata 导入 IdP
+               SP 管理员将 IdP Metadata 导入 SP
+
+    步骤 ② ─── SP 从 IdP Metadata 获取 SSO URL，构造重定向地址
+    步骤 ⑥ ─── IdP 从 SP Metadata 获取 ACS URL，构造 POST 目标
+    步骤 ⑧ ─── SP 用 IdP Metadata 中的证书验证签名
+
+    ---
+    三者关系总结
+
+    ┌─────────────────────────────────────────────────────────────┐
+    │                      Metadata（配置阶段）                    │
+    │  ┌──────────────┐              ┌──────────────┐            │
+    │  │ SP Metadata  │ ?──交换──?  │ IdP Metadata │            │
+    │  │ - EntityID   │              │ - EntityID   │            │
+    │  │ - ACS URL    │              │ - SSO URL    │            │
+    │  │ - 证书       │              │ - 证书       │            │
+    │  └──────────────┘              └──────────────┘            │
+    └─────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+    ┌─────────────────────────────────────────────────────────────┐
+    │                      Binding（传输阶段）                     │
+    │                                                             │
+    │   AuthnRequest ───HTTP-Redirect───? IdP                    │
+    │                                                             │
+    │   SAMLResponse ?───HTTP-POST─────── IdP                    │
+    │   (含 Assertion)                                           │
+    └─────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+    ┌─────────────────────────────────────────────────────────────┐
+    │                     Assertion（认证结果）                    │
+    │  ┌────────────────────────────────────────────────────┐    │
+    │  │  - AuthnStatement: 用户已认证                       │    │
+    │  │  - AttributeStatement: email=john@..., role=admin  │    │
+    │  │  - Signature: 防篡改                                │    │
+    │  │  - Conditions: 有效期、受众限制                      │    │
+    │  └────────────────────────────────────────────────────┘    │
+    └─────────────────────────────────────────────────────────────┘
+    ┌───────────┬──────────┬──────────────────────────────────────────┐
+    │   概念    │   比喻   │                 核心职责                 │
+    ├───────────┼──────────┼──────────────────────────────────────────┤
+    │ Metadata  │ 通讯录   │ 告诉双方"你是谁、怎么联系你、如何验证你" │
+    ├───────────┼──────────┼──────────────────────────────────────────┤
+    │ Binding   │ 快递方式 │ 决定消息"用什么方式送达"                 │
+    ├───────────┼──────────┼──────────────────────────────────────────┤
+    │ Assertion │ 介绍信   │ 携带"用户是谁、有什么属性、能做什么"     │
+    └───────────┴──────────┴──────────────────────────────────────────┘
