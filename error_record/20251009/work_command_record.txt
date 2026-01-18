@@ -2083,7 +2083,25 @@ benchmark模块的代码
 我想确认一下这个参数可以不可以去掉？isFirstImport
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+缓存初始化代码: cn.bochk.pap.server.business.service.SecurityMasterCacheService
+现象：
+对于buylist模块的导入和maker用户在前端新增数据时;
+可能会添加一条productCode对应多个client_id的情况;
+目前的方案是基于clientId的条数来先显示详情数据;即同一个productCode，对应的clientId有多少个，就在前端buyList详情页显示的时候显示对应多个数据;
 
+現象：前端没有展示clientId（clientId对于前端透明不予展示），这样用户会看到同一个productCode有多条记录，会有对应的疑惑，怀疑系统问题;
+后端数据中存在一个productCode对应一个clientId，正常显示；对于一个productCode对应多个clientId的数据，也只显示其中一个，但是前端需要给个标识标识区别一下;
+给这行数据标识加了背景颜色，用于区别一个productCode对应一个clientId的数据;但是后端还是存储多个数据，只是在前端展示的时候只显示一条数据;
+
+現象：目前只有導入添加了這個效果，還有用戶提交保存後，二次進入纔會有這個效果，我想在用於實時添加productCode的時候做實時判斷它是否有多個clientId，基於是否有多個clientId來顯示 它的背景色;
+
+场景：buyList详情页编辑新增數據，或者基於已有的修改爲有兩個或多個clientId;
+
+你可以理解我的需求吗？你先复述一遍你的理解;
 
 
 ###########################################################################
