@@ -70,3 +70,34 @@ docker run -p 8180:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin
 -->Clients list（選中我們自己創建的client）
 --->點擊Key （下拉到Certificate，點擊Import key，Archive format選擇 Certificate PEM，把本地的saml-signing.crt上傳上去）
 
+
+步驟補充：
+
+ 問題原因
+
+  Keycloak 中的 client 配置為 OpenID Connect 協議，但你的 Spring Boot 應用嘗試使用 SAML2 協議進行認證。
+
+  解決方案
+
+  在 Keycloak 管理控制台中，需要正確配置 SAML client：
+
+  1. 登入 Keycloak 管理控制台 (http://localhost:8180/admin)
+  2. 進入 saml-demo realm
+  3. 創建新的 SAML Client（或修改現有 client）：
+    - 點擊 Clients → Create client
+    - Client type: 選擇 SAML（不是 OpenID Connect）
+    - Client ID: https://localhost:8080/saml2/metadata/keycloak（必須與 application.yml 中的 entity-id 完全一致）
+  4. 配置 Client 設定：
+    - Root URL: https://localhost:8080
+    - Valid redirect URIs: https://localhost:8080/*
+    - Master SAML Processing URL: https://localhost:8080/login/saml2/sso/keycloak
+    - Sign Assertions: On
+    - Client Signature Required: On（因為你有配置 signing credentials）
+  5. 上傳 SP 憑證（如果 Client Signature Required 開啟）：
+    - 在 Keys tab 中導入你的 saml-signing.crt
+
+  你的 application.yml 中 entity-id 是 https://localhost:8080/saml2/metadata/keycloak，Keycloak 的 Client ID
+  必須完全匹配這個值。
+
+
+第三部的Client type忘記選擇了;
