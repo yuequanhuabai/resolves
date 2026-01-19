@@ -6,6 +6,8 @@ docker run -p 8180:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin
 /存儲數據，不然下面的步驟需要在每次啓動的時候重新創建;
 docker run -p 8180:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin -v keycloak_data:/opt/keycloak/data quay.io/keycloak/keycloak:latest start-dev
 
+登錄url: http://localhost:8180
+輸入帳號密碼： admin/admin
 
 
   步骤一：创建 Realm
