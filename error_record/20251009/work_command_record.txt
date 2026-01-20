@@ -2201,8 +2201,18 @@ cn.bochk.pap.server.business.service.SecurityMasterCacheService
 http://zhenxiao.com/blockchain/
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
 
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
 
+现象：
+帮我看看BuyListServiceImpl#updateList的版本校验逻辑，这个语句是什么意思：
+  LambdaQueryWrapper<BuyListDO> queryWrapper = new LambdaQueryWrapperX<>();
+            queryWrapper.eq(BuyListDO::getBusinessId,updateReqVO.get(0).getBusinessId());
+            queryWrapper.orderByDesc(BuyListDO::getRecordVersion);
+            queryWrapper.last("OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY");
 
 ###########################################################################
 
