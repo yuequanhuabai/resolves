@@ -2215,10 +2215,23 @@ http://zhenxiao.com/blockchain/
             queryWrapper.last("OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY");
 
 ###########################################################################
-
+  LambdaQueryWrapper<BuyListDO> queryWrapper = new LambdaQueryWrapperX<>();
+            queryWrapper.eq(BuyListDO::getBusinessId,updateReqVO.get(0).getBusinessId());
+            queryWrapper.orderByDesc(BuyListDO::getRecordVersion);
+            queryWrapper.last("OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY");
+這個mybatis-plus的語法可以改爲非硬拼接字符串，改爲mybatis-plus的動態語法嗎？
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
+
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+問題：
+這塊代碼是maker操作，有版本控制：cn.bochk.pap.server.business.service.Impl.BuyListServiceImpl#updateList
+如果是checker操作，需不需要版本控制？cn.bochk.pap.server.business.service.Impl.BuyListServiceImpl#updateProcessStatus
 
 
 
