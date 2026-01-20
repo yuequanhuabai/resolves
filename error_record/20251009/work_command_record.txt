@@ -2167,22 +2167,38 @@ Developer Edition (64-bit) on Windows Server 2022 Standard 10.0 <X64> (Build 203
 collation_name : Latin1_General_100_CI_AS_SC_UTF8
 
 
+###########################################################################
+LCLR 2026 Workshop Info and Deadlines
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
 
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+现象：
+cn.bochk.pap.server.business.service.Impl.BuyListServiceImpl#updateList的异常处理有些问题，
+因为该方法的返回值是ParseResultVO类型，而当前方法种的版本校验里面的异常是：throw exception(ErrorCodeConstants.VERSION_ERROR);
+不会被捕获，就会被外层异常处理，我现在想用ParseResultVO来兼容这个异常的枚举可以实现吗？
+
+###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
+cn.bochk.pap.server.business.service.SecurityMasterCacheService
+
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+现象：
+cn.bochk.pap.server.business.service.SecurityMasterCacheService
+我发现了这个缓存这里，redis不会到期刷新，这个是什么情况？
+你可以理解我的需求吗？ 你先复述一下我的理解：
 
 
 ###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
-
+http://zhenxiao.com/blockchain/
 
 ###########################################################################
 
