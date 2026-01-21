@@ -2258,8 +2258,8 @@ Please review and confirm the input before proceeding.
 
 
 ###########################################################################
-
-
+npm install -g @anthropic-ai/claude-code@latest
+npm install -g @anthropic-ai/claude-code
 
 ###########################################################################
 
