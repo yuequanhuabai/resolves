@@ -2246,6 +2246,15 @@ Please review and confirm the input before proceeding.
 
 
 ###########################################################################
+cn.bochk.pap.server.business.service.Impl.BuyListServiceImpl#validateAssetTypeInBuyList
+再帮我看看这个校验，如果有多个的话，帮我合并一下，需要做去重，改成这种格式，要兼容原来的报错信息：
+Validation Failed
+The following AssetType is invalid:
+'XX1'
+'XX2'
+
+Please review and confirm the input before proceeding.
+你可以理解我的需求吗？ 你先复述一下：
 
 
 ###########################################################################
