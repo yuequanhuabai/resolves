@@ -1,0 +1,192 @@
+B好的，让我详细解释 showParseErrors 方法的逻辑：       ens)
+     INSERT -- ⏵⏵ accept edits on (shift+tab to cycle)
+  方法完整代码
+  const showParseErrors = (errors) => {                                                                                     // 分类错误：productCode未找到匹配记录的错误 vs 其他错误
+    const notFoundCodes = []
+    const otherErrors = []
+
+    errors.forEach((e) => {
+      // 匹配 productCode 字段的 "cannot find a matching record" 或 "No matching record found" 类型错误
+      if (e.field === 'productCode' &&
+          (e.message.includes('cannot find a matching record') ||
+           e.message.includes('No matching record found'))) {
+        // 从 message 中提取 productCode
+        const match = e.message.match(/(?:Product code|product code)\s*'([^']+)'/)
+        if (match) {
+          notFoundCodes.push(match[1])
+        } else {
+          otherErrors.push(e)
+        }
+      } else {
+        otherErrors.push(e)
+      }
+    })
+
+    // 构建错误消息
+    let errorMsg = ''
+
+    // 如果有 productCode 未找到的错误，使用汇总格式
+    if (notFoundCodes.length > 0) {
+      errorMsg = 'Validation Failed\n\nThe following items could not be found:\n'
+      notFoundCodes.forEach(code => {
+        errorMsg += `'${code}'\n`
+      })
+      errorMsg += '\nPlease review and confirm the input before proceeding.'
+    }
+
+    // 如果有其他类型的错误，追加显示
+    if (otherErrors.length > 0) {
+      if (errorMsg) {
+        errorMsg += '\n\n--- Other Errors ---\n'
+      }
+      errorMsg += otherErrors.map((e) => `Row ${e.row} [${e.field}]: ${e.message}`).join('\n')
+    }
+
+    ElMessageBox.alert(errorMsg, 'File validation failed', {
+      type: 'error',
+      confirmButtonText: 'Modify and Re-upload',
+      dangerouslyUseHTMLString: false
+    })
+  }
+
+  ---
+  逻辑分解
+
+  第一步：定义两个数组用于分类
+
+  const notFoundCodes = []   // 存放提取出的 productCode 值（如 'XS937661006'）
+  const otherErrors = []     // 存放其他类型的错误对象
+
+  第二步：遍历所有错误并分类
+
+  errors.forEach((e) => {
+    // e 的结构是 { row: 7, field: 'productCode', message: '...' }
+
+  判断条件：
+  if (e.field === 'productCode' &&
+      (e.message.includes('cannot find a matching record') ||
+       e.message.includes('No matching record found')))
+
+  这里判断两个条件：
+  1. e.field === 'productCode' — 错误字段是 productCode
+  2. message 包含特定关键词 — 后端有两种错误消息格式：
+    - validateRows 方法："Product code 'XXX' cannot find a matching record in asset type 'YYY'"
+    - checkDataInRedis 方法："No matching record found for product code 'XXX' in asset type 'YYY'."
+
+  第三步：用正则表达式提取 productCode
+
+  const match = e.message.match(/(?:Product code|product code)\s*'([^']+)'/)
+
+  正则解析：
+  ┌───────────────────────────────┬──────────────────────────────────────────────────────────────┐
+  │             部分              │                             含义                             │
+  ├───────────────────────────────┼──────────────────────────────────────────────────────────────┤
+  │ (?:Product code|product code) │ 非捕获组，匹配 "Product code" 或 "product code"              │
+  ├───────────────────────────────┼──────────────────────────────────────────────────────────────┤
+  │ \s*                           │ 匹配零个或多个空白字符                                       │
+  ├───────────────────────────────┼──────────────────────────────────────────────────────────────┤
+  │ '([^']+)'                     │ 匹配单引号内的内容，捕获组（这就是我们要提取的 productCode） │
+  └───────────────────────────────┴──────────────────────────────────────────────────────────────┘
+  示例：
+  输入: "Product code 'XS937661006' cannot find a matching record in asset type 'Equities'"
+  匹配结果: match[0] = "Product code 'XS937661006'"
+           match[1] = "XS937661006"  ← 这是我们需要的
+
+  第四步：分类存储
+
+  if (match) {
+    notFoundCodes.push(match[1])  // 提取成功，存入 notFoundCodes
+  } else {
+    otherErrors.push(e)           // 提取失败，当作其他错误处理
+  }
+
+  第五步：构建汇总格式的错误消息
+
+  if (notFoundCodes.length > 0) {
+    errorMsg = 'Validation Failed\n\nThe following items could not be found:\n'
+    notFoundCodes.forEach(code => {
+      errorMsg += `'${code}'\n`
+    })
+    errorMsg += '\nPlease review and confirm the input before proceeding.'
+  }
+
+  输出示例：
+  Validation Failed
+
+  The following items could not be found:
+  'XS937661006'
+  'XS937661007'
+  'XS937661008'
+
+  Please review and confirm the input before proceeding.
+
+  第六步：处理其他类型的错误
+
+  if (otherErrors.length > 0) {
+    if (errorMsg) {
+      errorMsg += '\n\n--- Other Errors ---\n'  // 如果已有汇总错误，加分隔线
+    }
+    // 其他错误保持原有格式
+    errorMsg += otherErrors.map((e) => `Row ${e.row} [${e.field}]: ${e.message}`).join('\n')
+  }
+
+  混合错误场景的输出示例：
+  Validation Failed
+
+  The following items could not be found:
+  'XS937661006'
+  'XS937661007'
+
+  Please review and confirm the input before proceeding.
+
+  --- Other Errors ---
+  Row 3 [assetType]: Asset type 'Unknown' is not in the list of allowed asset types
+  Row 5 [productCode]: Product code 'ABC' is duplicated under the asset type 'Bond'
+
+  第七步：显示弹窗
+
+  ElMessageBox.alert(errorMsg, 'File validation failed', {
+    type: 'error',
+    confirmButtonText: 'Modify and Re-upload',
+    dangerouslyUseHTMLString: false  // 不解析 HTML，防止 XSS
+  })
+
+  ---
+  流程图
+
+  输入: errors 数组
+           │
+           ▼
+      遍历每个错误
+           │
+           ▼
+    ┌──────────────────────────────┐
+    │ field === 'productCode' 且   │
+    │ message 包含特定关键词?       │
+    └──────────────────────────────┘
+           │
+      是   │   否
+      ▼         ▼
+   正则提取    存入 otherErrors
+   productCode
+      │
+      ▼
+   存入 notFoundCodes
+           │
+           ▼
+      构建错误消息
+           │
+           ▼
+    ┌─────────────────┐
+    │ notFoundCodes   │ → 汇总格式显示
+    │ 有数据?         │
+    └─────────────────┘
+           │
+           ▼
+    ┌─────────────────┐
+    │ otherErrors     │ → 逐行格式显示
+    │ 有数据?         │
+    └─────────────────┘
+           │
+           ▼
+      弹窗显示 errorMsg

@@ -2215,11 +2215,34 @@ http://zhenxiao.com/blockchain/
             queryWrapper.last("OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY");
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
 
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+现在的buylist模块的导入报错信息格式：
+Row 7 [productCode]: Product code 'XS937661006' cannot find a matching record in asset type 'Equities' Row 8 [productCode]: Product code 'XS937661007' cannot find a matching record in asset type 'Equities' Row 9 [productCode]: Product code 'XS937661008' cannot find a matching record in asset type 'Equities' Row 10 [productCode]: Product code 'XS937661009' cannot find a matching record in asset type 'Equities' Row 11 [productCode]: Product code 'XS937661010' cannot find a matching record in asset type 'Equities'
 
+可以改为这种格式吗？
+Validation Failed
+The following items could not be found:
+'XX1'
+'XX2'
+
+Please review and confirm the input before proceeding.
+
+你可以理解我的需求吗？ 你先复述一遍你的理解：
 
 ###########################################################################
+还有一个问题,就是我导入csv文件的时候，如果是AssetType列为空，ProductCode有值，它会报错；
+Validation Failed!
 
+Data missing in row 7: assetType is empty
+
+Please review and confirm the input before proceeding.
+
+但是AssetType有值，ProductCode为空，就会跳过这行，没有报错信息呢？
+我看cn.bochk.pap.server.business.service.Impl.BuyListServiceImpl#validateRequiredFields方法里面有写校验逻辑
 
 
 ###########################################################################
