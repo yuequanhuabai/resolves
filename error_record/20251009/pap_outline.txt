@@ -1,0 +1,525 @@
+                                                                                
+ ▐▛███▜▌   Claude Code v2.1.12                                                  
+▝▜█████▛▘  Opus 4.5 · Claude Pro                                                
+  ▘▘ ▝▝    D:\software\develop_tools\git\gitee\pap                              
+                                                                                
+> 基於當前目錄的下的前後端代碼，分析一下當前項目的架構和功能                    
+                                                                                
+● 我來探索代碼庫以分析項目的架構和功能。                                        
+  ⎿  Interrupted · What should Claude do instead?                               
+                                                                                
+> 基於當前目錄的下的前後端代碼，分析一下當前項目的架構和功能；要求準確，核      
+  心，簡潔;                                                                     
+                                                                                
+● 我來快速探索代碼庫結構。                                                      
+                                                                                
+● Bash(ls -la)                                                                  
+  ⎿  total 34                                                                   
+     drwxr-xr-x 1 yuequanhuabai 197121    0  1月 20 20:20 .                     
+     drwxr-xr-x 1 yuequanhuabai 197121    0  1月  8 23:03 ..                    
+     … +7 lines (ctrl+o to expand)                                              
+                                                                                
+● Search(pattern: "pocpro/**/pom.xml")                                          
+  ⎿  Found 4 files (ctrl+o to expand)                                           
+                                                                                
+● Search(pattern: "poc-pro-ui/src/views/**/index.vue")                          
+  ⎿  Found 70 files (ctrl+o to expand)                                          
+                                                                                
+● Bash(ls -la pocpro/pap-server/src/main/java/cn/bochk/pap/module/ 2>/dev/null  
+      || ls -la pocpro/pap-server/src/main/java/)                               
+  ⎿  total 0                                                                    
+     drwxr-xr-x 1 yuequanhuabai 197121 0 10月 17 00:03 .                        
+     drwxr-xr-x 1 yuequanhuabai 197121 0 10月 17 00:03 ..                       
+     drwxr-xr-x 1 yuequanhuabai 197121 0 10月 17 00:03 cn                       
+                                                                                
+● Bash(ls -la poc-pro-ui/src/api/)                                              
+  ⎿  total 20                                                                   
+     drwxr-xr-x 1 yuequanhuabai 197121 0  1月 18 16:35 .                        
+     drwxr-xr-x 1 yuequanhuabai 197121 0 12月 17 22:38 ..                       
+     … +13 lines (ctrl+o to expand)                                             
+                                                                                
+● Bash(ls -la pocpro/pap-framework/src/main/java/cn/bochk/pap/framework/        
+      2>/dev/null || ls pocpro/pap-framework/)                                  
+  ⎿  total 4                                                                    
+     drwxr-xr-x 1 yuequanhuabai 197121 0 10月 17 00:03 .                        
+     drwxr-xr-x 1 yuequanhuabai 197121 0 10月 17 00:03 ..                       
+     drwxr-xr-x 1 yuequanhuabai 197121 0 12月  1 23:11 common                   
+                                                                                
+● Bash(find pocpro/pap-server/src/main/java -type d -name "module" -exec ls -la 
+      {} \;)                                                                    
+  ⎿  (No content)                                                               
+                                                                                
+● Bash(ls pocpro/pap-framework/src/main/java/cn/bochk/pap/framework/common/)    
+  ⎿  biz                                                                        
+     core                                                                       
+     enums                                                                      
+     … +10 lines (ctrl+o to expand)                                             
+                                                                                
+> /memory                                                                       
+                                                                                
+● Search(pattern: "pocpro/pap-server/src/main/java/**/module/*")                
+  ⎿  Found 0 files                                                              
+                                                                                
+● Bash(find pocpro/pap-server/src/main/java -mindepth 4 -maxdepth 4 -type d |   
+      head -30)                                                                 
+  ⎿  pocpro/pap-server/src/main/java/cn/bochk/pap/server                        
+                                                                                
+● Bash(ls pocpro/pap-server/src/main/java/cn/bochk/pap/server/)                 
+  ⎿  bpm                                                                        
+     business                                                                   
+     PapServerApplication.java                                                  
+     system                                                                     
+                                                                                
+● Bash(ls pocpro/pap-server/src/main/java/cn/bochk/pap/server/business/         
+      2>/dev/null || echo "no business dir")                                    
+  ⎿  controller                                                                 
+     dal                                                                        
+     enums                                                                      
+     … +5 lines (ctrl+o to expand)                                              
+                                                                                
+● Bash(ls pocpro/pap-server/src/main/java/cn/bochk/pap/server/system/           
+      2>/dev/null)                                                              
+  ⎿  api                                                                        
+     controller                                                                 
+     convert                                                                    
+     … +5 lines (ctrl+o to expand)                                              
+                                                                                
+● Bash(ls pocpro/pap-server/src/main/java/cn/bochk/pap/server/bpm/ 2>/dev/null) 
+  ⎿  api                                                                        
+     controller                                                                 
+     convert                                                                    
+     … +4 lines (ctrl+o to expand)                                              
+                                                                                
+● 根據代碼探索，以下是項目架構和功能分析：                                      
+                                                                                
+  ---                                                                           
+  項目架構                                                                      
+                                                                                
+  整體結構                                                                      
+                                                                                
+  pap/                                                                          
+  ├── pocpro/          # 後端 (Spring Boot 3.4.5 + MyBatis Plus)                
+  └── poc-pro-ui/      # 前端 (Vue 3.5 + Element Plus + TypeScript)             
+                                                                                
+  後端架構 (pocpro)                                                             
+                                                                                
+  pocpro/                                                                       
+  ├── pap-dependencies/   # Maven BOM 依賴版本管理                              
+  ├── pap-framework/      # 核心框架層                                          
+  │   └── common/         # 通用組件 (security, mybatis, redis, web, excel,     
+  exception...)                                                                 
+  └── pap-server/         # 業務應用層                                          
+      ├── system/         # 系統管理模組                                        
+      ├── bpm/            # 工作流引擎 (Flowable 7.0)                           
+      └── business/       # 業務模組                                            
+                                                                                
+  技術特點：                                                                    
+  - 多租戶 SaaS 架構                                                            
+  - JWT + Redis 認證                                                            
+  - 支援多數據庫 (MySQL/Oracle/PostgreSQL/SQLServer)                            
+  - 邏輯刪除機制                                                                
+                                                                                
+  前端架構 (poc-pro-ui)                                                         
+                                                                                
+  src/                                                                          
+  ├── api/       # API 請求層 (按模組組織)                                      
+  ├── views/     # 頁面視圖                                                     
+  ├── router/    # 路由配置                                                     
+  └── store/     # Pinia 狀態管理                                               
+                                                                                
+  ---                                                                           
+  核心功能模組                                                                  
+  ┌────────┬────────────────────────────────────────────────────────────┐       
+  │  模組  │                            功能                            │       
+  ├────────┼────────────────────────────────────────────────────────────┤       
+  │ system │ 用戶、角色、部門、菜單、字典、OAuth2、日誌                 │       
+  ├────────┼────────────────────────────────────────────────────────────┤       
+  │ bpm    │ 流程建模、審批、待辦/已辦任務、流程實例管理                │       
+  ├────────┼────────────────────────────────────────────────────────────┤       
+  │ infra  │ 配置管理、定時任務、文件存儲、代碼生成、API日誌、Redis監控 │       
+  └────────┴────────────────────────────────────────────────────────────┘       
+  業務功能 (PAP 投資組合分析平台)                                               
+  ┌──────────────────────┬──────────────────────────────┐                       
+  │         模組         │             說明             │                       
+  ├──────────────────────┼──────────────────────────────┤                       
+  │ Benchmark            │ 基準配置 (私人銀行/零售銀行) │                       
+  ├──────────────────────┼──────────────────────────────┤                       
+  │ Buylist              │ 買入名單管理                 │                       
+  ├──────────────────────┼──────────────────────────────┤                       
+  │ Model Portfolio      │ 模型組合管理                 │                       
+  ├──────────────────────┼──────────────────────────────┤                       
+  │ House View List      │ 內部觀點列表                 │                       
+  ├──────────────────────┼──────────────────────────────┤                       
+  │ Alternative          │ 另類投資 (提交/審核)         │                       
+  ├──────────────────────┼──────────────────────────────┤                       
+  │ Asset Classification │ 資產分類 (提交/審核)         │                       
+  ├──────────────────────┼──────────────────────────────┤                       
+  │ Customer             │ 客戶搜索與詳情               │                       
+  ├──────────────────────┼──────────────────────────────┤                       
+  │ Health Check         │ 健康檢查                     │                       
+  └──────────────────────┴──────────────────────────────┘                       
+  ---                                                                           
+  系統集成                                                                      
+                                                                                
+  - 後端: localhost:9600，API 文檔 /doc.html                                    
+  - 前端: localhost:9080，調用 /admin-api 前綴接口                              
+  - WebSocket: /infra/ws 實時通訊                                               
+  - 認證流程: JWT Token 存於 Pinia → 後端 Redis 驗證                            
+                                                                                
+✻ Churned for 1m 19s                                                            
+                                                                                
+> 後端controller是Pvb3rdPartyPortAcController的這個模塊的前後端的功能是啥？     
+                                                                                
+● Search(pattern: "Pvb3rdPartyPortAcController")                                
+  ⎿  Found 1 file (ctrl+o to expand)                                            
+                                                                                
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\controller\P
+      vb3rdPartyPortAcController.java)                                          
+  ⎿  Read 57 lines                                                              
+                                                                                
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\vo\resp\Pvb3
+      rdPartyPortAcRespVO.java)                                                 
+  ⎿  Read 85 lines                                                              
+                                                                                
+● Search(pattern: "pvb1", path: "poc-pro-ui\src")                               
+  ⎿  Found 1 file (ctrl+o to expand)                                            
+                                                                                
+● Read(poc-pro-ui\src\api\customer\index.ts)                                    
+  ⎿  Read 28 lines                                                              
+                                                                                
+● Read(poc-pro-ui\src\views\Customer\Search\index.vue)                          
+  ⎿  Read 190 lines                                                             
+                                                                                
+● Read(poc-pro-ui\src\views\Customer\Detail\index.vue)                          
+  ⎿  Read 100 lines                                                             
+                                                                                
+● ---                                                                           
+  Pvb3rdPartyPortAcController 模組功能分析                                      
+                                                                                
+  後端 API                                                                      
+                                                                                
+  路由前綴: /admin-api/pvb1                                                     
+  端點: /getRecordByCode                                                        
+  方法: GET                                                                     
+  功能: 根據 thirdPartyCode 查詢第三方投資組合賬戶記錄                          
+  ────────────────────────────────────────                                      
+  端點: /getDistinctThirdPartyCodes                                             
+  方法: GET                                                                     
+  功能: 獲取所有不重複的第三方代碼列表                                          
+  數據來源: PVB_3RDPARTY_PORT_AC 表（動態表名，根據業務日期切換）               
+                                                                                
+  核心字段:                                                                     
+  - 客戶信息: thirdPartyCode, tpName, cinNumberMain, cltStatusE                 
+  - 投資組合: portfolioCode, pfName, pfType, pfRiskRating, pfRefCcy             
+  - 關係經理: tpRmCode, tpRmName, pfRmCode, pfRmName                            
+  - 標識位: vc, staff, ic, eam, spi, pi, tradingAllowed                         
+                                                                                
+  ---                                                                           
+  前端功能                                                                      
+                                                                                
+  模組: Customer（客戶查詢）                                                    
+  ┌────────┬──────────────────┬────────────────────────────────────────────────┐
+  │  頁面  │       路徑       │                      功能                      │
+  ├────────┼──────────────────┼────────────────────────────────────────────────┤
+  │ Search │ /customer/search │ 客戶搜索頁，輸入 Third Party Code 支持自動補全 │
+  ├────────┼──────────────────┼────────────────────────────────────────────────┤
+  │ Detail │ /customer/detail │ 客戶詳情頁，展示三個卡片區塊                   │
+  └────────┴──────────────────┴────────────────────────────────────────────────┘
+  詳情頁展示:                                                                   
+  1. Client Details - 客戶基本信息（Internal View vs Aladdin View 對比）        
+  2. Client Risk Profile - 客戶風險畫像                                         
+  3. Additional Information - 其他補充信息                                      
+  4. Enter BlackRock - 浮動按鈕，跳轉至 BlackRock 系統                          
+                                                                                
+  ---                                                                           
+  業務用途                                                                      
+                                                                                
+  這是私人銀行（PVB）客戶查詢模組，用於：                                       
+  - 查詢第三方投資組合賬戶信息                                                  
+  - 展示客戶與投資組合的關聯關係                                                
+  - 對接 BlackRock Aladdin 資產管理平台                                         
+                                                                                
+✻ Cooked for 53s                                                                
+                                                                                
+> 再幫我看看這個模塊呢？ Asset Classification Maintenance                       
+                                                                                
+● Search(pattern: "AssetClassification|asset.?classification", path:            
+        "pocpro\pap-server\src\main\java")                                      
+  ⎿  Found 23 files (ctrl+o to expand)                                          
+                                                                                
+● Bash(ls -la poc-pro-ui/src/api/AssetClassificationMta/)                       
+  ⎿  total 8                                                                    
+     drwxr-xr-x 1 yuequanhuabai 197121    0  1月 18 16:35 .                     
+     drwxr-xr-x 1 yuequanhuabai 197121    0  1月 18 16:35 ..                    
+     -rw-r--r-- 1 yuequanhuabai 197121 2467  1月 18 16:35 index.ts              
+                                                                                
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\controller\A
+      ssetClassificationController.java)                                        
+  ⎿  Read 73 lines                                                              
+                                                                                
+● Read(poc-pro-ui\src\api\AssetClassificationMta\index.ts)                      
+  ⎿  Read 70 lines                                                              
+                                                                                
+● Read(poc-pro-ui\src\views\AssetClassification\index.vue)                      
+  ⎿  Read 80 lines                                                              
+                                                                                
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\vo\resp\Asse
+      tClassificationMtaRespVO.java)                                            
+  ⎿  Read 96 lines                                                              
+                                                                                
+● Read(poc-pro-ui\src\views\AssetClassification\Submit\index.vue)               
+  ⎿  Read 100 lines                                                             
+                                                                                
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\listener\Bpm
+      AssetClassificationMtaListener.java)                                      
+  ⎿  Read 26 lines                                                              
+                                                                                
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\Asse
+      tClassificationService.java)                                              
+  ⎿  Read 51 lines                                                              
+                                                                                
+● Read(poc-pro-ui\src\views\AssetClassification\Review\index.vue)               
+  ⎿  Read 100 lines                                                             
+                                                                                
+● ---                                                                           
+  Asset Classification Maintenance 模組功能分析                                 
+                                                                                
+  後端 API                                                                      
+                                                                                
+  路由前綴: /admin-api/AssetClassification                                      
+  端點: /page                                                                   
+  方法: GET                                                                     
+  權限: assetClassification:query                                               
+  功能: 分頁查詢資產分類數據                                                    
+  ────────────────────────────────────────                                      
+  端點: /batchUpdate                                                            
+  方法: POST                                                                    
+  權限: assetClassification:update                                              
+  功能: 批量提交分類變更（觸發審批流程）                                        
+  ────────────────────────────────────────                                      
+  端點: /getLevelType                                                           
+  方法: GET                                                                     
+  權限: -                                                                       
+  功能: 獲取分類層級選項（Level1/2/3 級聯）                                     
+  ────────────────────────────────────────                                      
+  端點: /getProcess                                                             
+  方法: GET                                                                     
+  權限: assetClassification:query                                               
+  功能: 查詢流程審批狀態                                                        
+  ────────────────────────────────────────                                      
+  端點: /asset-types                                                            
+  方法: GET                                                                     
+  權限: assetClassification:query                                               
+  功能: 獲取資產類型列表（按銀行類型）                                          
+  ---                                                                           
+  核心數據結構                                                                  
+  字段: assetType                                                               
+  說明: 資產類型 (Bond, Fund, Structured Notes, Structured Investment 等)       
+  ────────────────────────────────────────                                      
+  字段: productCode / isin / ticker                                             
+  說明: 產品標識（根據資產類型不同使用不同字段）                                
+  ────────────────────────────────────────                                      
+  字段: classificationLevel1/2/3                                                
+  說明: 當前分類（三級）                                                        
+  ────────────────────────────────────────                                      
+  字段: newClassificationLevel1/2/3                                             
+  說明: 新分類（變更目標）                                                      
+  ────────────────────────────────────────                                      
+  字段: approvalStatus                                                          
+  說明: 審批狀態                                                                
+  ────────────────────────────────────────                                      
+  字段: bizStatus                                                               
+  說明: 業務狀態                                                                
+  ────────────────────────────────────────                                      
+  字段: businessType                                                            
+  說明: 1=私人銀行 / 2=零售銀行                                                 
+  ────────────────────────────────────────                                      
+  字段: maker / checker                                                         
+  說明: 製單人 / 審核人                                                         
+  ---                                                                           
+  前端頁面                                                                      
+  頁面: 主頁                                                                    
+  路徑: /AssetClassification                                                    
+  功能: 查詢列表，支持按 Asset Type、Product Code、ISIN、Ticker、Issuer、Status 
+    篩選                                                                        
+  ────────────────────────────────────────                                      
+  頁面: Submit                                                                  
+  路徑: /AssetClassification/Submit                                             
+  功能: 編輯資產分類，批量修改 Level1/2/3，支持「Apply to all rows」一鍵應用    
+  ────────────────────────────────────────                                      
+  頁面: Review                                                                  
+  路徑: /AssetClassification/Review                                             
+  功能: 審批詳情頁，包含 Approval Details、Processing History、流程圖查看       
+  ---                                                                           
+  業務流程                                                                      
+                                                                                
+  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐                       
+  │  查詢資產    │ ──► │  修改分類    │ ──► │  提交審批    │                    
+  │  (主頁)     │     │  (Submit)   │     │  (batchUpdate)│                     
+  └─────────────┘     └─────────────┘     └──────┬──────┘                       
+                                                 │                              
+                                                 ▼                              
+                                      ┌─────────────────┐                       
+                                      │  BPM 工作流引擎  │                      
+                                      │  (Flowable)     │                       
+                                      └──────┬──────────┘                       
+                                                 │                              
+                      ┌──────────────────────────┴───────────────────────────┐  
+                      ▼                                                       ▼ 
+             ┌─────────────┐                                                    
+  ┌─────────────┐                                                               
+             │  審批通過    │                                        │  審批拒絕
+      │                                                                         
+             │  (狀態更新)  │                                        │  (回滾)  
+     │                                                                          
+             └─────────────┘                                                    
+  └─────────────┘                                                               
+                                                                                
+  工作流監聽器: BpmAssetClassificationMtaListener                               
+  監聽流程狀態變更，自動更新業務記錄的審批狀態                                  
+                                                                                
+  ---                                                                           
+  業務用途                                                                      
+                                                                                
+  這是資產分類維護模組，用於：                                                  
+  - 管理金融產品（債券、基金、結構性票據等）的分類標籤                          
+  - 支持三級分類體系（Level1 → Level2 → Level3）                                
+  - 分類變更需經過 Maker-Checker 雙人審批流程                                   
+  - 區分私人銀行和零售銀行的不同資產類型                                        
+                                                                                
+✻ Cooked for 1m 7s                                                              
+                                                                                
+> 這個模塊呢？Alternative Maintenance                                           
+                                                                                
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\controller\A
+      lternativesController.java)                                               
+  ⎿  Read 54 lines                                                              
+                                                                                
+● Read(poc-pro-ui\src\api\AlternativesMta\index.ts)                             
+  ⎿  Read 61 lines                                                              
+                                                                                
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\vo\resp\Alte
+      rnativesMtaRespVO.java)                                                   
+  ⎿  Read 82 lines                                                              
+                                                                                
+● Read(poc-pro-ui\src\views\Alternative\index.vue)                              
+  ⎿  Read 100 lines                                                             
+                                                                                
+● Read(poc-pro-ui\src\views\Alternative\Submit\index.vue)                       
+  ⎿  Read 120 lines                                                             
+                                                                                
+● Read(pocpro\pap-server\src\main\java\cn\bochk\pap\server\business\service\Alte
+      rnativesService.java)                                                     
+  ⎿  Read 40 lines                                                              
+                                                                                
+● Search(pattern: "BpmAlternatives.*Listener", path:                            
+        "pocpro\pap-server\src\main\java")                                      
+  ⎿  Found 1 file (ctrl+o to expand)                                            
+                                                                                
+● Read(poc-pro-ui\src\views\Alternative\Review\index.vue)                       
+  ⎿  Read 80 lines                                                              
+                                                                                
+● ---                                                                           
+  Alternative Maintenance 模組功能分析                                          
+                                                                                
+  後端 API                                                                      
+                                                                                
+  路由前綴: /admin-api/Alternatives                                             
+  ┌──────────────┬──────┬────────────────────┬──────────────────────────────┐   
+  │     端點     │ 方法 │        權限        │             功能             │   
+  ├──────────────┼──────┼────────────────────┼──────────────────────────────┤   
+  │ /page        │ GET  │ alternative:query  │ 分頁查詢另類投資數據         │   
+  ├──────────────┼──────┼────────────────────┼──────────────────────────────┤   
+  │ /batchUpdate │ POST │ alternative:update │ 批量提交變更（觸發審批流程） │   
+  ├──────────────┼──────┼────────────────────┼──────────────────────────────┤   
+  │ /getProcess  │ GET  │ alternative:query  │ 查詢流程審批狀態             │   
+  └──────────────┴──────┴────────────────────┴──────────────────────────────┘   
+  ---                                                                           
+  核心數據結構                                                                  
+  ┌────────────────────────────────────────┬────────────────────────────────┐   
+  │                  字段                  │              說明              │   
+  ├────────────────────────────────────────┼────────────────────────────────┤   
+  │ productCode / isin / ticker / clientId │ 產品標識（多種標識類型）       │   
+  ├────────────────────────────────────────┼────────────────────────────────┤   
+  │ attrName                               │ 產品名稱                       │   
+  ├────────────────────────────────────────┼────────────────────────────────┤   
+  │ issuer                                 │ 發行人                         │   
+  ├────────────────────────────────────────┼────────────────────────────────┤   
+  │ proxyAssetClass                        │ 代理資產類別（核心可編輯字段） │   
+  ├────────────────────────────────────────┼────────────────────────────────┤   
+  │ approvalStatus                         │ 審批狀態                       │   
+  ├────────────────────────────────────────┼────────────────────────────────┤   
+  │ bizStatus                              │ 業務狀態                       │   
+  ├────────────────────────────────────────┼────────────────────────────────┤   
+  │ businessType                           │ 1=私人銀行 / 2=零售銀行        │   
+  ├────────────────────────────────────────┼────────────────────────────────┤   
+  │ maker / checker                        │ 製單人 / 審核人                │   
+  └────────────────────────────────────────┴────────────────────────────────┘   
+  ---                                                                           
+  前端頁面                                                                      
+  頁面: 主頁                                                                    
+  路徑: /Alternative                                                            
+  功能: 查詢列表，支持按 Product Code/ISIN/Ticker、Issuer、Status               
+    篩選；可多選記錄進行編輯                                                    
+  ────────────────────────────────────────                                      
+  頁面: Submit                                                                  
+  路徑: /Alternative/Submit                                                     
+  功能: 編輯 Proxy Asset Class（代理資產類別），支持 Preview → Submit for       
+  Approval                                                                      
+  ────────────────────────────────────────                                      
+  頁面: Review                                                                  
+  路徑: /Alternative/Review                                                     
+  功能: 審批頁面，包含 Approval Details，支持 Approve / Reject 操作             
+  ---                                                                           
+  業務流程                                                                      
+                                                                                
+  ┌─────────────┐     ┌─────────────┐     ┌─────────────┐                       
+  │  查詢列表    │ ──► │  選擇記錄    │ ──► │  編輯提交    │                    
+  │  (主頁)     │     │  (多選)      │     │  (Submit)   │                      
+  └─────────────┘     └─────────────┘     └──────┬──────┘                       
+                                                 │                              
+                           修改 Proxy Asset Class │                             
+                                                 ▼                              
+                                      ┌─────────────────┐                       
+                                      │  BPM 工作流引擎  │                      
+                                      │  (Flowable)     │                       
+                                      └──────┬──────────┘                       
+                                                 │                              
+                      ┌──────────────────────────┴───────────────────────────┐  
+                      ▼                                                       ▼ 
+             ┌─────────────┐                                                    
+  ┌─────────────┐                                                               
+             │  Approve    │                                        │  Reject   
+    │                                                                           
+             │  審批通過    │                                        │  審批拒絕
+      │                                                                         
+             └─────────────┘                                                    
+  └─────────────┘                                                               
+                                                                                
+  工作流監聽器: BpmAlternativesMtaListener                                      
+  監聽流程狀態變更，自動更新業務記錄的審批狀態                                  
+                                                                                
+  ---                                                                           
+  與 Asset Classification 的對比                                                
+  ┌──────────────┬──────────────────────────┬──────────────────────────────────┐
+  │    對比項    │   Asset Classification   │           Alternative            │
+  ├──────────────┼──────────────────────────┼──────────────────────────────────┤
+  │ 核心編輯字段 │ 三級分類 (Level1/2/3)    │ 代理資產類別 (Proxy Asset Class) │
+  ├──────────────┼──────────────────────────┼──────────────────────────────────┤
+  │ 分類層級     │ 三層級聯選擇             │ 單一選擇                         │
+  ├──────────────┼──────────────────────────┼──────────────────────────────────┤
+  │ 批量應用     │ 支持 "Apply to all rows" │ 已註釋掉（按行編輯）             │
+  ├──────────────┼──────────────────────────┼──────────────────────────────────┤
+  │ 業務場景     │ 標準資產分類管理         │ 另類投資資產類別映射             │
+  └──────────────┴──────────────────────────┴──────────────────────────────────┘
+  ---                                                                           
+  業務用途                                                                      
+                                                                                
+  這是另類投資維護模組，用於：                                                  
+  - 管理另類投資產品（如對沖基金、私募股權、房地產基金等）的代理資產類別        
+  - 將另類投資映射到標準資產類別，便於風險計算和組合分析                        
+  - 變更需經過 Maker-Checker 雙人審批流程                                       
+  - 支持批量查詢和編輯操作                                                      
+                                                                                
+✻ Brewed for 60s                                                                
+
