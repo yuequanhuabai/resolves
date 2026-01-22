@@ -1,0 +1,672 @@
+                                                                                
+╭─── Claude Code v2.1.14 ──────────────────────────────────────────────────────╮
+│                                                    │ Tips for getting        │
+│                 Welcome back Ethon!                │ started                 │
+│                                                    │ Run /init to create a … │
+│                                                    │ ─────────────────────── │
+│                       ▐▛███▜▌                      │ Recent activity         │
+│                      ▝▜█████▛▘                     │ 2d ago  SAML2 Demo: Ke… │
+│                        ▘▘ ▝▝                       │ 2d ago  幫我看看當前目  │
+│                                                    │ 錄下的saml…             │
+│   Opus 4.5 · Claude Pro · waming313@gmail.com's    │ 2d ago  幫我看看當前目  │
+│   Organization                                     │ 錄下的saml…             │
+│ D:\software\develop_tools\git\github\workspace\go… │ /resume for more        │
+╰──────────────────────────────────────────────────────────────────────────────╯
+                                                                                
+> /clear                                                                        
+  ⎿  (no content)                                                               
+                                                                                
+> 當前目錄下saml2的實現的前後端代碼：                                           
+                                                                                
+  後端： /backend                                                               
+                                                                                
+  前端： /fronted                                                               
+                                                                                
+                                                                                
+                                                                                
+  我想瞭解下saml2的整個流程;（要求準確，核心，簡潔）                            
+                                                                                
+                                                                                
+● 我来探索代码库，了解SAML2的实现流程。                                         
+                                                                                
+● Explore(探索SAML2代码结构)                                                    
+  ⎿  Done (27 tool uses · 25.5k tokens · 35m 35s)                               
+                                                                                
+● SAML2 认证流程总结                                                            
+                                                                                
+  核心流程（SP-Initiated SSO）                                                  
+                                                                                
+  ┌─────────┐      ┌──────────┐      ┌─────────────┐                            
+  │ 前端    │      │ 后端(SP)  │      │ Keycloak(IdP)│                          
+  └────┬────┘      └────┬─────┘      └──────┬──────┘                            
+       │                │                    │                                  
+    1. │ 点击登录       │                    │                                  
+       │───────────────>│                    │                                  
+       │                │                    │                                  
+    2. │                │ 生成AuthnRequest   │                                  
+       │                │───────────────────>│                                  
+       │                │   (签名+重定向)     │                                 
+       │                │                    │                                  
+    3. │                │                    │ 用户登录                         
+       │                │                    │                                  
+    4. │                │   SAMLResponse     │                                  
+       │                │<───────────────────│                                  
+       │                │   (含加密断言)      │                                 
+       │                │                    │                                  
+    5. │                │ 验证签名/提取属性   │                                 
+       │                │                    │                                  
+    6. │ 重定向到dashboard                   │                                  
+       │<───────────────│                    │                                  
+       │                │                    │                                  
+    7. │ GET /api/user  │                    │                                  
+       │───────────────>│ 返回用户信息       │                                  
+       │<───────────────│                    │                                  
+                                                                                
+  关键端点                                                                      
+  ┌──────────────────────────────────────┬────────────────────────────────┐     
+  │                 端点                 │              作用              │     
+  ├──────────────────────────────────────┼────────────────────────────────┤     
+  │ /saml2/authenticate/{registrationId} │ 触发SAML认证，生成AuthnRequest │     
+  ├──────────────────────────────────────┼────────────────────────────────┤     
+  │ /login/saml2/sso/{registrationId}    │ 接收IdP的SAMLResponse回调      │     
+  ├──────────────────────────────────────┼────────────────────────────────┤     
+  │ /saml2/metadata/{registrationId}     │ 暴露SP元数据给IdP              │     
+  └──────────────────────────────────────┴────────────────────────────────┘     
+  代码核心                                                                      
+                                                                                
+  后端 SecurityConfig.java:50-60 - 配置SAML2登录处理器：                        
+  .saml2Login(saml2 -> saml2                                                    
+      .successHandler(...) // 成功→重定向前端                                   
+      .failureHandler(...) // 失败→带错误参数                                   
+  )                                                                             
+                                                                                
+  后端 UserController.java:28-35 - 从SAML断言提取用户属性：                     
+  Saml2AuthenticatedPrincipal samlUser = (Saml2AuthenticatedPrincipal)          
+  principal;                                                                    
+  String email = samlUser.getFirstAttribute("email");                           
+                                                                                
+  前端 App.jsx:12 - 触发SAML登录：                                              
+  window.location.href = `${API_BASE}/saml2/authenticate/keycloak`              
+                                                                                
+  三个关键配置                                                                  
+                                                                                
+  1. application.yml - SP注册信息、签名证书、IdP元数据位置                      
+  2. keycloak-saml-metadata.xml - IdP的SSO端点和验证证书                        
+  3. saml-signing.key/crt - SP签名AuthnRequest的凭证                            
+                                                                                
+✻ Cogitated for 2m 33s                                                          
+                                                                                
+> 我想查看“生成AuthnRequest”在哪裏打斷點可以看到                                
+                                                                                
+                                                                                
+● Search(pattern: "Saml2|AuthnRequest", path: "backend")                        
+  ⎿  Found 1 file (ctrl+o to expand)                                            
+                                                                                
+● AuthnRequest的生成是Spring Security                                           
+  SAML2框架内部处理的，不在你的项目代码中。以下是关键断点位置：                 
+                                                                                
+  推荐断点位置（Spring Security内部类）                                         
+                                                                                
+  1. 主要入口 - 处理 /saml2/authenticate/{registrationId}                       
+                                                                                
+  类: Saml2WebSsoAuthenticationRequestFilter                                    
+  方法: doFilterInternal()                                                      
+                                                                                
+  2. 生成AuthnRequest的核心类                                                   
+                                                                                
+  类: OpenSaml4AuthenticationRequestResolver                                    
+  方法: resolve(HttpServletRequest request)                                     
+  这里可以看到完整的AuthnRequest对象构建过程。                                  
+                                                                                
+  3. AuthnRequest构建细节                                                       
+                                                                                
+  类: OpenSaml4AuthenticationRequestResolver.AuthnRequestBuilder                
+  方法: build()                                                                 
+                                                                                
+  IDEA中设置断点                                                                
+                                                                                
+  1. 按 Ctrl+Shift+N (Navigate → Class)                                         
+  2. 输入 OpenSaml4AuthenticationRequestResolver                                
+  3. 在 resolve() 方法入口处设置断点                                            
+                                                                                
+  或者用日志方式查看                                                            
+                                                                                
+  在 application.yml 添加：                                                     
+  logging:                                                                      
+    level:                                                                      
+      org.springframework.security.saml2: DEBUG                                 
+      org.opensaml: DEBUG                                                       
+                                                                                
+  启动后访问 /saml2/authenticate/keycloak，控制台会输出完整的AuthnRequest       
+  XML内容。                                                                     
+                                                                                
+> 我看到了                                                                      
+                                                                                
+  在Saml2WebSsoAuthenticationRequestFilter類的doFilterInternal方法內            
+                                                                                
+  有一個代碼：AbstractSaml2AuthenticationRequest authenticationRequest =        
+  this.authenticationRequestResolver.resolve(request);                          
+                                                                                
+  這行後面打了一個斷點：                                                        
+                                                                                
+  發現了authenticationRequest的值由五個屬性：samlRequest,relayState,authent     
+  icationRequiestUri,relyingPartyRegistrationId,id                              
+                                                                                
+  samlRequest是一大長傳字符串：PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRG     
+  LTgiPz48c2FtbDJwOkF1dGhuUmVxdWVzdCB4bWxuczpzYW1sMnA9InVybjpvYXNpczpuYW1lc     
+  zp0YzpTQU1MOjIuMDpwcm90b2NvbCIgQXNzZXJ0aW9uQ29uc3VtZXJTZXJ2aWNlVVJMPSJodH     
+  RwczovL2xvY2FsaG9zdDo4MDgwL2xvZ2luL3NhbWwyL3Nzby9rZXljbG9hayIgRGVzdGluYXR     
+  pb249Imh0dHA6Ly9sb2NhbGhvc3Q6ODE4MC9yZWFsbXMvc2FtbC1kZW1vL3Byb3RvY29sL3Nh     
+  bWwiIEZvcmNlQXV0aG49ImZhbHNlIiBJRD0iQVJRMjk1YmQ3MS1kMTUxLTQ3MDYtOGUxYS05N     
+  zZmNTZjM2QzOTkiIElzUGFzc2l2ZT0iZmFsc2UiIElzc3VlSW5zdGFudD0iMjAyNi0wMS0yMl     
+  QxNDo0MDo0OS4wNDRaIiBQcm90b2NvbEJpbmRpbmc9InVybjpvYXNpczpuYW1lczp0YzpTQU1     
+  MOjIuMDpiaW5kaW5nczpIVFRQLVBPU1QiIFZlcnNpb249IjIuMCI+PHNhbWwyOklzc3VlciB4     
+  bWxuczpzYW1sMj0idXJuOm9hc2lzOm5hbWVzOnRjOlNBTUw6Mi4wOmFzc2VydGlvbiI+aHR0c     
+  HM6Ly9sb2NhbGhvc3Q6ODA4MC9zYW1sMi9tZXRhZGF0YS9rZXljbG9hazwvc2FtbDI6SXNzdW     
+  VyPjxkczpTaWduYXR1cmUgeG1sbnM6ZHM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvMDkveG1     
+  sZHNpZyMiPgo8ZHM6U2lnbmVkSW5mbz4KPGRzOkNhbm9uaWNhbGl6YXRpb25NZXRob2QgQWxn     
+  b3JpdGhtPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzEwL3htbC1leGMtYzE0biMiLz4KPGRzO     
+  lNpZ25hdHVyZU1ldGhvZCBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvMDQveG     
+  1sZHNpZy1tb3JlI3JzYS1zaGEyNTYiLz4KPGRzOlJlZmVyZW5jZSBVUkk9IiNBUlEyOTViZDc     
+  xLWQxNTEtNDcwNi04ZTFhLTk3NmY1NmMzZDM5OSI+CjxkczpUcmFuc2Zvcm1zPgo8ZHM6VHJh     
+  bnNmb3JtIEFsZ29yaXRobT0iaHR0cDovL3d3dy53My5vcmcvMjAwMC8wOS94bWxkc2lnI2Vud     
+  mVsb3BlZC1zaWduYXR1cmUiLz4KPGRzOlRyYW5zZm9ybSBBbGdvcml0aG09Imh0dHA6Ly93d3     
+  cudzMub3JnLzIwMDEvMTAveG1sLWV4Yy1jMTRuIyIvPgo8L2RzOlRyYW5zZm9ybXM+Cjxkczp     
+  EaWdlc3RNZXRob2QgQWxnb3JpdGhtPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGVu     
+  YyNzaGEyNTYiLz4KPGRzOkRpZ2VzdFZhbHVlPkFDa3JLbUNvWTh2WllRQ2dmWkpuUERQdzBqT     
+  DhYMCtTNEo1VFordFhpY1U9PC9kczpEaWdlc3RWYWx1ZT4KPC9kczpSZWZlcmVuY2U+CjwvZH     
+  M6U2lnbmVkSW5mbz4KPGRzOlNpZ25hdHVyZVZhbHVlPgpCeDJBYmhDaWdxbmtONVVhU1BHNGJ     
+  0NC9hVThra0F6eHZaSHJSTG5LMHJhdmdaWXNJSWdWUHBsTTNPbitFcG9WZFRvL1A3WDladmll     
+  JiMxMzsKTllFdWRPMEJhV3RFTTVjVW43ZGtpdTlDV1BvQmtVTUczV2NqTm50dnFhN3IwR3drN     
+  E1sa2E4ZlRUL1ArMFJjOWd5dUhqdFJHdGkxZCYjMTM7CkZJdVlnZGhxdU1GNndkSFY1Zmkzdj     
+  VrdGE0ajlSb1EzdEVtdGFUclEvUDNDWFhtcVp1bzNBQmRSTUF6WWRnTGZzeXJKektzYmlGbXI     
+  mIzEzOwpWRThtV1pEc3o0STN3MHVpWjJ3V3RGcUJRSVFad3JQUWdtdnh5VTF5M29SV296NFFW     
+  TG9zYzZSQXE0ZTMxODl4QjJ5THIyZzZidnoyJiMxMzsKMFpiQ2lPeTRSRmMzeS9nakppWlF1N     
+  XI5K2o1MHBNNVFic2pkUFE9PQo8L2RzOlNpZ25hdHVyZVZhbHVlPgo8ZHM6S2V5SW5mbz48ZH     
+  M6WDUwOURhdGE+PGRzOlg1MDlDZXJ0aWZpY2F0ZT5NSUlEQ1RDQ0FmR2dBd0lCQWdJVUhMWXR     
+  QSnFReGlMQkJRZFZnM2FTNzdPcnpvY3dEUVlKS29aSWh2Y05BUUVMQlFBd0ZERVNNQkFHCkEx     
+  VUVBd3dKYkc5allXeG9iM04wTUI0WERUSTJNREV4TkRFMU5UWXhNRm9YRFRJM01ERXhOREUxT     
+  lRZeE1Gb3dGREVTTUJBR0ExVUUKQXd3SmJHOWpZV3hvYjNOME1JSUJJakFOQmdrcWhraUc5dz     
+  BCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBMy8xOHBBWUVuRG1TREVlcQoxZ05ycXkzTm9mZ1N     
+  LN04vS0VjRDBleUpNMXM4cVZEVDkrL3VUM3NYZEljdVVtbC96cHVFOFRGODJsYW1rZ0NKWkFO     
+  MHVDSVBvTTlICkxOdkc2d2F0eld4V3NyQWYyKzE3NDhRaXNhemxhNjBRUjZxMnNzL1JkZ0Q0U     
+  ytGTDlQT09rMWRENkxPeGtNaFBoa0lJMDZHQk4yZXEKRlRiY3FmaVhVOEhlMGdiVWlzQ1BaMG     
+  pEWEtQZXJ6TTMwc21yQkNtWDB6MTlKMDdZanZBem9PU09UYjBkeUQ4eWJvNkVKaXZ5akZLVgp     
+  rVlpsc2kzNk9paFJuU1FKdWduQlhmYlB3SkhjVEtvMGVob0pkOEw4S05paHVCYkNjT045UUVI     
+  OXBRQ21aZjdTSGtpMjltcUJiMStjCnl1YnVjL2x1aGlWTldyTGd1eWtINVFJREFRQUJvMU13V     
+  VRBZEJnTlZIUTRFRmdRVWM2aG1XTDR4RndVNVZvb2Y4SUo4empIVTQ5UXcKSHdZRFZSMGpCQm     
+  d3Rm9BVWM2aG1XTDR4RndVNVZvb2Y4SUo4empIVTQ5UXdEd1lEVlIwVEFRSC9CQVV3QXdFQi9     
+  6QU5CZ2txaGtpRwo5dzBCQVFzRkFBT0NBUUVBdEIwOG1sVi8wYUl3SXVoczJwT1lHZ1dZNTZV     
+  RnBWcWVNakNjaWk3QThJVDkrQ2NGcWY4MHllNitaUERZCmlVYUVRYUlicEJHLy9LMzRTa3Zoc     
+  mZPQlg4ZXJwcXVkRFUwbHJ5cys3WnlYcG9yR2hIM1JmUHlFWDEvZVFadkIxb2xjK0F0eWlnel     
+  kKSkJlc1QxckV4YW5vbU1DeTB2SFAvOUExbGx5QmhTV3VUR3Y3anlqVExrQ29sM2xHemt5Y2h     
+  nQWFpRFhrZHIzZ1NvZWVjSTdjOEFsUgpadW1HdmUrVzlNczVTN2NVZlFZN2xXOFNGYkw2MjYw     
+  N1dmUHkxVEdZZ0lDbUpKRTN2TE8xb0JXbzJVeHBHMlIzcFdUa0VvZHhLKzluCkZGZUdDYnBtZ     
+  2h2T2JNVUszZFpla3VXT2lQUm1hTnJhdlR3TTdFVXJ5SlRMRXNQc0FiYzM0UT09PC9kczpYNT     
+  A5Q2VydGlmaWNhdGU+PC9kczpYNTA5RGF0YT48L2RzOktleUluZm8+PC9kczpTaWduYXR1cmU     
+  +PC9zYW1sMnA6QXV0aG5SZXF1ZXN0Pg==                                             
+                                                                                
+  relayState是一個類似uuid的東西：04e45c9f-8cdb-4a06-8d44-07bbf2dd7f68          
+                                                                                
+  requthenticationRequestUri是這個：                                            
+  http://localhost:8180/realms/saml-demo/protocol/saml                          
+                                                                                
+  relyingPartyRegistrationId的值是：“keycloak”                                  
+                                                                                
+  id也是一個類似uuid的東西，值是： ARQ295bd71-d151-4706-8e1a-976f56c3d399       
+                                                                                
+                                                                                
+                                                                                
+  可以幫我分析一下嗎？ 爲什麼要傳這些參數？                                     
+                                                                                
+                                                                                
+● 我来解码并分析这个AuthnRequest。                                              
+                                                                                
+  samlRequest 是Base64编码的XML，解码后内容如下：                               
+                                                                                
+  <?xml version="1.0" encoding="UTF-8"?>                                        
+  <saml2p:AuthnRequest                                                          
+      xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol"                       
+                                                                                
+  AssertionConsumerServiceURL="https://localhost:8080/login/saml2/sso/keycloak" 
+      Destination="http://localhost:8180/realms/saml-demo/protocol/saml"        
+      ForceAuthn="false"                                                        
+      ID="ARQ295bd71-d151-4706-8e1a-976f56c3d399"                               
+      IsPassive="false"                                                         
+      IssueInstant="2026-01-22T14:40:49.044Z"                                   
+      ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"          
+      Version="2.0">                                                            
+                                                                                
+      <saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">        
+          https://localhost:8080/saml2/metadata/keycloak                        
+      </saml2:Issuer>                                                           
+                                                                                
+      <ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">              
+          <!-- 数字签名内容 -->                                                 
+      </ds:Signature>                                                           
+  </saml2p:AuthnRequest>                                                        
+                                                                                
+  5个属性的作用                                                                 
+  属性: samlRequest                                                             
+  值: Base64编码的XML                                                           
+  用途: 完整的认证请求，包含SP身份、回调地址、签名等                            
+  ────────────────────────────────────────                                      
+  属性: relayState                                                              
+  值: 04e45c9f-...                                                              
+  用途: 状态令牌，IdP原样返回，用于防CSRF和恢复用户状态                         
+  ────────────────────────────────────────                                      
+  属性: authenticationRequestUri                                                
+  值: http://localhost:8180/.../saml                                            
+  用途: IdP的SSO端点，浏览器将被重定向到这里                                    
+  ────────────────────────────────────────                                      
+  属性: relyingPartyRegistrationId                                              
+  值: keycloak                                                                  
+  用途: SP配置标识，对应application.yml中的注册名                               
+  ────────────────────────────────────────                                      
+  属性: id                                                                      
+  值: ARQ295bd71-...                                                            
+  用途: 请求唯一ID，IdP响应时会引用它（用于匹配请求-响应）                      
+  AuthnRequest XML 关键字段解析                                                 
+                                                                                
+  ┌─────────────────────────────────────────────────────────────────┐           
+  │  AuthnRequest                                                    │          
+  ├─────────────────────────────────────────────────────────────────┤           
+  │  ID="ARQ295bd71-..."          ← 请求唯一标识，IdP响应需引用      │          
+  │  Destination="http://...8180" ← IdP的SSO端点地址                │           
+  │  AssertionConsumerServiceURL  ← 告诉IdP：响应发到这个地址        │          
+  │       ="https://localhost:8080/login/saml2/sso/keycloak"        │           
+  │  ProtocolBinding="HTTP-POST"  ← 响应方式：POST表单提交           │          
+  │  IssueInstant="2026-01-22..." ← 请求时间戳，防重放攻击          │           
+  │  ForceAuthn="false"           ← 不强制重新认证                   │          
+  ├─────────────────────────────────────────────────────────────────┤           
+  │  <Issuer>                                                        │          
+  │    https://localhost:8080/saml2/metadata/keycloak               │           
+  │  </Issuer>                     ← SP的Entity ID，标识"我是谁"     │          
+  ├─────────────────────────────────────────────────────────────────┤           
+  │  <Signature>                                                     │          
+  │    ... RSA-SHA256 签名 ...     ← 用saml-signing.key签名         │           
+  │    ... X509证书 ...            ← 附带公钥证书供IdP验证           │          
+  │  </Signature>                                                    │          
+  └─────────────────────────────────────────────────────────────────┘           
+                                                                                
+  为什么需要这些参数？                                                          
+                                                                                
+  安全性：                                                                      
+  - ID + IssueInstant → 防重放攻击                                              
+  - Signature → 防篡改，证明请求来自合法SP                                      
+  - relayState → 防CSRF                                                         
+                                                                                
+  路由：                                                                        
+  - authenticationRequestUri → 框架知道往哪发请求                               
+  - AssertionConsumerServiceURL → IdP知道响应发到哪                             
+  - relyingPartyRegistrationId → 框架知道用哪套配置解析响应                     
+                                                                                
+  协议约定：                                                                    
+  - Issuer → IdP验证这个SP是否在其信任列表中                                    
+  - ProtocolBinding → 双方约定通信方式                                          
+                                                                                
+> 還有一個問題，就是我可以自定義添加額外的參數嗎？                              
+                                                                                
+                                                                                
+● 可以。通过自定义 Saml2AuthenticationRequestResolver 来实现。                  
+                                                                                
+  方法：在 SecurityConfig 中配置自定义Resolver                                  
+                                                                                
+  @Bean                                                                         
+  public Saml2AuthenticationRequestResolver authenticationRequestResolver(      
+          RelyingPartyRegistrationRepository registrations) {                   
+                                                                                
+      OpenSaml4AuthenticationRequestResolver resolver =                         
+          new OpenSaml4AuthenticationRequestResolver(registrations);            
+                                                                                
+      resolver.setAuthnRequestCustomizer(context -> {                           
+          AuthnRequest authnRequest = context.getAuthnRequest();                
+                                                                                
+          // 1. 添加 NameIDPolicy（指定返回的NameID格式）                       
+          NameIDPolicy nameIdPolicy = new NameIDPolicyBuilder().buildObject();  
+          nameIdPolicy.setFormat("urn:oasis:names:tc:SAML:1.1:nameid-format:emai
+  lAddress");                                                                   
+          authnRequest.setNameIDPolicy(nameIdPolicy);                           
+                                                                                
+          // 2. 强制重新认证                                                    
+          authnRequest.setForceAuthn(true);                                     
+                                                                                
+          // 3. 添加 RequestedAuthnContext（要求特定认证方式）                  
+          RequestedAuthnContext authnContext = new                              
+  RequestedAuthnContextBuilder().buildObject();                                 
+          AuthnContextClassRef classRef = new                                   
+  AuthnContextClassRefBuilder().buildObject();                                  
+          classRef.setURI("urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtec
+  tedTransport");                                                               
+          authnContext.getAuthnContextClassRefs().add(classRef);                
+                                                                                
+  authnContext.setComparison(AuthnContextComparisonTypeEnumeration.EXACT);      
+          authnRequest.setRequestedAuthnContext(authnContext);                  
+                                                                                
+          // 4. 添加扩展（Extensions）- 自定义参数                              
+          Extensions extensions = new ExtensionsBuilder().buildObject();        
+          // 可在此添加自定义XML元素                                            
+          authnRequest.setExtensions(extensions);                               
+      });                                                                       
+                                                                                
+      return resolver;                                                          
+  }                                                                             
+                                                                                
+  常用可定制参数                                                                
+  参数: ForceAuthn                                                              
+  方法: setForceAuthn(true)                                                     
+  用途: 强制用户重新登录                                                        
+  ────────────────────────────────────────                                      
+  参数: IsPassive                                                               
+  方法: setIsPassive(true)                                                      
+  用途: 静默认证，不显示登录页                                                  
+  ────────────────────────────────────────                                      
+  参数: NameIDPolicy                                                            
+  方法: setNameIDPolicy(...)                                                    
+  用途: 指定返回的用户标识格式                                                  
+  ────────────────────────────────────────                                      
+  参数: RequestedAuthnContext                                                   
+  方法: setRequestedAuthnContext(...)                                           
+  用途: 要求MFA等特定认证级别                                                   
+  ────────────────────────────────────────                                      
+  参数: Extensions                                                              
+  方法: setExtensions(...)                                                      
+  用途: 添加任意自定义XML元素                                                   
+  ────────────────────────────────────────                                      
+  参数: AssertionConsumerServiceURL                                             
+  方法: setAssertionConsumerServiceURL(...)                                     
+  用途: 动态修改回调地址                                                        
+  需要的Import                                                                  
+                                                                                
+  import org.opensaml.saml.saml2.core.*;                                        
+  import org.opensaml.saml.saml2.core.impl.*;                                   
+  import org.springframework.security.saml2.provider.service.web.authentication.
+  OpenSaml4AuthenticationRequestResolver;                                       
+                                                                                
+  这样你在同一个断点位置就能看到自定义后的AuthnRequest内容了。                  
+                                                                                
+> 你幫我加一下上面的這個bean                                                    
+                                                                                
+  ⎿  Interrupted · What should Claude do instead?                               
+                                                                                
+> 我想瞭解所有的自定義可添加的參數                                              
+                                                                                
+                                                                                
+● AuthnRequest 完整可定制参数                                                   
+                                                                                
+  根据 SAML 2.0 协议规范，AuthnRequest 可配置的所有参数如下：                   
+                                                                                
+  1. 顶层属性（Attributes）                                                     
+  属性: ID                                                                      
+  类型: String                                                                  
+  方法: setID()                                                                 
+  说明: 请求唯一标识（框架自动生成）                                            
+  ────────────────────────────────────────                                      
+  属性: Version                                                                 
+  类型: String                                                                  
+  方法: setVersion()                                                            
+  说明: SAML版本，固定"2.0"                                                     
+  ────────────────────────────────────────                                      
+  属性: IssueInstant                                                            
+  类型: DateTime                                                                
+  方法: setIssueInstant()                                                       
+  说明: 请求时间戳                                                              
+  ────────────────────────────────────────                                      
+  属性: Destination                                                             
+  类型: URI                                                                     
+  方法: setDestination()                                                        
+  说明: IdP的SSO端点URL                                                         
+  ────────────────────────────────────────                                      
+  属性: Consent                                                                 
+  类型: URI                                                                     
+  方法: setConsent()                                                            
+  说明: 用户同意声明URI                                                         
+  ────────────────────────────────────────                                      
+  属性: ForceAuthn                                                              
+  类型: Boolean                                                                 
+  方法: setForceAuthn(true)                                                     
+  说明: 强制重新认证                                                            
+  ────────────────────────────────────────                                      
+  属性: IsPassive                                                               
+  类型: Boolean                                                                 
+  方法: setIsPassive(true)                                                      
+  说明: 静默认证，不显示UI                                                      
+  ────────────────────────────────────────                                      
+  属性: AssertionConsumerServiceURL                                             
+  类型: URI                                                                     
+  方法: setAssertionConsumerServiceURL()                                        
+  说明: 响应回调地址                                                            
+  ────────────────────────────────────────                                      
+  属性: AssertionConsumerServiceIndex                                           
+  类型: Integer                                                                 
+  方法: setAssertionConsumerServiceIndex()                                      
+  说明: 回调地址索引（从元数据选择）                                            
+  ────────────────────────────────────────                                      
+  属性: ProtocolBinding                                                         
+  类型: URI                                                                     
+  方法: setProtocolBinding()                                                    
+  说明: 响应绑定方式                                                            
+  ────────────────────────────────────────                                      
+  属性: AttributeConsumingServiceIndex                                          
+  类型: Integer                                                                 
+  方法: setAttributeConsumingServiceIndex()                                     
+  说明: 请求特定属性集                                                          
+  ────────────────────────────────────────                                      
+  属性: ProviderName                                                            
+  类型: String                                                                  
+  方法: setProviderName()                                                       
+  说明: SP的可读名称                                                            
+  2. 子元素（Child Elements）                                                   
+  元素: Issuer                                                                  
+  方法: setIssuer()                                                             
+  说明: SP的Entity ID                                                           
+  ────────────────────────────────────────                                      
+  元素: Signature                                                               
+  方法: setSignature()                                                          
+  说明: XML数字签名（框架自动处理）                                             
+  ────────────────────────────────────────                                      
+  元素: Extensions                                                              
+  方法: setExtensions()                                                         
+  说明: 自定义扩展容器                                                          
+  ────────────────────────────────────────                                      
+  元素: Subject                                                                 
+  方法: setSubject()                                                            
+  说明: 预指定用户身份                                                          
+  ────────────────────────────────────────                                      
+  元素: NameIDPolicy                                                            
+  方法: setNameIDPolicy()                                                       
+  说明: NameID格式策略                                                          
+  ────────────────────────────────────────                                      
+  元素: Conditions                                                              
+  方法: setConditions()                                                         
+  说明: 断言有效条件                                                            
+  ────────────────────────────────────────                                      
+  元素: RequestedAuthnContext                                                   
+  方法: setRequestedAuthnContext()                                              
+  说明: 认证上下文要求                                                          
+  ────────────────────────────────────────                                      
+  元素: Scoping                                                                 
+  方法: setScoping()                                                            
+  说明: IdP代理范围限制                                                         
+  ---                                                                           
+  3. 详细说明                                                                   
+                                                                                
+  NameIDPolicy（用户标识策略）                                                  
+                                                                                
+  NameIDPolicy policy = new NameIDPolicyBuilder().buildObject();                
+  policy.setFormat("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");   
+  policy.setAllowCreate(true);  // 允许IdP创建新标识                            
+  policy.setSPNameQualifier("https://my-sp.com");  // SP域限定                  
+  authnRequest.setNameIDPolicy(policy);                                         
+                                                                                
+  常用Format值：                                                                
+  ┌────────────────────────────────────────────────────────┬──────────┐         
+  │                         Format                         │   说明   │         
+  ├────────────────────────────────────────────────────────┼──────────┤         
+  │ urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress │ 邮箱     │         
+  ├────────────────────────────────────────────────────────┼──────────┤         
+  │ urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified  │ 不限定   │         
+  ├────────────────────────────────────────────────────────┼──────────┤         
+  │ urn:oasis:names:tc:SAML:2.0:nameid-format:persistent   │ 持久化ID │         
+  ├────────────────────────────────────────────────────────┼──────────┤         
+  │ urn:oasis:names:tc:SAML:2.0:nameid-format:transient    │ 临时ID   │         
+  └────────────────────────────────────────────────────────┴──────────┘         
+  ---                                                                           
+  RequestedAuthnContext（认证级别要求）                                         
+                                                                                
+  RequestedAuthnContext context = new                                           
+  RequestedAuthnContextBuilder().buildObject();                                 
+  context.setComparison(AuthnContextComparisonTypeEnumeration.MINIMUM);         
+                                                                                
+  AuthnContextClassRef classRef = new                                           
+  AuthnContextClassRefBuilder().buildObject();                                  
+  classRef.setURI("urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTrans
+  port");                                                                       
+  context.getAuthnContextClassRefs().add(classRef);                             
+                                                                                
+  authnRequest.setRequestedAuthnContext(context);                               
+                                                                                
+  Comparison类型：                                                              
+  ┌─────────┬────────────────┐                                                  
+  │  类型   │      说明      │                                                  
+  ├─────────┼────────────────┤                                                  
+  │ EXACT   │ 必须完全匹配   │                                                  
+  ├─────────┼────────────────┤                                                  
+  │ MINIMUM │ 至少达到此级别 │                                                  
+  ├─────────┼────────────────┤                                                  
+  │ MAXIMUM │ 不超过此级别   │                                                  
+  ├─────────┼────────────────┤                                                  
+  │ BETTER  │ 比指定级别更强 │                                                  
+  └─────────┴────────────────┘                                                  
+  常用认证级别（从弱到强）：                                                    
+  ┌──────────────────────────────────────────┬────────────┐                     
+  │                   URI                    │    说明    │                     
+  ├──────────────────────────────────────────┼────────────┤                     
+  │ ...ac:classes:unspecified                │ 不限定     │                     
+  ├──────────────────────────────────────────┼────────────┤                     
+  │ ...ac:classes:Password                   │ 密码认证   │                     
+  ├──────────────────────────────────────────┼────────────┤                     
+  │ ...ac:classes:PasswordProtectedTransport │ 密码+TLS   │                     
+  ├──────────────────────────────────────────┼────────────┤                     
+  │ ...ac:classes:X509                       │ 证书认证   │                     
+  ├──────────────────────────────────────────┼────────────┤                     
+  │ ...ac:classes:Smartcard                  │ 智能卡     │                     
+  ├──────────────────────────────────────────┼────────────┤                     
+  │ ...ac:classes:MultiFactor                │ 多因素认证 │                     
+  └──────────────────────────────────────────┴────────────┘                     
+  ---                                                                           
+  Subject（预指定用户）                                                         
+                                                                                
+  Subject subject = new SubjectBuilder().buildObject();                         
+  NameID nameId = new NameIDBuilder().buildObject();                            
+  nameId.setValue("user@example.com");                                          
+  nameId.setFormat("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");   
+  subject.setNameID(nameId);                                                    
+                                                                                
+  authnRequest.setSubject(subject);                                             
+                                                                                
+  ---                                                                           
+  Scoping（IdP代理限制）                                                        
+                                                                                
+  Scoping scoping = new ScopingBuilder().buildObject();                         
+  scoping.setProxyCount(0);  // 禁止IdP代理                                     
+                                                                                
+  IDPList idpList = new IDPListBuilder().buildObject();                         
+  IDPEntry entry = new IDPEntryBuilder().buildObject();                         
+  entry.setProviderID("https://preferred-idp.com");                             
+  entry.setName("Preferred IdP");                                               
+  idpList.getIDPEntrys().add(entry);                                            
+  scoping.setIDPList(idpList);                                                  
+                                                                                
+  authnRequest.setScoping(scoping);                                             
+                                                                                
+  ---                                                                           
+  Extensions（自定义扩展）                                                      
+                                                                                
+  Extensions extensions = new ExtensionsBuilder().buildObject();                
+                                                                                
+  // 添加任意自定义XML元素                                                      
+  // 例如：添加租户ID                                                           
+  XSAny tenantElement = new XSAnyBuilder().buildObject("http://my-namespace",   
+  "TenantId", "myns");                                                          
+  tenantElement.setTextContent("tenant-123");                                   
+  extensions.getUnknownXMLObjects().add(tenantElement);                         
+                                                                                
+  authnRequest.setExtensions(extensions);                                       
+                                                                                
+  ---                                                                           
+  Conditions（断言条件）                                                        
+                                                                                
+  Conditions conditions = new ConditionsBuilder().buildObject();                
+  conditions.setNotBefore(Instant.now());                                       
+  conditions.setNotOnOrAfter(Instant.now().plusSeconds(300));                   
+                                                                                
+  AudienceRestriction restriction = new                                         
+  AudienceRestrictionBuilder().buildObject();                                   
+  Audience audience = new AudienceBuilder().buildObject();                      
+  audience.setURI("https://my-sp.com");                                         
+  restriction.getAudiences().add(audience);                                     
+  conditions.getAudienceRestrictions().add(restriction);                        
+                                                                                
+  authnRequest.setConditions(conditions);                                       
+                                                                                
+  ---                                                                           
+  4. ProtocolBinding 可选值                                                     
+  ┌────────────────────────────────────────────────────┬────────────────────┐   
+  │                    Binding URI                     │        说明        │   
+  ├────────────────────────────────────────────────────┼────────────────────┤   
+  │ urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST     │ POST表单（最常用） │   
+  ├────────────────────────────────────────────────────┼────────────────────┤   
+  │ urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect │ URL重定向          │   
+  ├────────────────────────────────────────────────────┼────────────────────┤   
+  │ urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact │ Artifact引用       │   
+  ├────────────────────────────────────────────────────┼────────────────────┤   
+  │ urn:oasis:names:tc:SAML:2.0:bindings:PAOS          │ 反向SOAP           │   
+  └────────────────────────────────────────────────────┴────────────────────┘   
+  ---                                                                           
+  5. 完整示例                                                                   
+                                                                                
+  resolver.setAuthnRequestCustomizer(context -> {                               
+      AuthnRequest req = context.getAuthnRequest();                             
+                                                                                
+      // 基本属性                                                               
+      req.setForceAuthn(false);                                                 
+      req.setIsPassive(false);                                                  
+      req.setProviderName("My Application");                                    
+                                                                                
+      // NameID策略                                                             
+      NameIDPolicy nameIdPolicy = new NameIDPolicyBuilder().buildObject();      
+      nameIdPolicy.setFormat("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAdd
+  ress");                                                                       
+      nameIdPolicy.setAllowCreate(true);                                        
+      req.setNameIDPolicy(nameIdPolicy);                                        
+                                                                                
+      // 要求MFA                                                                
+      RequestedAuthnContext authnContext = new                                  
+  RequestedAuthnContextBuilder().buildObject();                                 
+      authnContext.setComparison(AuthnContextComparisonTypeEnumeration.MINIMUM);
+      AuthnContextClassRef mfa = new                                            
+  AuthnContextClassRefBuilder().buildObject();                                  
+      mfa.setURI("urn:oasis:names:tc:SAML:2.0:ac:classes:MultiFactor");         
+      authnContext.getAuthnContextClassRefs().add(mfa);                         
+      req.setRequestedAuthnContext(authnContext);                               
+                                                                                
+      // 禁止代理                                                               
+      Scoping scoping = new ScopingBuilder().buildObject();                     
+      scoping.setProxyCount(0);                                                 
+      req.setScoping(scoping);                                                  
+                                                                                
+      // 自定义扩展                                                             
+      Extensions ext = new ExtensionsBuilder().buildObject();                   
+      XSAny custom = new XSAnyBuilder().buildObject("http://example.com/ns",    
+  "CustomParam", "ex");                                                         
+      custom.setTextContent("custom-value");                                    
+      ext.getUnknownXMLObjects().add(custom);                                   
+      req.setExtensions(ext);                                                   
+  });                                                                           
+                                                                                
+  这些是SAML                                                                    
+  2.0协议规范中AuthnRequest支持的所有参数。实际使用时需要IdP也支持对应功能。    
+                                                                                
+✻ Cooked for 34s                                                                
+
