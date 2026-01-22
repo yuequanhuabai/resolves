@@ -1,0 +1,68 @@
+M现在我完全理解了。让我给您详细讲解 isApprovalMode 的原理：             0s)
+
+  isApprovalMode 原理解析
+  整体流程图
+  用户登录
+      │
+      ▼                                                                                                                  Cooked for 2m 45s
+  ┌─────────────────────────────────────────┐
+  │  列表页面 (privateBank/retailBank)       │
+  │  isReviewMode = checkPermi(['buy:list:check']) │
+  │                                         │
+  │  ┌─────────────┬─────────────┐          │
+  │  │ Maker用户    │ Checker用户  │          │
+  │  │ 无check权限  │ 有check权限   │          │
+  │  │ 查看所有状态  │ 默认status=1 │          │
+  │  └─────────────┴─────────────┘          │
+  └─────────────────────────────────────────┘
+      │
+      │ 点击详情
+      ▼
+  ┌─────────────────────────────────────────┐
+  │  handleViewDetail(row)                  │
+  │  调用 ListApi.getProcessKey(processInstanceId) │
+  └─────────────────────────────────────────┘
+      │
+      ├── response == null ──────► /buylist/detail
+      │                            isApprovalMode = false (默认值)
+      │
+      └── response != null ──────► /bpm/approval
+                                   isApprovalMode = true (硬编码)
+
+  关键代码位置
+
+  1. 列表页判断用户权限 (privateBank/index.vue:173)
+  const isReviewMode = computed(() => checkPermi(['buy:list:check']))
+
+  2. 点击详情时路由选择 (privateBank/index.vue:196-222)
+  const handleViewDetail = (row) => {
+    ListApi.getProcessKey(row.processInstanceId)
+      .then((response) => {
+        // 根据是否有流程实例决定跳转哪个页面
+        const path = response == null ? '/buylist/detail' : '/bpm/approval';
+        // ...
+      })
+  }
+
+  3. 审批页面硬编码传入 (bpm/approval/index.vue:34-37)
+  <BusinessFormComponent
+    :business-key="props.businessKey || processInstance.businessKey"
+    :is-approval-mode="true"   <!-- 硬编码为 true -->
+  />
+
+  4. 动态加载业务组件 (bpm/approval/index.vue:221-222)
+  // 根据 businessType 动态加载对应的 detail 组件
+  const formUrl = '/views/' + param.businessType + '/detail/index.vue';
+  BusinessFormComponent.value = registerComponent(formUrl)
+
+  总结
+  ┌─────────────────────────────┬────────────────┬──────────────┐
+  │          访问方式           │ isApprovalMode │     原因     │
+  ├─────────────────────────────┼────────────────┼──────────────┤
+  │ 直接访问 /buylist/detail    │ false          │ props 默认值 │
+  ├─────────────────────────────┼────────────────┼──────────────┤
+  │ 通过 /bpm/approval 审批页面 │ true           │ 硬编码传入   │
+  └─────────────────────────────┴────────────────┴──────────────┘
+  所以 isApprovalMode 不是直接基于用户权限判断的，而是基于访问路径判断的：
+  - Checker 用户 → 看到待审批记录(status=1) → 点击跳转审批页面 → isApprovalMode=true
+  - Maker 用户 → 看到自己创建的记录 → 点击跳转详情页面 → isApprovalMode=false
