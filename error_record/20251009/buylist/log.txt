@@ -1,0 +1,779 @@
+
+ ▐▛███▜▌   Claude Code v2.1.15
+▝▜█████▛▘  Opus 4.5 · Claude Pro
+  ▘▘ ▝▝    D:\software\developmentTools\Git\gitee\newpap\pap
+
+> /clear 
+  ⎿  (no content)
+
+> 基本条件：                                                                
+  基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro                  
+                                                                            
+  需求：                                                                    
+  我的需要是把当前项目的后端的日志按照日期归档，这个如何实现                
+
+● 我来查看一下当前项目的日志配置情况。
+
+● Search(pattern: "pocpro/**/logback*.xml")
+  ⎿  Found 2 files (ctrl+o to expand)
+
+● Search(pattern: "pocpro/**/application*.yaml")
+  ⎿  Found 6 files (ctrl+o to expand)
+
+● Read(pocpro\pap-server\src\main\resources\logback-spring.xml)
+  ⎿  Read 80 lines
+
+● 让我查看一下application.yaml中的日志路径配置。
+
+● Read(pocpro\pap-server\src\main\resources\application.yaml)
+  ⎿  Read 141 lines
+
+● Read(pocpro\pap-server\src\main\resources\application-local.yaml)
+  ⎿  Read 207 lines
+
+● Read(pocpro\pap-server\src\main\resources\application-dev.yaml)
+  ⎿  Read 273 lines
+
+● 根据我的检查，项目已经配置了按日期归档的功能。当前配置如下：
+
+  当前日志归档配置
+
+  1. logback-spring.xml (第31-42行)
+
+  <rollingPolicy 
+  class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <!-- 滚动后的日志文件名: 日志文件.日期.序号.gz -->
+      <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+      <!-- 日志文件最大10MB后滚动 -->
+      <maxFileSize>10MB</maxFileSize>
+      <!-- 保留30天历史日志 -->
+      <maxHistory>30</maxHistory>
+  </rollingPolicy>
+
+  2. 日志路径 (application-local.yaml 第143-144行)
+
+  logging:
+    file:
+      name: ${user.home}/logs/${spring.application.name}.log
+
+  效果
+
+  当前配置会产生如下日志文件：
+  C:\Users\<用户名>\logs\
+  ├── yudao-server.log                        # 当前日志
+  ├── yudao-server.log.2026-01-21.0.gz       # 归档日志(压缩)
+  ├── yudao-server.log.2026-01-20.0.gz
+  └── ...
+
+  归档策略：
+  - 每天自动归档
+  - 单文件超过10MB时也会归档（同一天可能有多个文件，序号递增）
+  - 归档文件自动压缩为 .gz 格式
+  - 保留最近30天的历史日志
+
+  ---
+  如果你需要调整配置，可以考虑：
+
+  1. 按日期存放到不同目录 - 如 logs/2026-01-22/app.log
+  2. 调整保留天数 - 修改 maxHistory 值
+  3. 调整单文件大小 - 修改 maxFileSize 值
+  4. 修改日志存放路径 - 修改 logging.file.name
+
+  需要我帮你做哪种调整吗？
+
+✻ Cogitated for 56s
+
+> 那有个问题，为什么我放在linux上启动运行，用 nohup java -jar               
+  pap-fat-server.jar   >app.log 2>&1 &                                      
+  它全部在app.log里了，没有归档                                             
+
+● 这是因为你用了 shell 重定向 >app.log 2>&1，这绕过了 logback 的日志管理机制。
+
+  问题原因
+
+  nohup java -jar pap-fat-server.jar >app.log 2>&1 &
+                                     ↑
+                                     这里把控制台输出重定向到 app.log
+
+  这个命令做了什么：
+  1. STDOUT appender（控制台输出） → 被 shell 重定向到 app.log
+  2. FILE appender（logback文件） → 仍然写入到 
+  ${user.home}/logs/yudao-server.log
+
+  你看到的 app.log 是 shell 捕获的控制台输出，不受 logback 的滚动策略控制。
+
+  解决方案
+
+  方案1：不使用 shell 重定向（推荐）
+
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  然后去查看 logback 管理的日志文件：
+  tail -f ~/logs/yudao-server.log
+
+  归档的日志也在这个目录：
+  ls -la ~/logs/
+
+  方案2：指定日志路径启动
+
+  nohup java -jar pap-fat-server.jar \
+    --logging.file.name=/your/path/logs/app.log \
+    > /dev/null 2>&1 &
+
+  归档日志会在 /your/path/logs/ 目录下按日期生成。
+
+  方案3：修改配置关闭控制台输出
+
+  如果你想只用文件日志，可以在 logback-spring.xml 中移除 STDOUT appender：
+
+  <!-- 生产环境 -->
+  <springProfile name="prod">
+      <root level="INFO">
+          <!-- 移除 STDOUT -->
+          <appender-ref ref="ASYNC"/>
+      </root>
+  </springProfile>
+
+  ---
+  总结：你的 logback 归档配置是生效的，只是归档的日志在 ~/logs/ 目录下，而不是你
+   shell 重定向的 app.log。
+
+✻ Brewed for 39s
+
+> 我理解是两个目录都有生成日志吗？ 
+
+● 是的，按你的启动方式，两个地方都有日志：
+  位置: ./app.log
+  来源: shell 重定向捕获的控制台输出
+  是否归档: 不会归档，会无限增长
+  ────────────────────────────────────────
+  位置: ~/logs/yudao-server.log
+  来源: logback FILE appender
+  是否归档: 会归档，按日期+大小滚动
+  你可以验证一下：
+
+  # 查看 logback 管理的日志目录
+  ls -la ~/logs/
+
+  # 应该能看到类似这样的文件：
+  # yudao-server.log
+  # yudao-server.log.2026-01-21.0.gz
+  # yudao-server.log.2026-01-20.0.gz
+
+  所以如果你只想要一份会归档的日志，启动时不要用 >app.log 重定向：
+
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  然后只看 ~/logs/yudao-server.log 即可。
+
+> 我再问下配置文件的：                                                      
+  spring:                                                                   
+  application:                                                              
+  name: yudao-server                                                        
+                                                                            
+  可以手动改名字吗？ 会影响到其他地方吗？ yudao-server；                    
+
+● 让我搜索一下这个配置在项目中的使用情况。
+
+● Search(pattern: "spring\.application\.name", path: "pocpro", output_mode:
+        "content")
+  ⎿  Found 6 lines (ctrl+o to expand)
+
+● Search(pattern: "yudao-server", path: "pocpro", output_mode: "content")
+  ⎿  Found 7 lines (ctrl+o to expand)
+
+● 可以修改，但需要了解影响范围：
+
+  影响的地方
+  影响位置: 日志文件名
+  说明: ~/logs/${spring.application.name}.log
+  是否需要同步修改: 自动生效
+  ────────────────────────────────────────
+  影响位置: API访问日志表
+  说明: ApiAccessLogDO.applicationName 字段
+  是否需要同步修改: 自动生效（记录到数据库）
+  ────────────────────────────────────────
+  影响位置: API错误日志表
+  说明: ApiErrorLogDO.applicationName 字段
+  是否需要同步修改: 自动生效
+  ────────────────────────────────────────
+  影响位置: Jenkins脚本
+  说明: script/jenkins/Jenkinsfile 硬编码了 yudao-server
+  是否需要同步修改: 需要手动改
+  ────────────────────────────────────────
+  影响位置: Docker配置
+  说明: script/docker/docker-compose.yml 硬编码了 yudao-server
+  是否需要同步修改: 需要手动改
+  修改方式
+
+  只需修改 application.yaml:
+
+  spring:
+    application:
+      name: pap-server  # 改成你想要的名字
+
+  注意事项
+
+  1. 日志文件路径会变
+    - 改名后：~/logs/pap-server.log
+    - 旧日志文件不会自动迁移
+  2. 数据库日志记录
+    - 改名后新的 API 日志会记录新名字
+    - 如果需要按应用名查询日志，注意新旧名字不同
+  3. 部署脚本（如果用到的话）
+    - Jenkins: script/jenkins/Jenkinsfile 第24行
+    - Docker: script/docker/docker-compose.yml 第30、33行
+
+  总结：改名字对应用运行没有影响，主要就是日志文件名和日志记录会变。如果不用 
+  Jenkins/Docker 部署，直接改配置就行。
+
+✻ Cooked for 52s
+
+> 另外这个日志生成路径可以动态配置吗？                                      
+  logging:                                                                  
+  file:                                                                     
+  name: ${user.home}/logs/${spring.application.name}.log #                  
+  日志文件名，全路径                                                        
+                                                                            
+  如果我的app没有放在user.home目录下的话而是放在了linux系统的其它目录下，例 
+  如/opt/app/yudao-server/ 这个目录下呢？                                   
+
+● 可以动态配置，有几种方式：
+
+  方式1：启动参数指定（推荐）
+
+  nohup java -jar pap-fat-server.jar \
+    --logging.file.name=/opt/app/yudao-server/logs/app.log \
+    > /dev/null 2>&1 &
+
+  方式2：使用相对路径
+
+  修改配置文件，日志会生成在启动目录下：
+
+  logging:
+    file:
+      name: ./logs/${spring.application.name}.log
+
+  启动时：
+  cd /opt/app/yudao-server
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  # 日志会在 /opt/app/yudao-server/logs/yudao-server.log
+
+  方式3：环境变量
+
+  修改配置文件：
+  logging:
+    file:
+      name: 
+  ${LOG_PATH:/opt/app/yudao-server/logs}/${spring.application.name}.log
+
+  启动时可以覆盖：
+  export LOG_PATH=/opt/app/yudao-server/logs
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  方式4：JVM 参数
+
+  nohup java -jar pap-fat-server.jar \
+    -Dlogging.file.name=/opt/app/yudao-server/logs/app.log \
+    > /dev/null 2>&1 &
+
+  推荐做法
+
+  修改 application-local.yaml 和 application-dev.yaml：
+
+  logging:
+    file:
+      name: ${LOG_PATH:./logs}/${spring.application.name}.log
+
+  这样：
+  - 默认使用启动目录下的 ./logs/
+  - 需要时可通过环境变量 LOG_PATH 覆盖
+  - 也可通过启动参数 --logging.file.name=xxx 完全覆盖
+
+  启动示例：
+  cd /opt/app/yudao-server
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  # 日志在 /opt/app/yudao-server/logs/yudao-server.log
+
+>                                                                           
+  方式2：使用相对路径                                                       
+                                                                            
+  修改配置文件，日志会生成在启动目录下：                                    
+                                                                            
+  logging:                                                                  
+  file:                                                                     
+  name: ./logs/${spring.application.name}.log                               
+                                                                            
+  如果当前目录下没有logs目录会创建logs目录吗？                              
+
+● 会的，Logback 会自动创建不存在的目录。
+
+  你可以直接使用，不需要手动创建 logs 目录：
+
+  cd /opt/app/yudao-server
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  # 自动创建 /opt/app/yudao-server/logs/ 目录
+  # 并生成 /opt/app/yudao-server/logs/yudao-server.log
+
+  唯一需要注意的是：运行 Java 的用户需要有该目录的写权限。
+
+  例如，如果用 root 用户启动就没问题；如果用普通用户启动，确保对
+  /opt/app/yudao-server/ 目录有写权限即可。
+
+> 还有一个问题，日志生成目录如果是用脚本执行的呢？它是会生成在脚本执行的目  
+  录下，还是jar包的同目录下呢？脚本可能和jar不在一个目录？这样是不是生成错  
+  了目录？                                                                  
+
+● 你说得对，相对路径是相对于当前工作目录（CWD），不是 jar 包所在目录。
+
+  问题演示
+
+  假设目录结构：
+  /home/user/scripts/start.sh      # 启动脚本
+  /opt/app/yudao-server/pap-fat-server.jar   # jar包
+
+  如果在 /home/user/scripts/ 下执行：
+  ./start.sh
+
+  日志会生成在：/home/user/scripts/logs/ ❌（不是 jar 同目录）
+
+  解决方案
+
+  方案1：脚本里先 cd 到 jar 目录
+
+  #!/bin/bash
+  # start.sh
+
+  # 切换到 jar 所在目录
+  cd /opt/app/yudao-server
+
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  方案2：脚本动态获取 jar 目录（推荐）
+
+  #!/bin/bash
+  # start.sh
+
+  # 获取 jar 所在目录
+  APP_HOME=/opt/app/yudao-server
+  cd ${APP_HOME}
+
+  nohup java -jar ${APP_HOME}/pap-fat-server.jar > /dev/null 2>&1 &
+
+  方案3：启动参数指定绝对路径
+
+  #!/bin/bash
+  # start.sh
+
+  APP_HOME=/opt/app/yudao-server
+
+  nohup java -jar ${APP_HOME}/pap-fat-server.jar \
+    --logging.file.name=${APP_HOME}/logs/app.log \
+    > /dev/null 2>&1 &
+
+  方案4：自动获取脚本/jar 同级目录
+
+  #!/bin/bash
+  # 假设脚本和 jar 在同一目录
+
+  # 获取脚本所在目录（而非执行目录）
+  APP_HOME=$(cd "$(dirname "$0")" && pwd)
+  cd ${APP_HOME}
+
+  nohup java -jar ${APP_HOME}/pap-fat-server.jar > /dev/null 2>&1 &
+
+  ---
+  总结：使用相对路径时，建议在脚本里先 cd 到 jar 所在目录，这样日志就会生成在
+  jar 同级的 logs/ 目录下。
+ ▐▛███▜▌   Claude Code v2.1.15
+▝▜█████▛▘  Opus 4.5 · Claude Pro
+  ▘▘ ▝▝    D:\software\developmentTools\Git\gitee\newpap\pap
+
+> /clear 
+  ⎿  (no content)
+
+> 基本条件：                                                                
+  基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro                  
+                                                                            
+  需求：                                                                    
+  我的需要是把当前项目的后端的日志按照日期归档，这个如何实现                
+
+● 我来查看一下当前项目的日志配置情况。
+
+● Search(pattern: "pocpro/**/logback*.xml")
+  ⎿  Found 2 files (ctrl+o to expand)
+
+● Search(pattern: "pocpro/**/application*.yaml")
+  ⎿  Found 6 files (ctrl+o to expand)
+
+● Read(pocpro\pap-server\src\main\resources\logback-spring.xml)
+  ⎿  Read 80 lines
+
+● 让我查看一下application.yaml中的日志路径配置。
+
+● Read(pocpro\pap-server\src\main\resources\application.yaml)
+  ⎿  Read 141 lines
+
+● Read(pocpro\pap-server\src\main\resources\application-local.yaml)
+  ⎿  Read 207 lines
+
+● Read(pocpro\pap-server\src\main\resources\application-dev.yaml)
+  ⎿  Read 273 lines
+
+● 根据我的检查，项目已经配置了按日期归档的功能。当前配置如下：
+
+  当前日志归档配置
+
+  1. logback-spring.xml (第31-42行)
+
+  <rollingPolicy 
+  class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <!-- 滚动后的日志文件名: 日志文件.日期.序号.gz -->
+      <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+      <!-- 日志文件最大10MB后滚动 -->
+      <maxFileSize>10MB</maxFileSize>
+      <!-- 保留30天历史日志 -->
+      <maxHistory>30</maxHistory>
+  </rollingPolicy>
+
+  2. 日志路径 (application-local.yaml 第143-144行)
+
+  logging:
+    file:
+      name: ${user.home}/logs/${spring.application.name}.log
+
+  效果
+
+  当前配置会产生如下日志文件：
+  C:\Users\<用户名>\logs\
+  ├── yudao-server.log                        # 当前日志
+  ├── yudao-server.log.2026-01-21.0.gz       # 归档日志(压缩)
+  ├── yudao-server.log.2026-01-20.0.gz
+  └── ...
+
+  归档策略：
+  - 每天自动归档
+  - 单文件超过10MB时也会归档（同一天可能有多个文件，序号递增）
+  - 归档文件自动压缩为 .gz 格式
+  - 保留最近30天的历史日志
+
+  ---
+  如果你需要调整配置，可以考虑：
+
+  1. 按日期存放到不同目录 - 如 logs/2026-01-22/app.log
+  2. 调整保留天数 - 修改 maxHistory 值
+  3. 调整单文件大小 - 修改 maxFileSize 值
+  4. 修改日志存放路径 - 修改 logging.file.name
+
+  需要我帮你做哪种调整吗？
+
+✻ Cogitated for 56s
+
+> 那有个问题，为什么我放在linux上启动运行，用 nohup java -jar               
+  pap-fat-server.jar   >app.log 2>&1 &                                      
+  它全部在app.log里了，没有归档                                             
+
+● 这是因为你用了 shell 重定向 >app.log 2>&1，这绕过了 logback 的日志管理机制。
+
+  问题原因
+
+  nohup java -jar pap-fat-server.jar >app.log 2>&1 &
+                                     ↑
+                                     这里把控制台输出重定向到 app.log
+
+  这个命令做了什么：
+  1. STDOUT appender（控制台输出） → 被 shell 重定向到 app.log
+  2. FILE appender（logback文件） → 仍然写入到 
+  ${user.home}/logs/yudao-server.log
+
+  你看到的 app.log 是 shell 捕获的控制台输出，不受 logback 的滚动策略控制。
+
+  解决方案
+
+  方案1：不使用 shell 重定向（推荐）
+
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  然后去查看 logback 管理的日志文件：
+  tail -f ~/logs/yudao-server.log
+
+  归档的日志也在这个目录：
+  ls -la ~/logs/
+
+  方案2：指定日志路径启动
+
+  nohup java -jar pap-fat-server.jar \
+    --logging.file.name=/your/path/logs/app.log \
+    > /dev/null 2>&1 &
+
+  归档日志会在 /your/path/logs/ 目录下按日期生成。
+
+  方案3：修改配置关闭控制台输出
+
+  如果你想只用文件日志，可以在 logback-spring.xml 中移除 STDOUT appender：
+
+  <!-- 生产环境 -->
+  <springProfile name="prod">
+      <root level="INFO">
+          <!-- 移除 STDOUT -->
+          <appender-ref ref="ASYNC"/>
+      </root>
+  </springProfile>
+
+  ---
+  总结：你的 logback 归档配置是生效的，只是归档的日志在 ~/logs/ 目录下，而不是你
+   shell 重定向的 app.log。
+
+✻ Brewed for 39s
+
+> 我理解是两个目录都有生成日志吗？ 
+
+● 是的，按你的启动方式，两个地方都有日志：
+  位置: ./app.log
+  来源: shell 重定向捕获的控制台输出
+  是否归档: 不会归档，会无限增长
+  ────────────────────────────────────────
+  位置: ~/logs/yudao-server.log
+  来源: logback FILE appender
+  是否归档: 会归档，按日期+大小滚动
+  你可以验证一下：
+
+  # 查看 logback 管理的日志目录
+  ls -la ~/logs/
+
+  # 应该能看到类似这样的文件：
+  # yudao-server.log
+  # yudao-server.log.2026-01-21.0.gz
+  # yudao-server.log.2026-01-20.0.gz
+
+  所以如果你只想要一份会归档的日志，启动时不要用 >app.log 重定向：
+
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  然后只看 ~/logs/yudao-server.log 即可。
+
+> 我再问下配置文件的：                                                      
+  spring:                                                                   
+  application:                                                              
+  name: yudao-server                                                        
+                                                                            
+  可以手动改名字吗？ 会影响到其他地方吗？ yudao-server；                    
+
+● 让我搜索一下这个配置在项目中的使用情况。
+
+● Search(pattern: "spring\.application\.name", path: "pocpro", output_mode:
+        "content")
+  ⎿  Found 6 lines (ctrl+o to expand)
+
+● Search(pattern: "yudao-server", path: "pocpro", output_mode: "content")
+  ⎿  Found 7 lines (ctrl+o to expand)
+
+● 可以修改，但需要了解影响范围：
+
+  影响的地方
+  影响位置: 日志文件名
+  说明: ~/logs/${spring.application.name}.log
+  是否需要同步修改: 自动生效
+  ────────────────────────────────────────
+  影响位置: API访问日志表
+  说明: ApiAccessLogDO.applicationName 字段
+  是否需要同步修改: 自动生效（记录到数据库）
+  ────────────────────────────────────────
+  影响位置: API错误日志表
+  说明: ApiErrorLogDO.applicationName 字段
+  是否需要同步修改: 自动生效
+  ────────────────────────────────────────
+  影响位置: Jenkins脚本
+  说明: script/jenkins/Jenkinsfile 硬编码了 yudao-server
+  是否需要同步修改: 需要手动改
+  ────────────────────────────────────────
+  影响位置: Docker配置
+  说明: script/docker/docker-compose.yml 硬编码了 yudao-server
+  是否需要同步修改: 需要手动改
+  修改方式
+
+  只需修改 application.yaml:
+
+  spring:
+    application:
+      name: pap-server  # 改成你想要的名字
+
+  注意事项
+
+  1. 日志文件路径会变
+    - 改名后：~/logs/pap-server.log
+    - 旧日志文件不会自动迁移
+  2. 数据库日志记录
+    - 改名后新的 API 日志会记录新名字
+    - 如果需要按应用名查询日志，注意新旧名字不同
+  3. 部署脚本（如果用到的话）
+    - Jenkins: script/jenkins/Jenkinsfile 第24行
+    - Docker: script/docker/docker-compose.yml 第30、33行
+
+  总结：改名字对应用运行没有影响，主要就是日志文件名和日志记录会变。如果不用 
+  Jenkins/Docker 部署，直接改配置就行。
+
+✻ Cooked for 52s
+
+> 另外这个日志生成路径可以动态配置吗？                                      
+  logging:                                                                  
+  file:                                                                     
+  name: ${user.home}/logs/${spring.application.name}.log #                  
+  日志文件名，全路径                                                        
+                                                                            
+  如果我的app没有放在user.home目录下的话而是放在了linux系统的其它目录下，例 
+  如/opt/app/yudao-server/ 这个目录下呢？                                   
+
+● 可以动态配置，有几种方式：
+
+  方式1：启动参数指定（推荐）
+
+  nohup java -jar pap-fat-server.jar \
+    --logging.file.name=/opt/app/yudao-server/logs/app.log \
+    > /dev/null 2>&1 &
+
+  方式2：使用相对路径
+
+  修改配置文件，日志会生成在启动目录下：
+
+  logging:
+    file:
+      name: ./logs/${spring.application.name}.log
+
+  启动时：
+  cd /opt/app/yudao-server
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  # 日志会在 /opt/app/yudao-server/logs/yudao-server.log
+
+  方式3：环境变量
+
+  修改配置文件：
+  logging:
+    file:
+      name: 
+  ${LOG_PATH:/opt/app/yudao-server/logs}/${spring.application.name}.log
+
+  启动时可以覆盖：
+  export LOG_PATH=/opt/app/yudao-server/logs
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  方式4：JVM 参数
+
+  nohup java -jar pap-fat-server.jar \
+    -Dlogging.file.name=/opt/app/yudao-server/logs/app.log \
+    > /dev/null 2>&1 &
+
+  推荐做法
+
+  修改 application-local.yaml 和 application-dev.yaml：
+
+  logging:
+    file:
+      name: ${LOG_PATH:./logs}/${spring.application.name}.log
+
+  这样：
+  - 默认使用启动目录下的 ./logs/
+  - 需要时可通过环境变量 LOG_PATH 覆盖
+  - 也可通过启动参数 --logging.file.name=xxx 完全覆盖
+
+  启动示例：
+  cd /opt/app/yudao-server
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  # 日志在 /opt/app/yudao-server/logs/yudao-server.log
+
+>                                                                           
+  方式2：使用相对路径                                                       
+                                                                            
+  修改配置文件，日志会生成在启动目录下：                                    
+                                                                            
+  logging:                                                                  
+  file:                                                                     
+  name: ./logs/${spring.application.name}.log                               
+                                                                            
+  如果当前目录下没有logs目录会创建logs目录吗？                              
+
+● 会的，Logback 会自动创建不存在的目录。
+
+  你可以直接使用，不需要手动创建 logs 目录：
+
+  cd /opt/app/yudao-server
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  # 自动创建 /opt/app/yudao-server/logs/ 目录
+  # 并生成 /opt/app/yudao-server/logs/yudao-server.log
+
+  唯一需要注意的是：运行 Java 的用户需要有该目录的写权限。
+
+  例如，如果用 root 用户启动就没问题；如果用普通用户启动，确保对
+  /opt/app/yudao-server/ 目录有写权限即可。
+
+> 还有一个问题，日志生成目录如果是用脚本执行的呢？它是会生成在脚本执行的目  
+  录下，还是jar包的同目录下呢？脚本可能和jar不在一个目录？这样是不是生成错  
+  了目录？                                                                  
+
+● 你说得对，相对路径是相对于当前工作目录（CWD），不是 jar 包所在目录。
+
+  问题演示
+
+  假设目录结构：
+  /home/user/scripts/start.sh      # 启动脚本
+  /opt/app/yudao-server/pap-fat-server.jar   # jar包
+
+  如果在 /home/user/scripts/ 下执行：
+  ./start.sh
+
+  日志会生成在：/home/user/scripts/logs/ ❌（不是 jar 同目录）
+
+  解决方案
+
+  方案1：脚本里先 cd 到 jar 目录
+
+  #!/bin/bash
+  # start.sh
+
+  # 切换到 jar 所在目录
+  cd /opt/app/yudao-server
+
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  方案2：脚本动态获取 jar 目录（推荐）
+
+  #!/bin/bash
+  # start.sh
+
+  # 获取 jar 所在目录
+  APP_HOME=/opt/app/yudao-server
+  cd ${APP_HOME}
+
+  nohup java -jar ${APP_HOME}/pap-fat-server.jar > /dev/null 2>&1 &
+
+  方案3：启动参数指定绝对路径
+
+  #!/bin/bash
+  # start.sh
+
+  APP_HOME=/opt/app/yudao-server
+
+  nohup java -jar ${APP_HOME}/pap-fat-server.jar \
+    --logging.file.name=${APP_HOME}/logs/app.log \
+    > /dev/null 2>&1 &
+
+  方案4：自动获取脚本/jar 同级目录
+
+  #!/bin/bash
+  # 假设脚本和 jar 在同一目录
+
+  # 获取脚本所在目录（而非执行目录）
+  APP_HOME=$(cd "$(dirname "$0")" && pwd)
+  cd ${APP_HOME}
+
+  nohup java -jar ${APP_HOME}/pap-fat-server.jar > /dev/null 2>&1 &
+
+  ---
+  总结：使用相对路径时，建议在脚本里先 cd 到 jar 所在目录，这样日志就会生成在
+  jar 同级的 logs/ 目录下。
