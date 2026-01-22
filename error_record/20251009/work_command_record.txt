@@ -2326,16 +2326,26 @@ Start Port    End Port
 
 
 ###########################################################################
+TICKER(where CLIENT_SEC_TYPE = 'Equities' and 'CLIENT_SEC_TYPE2' in 'Stocks','Debt Security','Synthetic ETF','Trust (Non-Synthetic ETF)','US Equities','US ETF','Warrant','Rights')
+TICKER(where CLIENT_SEC_TYPE = 'Equities' and 'CLIENT_SEC_TYPE2' in 'JP Equities','JP ETF','SG Equities','SG ETF')
 
+###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
+
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+需求：
+cn.bochk.pap.server.business.service.SecurityMasterCacheService#initCache如果有多个用户在多个节点触发初始化？会不会有多线程的问题？
+你可以理解我的需求吗？ 你复述一遍我的需求：
 
 
 ###########################################################################
-
-
-
-###########################################################################
-
-
+可以使用以下方式修复：
+  1. 分布式锁（推荐）：使用 Redisson 的分布式锁
+  2. 双重检查锁 + 本地锁：防止同一节点重复初始化
+  3. 原子替换：先写入临时key，再原子rename
 
 ###########################################################################
 
