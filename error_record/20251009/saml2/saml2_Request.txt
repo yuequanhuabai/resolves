@@ -1,0 +1,218 @@
+ 根据 SAML 2.0 协议规范，AuthnRequest 可配置的所有参数如下：
+  1. 顶层属性（Attributes）
+  ┌────────────────────────────────┬──────────┬─────────────────────────────────────┬──────────────────────────────┐
+  │              属性              │   类型   │                方法                 │             说明             │
+  ├────────────────────────────────┼──────────┼─────────────────────────────────────┼──────────────────────────────┤
+  │ ID                             │ String   │ setID()                             │ 请求唯一标识（框架自动生成） │
+  ├────────────────────────────────┼──────────┼─────────────────────────────────────┼──────────────────────────────┤
+  │ Version                        │ String   │ setVersion()                        │ SAML版本，固定"2.0"          │
+  ├────────────────────────────────┼──────────┼─────────────────────────────────────┼──────────────────────────────┤
+  │ IssueInstant                   │ DateTime │ setIssueInstant()                   │ 请求时间戳                   │
+  ├────────────────────────────────┼──────────┼─────────────────────────────────────┼──────────────────────────────┤
+  │ Destination                    │ URI      │ setDestination()                    │ IdP的SSO端点URL              │
+  ├────────────────────────────────┼──────────┼─────────────────────────────────────┼──────────────────────────────┤
+  │ Consent                        │ URI      │ setConsent()                        │ 用户同意声明URI              │
+  ├────────────────────────────────┼──────────┼─────────────────────────────────────┼──────────────────────────────┤
+  │ ForceAuthn                     │ Boolean  │ setForceAuthn(true)                 │ 强制重新认证                 │
+  ├────────────────────────────────┼──────────┼─────────────────────────────────────┼──────────────────────────────┤
+  │ IsPassive                      │ Boolean  │ setIsPassive(true)                  │ 静默认证，不显示UI           │
+  ├────────────────────────────────┼──────────┼─────────────────────────────────────┼──────────────────────────────┤
+  │ AssertionConsumerServiceURL    │ URI      │ setAssertionConsumerServiceURL()    │ 响应回调地址                 │
+  ├────────────────────────────────┼──────────┼─────────────────────────────────────┼──────────────────────────────┤
+  │ AssertionConsumerServiceIndex  │ Integer  │ setAssertionConsumerServiceIndex()  │ 回调地址索引（从元数据选择） │
+  ├────────────────────────────────┼──────────┼─────────────────────────────────────┼──────────────────────────────┤
+  │ ProtocolBinding                │ URI      │ setProtocolBinding()                │ 响应绑定方式                 │
+  ├────────────────────────────────┼──────────┼─────────────────────────────────────┼──────────────────────────────┤
+  │ AttributeConsumingServiceIndex │ Integer  │ setAttributeConsumingServiceIndex() │ 请求特定属性集               │
+  ├────────────────────────────────┼──────────┼─────────────────────────────────────┼──────────────────────────────┤
+  │ ProviderName                   │ String   │ setProviderName()                   │ SP的可读名称                 │
+  └────────────────────────────────┴──────────┴─────────────────────────────────────┴──────────────────────────────┘
+  2. 子元素（Child Elements）
+  ┌───────────────────────┬────────────────────────────┬─────────────────────────────┐
+  │         元素          │            方法            │            说明             │
+  ├───────────────────────┼────────────────────────────┼─────────────────────────────┤
+  │ Issuer                │ setIssuer()                │ SP的Entity ID               │
+  ├───────────────────────┼────────────────────────────┼─────────────────────────────┤
+  │ Signature             │ setSignature()             │ XML数字签名（框架自动处理） │
+  ├───────────────────────┼────────────────────────────┼─────────────────────────────┤
+  │ Extensions            │ setExtensions()            │ 自定义扩展容器              │
+  ├───────────────────────┼────────────────────────────┼─────────────────────────────┤
+  │ Subject               │ setSubject()               │ 预指定用户身份              │
+  ├───────────────────────┼────────────────────────────┼─────────────────────────────┤
+  │ NameIDPolicy          │ setNameIDPolicy()          │ NameID格式策略              │
+  ├───────────────────────┼────────────────────────────┼─────────────────────────────┤
+  │ Conditions            │ setConditions()            │ 断言有效条件                │
+  ├───────────────────────┼────────────────────────────┼─────────────────────────────┤
+  │ RequestedAuthnContext │ setRequestedAuthnContext() │ 认证上下文要求              │
+  ├───────────────────────┼────────────────────────────┼─────────────────────────────┤
+  │ Scoping               │ setScoping()               │ IdP代理范围限制             │
+  └───────────────────────┴────────────────────────────┴─────────────────────────────┘
+  ---
+  3. 详细说明
+
+  NameIDPolicy（用户标识策略）
+
+  NameIDPolicy policy = new NameIDPolicyBuilder().buildObject();
+  policy.setFormat("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");
+  policy.setAllowCreate(true);  // 允许IdP创建新标识
+  policy.setSPNameQualifier("https://my-sp.com");  // SP域限定
+  authnRequest.setNameIDPolicy(policy);
+
+  常用Format值：
+  ┌────────────────────────────────────────────────────────┬──────────┐
+  │                         Format                         │   说明   │
+  ├────────────────────────────────────────────────────────┼──────────┤
+  │ urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress │ 邮箱     │
+  ├────────────────────────────────────────────────────────┼──────────┤
+  │ urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified  │ 不限定   │
+  ├────────────────────────────────────────────────────────┼──────────┤
+  │ urn:oasis:names:tc:SAML:2.0:nameid-format:persistent   │ 持久化ID │
+  ├────────────────────────────────────────────────────────┼──────────┤
+  │ urn:oasis:names:tc:SAML:2.0:nameid-format:transient    │ 临时ID   │
+  └────────────────────────────────────────────────────────┴──────────┘
+  ---
+  RequestedAuthnContext（认证级别要求）
+
+  RequestedAuthnContext context = new RequestedAuthnContextBuilder().buildObject();
+  context.setComparison(AuthnContextComparisonTypeEnumeration.MINIMUM);
+
+  AuthnContextClassRef classRef = new AuthnContextClassRefBuilder().buildObject();
+  classRef.setURI("urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport");
+  context.getAuthnContextClassRefs().add(classRef);
+
+  authnRequest.setRequestedAuthnContext(context);
+
+  Comparison类型：
+  ┌─────────┬────────────────┐
+  │  类型   │      说明      │
+  ├─────────┼────────────────┤
+  │ EXACT   │ 必须完全匹配   │
+  ├─────────┼────────────────┤
+  │ MINIMUM │ 至少达到此级别 │
+  ├─────────┼────────────────┤
+  │ MAXIMUM │ 不超过此级别   │
+  ├─────────┼────────────────┤
+  │ BETTER  │ 比指定级别更强 │
+  └─────────┴────────────────┘
+  常用认证级别（从弱到强）：
+  ┌──────────────────────────────────────────┬────────────┐
+  │                   URI                    │    说明    │
+  ├──────────────────────────────────────────┼────────────┤
+  │ ...ac:classes:unspecified                │ 不限定     │
+  ├──────────────────────────────────────────┼────────────┤
+  │ ...ac:classes:Password                   │ 密码认证   │
+  ├──────────────────────────────────────────┼────────────┤
+  │ ...ac:classes:PasswordProtectedTransport │ 密码+TLS   │
+  ├──────────────────────────────────────────┼────────────┤
+  │ ...ac:classes:X509                       │ 证书认证   │
+  ├──────────────────────────────────────────┼────────────┤
+  │ ...ac:classes:Smartcard                  │ 智能卡     │
+  ├──────────────────────────────────────────┼────────────┤
+  │ ...ac:classes:MultiFactor                │ 多因素认证 │
+  └──────────────────────────────────────────┴────────────┘
+  ---
+  Subject（预指定用户）
+
+  Subject subject = new SubjectBuilder().buildObject();
+  NameID nameId = new NameIDBuilder().buildObject();
+  nameId.setValue("user@example.com");
+  nameId.setFormat("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");
+  subject.setNameID(nameId);
+
+  authnRequest.setSubject(subject);
+
+  ---
+  Scoping（IdP代理限制）
+
+  Scoping scoping = new ScopingBuilder().buildObject();
+  scoping.setProxyCount(0);  // 禁止IdP代理
+
+  IDPList idpList = new IDPListBuilder().buildObject();
+  IDPEntry entry = new IDPEntryBuilder().buildObject();
+  entry.setProviderID("https://preferred-idp.com");
+  entry.setName("Preferred IdP");
+  idpList.getIDPEntrys().add(entry);
+  scoping.setIDPList(idpList);
+
+  authnRequest.setScoping(scoping);
+
+  ---
+  Extensions（自定义扩展）
+
+  Extensions extensions = new ExtensionsBuilder().buildObject();
+
+  // 添加任意自定义XML元素
+  // 例如：添加租户ID
+  XSAny tenantElement = new XSAnyBuilder().buildObject("http://my-namespace", "TenantId", "myns");
+  tenantElement.setTextContent("tenant-123");
+  extensions.getUnknownXMLObjects().add(tenantElement);
+
+  authnRequest.setExtensions(extensions);
+
+  ---
+  Conditions（断言条件）
+
+  Conditions conditions = new ConditionsBuilder().buildObject();
+  conditions.setNotBefore(Instant.now());
+  conditions.setNotOnOrAfter(Instant.now().plusSeconds(300));
+
+  AudienceRestriction restriction = new AudienceRestrictionBuilder().buildObject();
+  Audience audience = new AudienceBuilder().buildObject();
+  audience.setURI("https://my-sp.com");
+  restriction.getAudiences().add(audience);
+  conditions.getAudienceRestrictions().add(restriction);
+
+  authnRequest.setConditions(conditions);
+
+  ---
+  4. ProtocolBinding 可选值
+  ┌────────────────────────────────────────────────────┬────────────────────┐
+  │                    Binding URI                     │        说明        │
+  ├────────────────────────────────────────────────────┼────────────────────┤
+  │ urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST     │ POST表单（最常用） │
+  ├────────────────────────────────────────────────────┼────────────────────┤
+  │ urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect │ URL重定向          │
+  ├────────────────────────────────────────────────────┼────────────────────┤
+  │ urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact │ Artifact引用       │
+  ├────────────────────────────────────────────────────┼────────────────────┤
+  │ urn:oasis:names:tc:SAML:2.0:bindings:PAOS          │ 反向SOAP           │
+  └────────────────────────────────────────────────────┴────────────────────┘
+  ---
+  5. 完整示例
+
+  resolver.setAuthnRequestCustomizer(context -> {
+      AuthnRequest req = context.getAuthnRequest();
+
+      // 基本属性
+      req.setForceAuthn(false);
+      req.setIsPassive(false);
+      req.setProviderName("My Application");
+
+      // NameID策略
+      NameIDPolicy nameIdPolicy = new NameIDPolicyBuilder().buildObject();
+      nameIdPolicy.setFormat("urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress");
+      nameIdPolicy.setAllowCreate(true);
+      req.setNameIDPolicy(nameIdPolicy);
+
+      // 要求MFA
+      RequestedAuthnContext authnContext = new RequestedAuthnContextBuilder().buildObject();
+      authnContext.setComparison(AuthnContextComparisonTypeEnumeration.MINIMUM);
+      AuthnContextClassRef mfa = new AuthnContextClassRefBuilder().buildObject();
+      mfa.setURI("urn:oasis:names:tc:SAML:2.0:ac:classes:MultiFactor");
+      authnContext.getAuthnContextClassRefs().add(mfa);
+      req.setRequestedAuthnContext(authnContext);
+
+      // 禁止代理
+      Scoping scoping = new ScopingBuilder().buildObject();
+      scoping.setProxyCount(0);
+      req.setScoping(scoping);
+
+      // 自定义扩展
+      Extensions ext = new ExtensionsBuilder().buildObject();
+      XSAny custom = new XSAnyBuilder().buildObject("http://example.com/ns", "CustomParam", "ex");
+      custom.setTextContent("custom-value");
+      ext.getUnknownXMLObjects().add(custom);
+      req.setExtensions(ext);
+  });
+
+  这些是SAML 2.0协议规范中AuthnRequest支持的所有参数。实际使用时需要IdP也支持对应功能。
