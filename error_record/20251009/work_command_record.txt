@@ -2314,7 +2314,15 @@ Start Port    End Port
 你可以理解我的需求吗？你先复述一遍你的理解：
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
 
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+需求：
+帮我看看cn.bochk.pap.server.business.controller.BuyListController#getListPage,我需要把name的左模糊查找改为全模糊查找，就是输入name中的关键字无论左右都生效；
+你可以理解我的需求吗？ 你复述一遍我的需求：
 
 
 ###########################################################################
