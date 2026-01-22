@@ -1,0 +1,60 @@
+                                                                                                                       > 另外这个日志生成路径可以动态配置吗？                                                                                    logging:                                                                                                                file:
+  name: ${user.home}/logs/${spring.application.name}.log # 日志文件名，全路径
+
+  如果我的app没有放在user.home目录下的话而是放在了linux系统的其它目录下，例如/opt/app/yudao-server/ 这个目录下呢？
+
+●C可以动态配置，有几种方式：                   kens)
+     INSERT --                                                                               ctrl+g to edit in Notepad
+  方式1：启动参数指定（推荐）
+  nohup java -jar pap-fat-server.jar \                                                                                      --logging.file.name=/opt/app/yudao-server/logs/app.log \
+    > /dev/null 2>&1 &
+
+  方式2：使用相对路径
+
+  修改配置文件，日志会生成在启动目录下：
+
+  logging:
+    file:
+      name: ./logs/${spring.application.name}.log
+
+  启动时：
+  cd /opt/app/yudao-server
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  # 日志会在 /opt/app/yudao-server/logs/yudao-server.log
+
+  方式3：环境变量
+
+  修改配置文件：
+  logging:
+    file:
+      name: ${LOG_PATH:/opt/app/yudao-server/logs}/${spring.application.name}.log
+
+  启动时可以覆盖：
+  export LOG_PATH=/opt/app/yudao-server/logs
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  方式4：JVM 参数
+
+  nohup java -jar pap-fat-server.jar \
+    -Dlogging.file.name=/opt/app/yudao-server/logs/app.log \
+    > /dev/null 2>&1 &
+
+  推荐做法
+
+  修改 application-local.yaml 和 application-dev.yaml：
+
+  logging:
+    file:
+      name: ${LOG_PATH:./logs}/${spring.application.name}.log
+
+  这样：
+  - 默认使用启动目录下的 ./logs/
+  - 需要时可通过环境变量 LOG_PATH 覆盖
+  - 也可通过启动参数 --logging.file.name=xxx 完全覆盖
+
+  启动示例：
+  cd /opt/app/yudao-server
+  nohup java -jar pap-fat-server.jar > /dev/null 2>&1 &
+
+  # 日志在 /opt/app/yudao-server/logs/yudao-server.log
