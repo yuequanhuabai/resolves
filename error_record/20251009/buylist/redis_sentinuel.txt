@@ -1,0 +1,773 @@
+
+ ▐▛███▜▌   Claude Code v2.1.17
+▝▜█████▛▘  Opus 4.5 · Claude Pro
+  ▘▘ ▝▝    D:\software\developmentTools\Git\gitee\newpap\pap
+
+> /clear 
+  ⎿  (no content)
+
+> 基本条件：                                                                
+  基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro                  
+                                                                            
+  需求：                                                                    
+  你帮我分析一下，如果是redis集群的话，该如何配置？当前目录的后端项目       
+  现在配置文件在resource目录下的application.yaml,默认用的local配置          
+  是要在application-local.yaml里面的redis配置里面设置集群吗？               
+                                                                            
+
+● 我来查看一下当前的 Redis 配置文件。
+
+● Search(pattern: "**/application*.yaml", path: "pocpro")
+  ⎿  Found 6 files (ctrl+o to expand)
+
+● Read(pocpro\pap-server\src\main\resources\application-local.yaml)
+  ⎿  Read 207 lines
+
+● Read(pocpro\pap-server\src\main\resources\application.yaml)
+  ⎿  Read 141 lines
+
+● 让我查看一下项目中是否有 Redisson 的相关配置。
+
+● Search(pattern: "redisson", path: "pocpro")
+  ⎿  Found 7 files (ctrl+o to expand)
+
+● Read(pocpro\pap-framework\src\main\java\cn\bochk\pap\framework\common\redis\co
+      nfig\YudaoRedisAutoConfiguration.java)
+  ⎿  Read 46 lines
+
+● Search(pattern: "redisson", path: "pocpro\pap-framework\pom.xml", output_mode:
+         "content")
+  ⎿  Found 8 lines (ctrl+o to expand)
+
+● 根据分析，项目使用了 redisson-spring-boot-starter。配置 Redis 集群有两种方式：
+
+  方式一：Spring Boot 原生配置（推荐，简单）
+
+  在 application-local.yaml 中，将当前的单机配置替换为集群配置：
+
+  spring:
+    data:
+      redis:
+        # 删除 host 和 port
+        cluster:
+          nodes:
+            - 192.168.1.1:6379
+            - 192.168.1.2:6379
+            - 192.168.1.3:6379
+            - 192.168.1.4:6379
+            - 192.168.1.5:6379
+            - 192.168.1.6:6379
+          max-redirects: 3  # 最大重定向次数
+        password: your-cluster-password
+        # database: 0  # 注意：集群模式不支持 database 选择，需要删除此配置
+
+  Redisson 会自动读取这个配置。
+
+  ---
+  方式二：Redisson 专用配置（更灵活）
+
+  如果需要更多 Redisson 特性（如读写分离、连接池参数等），可以使用 Redisson
+  专用配置：
+
+  spring:
+    data:
+      redis:
+        redisson:
+          config: |
+            clusterServersConfig:
+              nodeAddresses:
+                - "redis://192.168.1.1:6379"
+                - "redis://192.168.1.2:6379"
+                - "redis://192.168.1.3:6379"
+                - "redis://192.168.1.4:6379"
+                - "redis://192.168.1.5:6379"
+                - "redis://192.168.1.6:6379"
+              password: your-cluster-password
+              scanInterval: 1000
+              slaveConnectionMinimumIdleSize: 10
+              slaveConnectionPoolSize: 64
+              masterConnectionMinimumIdleSize: 10
+              masterConnectionPoolSize: 64
+              readMode: SLAVE  # 读写分离：从节点读
+              subscriptionMode: SLAVE
+
+  ---
+  重要提示
+
+  1. 删除 database 配置 - Redis 集群不支持选择数据库（只能用 db0）
+  2. 删除 host 和 port - 与 cluster.nodes 互斥
+  3. 节点数量 - 通常 Redis 集群至少需要 6 个节点（3 主 3 从）
+  4. Lock4j - 项目中的分布式锁组件基于 Redisson，集群模式下会自动适配
+
+  是否需要我帮你修改 application-local.yaml 文件？
+
+✻ Churned for 60s
+
+> 如果不是集群，配置redis的主从配置呢？ 
+
+● Redis 主从配置有两种模式：
+
+  方式一：Sentinel 哨兵模式（推荐，支持自动故障转移）
+
+  在 application-local.yaml 中配置：
+
+  spring:
+    data:
+      redis:
+        # 删除 host 和 port
+        sentinel:
+          master: mymaster  # 主节点名称（在 Sentinel 中配置的）
+          nodes:
+            - 192.168.1.1:26379
+            - 192.168.1.2:26379
+            - 192.168.1.3:26379
+        password: your-redis-password  # Redis 实例密码
+        # sentinel.password: sentinel-password  # Sentinel 密码（如果有）
+        database: 0
+
+  如果需要更多 Redisson 特性：
+
+  spring:
+    data:
+      redis:
+        redisson:
+          config: |
+            sentinelServersConfig:
+              masterName: mymaster
+              sentinelAddresses:
+                - "redis://192.168.1.1:26379"
+                - "redis://192.168.1.2:26379"
+                - "redis://192.168.1.3:26379"
+              password: your-redis-password
+              database: 0
+              readMode: SLAVE  # 从节点读取
+              slaveConnectionMinimumIdleSize: 10
+              slaveConnectionPoolSize: 64
+              masterConnectionMinimumIdleSize: 10
+              masterConnectionPoolSize: 64
+
+  ---
+  方式二：纯主从模式（无 Sentinel，需 Redisson 配置）
+
+  Spring Boot 原生不直接支持纯主从配置，需要使用 Redisson：
+
+  spring:
+    data:
+      redis:
+        redisson:
+          config: |
+            masterSlaveServersConfig:
+              masterAddress: "redis://192.168.1.1:6379"
+              slaveAddresses:
+                - "redis://192.168.1.2:6379"
+                - "redis://192.168.1.3:6379"
+              password: your-redis-password
+              database: 0
+              readMode: SLAVE  # SLAVE=从节点读, MASTER=主节点读, 
+  MASTER_SLAVE=轮询
+              slaveConnectionMinimumIdleSize: 10
+              slaveConnectionPoolSize: 64
+              masterConnectionMinimumIdleSize: 10
+              masterConnectionPoolSize: 64
+
+  ---
+  三种模式对比
+  ┌───────────────┬──────────────────────────┬──────────────────────┐
+  │     模式      │           特点           │       适用场景       │
+  ├───────────────┼──────────────────────────┼──────────────────────┤
+  │ 单机          │ 简单，无高可用           │ 开发/测试环境        │
+  ├───────────────┼──────────────────────────┼──────────────────────┤
+  │ 主从+Sentinel │ 自动故障转移，读写分离   │ 生产环境（推荐）     │
+  ├───────────────┼──────────────────────────┼──────────────────────┤
+  │ 纯主从        │ 读写分离，需手动切换故障 │ 简单读写分离场景     │
+  ├───────────────┼──────────────────────────┼──────────────────────┤
+  │ Cluster 集群  │ 数据分片，水平扩展       │ 大数据量、高并发场景 │
+  └───────────────┴──────────────────────────┴──────────────────────┘
+  ---
+  提示
+
+  - Sentinel 模式：nodes 配置的是 Sentinel 的地址（默认端口 26379），不是 Redis
+  实例地址
+  - readMode 选项：SLAVE（从节点读）、MASTER（主节点读）、MASTER_SLAVE（轮询）
+  - 生产环境建议使用 Sentinel 模式，可自动处理主节点故障
+
+  需要我帮你修改配置文件吗？
+
+> 目前生产三台机器，用主从可以吗？ 
+
+● 三台机器生产环境，推荐使用 1 主 2 从 + Sentinel 哨兵 模式：
+
+  推荐架构
+
+  机器1: Redis Master + Sentinel
+  机器2: Redis Slave  + Sentinel
+  机器3: Redis Slave  + Sentinel
+
+  优点：
+  - 主节点故障时自动选举新主节点
+  - 应用无需修改配置，自动切换
+  - 三个 Sentinel 满足多数派投票（至少需要 2 票）
+  - 支持读写分离
+
+  ---
+  配置示例
+
+  spring:
+    data:
+      redis:
+        sentinel:
+          master: mymaster
+          nodes:
+            - 192.168.1.1:26379
+            - 192.168.1.2:26379
+            - 192.168.1.3:26379
+        password: your-redis-password
+        database: 0
+
+  ---
+  不推荐纯主从
+
+  纯主从（无 Sentinel）不建议用于生产：
+  - 主节点挂了需要手动切换
+  - 应用需要修改配置指向新主节点
+  - 故障恢复时间长
+
+  ---
+  总结
+  ┌─────────────────┬──────────┬───────────────────────────────────┐
+  │      方案       │ 生产可用 │               说明                │
+  ├─────────────────┼──────────┼───────────────────────────────────┤
+  │ 纯主从          │ ❌       │ 无自动故障转移                    │
+  ├─────────────────┼──────────┼───────────────────────────────────┤
+  │ 主从 + Sentinel │ ✅       │ 推荐，三台机器最佳方案            │
+  ├─────────────────┼──────────┼───────────────────────────────────┤
+  │ Cluster 集群    │ ✅       │ 至少需要 6 台（3主3从），三台不够 │
+  └─────────────────┴──────────┴───────────────────────────────────┘
+  三台机器用 Sentinel 模式是最合适的选择。
+
+> Sentinel 模式的原理是啥？ 还有下面这些配置？那个节点是主节点，没有说明，  
+  是要在redis的配置文件里面声明吗？是哪个字段？                             
+  spring:                                                                   
+  data:                                                                     
+  redis:                                                                    
+  sentinel:                                                                 
+  master: mymaster                                                          
+  nodes:                                                                    
+  - 192.168.1.1:26379                                                       
+  - 192.168.1.2:26379                                                       
+  - 192.168.1.3:26379                                                       
+  password: your-redis-password                                             
+  database: 0                                                               
+
+● Sentinel 工作原理
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                        应用程序 (Spring Boot)                    │
+  │                              │                                   │
+  │                    问: "mymaster 的主节点是谁？"                   │
+  │                              ▼                                   │
+  └─────────────────────────────────────────────────────────────────┘
+                                 │
+          ┌──────────────────────┼──────────────────────┐
+          ▼                      ▼                      ▼
+  ┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+  │  Sentinel 1   │◄──►│  Sentinel 2   │◄──►│  Sentinel 3   │
+  │ 192.168.1.1   │    │ 192.168.1.2   │    │ 192.168.1.3   │
+  │   :26379      │    │   :26379      │    │   :26379      │
+  └───────────────┘    └───────────────┘    └───────────────┘
+          │                    │                    │
+          │         互相监控 + 投票选举               │
+          │                    │                    │
+          ▼                    ▼                    ▼
+  ┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+  │ Redis Master  │───►│ Redis Slave   │    │ Redis Slave   │
+  │ 192.168.1.1   │    │ 192.168.1.2   │    │ 192.168.1.3   │
+  │   :6379       │    │   :6379       │    │   :6379       │
+  └───────────────┘    └───────────────┘    └───────────────┘
+                              │                    │
+                              └────── 复制数据 ◄────┘
+
+  核心流程：
+  1. 应用启动时，连接 Sentinel 询问："mymaster 的主节点地址是什么？"
+  2. Sentinel 返回当前主节点地址（如 192.168.1.1:6379）
+  3. 应用直接连接 Redis 主节点进行读写
+  4. 主节点故障时，Sentinel 自动选举新主节点，应用自动切换
+
+  ---
+  配置说明
+
+  spring:
+    data:
+      redis:
+        sentinel:
+          master: mymaster        # ← 逻辑名称，与 Sentinel 配置中的名称对应
+          nodes:                  # ← 这是 Sentinel 进程的地址，不是 Redis
+  地址！
+            - 192.168.1.1:26379   #   Sentinel 默认端口 26379
+            - 192.168.1.2:26379
+            - 192.168.1.3:26379
+        password: your-redis-password
+
+  重点：应用配置里不需要指定谁是主节点，Sentinel 会告诉应用。
+
+  ---
+  主节点在哪里声明？
+
+  主节点在 Sentinel 的配置文件 中声明，不是在 Spring Boot 里。
+
+  Sentinel 配置文件 (sentinel.conf)
+
+  # Sentinel 端口
+  port 26379
+
+  # 监控名为 mymaster 的主节点，地址是 192.168.1.1:6379
+  # 最后的 2 表示：至少 2 个 Sentinel 同意才能进行故障转移
+  sentinel monitor mymaster 192.168.1.1 6379 2
+
+  # 主节点密码
+  sentinel auth-pass mymaster your-redis-password
+
+  # 主节点多久无响应视为下线（毫秒）
+  sentinel down-after-milliseconds mymaster 30000
+
+  # 故障转移超时时间
+  sentinel failover-timeout mymaster 180000
+
+  Redis 从节点配置 (redis.conf)
+
+  从节点需要声明复制哪个主节点：
+
+  # 声明主节点地址（Redis 5.0+ 使用 replicaof，旧版用 slaveof）
+  replicaof 192.168.1.1 6379
+
+  # 主节点密码
+  masterauth your-redis-password
+
+  # 本节点密码
+  requirepass your-redis-password
+
+  ---
+  完整部署步骤
+
+  机器1（主节点）
+
+  redis.conf：
+  port 6379
+  requirepass your-redis-password
+  # 主节点不需要 replicaof
+
+  sentinel.conf：
+  port 26379
+  sentinel monitor mymaster 192.168.1.1 6379 2
+  sentinel auth-pass mymaster your-redis-password
+
+  机器2、机器3（从节点）
+
+  redis.conf：
+  port 6379
+  requirepass your-redis-password
+  masterauth your-redis-password
+  replicaof 192.168.1.1 6379    # ← 关键配置：指向主节点
+
+  sentinel.conf：
+  port 26379
+  sentinel monitor mymaster 192.168.1.1 6379 2
+  sentinel auth-pass mymaster your-redis-password
+
+  ---
+  总结
+  配置位置: Spring Boot
+  配置内容: 只配置 Sentinel 地址 + 逻辑名称 mymaster
+  ────────────────────────────────────────
+  配置位置: sentinel.conf
+  配置内容: 声明监控哪个主节点（sentinel monitor mymaster <IP> <PORT> 2）
+  ────────────────────────────────────────
+  配置位置: redis.conf（从节点）
+  配置内容: 声明复制哪个主节点（replicaof <主IP> <主PORT>）
+  应用不需要知道具体谁是主节点，Sentinel 会动态返回。
+ ▐▛███▜▌   Claude Code v2.1.17
+▝▜█████▛▘  Opus 4.5 · Claude Pro
+  ▘▘ ▝▝    D:\software\developmentTools\Git\gitee\newpap\pap
+
+> /clear 
+  ⎿  (no content)
+
+> 基本条件：                                                                
+  基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro                  
+                                                                            
+  需求：                                                                    
+  你帮我分析一下，如果是redis集群的话，该如何配置？当前目录的后端项目       
+  现在配置文件在resource目录下的application.yaml,默认用的local配置          
+  是要在application-local.yaml里面的redis配置里面设置集群吗？               
+                                                                            
+
+● 我来查看一下当前的 Redis 配置文件。
+
+● Search(pattern: "**/application*.yaml", path: "pocpro")
+  ⎿  Found 6 files (ctrl+o to expand)
+
+● Read(pocpro\pap-server\src\main\resources\application-local.yaml)
+  ⎿  Read 207 lines
+
+● Read(pocpro\pap-server\src\main\resources\application.yaml)
+  ⎿  Read 141 lines
+
+● 让我查看一下项目中是否有 Redisson 的相关配置。
+
+● Search(pattern: "redisson", path: "pocpro")
+  ⎿  Found 7 files (ctrl+o to expand)
+
+● Read(pocpro\pap-framework\src\main\java\cn\bochk\pap\framework\common\redis\co
+      nfig\YudaoRedisAutoConfiguration.java)
+  ⎿  Read 46 lines
+
+● Search(pattern: "redisson", path: "pocpro\pap-framework\pom.xml", output_mode:
+         "content")
+  ⎿  Found 8 lines (ctrl+o to expand)
+
+● 根据分析，项目使用了 redisson-spring-boot-starter。配置 Redis 集群有两种方式：
+
+  方式一：Spring Boot 原生配置（推荐，简单）
+
+  在 application-local.yaml 中，将当前的单机配置替换为集群配置：
+
+  spring:
+    data:
+      redis:
+        # 删除 host 和 port
+        cluster:
+          nodes:
+            - 192.168.1.1:6379
+            - 192.168.1.2:6379
+            - 192.168.1.3:6379
+            - 192.168.1.4:6379
+            - 192.168.1.5:6379
+            - 192.168.1.6:6379
+          max-redirects: 3  # 最大重定向次数
+        password: your-cluster-password
+        # database: 0  # 注意：集群模式不支持 database 选择，需要删除此配置
+
+  Redisson 会自动读取这个配置。
+
+  ---
+  方式二：Redisson 专用配置（更灵活）
+
+  如果需要更多 Redisson 特性（如读写分离、连接池参数等），可以使用 Redisson
+  专用配置：
+
+  spring:
+    data:
+      redis:
+        redisson:
+          config: |
+            clusterServersConfig:
+              nodeAddresses:
+                - "redis://192.168.1.1:6379"
+                - "redis://192.168.1.2:6379"
+                - "redis://192.168.1.3:6379"
+                - "redis://192.168.1.4:6379"
+                - "redis://192.168.1.5:6379"
+                - "redis://192.168.1.6:6379"
+              password: your-cluster-password
+              scanInterval: 1000
+              slaveConnectionMinimumIdleSize: 10
+              slaveConnectionPoolSize: 64
+              masterConnectionMinimumIdleSize: 10
+              masterConnectionPoolSize: 64
+              readMode: SLAVE  # 读写分离：从节点读
+              subscriptionMode: SLAVE
+
+  ---
+  重要提示
+
+  1. 删除 database 配置 - Redis 集群不支持选择数据库（只能用 db0）
+  2. 删除 host 和 port - 与 cluster.nodes 互斥
+  3. 节点数量 - 通常 Redis 集群至少需要 6 个节点（3 主 3 从）
+  4. Lock4j - 项目中的分布式锁组件基于 Redisson，集群模式下会自动适配
+
+  是否需要我帮你修改 application-local.yaml 文件？
+
+✻ Churned for 60s
+
+> 如果不是集群，配置redis的主从配置呢？ 
+
+● Redis 主从配置有两种模式：
+
+  方式一：Sentinel 哨兵模式（推荐，支持自动故障转移）
+
+  在 application-local.yaml 中配置：
+
+  spring:
+    data:
+      redis:
+        # 删除 host 和 port
+        sentinel:
+          master: mymaster  # 主节点名称（在 Sentinel 中配置的）
+          nodes:
+            - 192.168.1.1:26379
+            - 192.168.1.2:26379
+            - 192.168.1.3:26379
+        password: your-redis-password  # Redis 实例密码
+        # sentinel.password: sentinel-password  # Sentinel 密码（如果有）
+        database: 0
+
+  如果需要更多 Redisson 特性：
+
+  spring:
+    data:
+      redis:
+        redisson:
+          config: |
+            sentinelServersConfig:
+              masterName: mymaster
+              sentinelAddresses:
+                - "redis://192.168.1.1:26379"
+                - "redis://192.168.1.2:26379"
+                - "redis://192.168.1.3:26379"
+              password: your-redis-password
+              database: 0
+              readMode: SLAVE  # 从节点读取
+              slaveConnectionMinimumIdleSize: 10
+              slaveConnectionPoolSize: 64
+              masterConnectionMinimumIdleSize: 10
+              masterConnectionPoolSize: 64
+
+  ---
+  方式二：纯主从模式（无 Sentinel，需 Redisson 配置）
+
+  Spring Boot 原生不直接支持纯主从配置，需要使用 Redisson：
+
+  spring:
+    data:
+      redis:
+        redisson:
+          config: |
+            masterSlaveServersConfig:
+              masterAddress: "redis://192.168.1.1:6379"
+              slaveAddresses:
+                - "redis://192.168.1.2:6379"
+                - "redis://192.168.1.3:6379"
+              password: your-redis-password
+              database: 0
+              readMode: SLAVE  # SLAVE=从节点读, MASTER=主节点读, 
+  MASTER_SLAVE=轮询
+              slaveConnectionMinimumIdleSize: 10
+              slaveConnectionPoolSize: 64
+              masterConnectionMinimumIdleSize: 10
+              masterConnectionPoolSize: 64
+
+  ---
+  三种模式对比
+  ┌───────────────┬──────────────────────────┬──────────────────────┐
+  │     模式      │           特点           │       适用场景       │
+  ├───────────────┼──────────────────────────┼──────────────────────┤
+  │ 单机          │ 简单，无高可用           │ 开发/测试环境        │
+  ├───────────────┼──────────────────────────┼──────────────────────┤
+  │ 主从+Sentinel │ 自动故障转移，读写分离   │ 生产环境（推荐）     │
+  ├───────────────┼──────────────────────────┼──────────────────────┤
+  │ 纯主从        │ 读写分离，需手动切换故障 │ 简单读写分离场景     │
+  ├───────────────┼──────────────────────────┼──────────────────────┤
+  │ Cluster 集群  │ 数据分片，水平扩展       │ 大数据量、高并发场景 │
+  └───────────────┴──────────────────────────┴──────────────────────┘
+  ---
+  提示
+
+  - Sentinel 模式：nodes 配置的是 Sentinel 的地址（默认端口 26379），不是 Redis
+  实例地址
+  - readMode 选项：SLAVE（从节点读）、MASTER（主节点读）、MASTER_SLAVE（轮询）
+  - 生产环境建议使用 Sentinel 模式，可自动处理主节点故障
+
+  需要我帮你修改配置文件吗？
+
+> 目前生产三台机器，用主从可以吗？ 
+
+● 三台机器生产环境，推荐使用 1 主 2 从 + Sentinel 哨兵 模式：
+
+  推荐架构
+
+  机器1: Redis Master + Sentinel
+  机器2: Redis Slave  + Sentinel
+  机器3: Redis Slave  + Sentinel
+
+  优点：
+  - 主节点故障时自动选举新主节点
+  - 应用无需修改配置，自动切换
+  - 三个 Sentinel 满足多数派投票（至少需要 2 票）
+  - 支持读写分离
+
+  ---
+  配置示例
+
+  spring:
+    data:
+      redis:
+        sentinel:
+          master: mymaster
+          nodes:
+            - 192.168.1.1:26379
+            - 192.168.1.2:26379
+            - 192.168.1.3:26379
+        password: your-redis-password
+        database: 0
+
+  ---
+  不推荐纯主从
+
+  纯主从（无 Sentinel）不建议用于生产：
+  - 主节点挂了需要手动切换
+  - 应用需要修改配置指向新主节点
+  - 故障恢复时间长
+
+  ---
+  总结
+  ┌─────────────────┬──────────┬───────────────────────────────────┐
+  │      方案       │ 生产可用 │               说明                │
+  ├─────────────────┼──────────┼───────────────────────────────────┤
+  │ 纯主从          │ ❌       │ 无自动故障转移                    │
+  ├─────────────────┼──────────┼───────────────────────────────────┤
+  │ 主从 + Sentinel │ ✅       │ 推荐，三台机器最佳方案            │
+  ├─────────────────┼──────────┼───────────────────────────────────┤
+  │ Cluster 集群    │ ✅       │ 至少需要 6 台（3主3从），三台不够 │
+  └─────────────────┴──────────┴───────────────────────────────────┘
+  三台机器用 Sentinel 模式是最合适的选择。
+
+> Sentinel 模式的原理是啥？ 还有下面这些配置？那个节点是主节点，没有说明，  
+  是要在redis的配置文件里面声明吗？是哪个字段？                             
+  spring:                                                                   
+  data:                                                                     
+  redis:                                                                    
+  sentinel:                                                                 
+  master: mymaster                                                          
+  nodes:                                                                    
+  - 192.168.1.1:26379                                                       
+  - 192.168.1.2:26379                                                       
+  - 192.168.1.3:26379                                                       
+  password: your-redis-password                                             
+  database: 0                                                               
+
+● Sentinel 工作原理
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                        应用程序 (Spring Boot)                    │
+  │                              │                                   │
+  │                    问: "mymaster 的主节点是谁？"                   │
+  │                              ▼                                   │
+  └─────────────────────────────────────────────────────────────────┘
+                                 │
+          ┌──────────────────────┼──────────────────────┐
+          ▼                      ▼                      ▼
+  ┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+  │  Sentinel 1   │◄──►│  Sentinel 2   │◄──►│  Sentinel 3   │
+  │ 192.168.1.1   │    │ 192.168.1.2   │    │ 192.168.1.3   │
+  │   :26379      │    │   :26379      │    │   :26379      │
+  └───────────────┘    └───────────────┘    └───────────────┘
+          │                    │                    │
+          │         互相监控 + 投票选举               │
+          │                    │                    │
+          ▼                    ▼                    ▼
+  ┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+  │ Redis Master  │───►│ Redis Slave   │    │ Redis Slave   │
+  │ 192.168.1.1   │    │ 192.168.1.2   │    │ 192.168.1.3   │
+  │   :6379       │    │   :6379       │    │   :6379       │
+  └───────────────┘    └───────────────┘    └───────────────┘
+                              │                    │
+                              └────── 复制数据 ◄────┘
+
+  核心流程：
+  1. 应用启动时，连接 Sentinel 询问："mymaster 的主节点地址是什么？"
+  2. Sentinel 返回当前主节点地址（如 192.168.1.1:6379）
+  3. 应用直接连接 Redis 主节点进行读写
+  4. 主节点故障时，Sentinel 自动选举新主节点，应用自动切换
+
+  ---
+  配置说明
+
+  spring:
+    data:
+      redis:
+        sentinel:
+          master: mymaster        # ← 逻辑名称，与 Sentinel 配置中的名称对应
+          nodes:                  # ← 这是 Sentinel 进程的地址，不是 Redis
+  地址！
+            - 192.168.1.1:26379   #   Sentinel 默认端口 26379
+            - 192.168.1.2:26379
+            - 192.168.1.3:26379
+        password: your-redis-password
+
+  重点：应用配置里不需要指定谁是主节点，Sentinel 会告诉应用。
+
+  ---
+  主节点在哪里声明？
+
+  主节点在 Sentinel 的配置文件 中声明，不是在 Spring Boot 里。
+
+  Sentinel 配置文件 (sentinel.conf)
+
+  # Sentinel 端口
+  port 26379
+
+  # 监控名为 mymaster 的主节点，地址是 192.168.1.1:6379
+  # 最后的 2 表示：至少 2 个 Sentinel 同意才能进行故障转移
+  sentinel monitor mymaster 192.168.1.1 6379 2
+
+  # 主节点密码
+  sentinel auth-pass mymaster your-redis-password
+
+  # 主节点多久无响应视为下线（毫秒）
+  sentinel down-after-milliseconds mymaster 30000
+
+  # 故障转移超时时间
+  sentinel failover-timeout mymaster 180000
+
+  Redis 从节点配置 (redis.conf)
+
+  从节点需要声明复制哪个主节点：
+
+  # 声明主节点地址（Redis 5.0+ 使用 replicaof，旧版用 slaveof）
+  replicaof 192.168.1.1 6379
+
+  # 主节点密码
+  masterauth your-redis-password
+
+  # 本节点密码
+  requirepass your-redis-password
+
+  ---
+  完整部署步骤
+
+  机器1（主节点）
+
+  redis.conf：
+  port 6379
+  requirepass your-redis-password
+  # 主节点不需要 replicaof
+
+  sentinel.conf：
+  port 26379
+  sentinel monitor mymaster 192.168.1.1 6379 2
+  sentinel auth-pass mymaster your-redis-password
+
+  机器2、机器3（从节点）
+
+  redis.conf：
+  port 6379
+  requirepass your-redis-password
+  masterauth your-redis-password
+  replicaof 192.168.1.1 6379    # ← 关键配置：指向主节点
+
+  sentinel.conf：
+  port 26379
+  sentinel monitor mymaster 192.168.1.1 6379 2
+  sentinel auth-pass mymaster your-redis-password
+
+  ---
+  总结
+  配置位置: Spring Boot
+  配置内容: 只配置 Sentinel 地址 + 逻辑名称 mymaster
+  ────────────────────────────────────────
+  配置位置: sentinel.conf
+  配置内容: 声明监控哪个主节点（sentinel monitor mymaster <IP> <PORT> 2）
+  ────────────────────────────────────────
+  配置位置: redis.conf（从节点）
+  配置内容: 声明复制哪个主节点（replicaof <主IP> <主PORT>）
+  应用不需要知道具体谁是主节点，Sentinel 会动态返回。
