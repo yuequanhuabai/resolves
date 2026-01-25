@@ -2429,6 +2429,8 @@ client_id=https%3A%2F%2Flocalhost%3A8080%2Fsaml2%2Fmetadata%2Fkeycloak&tab_id=5Q
 
 怎麼全是http://localhost:8180呢？
 ###########################################################################
+HttpSessionSecurityContextRepository#saveContextInHttpSession 或者setContextInSession方法
+用來保存session
 
 
 ###########################################################################
