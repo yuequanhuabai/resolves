@@ -2434,6 +2434,18 @@ HttpSessionSecurityContextRepository#saveContextInHttpSession 或者setContextIn
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
+
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+需求：
+cn.bochk.pap.server.business.service.SecurityMasterCacheService#initCache改为了数据库查询，你看看具体的代码
+在这个接口：cn.bochk.pap.server.business.service.SecurityMasterService
+这个修改对比原来的直接从redis获取数据，有哪些优劣？
+
+你可以理解我的需求吗？ 你先复述一遍你的理解:
 
 
 
