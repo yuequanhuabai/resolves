@@ -2660,24 +2660,35 @@ java -jar /root/application.jar \
     --continue-on-error \
     --error-log=/root/sql/
 
+###########################################################################
+java -jar /root/application.jar  --spring.profiles.active=dev --init-sql="/root/sql/data_init.sql"  --no-transaction --continue-on-error --error-log=/root/sql/
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
 
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+需求：
+你帮忙看看当前buylist模块的详情页的 Upload & Overwrite 按钮是怎么控制的？
+
+###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\pap-server\src\main\java\cn\bochk\pap\server\init
+启动类：cn.bochk.pap.server.PapServerApplication
+
+背景：
+java程序可以纯启动的时候借用数据库的连接执行对应目录下的sql,上面的后端目录以及启动类是对应的实现;
+
+你可以理解这个需求后面的代码实现吗？
+
+###########################################################################
+它是怎么读取到配置文件的？因为它目前没有启动Spring，是固定到resource下基于--spring.profiles.active=dev参数找到对应的配置文件吗？
 
 
 ###########################################################################
-
-
-###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
-
 
 
 ###########################################################################
