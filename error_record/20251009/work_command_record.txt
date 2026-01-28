@@ -2710,6 +2710,18 @@ LOG_DIR="/opt/project/PAP/IHUB/back-end/init_sql_log/"
 sh init_sql.sh --profile=dev --error-log="" --sql="/root/sql/create.sql,/root/sql/create_table_base.sql,/root/sql/create_table_business.sql,/root/sql/Initialization.sql,/root/sql/data_init.sql"
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+后端代码入口位置: cn.bochk.pap.server.business.controller.BuyListController
+
+前端代码位置: D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\buylist
+
+需求：
+前端查询报错了：
+2026-01-28T16:26:40.806+08:00 ERROR 7968 --- [pap-server] [nio-9600-exec-1] c.b.p.f.c.w.w.c.h.GlobalExceptionHandler : [defaultExceptionHandler]
+
+org.apache.ibatis.binding.BindingException: Invalid bound statement (not found): cn.bochk.pap.server.business.mapper.BuyListMapper.queryBuyListPageData
+	at org.apache.ibatis.binding.MapperMethod$SqlCommand.<init>(MapperMethod.java:229) ~[mybatis-3.5.19.jar:3.5.19]
 
 
 
