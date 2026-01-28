@@ -2625,17 +2625,40 @@ java -jar pap-server-fat.jar --init-sql=D:\software\developmentTools\Git\gitee\n
 ###########################################################################
 java -jar pap-server-fat.jar --init-sql="D:.....\converted_sqlserver.sql" --no-transaction --continue-on-error
 
+test_exec_sql
+###########################################################################
+
+D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\flowable\create.sql
+D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\create_table_base.sql
+D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\create_table_business.sql
+
+D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\flowable\Initialization.sql
+D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\data_init.sql
+
+###########################################################################
+我要用下面的命令在windows上测试执行建表语句和插入语句，但是如果太长了，不方便查看，有啥自动分行不影响命令执行的吗？
+java -jar application.jar --init-sql="D:.....\converted_sqlserver.sql" --no-transaction --continue-on-error
+
+D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\flowable\create.sql
+D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\create_table_base.sql
+D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\create_table_business.sql
+D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\flowable\Initialization.sql
+D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\data_init.sql
 
 
 ###########################################################################
+java -jar application.jar --spring.profiles.active=dev --init-sql="D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\flowable\create.sql,D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\create_table_base.sql,D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\create_table_business.sql,D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\flowable\Initialization.sql,D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver\data_init.sql"  --no-transaction --continue-on-error
 
+java -jar /root/application.jar  --init-sql="/root/sql/create.sql,/root/sql/create_table_base.sql,/root/sql/create_table_business.sql,/root/sql/Initialization.sql,/root/sql/data_init.sql"  --no-transaction --continue-on-error
 
-###########################################################################
+java -jar /root/application.jar  --spring.profiles.active=dev --init-sql="/root/sql/create.sql,/root/sql/create_table_base.sql,/root/sql/create_table_business.sql,/root/sql/Initialization.sql,/root/sql/data_init.sql"  --no-transaction --continue-on-error --error-log=/root/sql/
 
-
-
-###########################################################################
-
+java -jar /root/application.jar \
+    --spring.profiles.active=dev \
+    --init-sql="/root/sql/Initialization.sql" \
+    --no-transaction \
+    --continue-on-error \
+    --error-log=/root/sql/
 
 
 ###########################################################################
