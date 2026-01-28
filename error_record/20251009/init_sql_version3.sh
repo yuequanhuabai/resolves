@@ -116,16 +116,6 @@ for file in "${sql_array[@]}"; do
 done
 echo "[OK] SQL 文件检查通过 (${#sql_array[@]} 个文件)"
 
-# 转换 SQL 文件的行分隔符 (CRLF -> LF)
-for file in "${sql_array[@]}"; do
-    file=$(echo "$file" | xargs)
-    if grep -q $'\r' "$file" 2>/dev/null; then
-        echo "[INFO] 转换 SQL 文件行分隔符: $file"
-        sed -i 's/\r$//' "$file"
-    fi
-done
-echo "[OK] SQL 文件行分隔符检查完成"
-
 # 创建错误日志目录
 if [ ! -d "$ERROR_LOG_DIR" ]; then
     echo "[INFO] 创建错误日志目录: $ERROR_LOG_DIR"
