@@ -1,16 +1,4 @@
 
-╭─── Claude Code v2.1.22 ──────────────────────────────────────────────────────╮
-│                                                    │ Tips for getting        │
-│                 Welcome back Ethon!                │ started                 │
-│                                                    │ Ask Claude to create a… │
-│                       ▐▛███▜▌                      │ ─────────────────────── │
-│                      ▝▜█████▛▘                     │ Recent activity         │
-│                        ▘▘ ▝▝                       │ No recent activity      │
-│                                                    │                         │
-│   Opus 4.5 · Claude Pro · waming313@gmail.com's    │                         │
-│   Organization                                     │                         │
-│   D:\software\develop_tools\git\gitee\http_https   │                         │
-╰──────────────────────────────────────────────────────────────────────────────╯
 
 > 作爲一個開發者，我一直只知道http協議，對https很朦朧，你可以指定一個計劃， 
   讓我徹底理解https嗎？或者是tls協議嗎？                                    

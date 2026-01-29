@@ -2707,7 +2707,7 @@ LOG_DIR="/opt/project/PAP/IHUB/back-end/init_sql_log/"
 你基于我上面的条件改一版我看看
 
 ###########################################################################
-sh init_sql.sh --profile=dev --error-log="" --sql="/root/sql/create.sql,/root/sql/create_table_base.sql,/root/sql/create_table_business.sql,/root/sql/Initialization.sql,/root/sql/data_init.sql"
+sh init_sql.sh --profile=dev --error-log="/root/init_script" --sql="/root/sql/create.sql,/root/sql/create_table_base.sql,/root/sql/create_table_business.sql,/root/sql/Initialization.sql,/root/sql/data_init.sql"
 
 ###########################################################################
 基本条件：
