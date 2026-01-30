@@ -2724,19 +2724,37 @@ org.apache.ibatis.binding.BindingException: Invalid bound statement (not found):
 	at org.apache.ibatis.binding.MapperMethod$SqlCommand.<init>(MapperMethod.java:229) ~[mybatis-3.5.19.jar:3.5.19]
 
 
-
 ###########################################################################
-
-
-
-###########################################################################
+如何关联两个接口，把先登录后的token给实际请求的Authorization | Bearer ${token} 参数呢？在jmeter里如何操作;
 
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+你帮我看看前端的这个模块：Alternative Maintenance 主要做了什么事情，就是它的核心业务功能是啥？
+后端对应的controller是：cn.bochk.pap.server.business.controller.AlternativesController
+前端模块的views路径在：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\Alternative
 
 
 ###########################################################################
+主要管理的产品属性包括：
+  - Product Code / Client ID
+  - ISIN（国际证券识别码）
+  - Ticker（股票代码）
+  - Product Name（产品名称）
+  - Issuer（发行人）
+  - Proxy Asset Class（代理资产类别）← 核心可维护字段
+
+###########################################################################
+1.类名的设计，以DB2和Ob结尾;
+2.包扫描配置，指定dao层的包路径;
+3.创建jdk代理对象:类加载器,代理类实现的接口,jdk动态代理对象处理器; (T)Proxy.newProxyInstance(this.daoInterface.getClassLoader(),new Class[]{daoInterface}, tCacheDaoProxyHandler);
+4.把以DB2和Ob结尾的bean注入到Spring框架中,并且设置BeanClass属性为动态代理对象(GenericBeanDefinition definition.setBeanClass(CacheDaoProxyFactory.class);)
+5.jdk动态代理处理器的逻辑代码处理;(获取外部的开关:db2,ob.syn;db2.asyn,ob;...)
+在拦截接口的时候，直接拼接开关后缀，使用反射的方式调用dao层的数据库操作，(当然涉及到同步和异步操作也是从开关配置中获取);
+同步操作直接用反射调用，异步操作用线程池去执行反射操作;
+
 
 
 
