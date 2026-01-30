@@ -2762,6 +2762,12 @@ org.apache.ibatis.binding.BindingException: Invalid bound statement (not found):
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+
+幫我看看當前後端項目裏面的配置文件application-dev.yaml裏的tomcat配置是否合理？
+如果不配置這些參數，tomcat默認的配置又是多少？
+這些參數可以隨意調整嗎？ 需要基於硬件基礎嗎？
 
 
 
