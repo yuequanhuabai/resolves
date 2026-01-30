@@ -2755,11 +2755,10 @@ org.apache.ibatis.binding.BindingException: Invalid bound statement (not found):
 在拦截接口的时候，直接拼接开关后缀，使用反射的方式调用dao层的数据库操作，(当然涉及到同步和异步操作也是从开关配置中获取);
 同步操作直接用反射调用，异步操作用线程池去执行反射操作;
 
-
-
-
 ###########################################################################
-
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+帮我看看这个类的作用是啥？ cn.bochk.pap.server.system.framework.justauth.core.AuthRequestFactory
 
 
 ###########################################################################
