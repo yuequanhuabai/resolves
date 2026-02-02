@@ -1,0 +1,168 @@
+
+  JUC 包整体架构
+
+  java.util.concurrent
+  ├── atomic/          # 原子类
+  ├── locks/           # 锁框架
+  └── (根目录)          # 线程池、并发集合、同步工具、阻塞队列
+
+  ---
+  1. 原子类 (atomic)
+
+  核心：CAS 无锁操作
+
+  AtomicInteger / AtomicLong / AtomicBoolean    # 基本类型原子类
+  AtomicReference<V>                            # 引用类型原子类
+  AtomicIntegerArray / AtomicLongArray          # 数组原子类
+  AtomicStampedReference                        # 解决ABA问题（版本号）
+  AtomicMarkableReference                       # 解决ABA问题（布尔标记）
+  LongAdder / DoubleAdder                       # 高并发累加器（分段锁思想）
+  LongAccumulator                               # 通用累加器
+          ↓
+      底层：Striped64（分段存储）
+
+  ---
+  2. 锁框架 (locks)
+
+  核心：AQS（AbstractQueuedSynchronizer）
+
+                      AbstractOwnableSynchronizer
+                                ↓
+                    AbstractQueuedSynchronizer (AQS)  ← 核心！
+                        ↙        ↓          ↘
+              ReentrantLock   Semaphore   CountDownLatch（内部Sync）
+                    ↓
+          ReentrantReadWriteLock（读写锁）
+                    ↓
+             StampedLock（乐观读锁，JDK8新增）
+
+  辅助类：
+  ├── Lock                 # 锁接口
+  ├── Condition            # 条件变量（替代wait/notify）
+  ├── ReadWriteLock        # 读写锁接口
+  └── LockSupport          # 线程阻塞/唤醒原语（park/unpark）
+
+  ---
+  3. 线程池 (Executor 框架)
+
+  核心：ThreadPoolExecutor
+
+          Executor（接口：execute）
+              ↓
+        ExecutorService（接口：submit、shutdown）
+            ↙        ↘
+  AbstractExecutorService   ScheduledExecutorService
+            ↓                        ↓
+    ThreadPoolExecutor      ScheduledThreadPoolExecutor
+
+  工厂类：Executors
+  ├── newFixedThreadPool()       # 固定线程数
+  ├── newCachedThreadPool()      # 弹性线程池
+  ├── newSingleThreadExecutor()  # 单线程
+  ├── newScheduledThreadPool()   # 定时任务
+  └── newWorkStealingPool()      # ForkJoin（JDK8）
+
+  任务与结果：
+  ├── Runnable / Callable<V>     # 任务定义
+  ├── Future<V>                  # 异步结果
+  ├── FutureTask<V>              # Future实现类
+  ├── CompletableFuture<V>       # 组合式异步编程（JDK8重点）
+  └── CompletionService          # 批量任务结果获取
+
+  ---
+  4. 并发集合
+
+  ConcurrentHashMap          # 线程安全Map（分段锁→CAS+synchronized）
+  ConcurrentSkipListMap      # 线程安全有序Map（跳表）
+  ConcurrentSkipListSet      # 线程安全有序Set
+  ConcurrentLinkedQueue      # 无界非阻塞队列（CAS）
+  ConcurrentLinkedDeque      # 无界非阻塞双端队列
+
+  CopyOnWriteArrayList       # 写时复制List（读多写少）
+  CopyOnWriteArraySet        # 写时复制Set
+
+  ---
+  5. 阻塞队列 (BlockingQueue)
+
+          BlockingQueue（接口）
+                ↓
+  ├── ArrayBlockingQueue     # 有界数组队列
+  ├── LinkedBlockingQueue    # 有界/无界链表队列
+  ├── PriorityBlockingQueue  # 无界优先级队列
+  ├── DelayQueue             # 延迟队列
+  ├── SynchronousQueue       # 无缓冲直接传递
+  └── LinkedTransferQueue    # 增强版传输队列
+
+          BlockingDeque（双端阻塞队列接口）
+                ↓
+  └── LinkedBlockingDeque    # 双端阻塞队列
+
+  ---
+  6. 同步工具类
+
+  CountDownLatch     # 倒计时门闩（一次性，等待N个任务完成）
+  CyclicBarrier      # 循环栅栏（可复用，N个线程互相等待）
+  Semaphore          # 信号量（控制并发数）
+  Phaser             # 阶段器（更灵活的CyclicBarrier，JDK7）
+  Exchanger          # 线程间数据交换
+
+  ---
+  7. Fork/Join 框架
+
+  核心：分治 + 工作窃取
+
+  ForkJoinPool               # 线程池
+  ForkJoinTask<V>            # 任务基类
+  ├── RecursiveAction        # 无返回值任务
+  └── RecursiveTask<V>       # 有返回值任务
+  ForkJoinWorkerThread       # 工作线程
+  CountedCompleter           # 完成触发任务
+
+  ---
+  学习路线建议
+
+  入门：ReentrantLock → CountDownLatch → 线程池
+       ↓
+  进阶：AQS 源码 → ConcurrentHashMap → 阻塞队列
+       ↓
+  深入：CompletableFuture → ForkJoin → StampedLock
+
+  核心中的核心：
+  1. AQS - 锁和同步器的基石
+  2. ThreadPoolExecutor - 线程池核心
+  3. ConcurrentHashMap - 并发集合代表
+
+  需要我展开讲解某个具体模块吗？
+
+========================================================================================================
+
+  JUC 要解决的三大问题
+  ┌────────┬────────────────┬──────────────────────────┐
+  │  问题  │      描述      │       JUC 解决方案       │
+  ├────────┼────────────────┼──────────────────────────┤
+  │ 原子性 │ 多条指令被打断 │ Atomic类、Lock           │
+  ├────────┼────────────────┼──────────────────────────┤
+  │ 可见性 │ 线程缓存不一致 │ volatile、Lock           │
+  ├────────┼────────────────┼──────────────────────────┤
+  │ 有序性 │ 指令重排序     │ volatile、happens-before │
+  └────────┴────────────────┴──────────────────────────┘
+
+========================================================================================================
+
+指令重排序的来源（三个层次都会优化）
+
+  源代码
+     ↓  ① 编译器重排序（javac / JIT）
+  字节码/机器码
+     ↓  ② CPU 指令重排序（乱序执行）
+  执行单元
+     ↓  ③ 内存系统重排序（缓存、写缓冲区）
+  主内存
+
+========================================================================================================
+
+
+========================================================================================================
+
+
+========================================================================================================
