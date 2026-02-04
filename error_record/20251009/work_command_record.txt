@@ -2868,26 +2868,54 @@ class cn.bochk.pap.server.business.dal.BenchmarkModelInfoDo, Not find @TableId a
 有哪些可以实现的方案，或者说从配置文件到数据源设置账号密码之间有哪些拦截器可以做处理;
 
 ###########################################################################
+076CD005914A4F2FD1DE7AB280E37FC8
 
+Abcd1234567890!
+
+EUPSYAE28gIFDK8HHmA1VA\=\=
+把加密和解密的"ENC(密文)" 外部的 ENC() 去掉，只留纯密文吧
+
+可以改成这样吗，放在yaml文件里面
+cipher:
+    secrete-key-path:  绝对路径
+    ciphertext-property-path: 绝对路径
+
+绝对路径适配window测试和实际linux部署
+
+  java -jar pap-encrypt-tool.jar encrypt "pL9RtmVq7Fk2ZyNx" -k D:/software/developmentTools/Git/gitee/newpap/pap/secretekey.properties
+###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+
+你可以看到当前目录下项目的密码加密模块吗？
+D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\pap-encrypt-tool
+和D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\pap-framework\src\main\java\cn\bochk\pap\framework\common\encrypt
+这两个模块实现的功能是啥？
 
 
 ###########################################################################
-
-
-
-###########################################################################
-
-
-
-###########################################################################
+我问下pap-encrypt-tool这个模块下D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\pap-encrypt-tool\src\main\java\cn\bochk\pap\tool目录的两个类
+可以单独用maven打包吗？ 我的意思是不用idea里的打包方式，直接用maven命令打包;因为整个模块就这两个类，我已我想直接把这两个类复制出来，单独用maven命令打包，然后删掉整个模块；
+你可以理解我的需求吗？你先复述一遍你的理解：
 
 
 ###########################################################################
-
+可以这样吗？你帮我把D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\pap-encrypt-tool\src\main\java\cn\bochk\pap\tool下的两个Cl
+  ass文件放到
+  D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\pap-framework\src\main\java\cn\bochk\pap\framework\common\encrypt这里吗，
+  把两个AESUtil工具合并一下，
+  我后期自己手动打包生成加密工具的jar
 
 
 ###########################################################################
+合并到一起的话，是不是可以把pap-encrypt-tool这个模块给去掉了
 
+
+###########################################################################
+我已经删除了pap-encrypt-tool模块，
+我把AESUtil和EncryptTool移到了目录D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\pap-framework\src\main\java\cn\bochk\pap\framework\common\encrypt
+把之前该目录下的AESUtil改名为DecryptUtil
+你给我讲讲怎么自己打包，我要把AESUtil和EncryptTool打成jar包
 
 
 ###########################################################################
