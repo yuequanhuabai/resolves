@@ -2921,17 +2921,23 @@ D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\pap-encrypt-tool
 ###########################################################################
 org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'bpmProcessInstanceApiImpl': Injection of resource dependencies
 
+Caused by: org.flowable.common.engine.api.FlowableWrongDbException: version mismatch: library version is '7.0.1.1', db version is null Hint: Set <property name ="databaseSchemaUpdate" to value="true" or value ="create-drop" (use create-drop for testing only!) in bean processEngineConfiguration in flowable.cfg.xml for automatic schema creation
+
 
 ###########################################################################
 unzip -l app.jar | grep application
 unzip -p app.jar BOOT-INF/classes/application.yaml | less
 
 ###########################################################################
+pL9RtmVq7Fk2ZyNx
 
-
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+你可以看到当前后端项目的pap-server模块下的init包下的文件代码吗？
 
 ###########################################################################
-
+那你再看看pap-framework的encrypt模块的代码，解密逻辑核心是DecryptEnvironmentPostProcessor，DecryptUtil这两个类
+这个模块的功能又是什么？
 
 
 ###########################################################################

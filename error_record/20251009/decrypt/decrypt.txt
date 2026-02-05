@@ -1,0 +1,1303 @@
+
+ ▐▛███▜▌   Claude Code v2.1.31
+▝▜█████▛▘  Opus 4.5 · Claude Pro
+  ▘▘ ▝▝    D:\software\developmentTools\Git\gitee\newpap\pap
+
+> 基本条件：                                                                
+  基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro                  
+  你可以看到当前后端项目的pap-server模块下的init包下的文件代码吗？          
+
+● 让我查看 pap-server 模块下 init 包的文件结构和代码。
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● 找到了 init 包下有两个 Java 文件，让我读取它们的内容。
+
+● Read 2 files (ctrl+o to expand)
+
+● 是的，我可以看到 pap-server 模块下 init 包中的文件。该包位于
+  pocpro/pap-server/src/main/java/cn/bochk/pap/server/init/，包含两个 Java
+  文件：
+
+  1. SqlFileExecutor.java (764行)
+
+  SQL 文件执行器，用于在应用启动时执行指定的 SQL 脚本文件。主要功能：
+  - 自动检测分隔符：支持 GO（SQL Server）和 ;（标准 SQL）
+  - 两种执行方式：
+    - executeWithSpring() - 使用 Spring ScriptUtils 执行（推荐）
+    - execute() / executeNoTransaction() - 手动解析执行
+  - 事务管理：支持事务模式和无事务模式
+  - 错误处理：记录错误并生成详细的错误日志文件
+
+  2. SqlInitializer.java (225行)
+
+  SQL 初始化器，处理命令行参数执行 SQL 脚本。支持的参数：
+  - --init-sql=<path> - 指定要执行的 SQL 文件路径（支持逗号分隔多个文件）
+  - --spring.profiles.active=<profile> - 指定配置文件（默认 dev）
+  - --no-transaction - 无事务模式
+  - --continue-on-error - 遇错继续执行
+  - --use-spring - 使用 Spring ScriptUtils
+  - --ignore-drop-errors - 忽略 DROP 语句错误
+  - --error-log=<dir> - 指定错误日志目录
+
+  该初始化器会从 application-{profile}.yaml 中读取数据库配置，手动创建 HikariCP 
+  数据源来执行 SQL。
+
+  请问你需要我帮你做什么操作？
+
+✻ Crunched for 37s
+
+> 这个模块需要从配置文件获取数据源的信息来创建数据库的连接吧 
+
+● 是的，正确。从 SqlInitializer.java 的 createDataSource() 方法可以看到，它会：
+
+  1. 加载配置文件
+  Map<String, Object> config = loadYamlConfig(profile);
+  根据传入的 profile（如 dev、sit、uat、prod），加载对应的
+  application-{profile}.yaml 文件。
+
+  2. 读取数据源配置
+  从配置文件中读取以下路径的值：
+  spring.datasource.dynamic.datasource.master.url
+  spring.datasource.dynamic.datasource.master.username
+  spring.datasource.dynamic.datasource.master.password
+  spring.datasource.dynamic.datasource.master.driver-class-name
+
+  3. 创建 HikariCP 数据源
+  HikariConfig hikariConfig = new HikariConfig();
+  hikariConfig.setJdbcUrl(url);
+  hikariConfig.setUsername(username);
+  hikariConfig.setPassword(password);
+  hikariConfig.setDriverClassName(driverClassName);
+  hikariConfig.setMaximumPoolSize(2);
+  hikariConfig.setMinimumIdle(1);
+  hikariConfig.setConnectionTimeout(30000);
+
+  return new HikariDataSource(hikariConfig);
+
+  需要我查看一下实际的配置文件（如 application-dev.yaml）中数据源的配置内容吗？
+
+> 那你再看看pap-framework的encrypt模块的代码，解密逻辑核心是DecryptEnvironm 
+  entPostProcessor，DecryptUtil这两个类                                     
+  这个模块的功能又是什么？                                                  
+
+● Searched for 1 pattern, read 2 files (ctrl+o to expand)
+
+● 这个 encrypt 模块是一个配置文件敏感信息加密解密模块，用于保护数据库密码、Redis
+   密码等敏感配置。
+
+  模块功能概述
+
+  DecryptEnvironmentPostProcessor
+
+  Spring Boot 环境后置处理器，在 Spring 加载配置文件后、创建 Bean 之前自动执行：
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                    Spring Boot 启动流程                          │
+  ├─────────────────────────────────────────────────────────────────┤
+  │  1. 加载 application.yaml 配置                                   │
+  │  2. 执行 EnvironmentPostProcessor  ← 这里介入                    │
+  │  3. 创建 Bean、初始化数据源等                                     │
+  └─────────────────────────────────────────────────────────────────┘
+
+  工作流程：
+  1. 读取配置 cipher.secrete-key-path 获取密钥文件路径
+  2. 读取配置 cipher.ciphertext-property-path 获取加密密码文件路径
+  3. 从密钥文件读取 AES 密钥
+  4. 从密码文件读取加密的密码，逐个解密
+  5. 将解密后的值注入 Spring Environment（优先级最高）
+
+  Key 映射：
+  ┌──────────────┬──────────────────────────────────────────────────────┐
+  │   简短 Key   │                映射到的 Spring 配置项                │
+  ├──────────────┼──────────────────────────────────────────────────────┤
+  │ pap.db       │ spring.datasource.dynamic.datasource.master.password │
+  ├──────────────┼──────────────────────────────────────────────────────┤
+  │ pap.db.slave │ spring.datasource.dynamic.datasource.slave.password  │
+  ├──────────────┼──────────────────────────────────────────────────────┤
+  │ pap.redis    │ spring.data.redis.password                           │
+  └──────────────┴──────────────────────────────────────────────────────┘
+  DecryptUtil
+
+  AES-128-ECB 加解密工具类：
+  - 算法：AES/ECB/PKCS5Padding
+  - 密钥格式：32字符 HEX 字符串（16字节 = 128位）
+  - 密文格式：Base64 编码
+
+  文件格式要求：
+
+  密钥文件（首行为密钥）：
+  # 这是注释
+  076CD005914A4F2FD1DE7AB280E37FC8
+
+  加密密码文件（key=value 格式）：
+  # 数据库密码
+  pap.db=Base64加密后的密文
+  pap.redis=Base64加密后的密文
+
+  ---
+  两个模块的关系
+
+  现在你应该能看出问题了：
+  ┌──────────────┬──────────────────────────────────┬────────────────────────┐
+  │     模块     │             执行时机             │     数据源获取方式     │
+  ├──────────────┼──────────────────────────────────┼────────────────────────┤
+  │ encrypt 模块 │ Spring Boot 启动后，Bean 创建前  │ 解密后注入 Environment │
+  ├──────────────┼──────────────────────────────────┼────────────────────────┤
+  │ init 模块    │ Spring Boot 启动之前（独立运行） │ 手动读取 YAML 配置文件 │
+  └──────────────┴──────────────────────────────────┴────────────────────────┘
+  SqlInitializer 是独立于 Spring 容器运行的，它无法使用
+  DecryptEnvironmentPostProcessor
+  自动解密的功能，因此如果配置文件中的数据库密码是加密的，SqlInitializer
+  将无法正确获取明文密码来连接数据库。
+
+  需要我帮你解决这个问题吗？
+
+✻ Worked for 39s
+
+> 你先讲讲解决方案有哪些，我先审核看看，先不改代码 
+
+● 好的，我来分析几种可行的解决方案：
+
+  ---
+  方案一：SqlInitializer 集成解密逻辑
+
+  思路：让 SqlInitializer 也读取加密配置文件，复用 DecryptUtil 进行解密。
+
+  实现方式：
+  SqlInitializer 启动
+      ↓
+  读取 YAML 获取 cipher.secrete-key-path 和 cipher.ciphertext-property-path
+      ↓
+  调用 DecryptUtil 解密密码
+      ↓
+  用解密后的密码创建数据源
+
+  优点：
+  - 与 Spring Boot 启动时使用相同的加密体系，保持一致性
+  - 完全独立于 Spring 容器运行
+
+  缺点：
+  - 需要修改 SqlInitializer 代码
+  - SqlInitializer 需要依赖 pap-framework 模块
+
+  ---
+  方案二：通过命令行参数传递密码
+
+  思路：新增 --db-password=xxx 参数，允许用户直接传入明文密码。
+
+  使用方式：
+  java -jar app.jar --init-sql=xxx.sql --db-password=实际密码
+
+  优点：
+  - 实现简单，改动小
+  - 灵活，不依赖加密文件
+
+  缺点：
+  - 密码在命令行中明文显示，进程列表可见（ps aux）
+  - 可能被记录到 shell history
+
+  ---
+  方案三：通过环境变量传递密码
+
+  思路：SqlInitializer 优先从环境变量读取密码。
+
+  使用方式：
+  export PAP_DB_PASSWORD=实际密码
+  java -jar app.jar --init-sql=xxx.sql
+
+  优点：
+  - 比命令行参数更安全
+  - 适合 CI/CD 环境和容器部署
+
+  缺点：
+  - 需要用户额外设置环境变量
+  - 环境变量在某些情况下也可能泄露
+
+  ---
+  方案四：SqlInitializer 直接读取加密密码文件
+
+  思路：新增命令行参数指定密钥文件和密码文件路径。
+
+  使用方式：
+  java -jar app.jar --init-sql=xxx.sql \
+      --key-file=/path/to/key.txt \
+      --password-file=/path/to/passwords.txt
+
+  优点：
+  - 密码不在命令行暴露
+  - 可以复用已有的加密文件
+
+  缺点：
+  - 新增两个命令行参数
+  - 与 YAML 中的配置路径可能重复
+
+  ---
+  方案五：改用 Spring Boot 启动后执行
+
+  思路：不使用独立的 SqlInitializer，改为在 Spring Boot 启动后通过
+  ApplicationRunner 执行 SQL。
+
+  实现方式：
+  @Component
+  public class SqlInitRunner implements ApplicationRunner {
+      @Autowired
+      private DataSource dataSource;  // 已解密的数据源
+     
+      @Override
+      public void run(ApplicationArguments args) {
+          if (args.containsOption("init-sql")) {
+              SqlFileExecutor.execute(dataSource, sqlPath);
+              System.exit(0);
+          }
+      }
+  }
+
+  优点：
+  - 直接使用 Spring 管理的数据源（已自动解密）
+  - 无需重复解密逻辑
+
+  缺点：
+  - 改变了原有的独立执行模式
+  - 需要等 Spring 容器完全启动
+  - 启动时间更长
+
+  ---
+  方案六：混合方案（推荐）
+
+  思路：SqlInitializer 支持多种密码来源，按优先级获取。
+
+  优先级：
+  1. 命令行参数 --db-password=xxx（最高优先级）
+  2. 环境变量 PAP_DB_PASSWORD
+  3. 加密文件解密（读取 YAML 中配置的路径）
+  4. YAML 中的明文密码（最低优先级，用于开发环境）
+
+  优点：
+  - 灵活性最高，适应多种场景
+  - 向后兼容，不影响现有使用方式
+  - 生产环境可用加密文件，开发环境可用明文
+
+  缺点：
+  - 实现相对复杂
+  - 需要维护多种获取方式的代码
+
+  ---
+  方案对比
+  ┌───────────────────────────┬──────────┬────────┬────────┬─────────────┐
+  │           方案            │  安全性  │ 复杂度 │ 兼容性 │  推荐场景   │
+  ├───────────────────────────┼──────────┼────────┼────────┼─────────────┤
+  │ 方案一：集成解密逻辑      │ ⭐⭐⭐⭐ │ 中     │ 好     │ 生产环境    │
+  ├───────────────────────────┼──────────┼────────┼────────┼─────────────┤
+  │ 方案二：命令行参数        │ ⭐⭐     │ 低     │ 好     │ 临时使用    │
+  ├───────────────────────────┼──────────┼────────┼────────┼─────────────┤
+  │ 方案三：环境变量          │ ⭐⭐⭐   │ 低     │ 好     │ CI/CD、容器 │
+  ├───────────────────────────┼──────────┼────────┼────────┼─────────────┤
+  │ 方案四：指定加密文件      │ ⭐⭐⭐⭐ │ 中     │ 好     │ 生产环境    │
+  ├───────────────────────────┼──────────┼────────┼────────┼─────────────┤
+  │ 方案五：Spring 启动后执行 │ ⭐⭐⭐⭐ │ 中     │ 差     │ 不急于启动  │
+  ├───────────────────────────┼──────────┼────────┼────────┼─────────────┤
+  │ 方案六：混合方案          │ ⭐⭐⭐⭐ │ 高     │ 最好   │ 通用推荐    │
+  └───────────────────────────┴──────────┴────────┴────────┴─────────────┘
+  ---
+  你倾向于哪种方案？或者有其他考虑因素需要我补充分析的？
+
+✻ Crunched for 32s
+
+> 我对方案一和方案六感兴趣，但是现在要马上实现功能，先用方案一，后面有时间  
+  的话再找你讨论方案六                                                      
+
+● 好的，我先制定方案一的实现计划，你审核通过后再开始写代码。
+
+● Entered plan mode
+  Claude is now exploring and designing an implementation approach.
+
+● 好的，让我先探索相关代码，了解模块依赖和配置结构。
+
+● Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● pap-server 已经依赖 pap-framework，可以直接使用
+  DecryptUtil。让我看看配置文件结构。
+
+● Read 2 files (ctrl+o to expand)
+
+● 现在我了解了完整的配置结构。让我写一份详细的实现计划。
+
+● Updated plan
+  ⎿  /plan to preview
+
+● 计划已完成，请审核。
+
+  核心改动点：
+  1. SqlInitializer 的 createDataSource() 方法集成解密逻辑
+  2. 密码获取优先级：加密文件解密 > YAML 明文密码
+  3. 复用现有的 DecryptUtil 工具类
+  4. 完全向后兼容，不配置加密文件时仍可使用明文密码
+
+● User approved Claude's plan
+  ⎿  Plan saved to: 
+     C:\Users\baiyingwaming\.claude\plans\inherited-whistling-twilight.md · 
+     /plan to edit
+
+     SqlInitializer 集成解密逻辑实现计划
+
+     背景
+
+     SqlInitializer 是一个独立于 Spring 容器运行的 SQL
+     初始化工具，它直接读取 YAML 配置文件获取数据库连接信息。但当数据库密码
+     以加密形式存储在外部文件时，它无法获取明文密码来连接数据库。
+
+     目标
+
+     让 SqlInitializer 支持从加密文件读取并解密数据库密码，复用现有的
+     DecryptUtil 工具类。
+
+     当前状态
+
+     配置文件结构 (application.yaml):
+     cipher:
+       secrete-key-path: D:/path/to/secretekey.properties      # 密钥文件
+       ciphertext-property-path: D:/path/to/pap.properties     # 
+     加密密码文件
+
+     数据库配置 (application-dev.yaml):
+     spring:
+       datasource:
+         dynamic:
+           datasource:
+             master:
+               url: jdbc:sqlserver://...
+               username: sa
+               # password: 从外部文件读取
+
+     实现方案
+
+     修改文件
+
+     pocpro/pap-server/src/main/java/cn/bochk/pap/server/init/SqlInitializer
+     .java
+
+     修改内容
+
+     1. 新增配置常量
+
+     private static final String KEY_FILE_PROPERTY =
+     "cipher.secrete-key-path";
+     private static final String PASSWORD_FILE_PROPERTY = 
+     "cipher.ciphertext-property-path";
+     private static final String DB_PASSWORD_KEY = "pap.db";  // 
+     加密文件中数据库密码的 key
+
+     2. 修改 createDataSource() 方法
+
+     密码获取优先级：
+     1. 加密文件解密 - 如果配置了 
+     cipher.ciphertext-property-path，从加密文件读取并解密
+     2. YAML 明文密码 - 如果没有配置加密文件，使用 YAML 
+     中的明文密码（用于开发环境）
+
+     createDataSource(profile)
+         ↓
+     加载基础 YAML 配置 (url, username, driver)
+         ↓
+     加载主 application.yaml 获取 cipher 配置
+         ↓
+     检查是否配置了 cipher.ciphertext-property-path
+         ├─ 是 → 调用 DecryptUtil 解密获取密码
+         └─ 否 → 使用 YAML 中的明文密码
+         ↓
+     创建 HikariDataSource
+
+     3. 新增辅助方法
+
+     /**
+      * 获取数据库密码（优先从加密文件解密）
+      */
+     private static String getDatabasePassword(Map<String, Object> 
+     profileConfig,
+                                               Map<String, Object> 
+     mainConfig) {
+         // 1. 检查是否配置了加密文件
+         String keyFilePath = getConfigValue(mainConfig, KEY_FILE_PROPERTY);
+         String passwordFilePath = getConfigValue(mainConfig,
+     PASSWORD_FILE_PROPERTY);
+
+         if (passwordFilePath != null && !passwordFilePath.trim().isEmpty())
+      {
+             // 2. 从加密文件解密
+             return decryptPassword(keyFilePath, passwordFilePath);
+         }
+
+         // 3. 回退到 YAML 明文密码
+         return getConfigValue(profileConfig,
+             "spring.datasource.dynamic.datasource.master.password");
+     }
+
+     /**
+      * 从加密文件解密数据库密码
+      */
+     private static String decryptPassword(String keyFilePath, String 
+     passwordFilePath) {
+         // 获取密钥
+         String encryptKey = DecryptUtil.getKey(keyFilePath);
+
+         // 读取加密密码
+         Map<String, String> encryptedPasswords =
+             DecryptUtil.readEncryptedPasswordsFromFile(passwordFilePath);
+
+         // 获取数据库密码对应的加密值
+         String encryptedPassword = encryptedPasswords.get(DB_PASSWORD_KEY);
+         if (encryptedPassword == null) {
+             throw new RuntimeException("加密密码文件中未找到 " +
+     DB_PASSWORD_KEY + " 配置");
+         }
+
+         // 解密
+         return DecryptUtil.decrypt(encryptedPassword, encryptKey);
+     }
+
+     4. 修改配置加载逻辑
+
+     需要同时加载两个配置文件：
+     - application-{profile}.yaml - 获取数据库 URL、用户名等
+     - application.yaml - 获取 cipher.* 配置
+
+     完整修改清单
+
+
+     行号范围: 类顶部
+     修改类型: 新增
+     说明: import DecryptUtil
+     ────────────────────────────────────────
+     行号范围: 常量区
+     修改类型: 新增
+     说明: KEY_FILE_PROPERTY, PASSWORD_FILE_PROPERTY, DB_PASSWORD_KEY
+     ────────────────────────────────────────
+     行号范围: createDataSource()
+     修改类型: 修改
+     说明: 集成解密逻辑
+     ────────────────────────────────────────
+     行号范围: 新增方法
+     修改类型: 新增
+     说明: getDatabasePassword(), decryptPassword(), loadMainConfig()
+     验证方案
+
+     测试场景 1：使用加密文件（生产模式）
+
+     确保配置：
+     - application.yaml 中配置了 cipher.secrete-key-path 和 
+     cipher.ciphertext-property-path
+     - 加密密码文件中包含 pap.db=加密后的密码
+
+     java -jar application.jar --init-sql=test.sql
+     --spring.profiles.active=dev
+
+     预期：成功连接数据库并执行 SQL
+
+     测试场景 2：使用明文密码（开发模式）
+
+     确保配置：
+     - application.yaml 中不配置 cipher.* 或路径为空
+     - application-dev.yaml 中直接配置明文 password
+
+     java -jar application.jar --init-sql=test.sql
+     --spring.profiles.active=dev
+
+     预期：成功连接数据库并执行 SQL
+
+     测试场景 3：加密文件不存在
+
+     配置了加密文件路径但文件不存在
+
+     预期：抛出明确的错误信息
+
+     注意事项
+
+     1. 向后兼容：如果没有配置加密文件，仍然使用 YAML 中的明文密码
+     2. 错误提示：解密失败时提供清晰的错误信息，帮助定位问题
+     3. 日志输出：打印密码来源（加密文件/明文配置），便于调试
+
+● 计划已批准，开始实现。让我修改 SqlInitializer.java 文件。
+
+● Read 1 file (ctrl+o to expand)
+
+● 现在按计划修改 SqlInitializer.java。
+
+● Update(pocpro\pap-server\src\main\java\cn\bochk\pap\server\init\SqlInitializer
+        .java)
+  ⎿  Added 1 line
+      1  package cn.bochk.pap.server.init;                               
+      2                                                                  
+      3 +import cn.bochk.pap.framework.common.encrypt.DecryptUtil;       
+      4  import com.zaxxer.hikari.HikariConfig;                          
+      5  import com.zaxxer.hikari.HikariDataSource;                      
+      6  import org.yaml.snakeyaml.Yaml;                                 
+
+● Update(pocpro\pap-server\src\main\java\cn\bochk\pap\server\init\SqlInitializer
+        .java)
+  ⎿  Added 5 lines
+      26      private static final String USE_SPRING_ARG =               
+          "--use-spring";                                                
+      27      private static final String IGNORE_DROP_ARG =              
+          "--ignore-drop-errors";                                        
+      28                                                                 
+      29 +    // 加密配置相关常量                                           
+          
+
+      30 +    private static final String KEY_FILE_PROPERTY =            
+         +"cipher.secrete-key-path";                                     
+      31 +    private static final String PASSWORD_FILE_PROPERTY =       
+         +"cipher.ciphertext-property-path";                             
+      32 +    private static final String DB_PASSWORD_KEY = "pap.db";    
+         +// 加密文件中数据库密码的 key                                     
+             
+
+      33 +                                                               
+      34      /**                                                        
+      35       * 检查是否为 SQL 初始化模式                                  
+            
+
+      36       */                                                        
+
+● Update(pocpro\pap-server\src\main\java\cn\bochk\pap\server\init\SqlInitializer
+        .java)
+  ⎿  Added 68 lines, removed 5 lines
+      105                                                                
+      106      /**                                                       
+      107       * 手动创建数据源（读取 application-{profile}.yaml 配置）    
+               
+
+      108 +     * 支持从加密文件解密数据库密码                              
+                
+
+      109       */                                                       
+      110      private static HikariDataSource createDataSource(String   
+           profile) {                                                    
+      111 -        Map<String, Object> config = loadYamlConfig(profile); 
+      111 +        // 加载 profile 配置（如 application-dev.yaml）          
+         
+
+      112 +        Map<String, Object> profileConfig =                   
+          +loadYamlConfig(profile);                                      
+      113 +        // 加载主配置文件（application.yaml），获取 cipher       
+              
+
+          +配置                                                            
+      114 +        Map<String, Object> mainConfig =                      
+          +loadYamlConfig(null);                                         
+      115                                                                
+      116          //                                                    
+           读取数据源配置：spring.datasource.dynamic.datasource.master      
+          
+
+      117 -        String url = getConfigValue(config                    
+          -, "spring.datasource.dynamic.datasource.master.url");         
+      118 -        String username = getConfigValue(config               
+          -, "spring.datasource.dynamic.datasource.master.username");    
+      119 -        String password = getConfigValue(config               
+          -, "spring.datasource.dynamic.datasource.master.password");    
+      120 -        String driverClassName = getConfigValue(config, "spri 
+          -ng.datasource.dynamic.datasource.master.driver-class-name");  
+      117 +        String url = getConfigValue(profileConfig             
+          +, "spring.datasource.dynamic.datasource.master.url");         
+      118 +        String username = getConfigValue(profileConfig        
+          +, "spring.datasource.dynamic.datasource.master.username");    
+      119 +        String driverClassName = getConfigValue(profileConfig 
+          +, "spring.datasource.dynamic.datasource.master.               
+          +driver-class-name");                                          
+      120                                                                
+      121 +        // 获取密码（优先从加密文件解密）                        
+                 
+
+      122 +        String password = getDatabasePassword(profileConfig,  
+          +mainConfig);                                                  
+      123 +                                                              
+      124          if (url == null) {                                    
+      125              throw new RuntimeException("Database URL not      
+           found in configuration. Please check application-" + profile  
+           + ".yaml");                                                   
+      126          }                                                     
+     ...
+      136      }                                                         
+      137                                                                
+      138      /**                                                       
+      139 +     * 获取数据库密码（优先从加密文件解密）                      
+                    
+
+      140 +     *                                                        
+      141 +     * @param profileConfig profile 配置（如                     
+      
+
+          +application-dev.yaml）                                         
+      142 +     * @param mainConfig    主配置文件（application.yaml）       
+         
+
+      143 +     * @return 数据库密码（明文）                                
+           
+
+      144 +     */                                                       
+      145 +    private static String getDatabasePassword(Map<String,     
+          +Object> profileConfig,                                        
+      146 +                                              Map<String,     
+          +Object> mainConfig) {                                         
+      147 +        // 1. 检查是否配置了加密文件                             
+             
+
+      148 +        String keyFilePath = getConfigValue(mainConfig,       
+          +KEY_FILE_PROPERTY);                                           
+      149 +        String passwordFilePath = getConfigValue(mainConfig,  
+          +PASSWORD_FILE_PROPERTY);                                      
+      150 +                                                              
+      151 +        if (passwordFilePath != null &&                       
+          +!passwordFilePath.trim().isEmpty()) {                         
+      152 +            System.out.println("Password source: encrypted    
+          +file");                                                       
+      153 +            System.out.println("  Key file: " + (keyFilePath  
+          +!= null ? keyFilePath : "using default key"));                
+      154 +            System.out.println("  Password file: " +          
+          +passwordFilePath);                                            
+      155 +            // 2. 从加密文件解密                                 
+         
+
+      156 +            return decryptPassword(keyFilePath,               
+          +passwordFilePath);                                            
+      157 +        }                                                     
+      158 +                                                              
+      159 +        // 3. 回退到 YAML 明文密码                               
+         
+
+      160 +        System.out.println("Password source: YAML             
+          +configuration (plaintext)");                                  
+      161 +        return getConfigValue(profileConfig,                  
+          +"spring.datasource.dynamic.datasource.master.password");      
+      162 +    }                                                         
+      163 +                                                              
+      164 +    /**                                                       
+      165 +     * 从加密文件解密数据库密码                                  
+              
+
+      166 +     *                                                        
+      167 +     * @param keyFilePath      密钥文件路径（可为                
+           
+
+          +null，使用默认密钥）                                             
+          
+
+      168 +     * @param passwordFilePath 加密密码文件路径                  
+          
+
+      169 +     * @return 解密后的密码                                      
+        
+
+      170 +     */                                                       
+      171 +    private static String decryptPassword(String keyFilePath, 
+          + String passwordFilePath) {                                   
+      172 +        try {                                                 
+      173 +            // 获取密钥                                          
+      
+
+      174 +            String encryptKey =                               
+          +DecryptUtil.getKey(keyFilePath);                              
+      175 +                                                              
+      176 +            // 读取加密密码                                      
+        
+
+      177 +            Map<String, String> encryptedPasswords =          
+          +DecryptUtil.readEncryptedPasswordsFromFile(passwordFilePath); 
+      178 +                                                              
+      179 +            // 获取数据库密码对应的加密值                        
+               
+
+      180 +            String encryptedPassword =                        
+          +encryptedPasswords.get(DB_PASSWORD_KEY);                      
+      181 +            if (encryptedPassword == null) {                  
+      182 +                throw new RuntimeException("Encrypted         
+          +password file does not contain key '" + DB_PASSWORD_KEY +     
+          +"'");                                                         
+      183 +            }                                                 
+      184 +                                                              
+      185 +            // 解密                                             
+      186 +            String decrypted =                                
+          +DecryptUtil.decrypt(encryptedPassword, encryptKey);           
+      187 +            System.out.println("  Password decrypted          
+          +successfully");                                               
+      188 +            return decrypted;                                 
+      189 +                                                              
+      190 +        } catch (Exception e) {                               
+      191 +            throw new RuntimeException("Failed to decrypt     
+          +database password: " + e.getMessage(), e);                    
+      192 +        }                                                     
+      193 +    }                                                         
+      194 +                                                              
+      195 +    /**                                                       
+      196       * 加载 YAML 配置文件（支持多文档 YAML，用 --- 分隔）        
+                   
+
+      197       */                                                       
+      198      @SuppressWarnings("unchecked")                            
+
+● 现在修改 loadYamlConfig 方法，支持加载主配置文件 application.yaml。
+
+● Update(pocpro\pap-server\src\main\java\cn\bochk\pap\server\init\SqlInitializer
+        .java)
+  ⎿  Added 3 lines, removed 1 line
+      200                                                                
+      201      /**                                                       
+      202       * 加载 YAML 配置文件（支持多文档 YAML，用 --- 分隔）        
+                   
+
+      203 +     *                                                        
+      204 +     * @param profile profile 名称，如 "dev"、"prod"；为 null    
+         
+
+          + 时加载主配置文件 application.yaml                               
+          
+
+      205       */                                                       
+      206      @SuppressWarnings("unchecked")                            
+      207      private static Map<String, Object> loadYamlConfig(String  
+           profile) {                                                    
+      208          Yaml yaml = new Yaml();                               
+      209 -        String configFile = "application                      
+          --" + profile + ".yaml";                                       
+      209 +        String configFile = (profile == null) ? "application  
+          +.yaml" : "application-" + profile + ".yaml";                  
+      210                                                                
+      211          try (InputStream is = SqlInitializer.class.getClassLo 
+           ader().getResourceAsStream(configFile)) {                     
+      212              if (is == null) {                                 
+
+● 修改完成，让我验证最终的代码。
+
+● Read 1 file (ctrl+o to expand)
+
+● 修改完成。以下是所做的改动总结：
+
+  修改总结
+
+  1. 新增 import（第3行）
+
+  import cn.bochk.pap.framework.common.encrypt.DecryptUtil;
+
+  2. 新增常量（第29-32行）
+
+  private static final String KEY_FILE_PROPERTY = "cipher.secrete-key-path";
+  private static final String PASSWORD_FILE_PROPERTY =
+  "cipher.ciphertext-property-path";
+  private static final String DB_PASSWORD_KEY = "pap.db";
+
+  3. 修改 createDataSource() 方法（第106-142行）
+
+  - 同时加载 profile 配置和主配置文件
+  - 调用 getDatabasePassword() 获取密码
+
+  4. 新增 getDatabasePassword() 方法（第144-168行）
+
+  - 优先从加密文件解密
+  - 回退到 YAML 明文密码
+
+  5. 新增 decryptPassword() 方法（第170-199行）
+
+  - 复用 DecryptUtil 进行解密
+
+  6. 修改 loadYamlConfig() 方法（第201-228行）
+
+  - 支持 profile 为 null 时加载 application.yaml
+
+  ---
+  运行时输出示例
+
+  使用加密文件时：
+  Password source: encrypted file
+    Key file: D:/path/to/secretekey.properties
+    Password file: D:/path/to/pap.properties
+    Password decrypted successfully
+  Loading datasource config from: application-dev.yaml
+  Database connected: jdbc:sqlserver://...
+
+  使用明文密码时：
+  Password source: YAML configuration (plaintext)
+  Loading datasource config from: application-dev.yaml
+  Database connected: jdbc:sqlserver://...
+
+  需要我帮你编译验证一下吗？
+
+✻ Brewed for 2m 33s
+
+> 我理解是默认要加载application.yaml主配置文件获取密钥和加密的密码，还要加  
+  载application-{profile}.yaml获取数据源的其它属性，然后再合并属性，创建数  
+  据源对象，创建连接，                                                      
+  这个过程是怎样的？你给我梳理一下这个代码逻辑;                             
+
+● 好的，我来梳理整个代码逻辑流程。
+
+  配置加载与数据源创建流程
+
+  ┌─────────────────────────────────────────────────────────────────────────────
+  ┐
+  │                        SqlInitializer.createDataSource(profile)
+   │
+  └─────────────────────────────────────────────────────────────────────────────
+  ┘
+                                        │
+                                        ▼
+  ┌─────────────────────────────────────────────────────────────────────────────
+  ┐
+  │  步骤1: 加载两个配置文件（并行独立，不合并）
+      │
+  ├─────────────────────────────────────────────────────────────────────────────
+  ┤
+  │
+  │
+  │   profileConfig = loadYamlConfig("dev")     mainConfig =
+  loadYamlConfig(null)│
+  │         │                                            │
+  │
+  │         ▼                                            ▼
+  │
+  │   ┌─────────────────────┐                 ┌─────────────────────┐          │
+  │   │ application-dev.yaml │                 │   application.yaml   │
+   │
+  │   ├─────────────────────┤                 ├─────────────────────┤          │
+  │   │ spring:             │                 │ cipher:             │          │
+  │   │   datasource:       │                 │   secrete-key-path: │          │
+  │   │     dynamic:        │                 │     D:/path/key.txt │          │
+  │   │       datasource:   │                 │   ciphertext-...:   │          │
+  │   │         master:     │                 │     D:/path/pwd.txt │          │
+  │   │           url: ...  │                 └─────────────────────┘          │
+  │   │           username: │
+  │
+  │   └─────────────────────┘
+  │
+  │
+  │
+  └─────────────────────────────────────────────────────────────────────────────
+  ┘
+                                        │
+                                        ▼
+  ┌─────────────────────────────────────────────────────────────────────────────
+  ┐
+  │  步骤2: 从 profileConfig 获取数据源基本属性
+     │
+  ├─────────────────────────────────────────────────────────────────────────────
+  ┤
+  │
+  │
+  │   url = getConfigValue(profileConfig,
+  │
+  │           "spring.datasource.dynamic.datasource.master.url")
+  │
+  │
+  │
+  │   username = getConfigValue(profileConfig,
+  │
+  │           "spring.datasource.dynamic.datasource.master.username")
+  │
+  │
+  │
+  │   driverClassName = getConfigValue(profileConfig,
+  │
+  │           "spring.datasource.dynamic.datasource.master.driver-class-name")
+  │
+  │
+  │
+  └─────────────────────────────────────────────────────────────────────────────
+  ┘
+                                        │
+                                        ▼
+  ┌─────────────────────────────────────────────────────────────────────────────
+  ┐
+  │  步骤3: 获取密码 getDatabasePassword(profileConfig, mainConfig)
+   │
+  ├─────────────────────────────────────────────────────────────────────────────
+  ┤
+  │
+  │
+  │   从 mainConfig 读取加密配置路径：
+    │
+  │   ┌─────────────────────────────────────────────────────────────┐          │
+  │   │ keyFilePath = getConfigValue(mainConfig, "cipher.secrete-key-path")    │
+  │   │ passwordFilePath = getConfigValue(mainConfig,                │
+  │
+  │   │                    "cipher.ciphertext-property-path")        │
+  │
+  │   └─────────────────────────────────────────────────────────────┘          │
+  │                              │
+  │
+  │                              ▼
+  │
+  │                    ┌─────────────────┐
+  │
+  │                    │ passwordFilePath │
+   │
+  │                    │ 是否有值？       │
+   │
+  │                    └────────┬────────┘
+  │
+  │                   ┌─────────┴─────────┐
+  │
+  │                   ▼                   ▼
+  │
+  │            ┌──────────┐        ┌──────────────┐
+  │
+  │            │   有值    │        │  无值/空     │
+   │
+  │            └────┬─────┘        └──────┬───────┘
+  │
+  │                 │                     │
+  │
+  │                 ▼                     ▼
+  │
+  │     调用 decryptPassword()     从 profileConfig 读取明文密码
+    │
+  │     从加密文件解密               (YAML 中的 password 字段)
+    │
+  │
+  │
+  └─────────────────────────────────────────────────────────────────────────────
+  ┘
+                                        │
+                                        ▼
+  ┌─────────────────────────────────────────────────────────────────────────────
+  ┐
+  │  步骤3a: decryptPassword() 解密流程（如果配置了加密文件）
+     │
+  ├─────────────────────────────────────────────────────────────────────────────
+  ┤
+  │
+  │
+  │   ① 获取密钥
+  │
+  │      encryptKey = DecryptUtil.getKey(keyFilePath)                          │
+  │                         │
+  │
+  │                         ▼
+  │
+  │              ┌────────────────────┐
+  │
+  │              │ keyFilePath 有值？  │
+   │
+  │              └─────────┬──────────┘
+  │
+  │              ┌─────────┴─────────┐
+  │
+  │              ▼                   ▼
+  │
+  │      ┌──────────────┐    ┌──────────────┐
+  │
+  │      │ 读取密钥文件  │    │ 使用默认密钥  │
+    │
+  │      │ secretekey.  │    │ DEFAULT_KEY  │
+  │
+  │      │ properties   │    │              │
+  │
+  │      └──────────────┘    └──────────────┘
+  │
+  │
+  │
+  │   ② 读取加密密码文件
+   │
+  │      encryptedPasswords = DecryptUtil.readEncryptedPasswordsFromFile(
+  │
+  │                              passwordFilePath)
+  │
+  │                         │
+  │
+  │                         ▼
+  │
+  │      ┌─────────────────────────────────────┐
+  │
+  │      │ pap.properties 文件内容：            │
+   │
+  │      │   pap.db=Base64加密的数据库密码      │
+   │
+  │      │   pap.redis=Base64加密的Redis密码   │
+  │
+  │      └─────────────────────────────────────┘
+  │
+  │
+  │
+  │   ③ 获取数据库密码的加密值
+    │
+  │      encryptedPassword = encryptedPasswords.get("pap.db")
+  │
+  │
+  │
+  │   ④ 解密
+  │
+  │      password = DecryptUtil.decrypt(encryptedPassword, encryptKey)
+  │
+  │
+  │
+  └─────────────────────────────────────────────────────────────────────────────
+  ┘
+                                        │
+                                        ▼
+  ┌─────────────────────────────────────────────────────────────────────────────
+  ┐
+  │  步骤4: 创建 HikariDataSource
+   │
+  ├─────────────────────────────────────────────────────────────────────────────
+  ┤
+  │
+  │
+  │   HikariConfig hikariConfig = new HikariConfig();
+  │
+  │   hikariConfig.setJdbcUrl(url);           // 来自 profileConfig
+  │
+  │   hikariConfig.setUsername(username);     // 来自 profileConfig
+  │
+  │   hikariConfig.setPassword(password);     // 来自解密 或 profileConfig
+   │
+  │   hikariConfig.setDriverClassName(...);   // 来自 profileConfig
+  │
+  │   hikariConfig.setMaximumPoolSize(2);
+  │
+  │   hikariConfig.setMinimumIdle(1);
+  │
+  │   hikariConfig.setConnectionTimeout(30000);
+  │
+  │
+  │
+  │   return new HikariDataSource(hikariConfig);  // 创建连接池
+   │
+  │
+  │
+  └─────────────────────────────────────────────────────────────────────────────
+  ┘
+
+  关键点说明
+  配置来源: application.yaml
+  提供的内容: cipher.secrete-key-pathcipher.ciphertext-property-path
+  说明: 加密配置的路径，指向外部文件
+  ────────────────────────────────────────
+  配置来源: application-{profile}.yaml
+  提供的内容: url, username, driver-class-name
+  说明: 数据源基本属性
+  ────────────────────────────────────────
+  配置来源: 外部密钥文件
+  提供的内容: AES 密钥（32位HEX）
+  说明: 用于解密
+  ────────────────────────────────────────
+  配置来源: 外部密码文件
+  提供的内容: pap.db=加密后的密码
+  说明: 加密的数据库密码
+  两个配置文件的关系
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                    不是合并，而是各取所需                          │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │   application.yaml          application-dev.yaml                │
+  │   (mainConfig)              (profileConfig)                     │
+  │        │                           │                            │
+  │        │                           │                            │
+  │        ▼                           ▼                            │
+  │   只读取 cipher.*            只读取 spring.datasource.*          │
+  │   配置项                      配置项                             │
+  │        │                           │                            │
+  │        │                           ├── url                      │
+  │        │                           ├── username                 │
+  │        │                           ├── password (备用)          │
+  │        │                           └── driver-class-name        │
+  │        │                                                        │
+  │        └──────────┬────────────────┘                            │
+  │                   ▼                                             │
+  │            组装 HikariConfig                                    │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+  所以你的理解是正确的：两个配置文件各司其职，不是合并后再读取，而是分别加载、分
+  别读取需要的配置项。
+
+✻ Crunched for 39s
+
+> application-{profile}.yaml配置文件的passrod属性加载逻辑应该要删掉吧 
+
+● 你说得对，这是一个设计选择的问题。
+
+  当前逻辑：
+  密码获取优先级：
+  1. 加密文件解密（如果配置了 cipher.ciphertext-property-path）
+  2. YAML 明文密码（备用，用于开发环境）
+
+  你的建议：删除 YAML 明文密码的 fallback 逻辑
+
+  有两种处理方式：
+  方案: A. 保留备用
+  描述: 没配置加密文件时，fallback 到 YAML 明文密码
+  适用场景: 开发环境方便，不强制使用加密
+  ────────────────────────────────────────
+  方案: B. 删除备用
+  描述: 必须配置加密文件，否则报错
+  适用场景: 强制安全，避免误用明文密码
+  你想要哪种？
+
+  - 选 A：保持现状，开发环境可以用明文密码
+  - 选 B：删除 fallback，强制必须配置加密文件
+
+  确认后我来修改代码。
+
+> B 
+
+● 好的，删除 fallback 逻辑，强制必须配置加密文件。
+
+● Update(pocpro\pap-server\src\main\java\cn\bochk\pap\server\init\SqlInitializer
+        .java)
+  ⎿  Added 12 lines, removed 15 lines
+      142      }                                                         
+      143                                                                
+      144      /**                                                       
+      145 -     * 获取数据库密码（优先从加密文件解密）                      
+                    
+
+      145 +     * 获取数据库密码（从加密文件解密）                          
+                  
+
+      146       *                                                        
+      147 -     * @param profileConfig profile 配置（如 
+     application-dev.yaml）
+      148 -     * @param mainConfig    主配置文件（application.yaml）       
+         
+
+      147 +     * @param mainConfig 主配置文件（application.yaml）          
+         
+
+      148       * @return 数据库密码（明文）                                
+           
+
+      149       */                                                       
+      150 -    private static String getDatabasePassword(Map<String,     
+          -Object> profileConfig,                                        
+      151 -                                              Map<String,     
+          -Object> mainConfig) {                                         
+      152 -        // 1. 检查是否配置了加密文件                             
+             
+
+      150 +    private static String getDatabasePassword(Map<String,     
+          +Object> mainConfig) {                                         
+      151 +        // 检查是否配置了加密文件                                
+             
+
+      152          String keyFilePath = getConfigValue(mainConfig,       
+           KEY_FILE_PROPERTY);                                           
+      153          String passwordFilePath = getConfigValue(mainConfig,  
+           PASSWORD_FILE_PROPERTY);                                      
+      154                                                                
+      155 -        if (passwordFilePath != null && !                     
+          -passwordFilePath.trim().isEmpty()) {                          
+      156 -            System.out.println("Password source: encrypted    
+          -file");                                                       
+      157 -            System.out.println("  Key file: " + (keyFilePath  
+          -!= null ? keyFilePath : "using default key"));                
+      158 -            System.out.println("  Password file: " +          
+          -passwordFilePath);                                            
+      159 -            // 2. 从加密文件解密                                 
+         
+
+      160 -            return decryptPassword(keyFilePath,               
+          -passwordFilePath);                                            
+      155 +        if (passwordFilePath == null ||                       
+          +passwordFilePath.trim().isEmpty()) {                          
+      156 +            throw new RuntimeException("Database password not 
+          + configured. " +                                              
+      157 +                    "Please set '" + PASSWORD_FILE_PROPERTY + 
+          + "' in application.yaml");                                    
+      158          }                                                     
+      159                                                                
+      160 -        // 3. 回退到 YAML 明文密码                               
+         
+
+      161 -        System.out.println("Password source: YAML             
+          -configuration (plaintext)");                                  
+      162 -        return getConfigValue(profileConfig,                  
+          -"spring.datasource.dynamic.datasource.master.password");      
+      160 +        System.out.println("Password source: encrypted        
+          +file");                                                       
+      161 +        System.out.println("  Key file: " + (keyFilePath !=   
+          +null ? keyFilePath : "using default key"));                   
+      162 +        System.out.println("  Password file: " +              
+          +passwordFilePath);                                            
+      163 +                                                              
+      164 +        return decryptPassword(keyFilePath,                   
+          +passwordFilePath);                                            
+      165      }                                                         
+      166                                                                
+      167      /**                                                       
+
+● Update(pocpro\pap-server\src\main\java\cn\bochk\pap\server\init\SqlInitializer
+        .java)
+  ⎿  Added 2 lines, removed 2 lines
+      118          String username = getConfigValue(profileConfig,       
+           "spring.datasource.dynamic.datasource.master.username");      
+      119          String driverClassName =                              
+           getConfigValue(profileConfig, "spring.datasource.dynamic.data 
+           source.master.driver-class-name");                            
+      120                                                                
+      121 -        // 获取密码（优先从加密文件解密）                        
+                 
+
+      122 -        String password = getDatabasePassword(profileConfig,  
+          -mainConfig);                                                  
+      121 +        // 获取密码（从加密文件解密）                            
+               
+
+      122 +        String password = getDatabasePassword(mainConfig);    
+      123                                                                
+      124          if (url == null) {                                    
+      125              throw new RuntimeException("Database URL not      
+           found in configuration. Please check application-" + profile  
+           + ".yaml");                                                   
+
+● 修改完成。验证一下最终代码：
+
+● Read 1 file (ctrl+o to expand)
+
+● 修改完成。最终逻辑如下：
+
+  修改后的流程
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                    getDatabasePassword(mainConfig)               │
+  ├─────────────────────────────────────────────────────────────────┤
+  │                                                                 │
+  │   从 mainConfig 读取：                                           │
+  │   - cipher.secrete-key-path                                     │
+  │   - cipher.ciphertext-property-path                             │
+  │                              │                                  │
+  │                              ▼                                  │
+  │              ┌───────────────────────────┐                      │
+  │              │ passwordFilePath 是否有值？ │                      │
+  │              └─────────────┬─────────────┘                      │
+  │                   ┌────────┴────────┐                           │
+  │                   ▼                 ▼                           │
+  │            ┌──────────┐      ┌─────────────┐                    │
+  │            │   有值    │      │  无值/空    │                    │
+  │            └────┬─────┘      └──────┬──────┘                    │
+  │                 │                   │                           │
+  │                 ▼                   ▼                           │
+  │         调用 decryptPassword()   抛出异常：                      │
+  │         从加密文件解密           "Database password not          │
+  │                                  configured..."                 │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+  变更对比
+  项目: 方法签名
+  修改前: getDatabasePassword(profileConfig, mainConfig)
+  修改后: getDatabasePassword(mainConfig)
+  ────────────────────────────────────────
+  项目: 无加密配置时
+  修改前: fallback 到 YAML 明文密码
+  修改后: 抛出异常，强制配置
+  ────────────────────────────────────────
+  项目: profileConfig 用途
+  修改前: 读取 url/username/password
+  修改后: 只读取 url/username
+  错误提示
+
+  如果没有配置加密文件，会抛出：
+  Database password not configured. Please set 'cipher.ciphertext-property-path'
+   in application.yaml
+
+✻ Baked for 39s
