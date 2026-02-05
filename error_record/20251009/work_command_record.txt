@@ -2919,11 +2919,12 @@ D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\pap-encrypt-tool
 
 
 ###########################################################################
-
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'bpmProcessInstanceApiImpl': Injection of resource dependencies
 
 
 ###########################################################################
-
+unzip -l app.jar | grep application
+unzip -p app.jar BOOT-INF/classes/application.yaml | less
 
 ###########################################################################
 
