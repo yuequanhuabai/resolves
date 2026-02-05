@@ -30,3 +30,10 @@ zip -u app.jar BOOT-INF/classes/application.yaml
 
 4️⃣ 校验一下（建议）
 unzip -p app.jar BOOT-INF/classes/application.yaml | less
+
+
+=========================================================================================================
+linux条件下不解压文件查看jar包文件
+unzip -l app.jar | grep application
+unzip -p app.jar BOOT-INF/classes/application.yaml | less
+
