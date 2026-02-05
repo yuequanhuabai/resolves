@@ -2923,7 +2923,6 @@ org.springframework.beans.factory.BeanCreationException: Error creating bean wit
 
 Caused by: org.flowable.common.engine.api.FlowableWrongDbException: version mismatch: library version is '7.0.1.1', db version is null Hint: Set <property name ="databaseSchemaUpdate" to value="true" or value ="create-drop" (use create-drop for testing only!) in bean processEngineConfiguration in flowable.cfg.xml for automatic schema creation
 
-
 ###########################################################################
 unzip -l app.jar | grep application
 unzip -p app.jar BOOT-INF/classes/application.yaml | less
@@ -2941,12 +2940,22 @@ pL9RtmVq7Fk2ZyNx
 
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
 
-
+我在内网启动项目失败了：报错信息如下：
+Caused by: org.flowable.common.engine.api.FlowableWrongDbException: version mismatch: library version is '7.0.1.1', db version is null Hint: Set <property name ="databaseSchemaUpdate" to value="true" or value ="create-drop" (use create-drop for testing only!) in bean processEngineConfiguration in flowable.cfg.xml for automatic schema creation
 
 ###########################################################################
+但是我把flowable.database-schema-update改为true之后发现其它报错信息：
+Caused by: com.microsoft.sqlserver.jdbc.SQLServerException: There is already an object named 'FLW_EVENT_DEPLOYMENT' in the database
 
+为啥里面又有表了，是要先删除吗？
 
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'bpmProcessInstanceApiImpl': Injection of resource dependencies failed;
+
+我删除了对应的表，又有其它的报错信息了
+Caused by: java.lang.NullpointerException: Cannot invoke "org.flowable.common.engine.impl.persistence.entity.PropertyEntity.getValue()" because "dbVersionProperty" is null;
 
 ###########################################################################
 
