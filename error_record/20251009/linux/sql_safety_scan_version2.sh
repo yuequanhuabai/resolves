@@ -3,7 +3,7 @@
 #  SQL Safety Scanner - SQL脚本安全扫描工具
 #
 #  用途: 扫描指定目录下所有 .sql 文件中的危险操作，生成检查报告
-#  用法: bash sql_safety_scan.sh <sql_directory>
+#  用法: bash sql_safety_scan_version2.sh <sql_directory>
 #  输出: 在指定目录下生成 sql_safety_check_<timestamp>.txt
 #
 #  退出码: 0=安全  1=有CRITICAL  2=有HIGH(无CRITICAL)
@@ -669,111 +669,6 @@ scan_statement() {
         record_finding "MEDIUM" "$file" "$line_no" "$display" "延时执行语句${proc_suffix}"
     fi
     # [规则 SYS-013 END]
-
-
-    # ================================================================
-    # [规则 SYS-014] sp_msforeachtable / sp_msforeachdb - 批量遍历操作
-    #   sp_msforeachtable 对库内所有表执行命令，如 EXEC sp_msforeachtable 'DROP TABLE ?'
-    #   sp_msforeachdb    对所有数据库执行命令
-    # ================================================================
-    if [[ "$upper" == *"SP_MSFOREACHTABLE"* ]] || [[ "$upper" == *"SP_MSFOREACHDB"* ]]; then
-        record_finding "CRITICAL" "$file" "$line_no" "$display" \
-            "批量遍历操作（sp_msforeachtable/sp_msforeachdb），将对所有表或所有库执行命令，极高风险${proc_suffix}"
-    fi
-    # [规则 SYS-014 END]
-
-
-    # ================================================================
-    # [规则 SYS-015] sp_OACreate / sp_OAMethod - OLE自动化对象
-    #   通过 OLE Automation 可执行任意系统命令，危害等同于 xp_cmdshell
-    #   相关过程: sp_OACreate, sp_OAMethod, sp_OADestroy,
-    #            sp_OAGetProperty, sp_OASetProperty, sp_OAGetErrorInfo
-    # ================================================================
-    if [[ "$upper" == *"SP_OACREATE"* ]] || \
-       [[ "$upper" == *"SP_OAMETHOD"* ]] || \
-       [[ "$upper" == *"SP_OADESTROY"* ]] || \
-       [[ "$upper" == *"SP_OAGETPROPERTY"* ]] || \
-       [[ "$upper" == *"SP_OASETPROPERTY"* ]]; then
-        record_finding "CRITICAL" "$file" "$line_no" "$display" \
-            "OLE自动化操作（sp_OA*），可执行任意系统命令，危害等同xp_cmdshell${proc_suffix}"
-    fi
-    # [规则 SYS-015 END]
-
-
-    # ================================================================
-    # [规则 SYS-016] CREATE ASSEMBLY - 加载.NET程序集
-    #   尤其带 UNSAFE/EXTERNAL_ACCESS 权限时，可在SQL Server中执行任意代码
-    # ================================================================
-    if [[ "$upper" =~ CREATE[[:space:]]+ASSEMBLY ]]; then
-        local sev="HIGH"
-        if [[ "$upper" == *"UNSAFE"* ]] || [[ "$upper" == *"EXTERNAL_ACCESS"* ]]; then
-            sev="CRITICAL"
-        fi
-        record_finding "$sev" "$file" "$line_no" "$display" \
-            "加载.NET程序集到SQL Server，可执行任意代码${proc_suffix}"
-    fi
-    # [规则 SYS-016 END]
-
-
-    # ================================================================
-    # [规则 SYS-017] sp_addlinkedserver - 创建链接服务器
-    #   可建立到外部服务器的连接，作为数据外泄通道或攻击跳板
-    # ================================================================
-    if [[ "$upper" == *"SP_ADDLINKEDSERVER"* ]]; then
-        local sev="HIGH"; [ "$in_proc_def" -eq 1 ] && sev="INFO"
-        record_finding "$sev" "$file" "$line_no" "$display" \
-            "创建链接服务器，可作为数据外泄通道或攻击跳板${proc_suffix}"
-    fi
-    # [规则 SYS-017 END]
-
-
-    # ================================================================
-    # [规则 SYS-018] TRUSTWORTHY ON - 数据库信任设置
-    #   开启后允许数据库内的代码以更高权限执行，可实现权限提升
-    # ================================================================
-    if [[ "$upper" == *"TRUSTWORTHY"* ]] && [[ "$upper" == *" ON"* ]]; then
-        local sev="HIGH"; [ "$in_proc_def" -eq 1 ] && sev="INFO"
-        record_finding "$sev" "$file" "$line_no" "$display" \
-            "开启TRUSTWORTHY设置，可导致权限提升${proc_suffix}"
-    fi
-    # [规则 SYS-018 END]
-
-
-    # ================================================================
-    # [规则 SYS-019] EXECUTE AS - 身份模拟
-    #   冒充其他用户（尤其是 sa/dbo）执行操作，实现越权
-    # ================================================================
-    if [[ "$upper" =~ EXECUTE[[:space:]]+AS[[:space:]] ]]; then
-        local sev="HIGH"; [ "$in_proc_def" -eq 1 ] && sev="INFO"
-        record_finding "$sev" "$file" "$line_no" "$display" \
-            "身份模拟操作（EXECUTE AS），可冒充其他用户执行操作${proc_suffix}"
-    fi
-    # [规则 SYS-019 END]
-
-
-    # ================================================================
-    # [规则 SYS-020] sp_send_dbmail - 数据库发送邮件
-    #   可从数据库直接发邮件，用于数据外泄或钓鱼攻击
-    # ================================================================
-    if [[ "$upper" == *"SP_SEND_DBMAIL"* ]]; then
-        local sev="HIGH"; [ "$in_proc_def" -eq 1 ] && sev="INFO"
-        record_finding "$sev" "$file" "$line_no" "$display" \
-            "数据库发送邮件（sp_send_dbmail），可用于数据外泄${proc_suffix}"
-    fi
-    # [规则 SYS-020 END]
-
-
-    # ================================================================
-    # [规则 SYS-021] CLR ENABLED - 启用CLR集成
-    #   配合 CREATE ASSEMBLY 可在 SQL Server 中执行任意 .NET 代码
-    #   通常通过 sp_configure 'clr enabled', 1 开启
-    # ================================================================
-    if [[ "$upper" == *"CLR ENABLED"* ]] || [[ "$upper" == *"CLR_ENABLED"* ]]; then
-        local sev="HIGH"; [ "$in_proc_def" -eq 1 ] && sev="INFO"
-        record_finding "$sev" "$file" "$line_no" "$display" \
-            "启用CLR集成，配合ASSEMBLY可执行任意.NET代码${proc_suffix}"
-    fi
-    # [规则 SYS-021 END]
 }
 
 
