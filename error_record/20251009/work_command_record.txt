@@ -2958,14 +2958,30 @@ org.springframework.beans.factory.BeanCreationException: Error creating bean wit
 Caused by: java.lang.NullpointerException: Cannot invoke "org.flowable.common.engine.impl.persistence.entity.PropertyEntity.getValue()" because "dbVersionProperty" is null;
 
 ###########################################################################
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
 
+后端问题：
+你可以看到当前目录后端项目下的sql脚本吧，在这个目录：D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\sql\sqlserver
+因为生产安全问题，需要对要执行的sql进行危险操作的扫描；写一个shell脚本来扫描，我问下有哪些解决方案；
+先不生成脚本，你先给出方案；
+
+你可以理解我的需求吗？你先复述一遍你的理解
 
 
 ###########################################################################
+基于上面这些所有的需要扫描的处理逻辑，你在写处理逻辑的时候，可以把每个逻辑隔开写，然后在每个逻辑前面标注一下吗？ 这样看起来更加清晰;
+如果哪个逻辑的处理不需要了，我也可以直接删除两个注释之间的处理逻辑内容;
 
 
 ###########################################################################
-
+先把白名单功能去掉吧，指定目录下所有sql后缀的脚本都需要扫描，递归逻辑先不用，我后期会全部放在一个目录下，不会有子目录，
+输出格式为生成一个check文件无论有没有要给结论，如果有风险操作，标注文件以及文件的指定行的那条sql，如果无风险操作，标注一下;
+像你上面的这样可行，加一个行号：
+  [CRITICAL] flowable/drop.sql:3
+    DROP TABLE FLW_RU_BATCH_PART
+    >> 独立 DROP TABLE，无重建模式
+另外    退出码功能我没看懂是啥意思？
 
 
 ###########################################################################
