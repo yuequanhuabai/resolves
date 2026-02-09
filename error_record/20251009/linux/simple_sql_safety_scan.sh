@@ -334,12 +334,12 @@ generate_report() {
                     echo "  ${severity} (${count})"
                     echo "------------------------------------------------------------"
                     echo ""
-                    while IFS='|' read -r sev f_name f_line f_sql f_desc; do
+                    grep "^${severity}|" "$FINDINGS_FILE" | while IFS='|' read -r sev f_name f_line f_sql f_desc; do
                         echo "  [${sev}] ${f_name}:${f_line}"
                         echo "    ${f_sql}"
                         echo "    >> ${f_desc}"
                         echo ""
-                    done < <(grep "^${severity}|" "$FINDINGS_FILE")
+                    done
                 fi
             done
 
@@ -378,10 +378,12 @@ main() {
     echo "============================================================"
     echo ""
 
+    local tmp_list="${TMP_DIR}/sql_list.txt"
+    find "$SCAN_DIR" -maxdepth 1 -name "*.sql" -type f | sort > "$tmp_list"
     local sql_files=()
     while IFS= read -r f; do
         sql_files+=("$f")
-    done < <(find "$SCAN_DIR" -maxdepth 1 -name "*.sql" -type f | sort)
+    done < "$tmp_list"
 
     if [ ${#sql_files[@]} -eq 0 ]; then
         echo "[WARN] 未找到 .sql 文件: ${SCAN_DIR}"
