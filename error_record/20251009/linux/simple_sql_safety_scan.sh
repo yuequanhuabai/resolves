@@ -3,7 +3,7 @@
 #  Simple SQL Safety Scanner - SQL脚本安全扫描工具（精简版）
 #
 #  用途: 扫描指定目录下所有 .sql 文件中的危险操作，生成检查报告
-#  用法: bash simple_sql_safety_scan.sh <sql_directory>
+#  用法: bash simple_sql_safety_scan_version3.sh <sql_directory>
 #  输出: 在指定目录下生成 sql_safety_check_<timestamp>.txt
 #
 #  检测规则: 7条（DDL-001~003, DML-001~003, SYS-014）
@@ -334,12 +334,12 @@ generate_report() {
                     echo "  ${severity} (${count})"
                     echo "------------------------------------------------------------"
                     echo ""
-                    grep "^${severity}|" "$FINDINGS_FILE" | while IFS='|' read -r sev f_name f_line f_sql f_desc; do
+                    while IFS='|' read -r sev f_name f_line f_sql f_desc; do
                         echo "  [${sev}] ${f_name}:${f_line}"
                         echo "    ${f_sql}"
                         echo "    >> ${f_desc}"
                         echo ""
-                    done
+                    done < <(grep "^${severity}|" "$FINDINGS_FILE")
                 fi
             done
 
@@ -378,12 +378,10 @@ main() {
     echo "============================================================"
     echo ""
 
-    local tmp_list="${TMP_DIR}/sql_list.txt"
-    find "$SCAN_DIR" -maxdepth 1 -name "*.sql" -type f | sort > "$tmp_list"
     local sql_files=()
     while IFS= read -r f; do
         sql_files+=("$f")
-    done < "$tmp_list"
+    done < <(find "$SCAN_DIR" -maxdepth 1 -name "*.sql" -type f | sort)
 
     if [ ${#sql_files[@]} -eq 0 ]; then
         echo "[WARN] 未找到 .sql 文件: ${SCAN_DIR}"
