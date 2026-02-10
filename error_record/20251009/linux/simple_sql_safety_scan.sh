@@ -389,6 +389,12 @@ main() {
         exit 0
     fi
 
+    echo "=== 调试: sql_files 数组内容 ==="
+    for f in "${sql_files[@]}"; do
+        echo "  -> $f"
+    done
+    echo "================================"
+
     echo "找到 ${#sql_files[@]} 个 SQL 文件"
     echo ""
 
