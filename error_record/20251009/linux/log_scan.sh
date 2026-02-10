@@ -1,7 +1,7 @@
 #!/bin/bash
 
 LOGPATH=/opt/project/SMP/log/
-LOG=smpErrorMonotor.log
+LOG=smpErrorMonitor.log
 SPJOB_SQLPATH=/opt/project/SMP/specialJob/dataRetrieval/
 SPJOB_LOGPATH=/opt/project/SMP/log/specialJob/
 SPJOB_SQL=
@@ -39,14 +39,14 @@ grep -vn 'exception.UserNo' |
 grep -vn 'exception.RecordNotF' |
 tee ${LOGPATH}${ECCLOG}
 
-lines_all=`grep -ci ERR "${LOGPATH}${ECCLOG}"`
-lines_sessionout=`grep ERR "${LOGPATH}${ECCLOG}" | grep -ci "l_stpHistoryOid is null, probably due to session timeout"`
+lines_all=`grep -ci ERR "${LOGPATH}${ECCLOG}" || echo 0`
+lines_sessionout=`grep ERR "${LOGPATH}${ECCLOG}" | grep -ci "l_stpHistoryOid is null, probably due to session timeout" || echo 0`
 lines=`expr $lines_all - $lines_sessionout`
 
 ERR_SOURCE=`grep ERR "${LOGPATH}${ECCLOG}" | grep -v "session timeout" | awk -F '\] \[\-?[0-9]+ ' '{print "["$2}' | tr "\n" " "`
 
 if [ $lines -gt 0 ]; then
-  /opt/Tivoli/tecad_stdapp/bin/postemsg -f /opt/Tivoli/tecad_stdapp/etc/tecad_logfile.conf -r MINOR -m "Warning message detected ${ERR_SOURCE}, please check," hostname=[@SMP.ECC.HOSTNAME@] sub_source="B-SMP-SMP-APP" HEalth_Check UNX0000C
+  /opt/Tivoli/tecad_stdapp/bin/postemsg -f /opt/Tivoli/tecad_stdapp/etc/tecad_logfile.conf -r MINOR -m "Warning message detected ${ERR_SOURCE}, please check," hostname=[@SMP.ECC.HOSTNAME@] sub_source="B-SMP-SMP-APP" Health_Check UNX0000C
 
 #echo "excel" > eccCheck.sftp
 #echo "cd ${REMOTEPATH}">> eccCheck.sftp
@@ -67,7 +67,7 @@ EWPEccLog="smpECC_EWP.log.${DatePrint}"
 grep "$Date $Time" ${LOGPATH}${EWPLOG} |
 grep "ERR" > ${LOGPATH}${EWPEccLog}
 
-lines=`grep -ci ERR "${LOGPATH}${EWPEccLog}"`
+lines=`grep -ci ERR "${LOGPATH}${EWPEccLog}" || echo 0`
 
 if [ $lines -gt 0 ]; then
   /opt/Tivoli/tecad_stdapp/bin/postemsg -f /opt/Tivoli/tecad_stdapp/etc/tecad_logfile.conf -r MINOR -m "EWP Warning message detected, please check $EWPEccLog." hostname=[@SMP.ECC.HOSTNAME] sub_source="B-SMP-SMP-APP" Health_Check UNX0000C
