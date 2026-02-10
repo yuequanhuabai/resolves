@@ -1,7 +1,7 @@
 #!/bin/bash
 
 LOGPATH=/opt/project/SMP/log/
-LOG=smpEeeorMonotor.log
+LOG=smpErrorMonotor.log
 SPJOB_SQLPATH=/opt/project/SMP/specialJob/dataRetrieval/
 SPJOB_LOGPATH=/opt/project/SMP/log/specialJob/
 SPJOB_SQL=
@@ -23,7 +23,7 @@ sleep 65
 #grep ERR $LOGPATH$LOG |
 
 grep "$Date $Time" $LOGPATH$LOG |
-grep -vn 'Role does not exist in SMP'
+grep -vn 'Role does not exist in SMP' |
 grep -vn 'RECORD NOT FOUND' |
 grep -vn 'Error of get wts code' |
 grep -vn 'BypassLoginAction'|
@@ -33,7 +33,7 @@ grep -vn 'WARN' |
 grep -vn 'The number of host variable' |
 grep -vn 'BNDFINQM HOST MSG\: \[APPL UNIT < MIN UNIT]' |
 grep -vn 'BNDFINQM HOST MSG\: \[APPL UNIT > MAX UNIT]' |
-grep -vn 'INVALID HAND CHG'
+grep -vn 'INVALID HAND CHG' |
 grep -vn 'findUserRight' |
 grep -vn 'exception.UserNo' |
 grep -vn 'exception.RecordNotF' |
@@ -46,7 +46,7 @@ lines=`expr $lines_all - $lines_sessionout`
 ERR_SOURCE=`grep ERR "$LOGPATH$ECCLOG" | grep -v "session timeout" | awk -F '\] \[\-?[0-9]+ ' '{print "["$2}' | tr "\n" " "`
 
 if [ $lines -gt 0 ]; then
-  /opt/Tivoli/tecad_stdapp/bin/postemsg -f /opt/Tivoli/tecad_stdapp/etc/tecad_logfile.conf -r MINOR -m "Warning message detected ${ERR_SOURCE}, please check," hostname=[@SMP,ECC.HOSTNAME@] sub_source="B-SMP-SMP-APP" HEalth_Check UNX0000C
+  /opt/Tivoli/tecad_stdapp/bin/postemsg -f /opt/Tivoli/tecad_stdapp/etc/tecad_logfile.conf -r MINOR -m "Warning message detected ${ERR_SOURCE}, please check," hostname=[@SMP.ECC.HOSTNAME@] sub_source="B-SMP-SMP-APP" HEalth_Check UNX0000C
 
 #echo "excel" > eccCheck.sftp
 #echo "cd ${REMOTEPATH}">> eccCheck.sftp
