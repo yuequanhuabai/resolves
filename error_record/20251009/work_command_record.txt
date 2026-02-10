@@ -3097,9 +3097,29 @@ Report:
 
 
 ###########################################################################
+join our China Delivery Team as a Software Engineer.
+You will build robust Java Backend solutions for top-tier clients across diversified insdustries.
+This role offers the chance to drive Agile practices, collaborate with cross-functional teams,
+and deliver high-impact IT projects right here in Shenzhen
+
+Responsibilities
+Implement functionality following team techical decisions and development processes independently
+Ensure code quality and deliverables align with software development principles and best practices
+Participate in project meetings, estimation, planning and code reviews
+Contribute to knowledge sharing and continuous team improvement
+Partner with multiple functional foles to ensure smooth project delivery
+Support the rationalization of Agile practices withn the development team
 
 
-
+Requirements
+Bachelor's degree or above in Computer Science, Software Engineering or related fields
+Experience on software engineering and develpoment
+Knowledge or project experience with React.JS
+Solid understanding of Core Java and the Spring ecosystem (Springboot) with experience in Restful imcroservices
+Proven experience applying Object-Oriented principles to deliver high-quality solutions
+Intermediate (CEFR B1) or higher level 9f spoken and written English
+Native Cantonese Speaking
+Experience in Agile Development practices is a strong plus
 ###########################################################################
 
 
