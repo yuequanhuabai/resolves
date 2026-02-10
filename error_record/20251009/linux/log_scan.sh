@@ -70,7 +70,7 @@ grep "ERR" > ${LOGPATH}${EWPEccLog}
 lines=`grep -ci ERR "${LOGPATH}${EWPEccLog}" || echo 0`
 
 if [ $lines -gt 0 ]; then
-  /opt/Tivoli/tecad_stdapp/bin/postemsg -f /opt/Tivoli/tecad_stdapp/etc/tecad_logfile.conf -r MINOR -m "EWP Warning message detected, please check $EWPEccLog." hostname=[@SMP.ECC.HOSTNAME] sub_source="B-SMP-SMP-APP" Health_Check UNX0000C
+  /opt/Tivoli/tecad_stdapp/bin/postemsg -f /opt/Tivoli/tecad_stdapp/etc/tecad_logfile.conf -r MINOR -m "EWP Warning message detected, please check $EWPEccLog." hostname=[@SMP.ECC.HOSTNAME@] sub_source="B-SMP-SMP-APP" Health_Check UNX0000C
 else
   rm ${LOGPATH}${EWPEccLog}
 fi
