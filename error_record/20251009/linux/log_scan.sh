@@ -37,13 +37,13 @@ grep -vn 'INVALID HAND CHG' |
 grep -vn 'findUserRight' |
 grep -vn 'exception.UserNo' |
 grep -vn 'exception.RecordNotF' |
-tee $LOGPATH$ECCLOG
+tee ${LOGPATH}${ECCLOG}
 
-lines_all=`grep -ci ERR "$LOGPATH$ECCLOG"`
-lines_sessionout=`grep ERR "$LOGPATH$ECCLOG" | grep -ci "l_stpHistoryOid is null, probably due to session timeout"`
+lines_all=`grep -ci ERR "${LOGPATH}${ECCLOG}"`
+lines_sessionout=`grep ERR "${LOGPATH}${ECCLOG}" | grep -ci "l_stpHistoryOid is null, probably due to session timeout"`
 lines=`expr $lines_all - $lines_sessionout`
 
-ERR_SOURCE=`grep ERR "$LOGPATH$ECCLOG" | grep -v "session timeout" | awk -F '\] \[\-?[0-9]+ ' '{print "["$2}' | tr "\n" " "`
+ERR_SOURCE=`grep ERR "${LOGPATH}${ECCLOG}" | grep -v "session timeout" | awk -F '\] \[\-?[0-9]+ ' '{print "["$2}' | tr "\n" " "`
 
 if [ $lines -gt 0 ]; then
   /opt/Tivoli/tecad_stdapp/bin/postemsg -f /opt/Tivoli/tecad_stdapp/etc/tecad_logfile.conf -r MINOR -m "Warning message detected ${ERR_SOURCE}, please check," hostname=[@SMP.ECC.HOSTNAME@] sub_source="B-SMP-SMP-APP" HEalth_Check UNX0000C
@@ -56,7 +56,7 @@ if [ $lines -gt 0 ]; then
 #rm eccCheck.sftp
 
 else
-  rm $LOGPATH$ECCLOG
+  rm ${LOGPATH}${ECCLOG}
 fi
 
 
@@ -64,15 +64,15 @@ fi
 EWPLOG=ewpECC.log
 EWPEccLog="smpECC_EWP.log.${DatePrint}"
 
-grep "$Date $Time" $LOGPATH$EWPLOG |
-grep "ERR" > $LOGPATH$EWPEccLog
+grep "$Date $Time" ${LOGPATH}${EWPLOG} |
+grep "ERR" > ${LOGPATH}${EWPEccLog}
 
-lines=`grep -ci ERR "$LOGPATH$EWPEccLog"`
+lines=`grep -ci ERR "${LOGPATH}${EWPEccLog}"`
 
 if [ $lines -gt 0 ]; then
   /opt/Tivoli/tecad_stdapp/bin/postemsg -f /opt/Tivoli/tecad_stdapp/etc/tecad_logfile.conf -r MINOR -m "EWP Warning message detected, please check $EWPEccLog." hostname=[@SMP.ECC.HOSTNAME] sub_source="B-SMP-SMP-APP" Health_Check UNX0000C
 else
-  rm $LOGPATH$EWPEccLog
+  rm ${LOGPATH}${EWPEccLog}
 fi
 
 echo "Check Error Period End"
