@@ -3005,6 +3005,83 @@ D:\software\developmentTools\Git\GitProjects\workSpaceTwo\resolves\error_record\
 ###########################################################################
 > "$FINDINGS_FILE" 是不是等价于 "">"$FINDINGS_FILE"
 
+###########################################################################
+我看了一下，生产环境的执行用执行方式是 ./sql_check_scan.sh,应该用的是默认的shebang,
+但是为什么我执行的时候会报错呢？
+
+
+###########################################################################
+我改回原来的<< 方式了，  用./simple_sql_safety_scan.sh 方式执行
+在内网执行的时候 generate_repot()方法这一行：显示又报错信息，这个是什么问题？
+No such file or directory
+cat: '': No such file or directory
+
+Report:
+
+
+###########################################################################
+目录： test_init_sql_check_dir
+
+找到三个sql文件
+./sql_safety_scan.sh: line 221: : No Such file or directory
+cat: '': No such file or directory
+
+Report:
+
+其中test_init_sql_check_dir是内网要校验sql的目录，也就是入参,
+由于我删除了一些校验逻辑，line 221的位置在generate_repot(){ 这行
+
+
+###########################################################################
+我使用了grep -n  "REPORT_FILE" sql_safe_check_can.sql
+内网的脚本改了一个名字，叫sql_safe_check_can.sql
+
+下面是结果：行数仅为参考，因为我删除了几个校验逻辑，不过我觉得和这个没关系，因为那些检查逻辑是可多可少的
+6: REPORT_FILE=""
+31: REPORT_FILE="${SCAN_DIR}/sql_safe_check_${TIMESTAMP_FILE}.txt"
+302: generate_report  "$REPORT_FILE"
+342:  generate_report "$REPORT_FILE"
+
+###########################################################################
+你看我在脚本的393和397行分别加了echo,
+可以看到33333333的echo信息，但是无法看到4444444444的echo信息，
+我在内网也是这个情况
+
+另外问下shell脚本可以单步调试吗？
+
+###########################################################################
+部分执行计划如下：
+++ find test_init_sql_check_dir -maxdepth 1 -name '*.sql' -type f
+++ wc -l
++scanned_count=3
+sql_safety_scan.sh: line 221: : No such file or directory
++ cat ''
+cat: '': Nosuch file or directory
++echo ''
+
++echo 'Report: '
+Report:
++local cc hc
+++ grep -c '^CRITICAL|' /tmp/tmp.OorJ7RbKT7/gindings.txt
+
+###########################################################################
+5: SCAN_DIR=""
+6: REPORT_FILE=""
+8: TIMESTAMP_FILE=$(date '+%Y%m%d_%H%M%S')
+24: SCAN_DIR="${1%/}"
+26: if [ ! -d "$SCAN_DIR"]; then
+27:  echo "[ERROR] dir not exitst: $SCAN_DIR"
+31: REPORT_FILE="${SCAN_DIR}/sql_safety_check_${TIMESTAMP_FILE}.txt"
+231:  scanned_count=$(find "$SCAN_DIR" -maxdepth 1 -name "*.sql" -type f 2>/dev/null | wc -l)
+288: echo "目录： ${SCAN_DIR}"
+295:  done < <(find "$SCAN_DIR" -maxdepth 1 -name "*.sql" -type f | sort)
+297:  echo "[WARN] 未找到 .sql文件： ${SCAN_DIR}"
+298:  generate_report "$REPORT_FILE"
+337:  generate_report "$REPORT_FILE"
+
+###########################################################################
+
+
 
 ###########################################################################
 
