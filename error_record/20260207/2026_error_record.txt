@@ -1,9 +1,26 @@
+==============================================================================================================
+还有个问题：
+record_finding() {
+    local severity="$1" file="$2" line_no="$3" sql_snippet="$4" description="$5"
+    local display_sql="${sql_snippet//$'\n'/ }"
+    display_sql="${display_sql//$'\r'/ }"
+    while [[ "$display_sql" == *"  "* ]]; do
+        display_sql="${display_sql//  / }"
+    done
+    if [ ${#display_sql} -gt 200 ]; then
+        display_sql="${display_sql:0:200}..."
+    fi
+    printf '%s|%s|%s|%s|%s\n' "$severity" "$file" "$line_no" "$display_sql" "$description" >> "$FINDINGS_FILE"
+}
+下面方法里面的:
+printf '%s|%s|%s|%s|%s\n' "$severity" "$file" "$line_no" "$display_sql" "$description" >> "$FINDINGS_FILE"
+
+打印的变量可以不用引号吗？
 
 ==============================================================================================================
-
-
-==============================================================================================================
-
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+帮我解析下当前目录下后端项目中的shell脚本：D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\script\shell\sql_safety_scan.sh
 
 ==============================================================================================================
 
