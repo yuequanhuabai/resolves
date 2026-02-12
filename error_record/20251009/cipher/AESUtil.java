@@ -36,7 +36,7 @@ public class AESUtil {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             byte[] doFinal = cipher.doFinal(plaintextPw.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(doFinal);
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalAccessException |
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
                  IllegalBlockSizeException | BadPaddingException e) {
             throw new RuntimeException(e);
         }

@@ -1,7 +1,5 @@
 package cn.bochk.pap.server.util;
 
-import io.jsonwebtoken.io.IOException;
-
 import java.io.*;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +9,7 @@ import java.util.Properties;
 public class CipherFileUtil {
     private static final String EOL = "\n";
 
-    public static Map<String, String> readProperties(String propertiesPath) throws IOException {
+    public static Map<String, String> readProperties(String propertiesPath) {
 
         HashMap<String, String> passwordMap = new HashMap<>();
         Properties properties = null;
@@ -29,7 +27,7 @@ public class CipherFileUtil {
     }
 
 
-    public static void writeSecreteKey(String secretKeyPath, String secretKeyStr) throws java.io.IOException {
+    public static void writeSecretKey(String secretKeyPath, String secretKeyStr) throws java.io.IOException {
 
         FileWriter fileWriter = null;
         BufferedWriter writer = null;
