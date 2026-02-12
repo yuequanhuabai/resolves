@@ -46,26 +46,73 @@ FEMA和CBP员工数据泄露，暴露严重保护漏洞。
 政务系统遭渗透
 
 ==============================================================================================================
-./sql_safety_scan.sh  test_dir/
--bash: ./sql_safety_scan.sh: /bin/bash^M: bad inerpreter: No such file or directory
 
-windows 换行符;
-==============================================================================================================
-sudo su - papsur
--bash: /opt/project/PAP/papprofile.sh: No such file or directory
 
-我是用上面命令切换用户，虽然成功了，但是有整个提示，整个是啥意思？
-
-==============================================================================================================
 基本条件：
 基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
-帮我看看整个脚本:
-D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\script\shell\sql_safety_scan.sh
-==============================================================================================================
+帮我解析下当前目录下后端项目中的shell脚本：D:\software\develop_tools\git\gitee\pap\pocpro\script\shell\sql_safety_scan.sh
 
 
 ==============================================================================================================
+while IFS= read -r line || [ -n "$line" ]; do
+這裏面的|| [ -n "$line" ] 又是什麼意思？幫我解析一下？
 
+==============================================================================================================
+read -r line
+含义：
+不要把反斜杠 \ 当转义字符
+否则：
+C:\Windows\System32
+会变成：
+C:WindowsSystem32
+
+==============================================================================================================
+local file="$1" delimiter="$2" output="$3"
+    > "$output"
+
+    local line_no=0 in_block_comment=0 current_stmt="" stmt_start=0
+
+    while IFS= read -r line || [ -n "$line" ]; do
+        ((line_no++)) || true
+        後面的((line_no++)) || true代碼是啥意思？
+
+==============================================================================================================
+再幫我解析一下：
+while IFS= read -r line || [ -n "$line" ]; do
+        ((line_no++)) || true
+
+        local trimmed="${line#"${line%%[![:space:]]*}"}"
+        trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"
+
+        if [ "$in_block_comment" -eq 1 ]; then
+            if [[ "$trimmed" == *'*/'* ]]; then
+                in_block_comment=0
+                local after_comment="${trimmed#*\*/}"
+                after_comment="${after_comment#"${after_comment%%[![:space:]]*}"}"
+                [ -z "$after_comment" ] && continue
+                trimmed="$after_comment"
+                line="$after_comment"
+            else
+                continue
+            fi
+        fi
+
+        裏面的這連個個循環
+ if [ "$in_block_comment" -eq 1 ]; then
+            if [[ "$trimmed" == *'*/'* ]]; then
+                in_block_comment=0
+                local after_comment="${trimmed#*\*/}"
+                after_comment="${after_comment#"${after_comment%%[![:space:]]*}"}"
+                [ -z "$after_comment" ] && continue
+                trimmed="$after_comment"
+                line="$after_comment"
+            else
+                continue
+            fi
+        fi
+==============================================================================================================
+這裏的 [ -z "$after_comment" ] && continue
+和上面的|| [ -n "$line" ] 有什麼區別，爲什麼要用兩個不同的參數
 
 
 ==============================================================================================================
