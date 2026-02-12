@@ -17,7 +17,7 @@ public class AESUtil {
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
             SecretKey secretKey = new SecretKeySpec(DatatypeConverter.parseHexBinary(secretKeyStr), "AES");
 
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
             byte[] decode = Base64.getDecoder().decode(ciphertextPw);
             byte[] doFinal2 = cipher.doFinal(decode);
             plaintextPw = new String(doFinal2, StandardCharsets.UTF_8);
