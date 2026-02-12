@@ -130,26 +130,65 @@ sudo su - papsur
 帮我看看整个脚本:
 D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\script\shell\sql_safety_scan.sh
 ==============================================================================================================
+你帮我解析一下当前项目的目录下：D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\script\shell\sql_safety_scan.sh
+这个shell脚本
+
+
+==============================================================================================================
+给我详细讲讲：
+ local trimmed="${line#"${line%%[![:space:]]*}"}"
+        trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"
+
+        if [ "$in_block_comment" -eq 1 ]; then
+            if [[ "$trimmed" == *'*/'* ]]; then
+                in_block_comment=0
+                local after_comment="${trimmed#*\*/}"
+                after_comment="${after_comment#"${after_comment%%[![:space:]]*}"}"
+
+里面的 after_comment="${after_comment#"${after_comment%%[![:space:]]*}"}"
+用一个具体例子，我想看看整个变化过程
+
+==============================================================================================================
+parse_statements() {
+    local file="$1" delimiter="$2" output="$3"
+    > "$output"
+
+    local line_no=0 in_block_comment=0 current_stmt="" stmt_start=0
+
+    while IFS= read -r line || [ -n "$line" ]; do
+        ((line_no++)) || true
+
+        local trimmed="${line#"${line%%[![:space:]]*}"}"
+        trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"
+
+        if [ "$in_block_comment" -eq 1 ]; then
+            if [[ "$trimmed" == *'*/'* ]]; then
+                in_block_comment=0
+                local after_comment="${trimmed#*\*/}"
+                after_comment="${after_comment#"${after_comment%%[![:space:]]*}"}"
+                [ -z "$after_comment" ] && continue
+                trimmed="$after_comment"
+                line="$after_comment"
+            else
+                continue
+            fi
+        fi
+
+这里面的
+trimmed="$after_comment"
+                line="$after_comment"
+                是啥意思？为什么把处理后的值即赋值给line，也赋值给trimmed
 
 
 
 ==============================================================================================================
-
-
-
+org.jkiss.dbeaver.model.sqlDBSQLException: SQL 错误 [544] [S0001]: Cannot insert explicit value for identify column in table 'BATCH_BUSINESS_DATE_RESULT' when IDENTITY_INSERT is set to OFF.
 
 ==============================================================================================================
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
 
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
+帮我看看buylist模块的这个接口cn.bochk.pap.server.business.controller.BuyListController#getClientCount
 
 
 
