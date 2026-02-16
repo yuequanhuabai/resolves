@@ -1,0 +1,101 @@
+ 好，以下是 Thread 的 6 个状态和所有流转路径。
+
+  ---
+  六个状态
+
+  ┌───────────────┬───────────────────────────────────┐
+  │     状态      │            一句话含义             │
+  ├───────────────┼───────────────────────────────────┤
+  │ NEW           │ 对象已创建，还没调用 start()      │
+  ├───────────────┼───────────────────────────────────┤
+  │ RUNNABLE      │ 正在运行，或在等 CPU 分配时间片   │
+  ├───────────────┼───────────────────────────────────┤
+  │ BLOCKED       │ 想进 synchronized，但锁被别人占着 │
+  ├───────────────┼───────────────────────────────────┤
+  │ WAITING       │ 主动等待，不限时，等别人来唤醒    │
+  ├───────────────┼───────────────────────────────────┤
+  │ TIMED_WAITING │ 主动等待，限时，到时间自动醒      │
+  ├───────────────┼───────────────────────────────────┤
+  │ TERMINATED    │ run() 执行完毕，线程已死          │
+  └───────────────┴───────────────────────────────────┘
+
+  ---
+  所有流转路径
+
+  NEW → RUNNABLE
+
+  谁：当前线程自己调用 t.start()
+  因为什么：start() 内部调用 native start0()，JVM 创建 OS 线程
+  结果：线程开始执行 run() 方法
+
+  ---
+  RUNNABLE → BLOCKED
+
+  谁：线程自己
+  因为什么：执行到 synchronized 块，但锁被另一个线程持有
+  结果：被挂起，排队等锁
+
+  BLOCKED → RUNNABLE
+
+  谁：持有锁的那个线程
+  因为什么：它退出了 synchronized 块，释放了锁
+  结果：本线程拿到锁，继续执行
+
+  ---
+  RUNNABLE → WAITING
+
+  谁：线程自己，主动调用以下三种之一：
+  - object.wait()  —— 释放锁，等别人 notify
+  - otherThread.join() —— 等另一个线程死
+  - LockSupport.park() —— 等别人 unpark
+
+  结果：无限期挂起，直到被唤醒
+
+  WAITING → RUNNABLE
+
+  谁：另一个线程
+  因为什么：
+  - 调了 object.notify() / notifyAll()（对应 wait）
+  - 目标线程执行完死了（对应 join）
+  - 调了 LockSupport.unpark(t)（对应 park）
+  - 调了 t.interrupt()（通用，抛 InterruptedException）
+
+  ---
+  RUNNABLE → TIMED_WAITING
+
+  谁：线程自己，主动调用带超时参数的方法：
+  - Thread.sleep(millis) —— 睡一会儿
+  - object.wait(millis) —— 等，但有耐心上限
+  - otherThread.join(millis) —— 等，但不死等
+  - LockSupport.parkNanos() / parkUntil()
+
+  结果：限时挂起
+
+  TIMED_WAITING → RUNNABLE
+
+  谁：可能是时间到了（自动），也可能是另一个线程唤醒（同 WAITING 的唤醒方式）
+
+  ---
+  RUNNABLE → TERMINATED
+
+  谁：线程自己
+  因为什么：run() 方法正常 return，或抛出未捕获异常
+  结果：线程死亡，exit() 清理资源，不可重启
+
+  ---
+  一张图
+
+           start()
+    NEW ──────────→ RUNNABLE ──────────→ TERMINATED
+                     ↑    ↓                (run结束)
+            拿到锁   │    │ 等synchronized锁
+                     ↑    ↓
+                    BLOCKED
+
+                     ↑    ↓
+      被唤醒/超时/   │    │ wait()/join()/
+      interrupt     │    │ sleep()/park()
+                     ↑    ↓
+                WAITING / TIMED_WAITING
+
+  核心规律：只有 RUNNABLE 是"活着在干活"的状态，其余状态都是在等——等锁、等别人、等时间、等死。

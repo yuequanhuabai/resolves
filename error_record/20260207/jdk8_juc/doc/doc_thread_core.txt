@@ -1,0 +1,67 @@
+
+  Thread 类的本质抽象：一个可管理的、有状态的、独立执行上下文
+
+  你说"线程本质是一段放在 CPU 中的执行内存"，这抓住了物理本质的一部分，但 Thread 类作为 Java
+  的抽象，封装的远不止这一点。从它的字段和方法来看，它建模的是 6 个维度：
+
+  ---
+  1. 执行什么（Task）
+
+  Runnable target;          // 要执行的任务
+  void run()                // 执行入口
+  Thread 把"要做的事"抽象为一个 Runnable。线程本身不是任务，它是任务的载体。
+
+  2. 在哪执行（Native Resource）
+
+  long eetop;               // 指向 JVM 内部原生线程的指针
+  long stackSize;           // 栈大小
+  long nativeParkEventPointer;  // 原生 park 事件
+  native void start0();     // 真正创建 OS 线程
+  这一层才是你说的"CPU 上的执行内存"——eetop 指向操作系统线程，stackSize 决定栈空间。但这些字段全是
+  private，Java 程序员看不到也摸不到，完全由 JVM 管理。
+
+  3. 什么状态（Lifecycle State Machine）
+
+  volatile int threadStatus;    // 状态码
+  enum State { NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, TERMINATED }
+  Thread 是一个状态机，有严格的生命周期：
+  NEW → RUNNABLE → (BLOCKED / WAITING / TIMED_WAITING) ↔ RUNNABLE → TERMINATED
+  start() 触发状态转移，不可重复调用。这是线程抽象中最核心的骨架。
+
+  4. 如何调度（Scheduling Hints）
+
+  int priority;             // 优先级 1-10
+  boolean daemon;           // 是否守护线程
+  static native void yield();   // 让出 CPU
+  static native void sleep(long); // 暂停执行
+  这些是给 OS 调度器的建议（不是强制），告诉系统这个线程的重要程度和执行意愿。
+
+  5. 如何协作（Inter-thread Coordination）
+
+  void interrupt();             // 发送中断信号
+  boolean isInterrupted();      // 检查中断标志
+  void join(long);              // 等待另一个线程死亡
+  volatile Object parkBlocker;  // LockSupport 阻塞标记
+  volatile Interruptible blocker; // 可中断 I/O 阻塞
+  线程不是孤立的。这组方法解决的是"线程之间如何通信和等待"——通过中断信号和 join 等待。
+
+  6. 携带什么上下文（Execution Context）
+
+  ThreadLocal.ThreadLocalMap threadLocals;           // 线程私有数据
+  ThreadLocal.ThreadLocalMap inheritableThreadLocals; // 可继承的线程私有数据
+  ClassLoader contextClassLoader;                    // 类加载上下文
+  AccessControlContext inheritedAccessControlContext; // 安全上下文
+  ThreadGroup group;                                 // 组织归属
+  UncaughtExceptionHandler uncaughtExceptionHandler;  // 异常兜底策略
+  每个线程是一个独立的执行环境，它不仅有自己的栈，还有自己的私有数据（ThreadLocal）、类加载器、安全权限、
+  异常处理策略。这些在 init() 中从父线程继承。
+
+  ---
+  一句话总结
+
+  Thread 不是"一段 CPU 执行内存"的抽象，而是对"一个独立执行流的完整生命周期"的抽象。
+
+  它回答了 6 个问题：执行什么、在哪执行、当前什么状态、如何被调度、如何与其他线程协作、携带什么运行环境。
+
+  其中"在哪执行"（OS 线程 + 栈内存）是你说的物理本质，但 Java 的 Thread 类刻意把这层藏在 native
+  方法后面，面向程序员暴露的是生命周期管理 + 协作机制 + 上下文环境这三个核心抽象。
