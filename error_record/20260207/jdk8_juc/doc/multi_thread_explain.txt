@@ -1,17 +1,4 @@
-
-╭─── Claude Code v2.1.42 ──────────────────────────────────────────────────────╮
-│                                                   │ Tips for getting started │
-│                Welcome back Ethon!                │ Run /init to create a C… │
-│                                                   │ ──────────────────────── │
-│                      ▐▛███▜▌                      │ Recent activity          │
-│                     ▝▜█████▛▘                     │ No recent activity       │
-│                       ▘▘ ▝▝                       │                          │
-│                                                   │                          │
-│               Opus 4.6 · Claude Pro               │                          │
-│   D:\software\developmentTools\jdk\jdk1.8.0_461   │                          │
-╰──────────────────────────────────────────────────────────────────────────────╯
-
-> /model 
+> /model
   ⎿  Set model to opus (claude-opus-4-6)
 
 > 你帮我看看当前目录下的文件，判断这个是什么吗？ 
