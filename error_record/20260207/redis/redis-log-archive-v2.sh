@@ -7,8 +7,30 @@ ARCHIVE_DIR="/LOG"
 # 保留天数
 KEEP_DAYS=30
 
+# 权限检查：日志文件是否可读
+if [ ! -r "$LOG" ]; then
+    echo "ERROR: no read permission on $LOG" >&2
+    exit 1
+fi
+
+# 权限检查：日志文件是否可写（用于移动）
+if [ ! -w "$LOG" ]; then
+    echo "ERROR: no write permission on $LOG" >&2
+    exit 1
+fi
+
 # 确保归档目录存在
-mkdir -p "$ARCHIVE_DIR"
+mkdir -p "$ARCHIVE_DIR" 2>/dev/null
+if [ ! -d "$ARCHIVE_DIR" ]; then
+    echo "ERROR: cannot create archive dir $ARCHIVE_DIR, try: sudo mkdir -p $ARCHIVE_DIR && sudo chown \$(whoami) $ARCHIVE_DIR" >&2
+    exit 1
+fi
+
+# 权限检查：归档目录是否可写
+if [ ! -w "$ARCHIVE_DIR" ]; then
+    echo "ERROR: no write permission on $ARCHIVE_DIR, try: sudo chown \$(whoami) $ARCHIVE_DIR" >&2
+    exit 1
+fi
 
 # 主机名
 HOSTNAME=$(hostname)
@@ -36,6 +58,6 @@ tar -zcf "$ARCHIVE_DIR/$ARCHIVE_NAME.tar.gz" -C "$ARCHIVE_DIR" "$ARCHIVE_NAME"
 rm -f "$ARCHIVE_DIR/$ARCHIVE_NAME"
 
 # 删除超过保留天数的旧归档（已屏蔽）
-# find "$ARCHIVE_DIR" -name "redis.log-*.tar.gz" -mtime +$KEEP_DAYS -delete
+# find "$ARCHIVE_DIR" -name "*.ihub.pap_redis_log_*.tar.gz" -mtime +$KEEP_DAYS -delete
 
 echo "$(date) - archived to $ARCHIVE_NAME.tar.gz" >> "$ARCHIVE_DIR/archive.log"
