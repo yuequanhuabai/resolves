@@ -3,7 +3,7 @@
 # Redis 日志路径
 LOG="/var/log/redis.log"
 # 归档目录
-ARCHIVE_DIR="/log"
+ARCHIVE_DIR="/LOG"
 # 保留天数
 KEEP_DAYS=30
 
