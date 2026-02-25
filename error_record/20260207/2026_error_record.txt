@@ -300,14 +300,120 @@ cpu缓存一致性协议问题，也就是内存屏障，不同cpu操作后，�
 我理解一个共享资源对象锁队列应该不止有A，B个线程，即使只有A，B两个线程，它只会notify一次吗？它的notify又是什么控制的？谁控制了notify的频率
 
 ==============================================================================================================
+以下是你步骤1-4的排查结果，稍后我再进行5-6的排查，你先查看当前排查结果，是否排除1-4
+排查步骤一的结果如下：
+# systemctl status nginx
+● nginx.service - The nginx HTTP and reverse proxy server
+     Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; preset: disabled)
+     Active: active (running) since Tue 2026-02-24 17:38:43 CST; 23h ago
+   Main PID: 3766262 (nginx)
+      Tasks: 3 (limit: 11789)
+     Memory: 3.3M (peak: 5.9M)
+        CPU: 138ms
+     CGroup: /system.slice/nginx.service
+             ├─3766262 "nginx: master process /usr/sbin/nginx"
+             ├─3766263 "nginx: worker process"
+             └─3766264 "nginx: worker process"
 
+Feb 24 17:38:43 iv-ye7dtus2yobw80dl4k8s systemd[1]: Starting The nginx HTTP and reverse proxy server...
+Feb 24 17:38:43 iv-ye7dtus2yobw80dl4k8s nginx[3766260]: nginx: the configuration file /etc/nginx/nginx.co>
+Feb 24 17:38:43 iv-ye7dtus2yobw80dl4k8s nginx[3766260]: nginx: configuration file /etc/nginx/nginx.conf t>
+Feb 24 17:38:43 iv-ye7dtus2yobw80dl4k8s systemd[1]: Started The nginx HTTP and reverse proxy server.
 
+排查步骤二的结果如下：
+# ss -tlnp | grep 80
+LISTEN 0      511          0.0.0.0:80        0.0.0.0:*    users:(("nginx",pid=3766264,fd=6),("nginx",pid=3766263,fd=6),("nginx",pid=3766262,fd=6))
+LISTEN 0      511             [::]:80           [::]:*    users:(("nginx",pid=3766264,fd=7),("nginx",pid=3766263,fd=7),("nginx",pid=3766262,fd=7))
 
+排查步骤三的结果如下：
+步骤三的结果我重定向到a.html了，放在了当前目录下，你可以查看当前目录下的a.html文件
+
+排查步骤四的结果如下：
+# firewall-cmd --state
+running
+[root@upaphklapp01 nginx]# firewall-cmd --list-all
+public (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: eth0
+  sources:
+  services: cockpit dhcpv6-client http https ssh
+  ports: 6379/tcp
+  protocols:
+  forward: yes
+  masquerade: no
+  forward-ports:
+  source-ports:
+  icmp-blocks:
+  rich rules:
+
+排查步骤五的结果如下：
+
+排查步骤六的结果如下：
 ==============================================================================================================
+下面是云主机的安全组的出入站的全部信息，好像是开的
+云主机的安全组入方向信息如下：
+安全组名称
+优先级
+策略
+协议类型
+端口范围
+源地址
+描述
+Default
+100
+允许
+all
+ALL
+sg-2f89mgwbxha0w4f4pzzpqi8y8
+允许安全组内的云服务器彼此通信
+100
+允许
+icmp
+ALL
+0.0.0.0/0
+允许ping程序测试云服务器连通性
+100
+允许
+tcp
+22
+0.0.0.0/0
+允许SSH远程连接Linux云服务器
+100
+允许
+tcp
+80
+0.0.0.0/0
+允许使用HTTP协议访问网站
+100
+允许
+tcp
+443
+0.0.0.0/0
+允许使用HTTPS协议访问网站
+100
+允许
+tcp
+3389
+0.0.0.0/0
+允许远程登录Windows云服务器
 
+云主机的安全组出方向信息如下：
 
-
-
+安全组名称
+优先级
+策略
+协议类型
+端口范围
+目的地址
+描述
+Default
+100
+允许
+all
+ALL
+0.0.0.0/0
+放通全部流量
 ==============================================================================================================
 
 
