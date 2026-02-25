@@ -58,6 +58,6 @@ tar -zcf "$ARCHIVE_DIR/$ARCHIVE_NAME.tar.gz" -C "$ARCHIVE_DIR" "$ARCHIVE_NAME"
 rm -f "$ARCHIVE_DIR/$ARCHIVE_NAME"
 
 # 删除超过保留天数的旧归档（已屏蔽）
-# find "$ARCHIVE_DIR" -name "*.ihub.pap_redis_log_*.tar.gz" -mtime +$KEEP_DAYS -delete
+ find "$ARCHIVE_DIR" -name "*.ihub.pap_redis_log_*.tar.gz" -mtime +$KEEP_DAYS -delete
 
 echo "$(date) - archived to $ARCHIVE_NAME.tar.gz" >> "$ARCHIVE_DIR/archive.log"
