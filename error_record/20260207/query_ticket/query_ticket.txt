@@ -1,16 +1,4 @@
 
-╭─── Claude Code v2.1.37 ──────────────────────────────────────────────────────╮
-│                                                    │ Tips for getting        │
-│                 Welcome back Ethon!                │ started                 │
-│                                                    │ Run /init to create a … │
-│                       ▐▛███▜▌                      │ ─────────────────────── │
-│                      ▝▜█████▛▘                     │ Recent activity         │
-│                        ▘▘ ▝▝                       │ No recent activity      │
-│                                                    │                         │
-│   Opus 4.6 · Claude Pro · waming313@gmail.com's    │                         │
-│   Organization                                     │                         │
-│     D:\software\develop_tools\git\gitee\ticket     │                         │
-╰──────────────────────────────────────────────────────────────────────────────╯
 
 > 你知道中國大陸的購票系統12306嗎                                           
                                                                             
