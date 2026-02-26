@@ -350,107 +350,56 @@ public (active)
 排查步骤五的结果如下：
 
 排查步骤六的结果如下：
-==============================================================================================================
-下面是云主机的安全组的出入站的全部信息，好像是开的
-云主机的安全组入方向信息如下：
-安全组名称
-优先级
-策略
-协议类型
-端口范围
-源地址
-描述
-Default
-100
-允许
-all
-ALL
-sg-2f89mgwbxha0w4f4pzzpqi8y8
-允许安全组内的云服务器彼此通信
-100
-允许
-icmp
-ALL
-0.0.0.0/0
-允许ping程序测试云服务器连通性
-100
-允许
-tcp
-22
-0.0.0.0/0
-允许SSH远程连接Linux云服务器
-100
-允许
-tcp
-80
-0.0.0.0/0
-允许使用HTTP协议访问网站
-100
-允许
-tcp
-443
-0.0.0.0/0
-允许使用HTTPS协议访问网站
-100
-允许
-tcp
-3389
-0.0.0.0/0
-允许远程登录Windows云服务器
 
-云主机的安全组出方向信息如下：
-
-安全组名称
-优先级
-策略
-协议类型
-端口范围
-目的地址
-描述
-Default
-100
-允许
-all
-ALL
-0.0.0.0/0
-放通全部流量
-==============================================================================================================
+=============================================================================================================
 ibm-1388_P100-2024
 
+==============================================================================================================
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+需求：
+我需要你帮我看看前端的Customer模块的页面，从宏观角度分析；它的代码目录：D:\software\developmentTools\Git\gitee\newpap\pap\poc-pro-ui\src\views\Customer
+后端入口应该是这个controller：cn.bochk.pap.server.business.controller.Pvb3rdPartyPortAcController
+如果后端不是的话，你再基于前端调用的接口找下对应的controller，controller的路径在：cn.bochk.pap.server.business.controller
 
+你理解我的需求吗？你复述一遍你的理解
+==============================================================================================================
+帮我看看前端的Search页面的Please enter Third Party Code的触发逻辑是啥？
 
 ==============================================================================================================
-
-
-
+你帮我分析一下当前的校验逻辑合理吗？
 
 ==============================================================================================================
-
-
-
+User follows the link provided by the client system, launching Aladdin Wealth in a new browser window/tab
 
 ==============================================================================================================
+DEEP LINKS INTO ALADDIN
 
+Aladdin Wealth supports launching views of client data from the client's own systems. It does this by
+allowing the client to construct a deep-link URL containing the client id for Aladdin Wealth's frontend.
+This allows the creation of user-driven integrations between Client systems and Aladdin by
+embedding these links in the client's own systems.
 
-==============================================================================================================
+A: Client-hosted application contains embedded link to Aladdin Wealth, constructed containing the client id of the desired account
 
+B: User follows the link provided by the client system, launching Aladdin Wealth in a new browser window/tab
+   Example Deep Link to Aladdin Wealth Account Deep-Dive
+   client.blackrock.com/apps/aw-advisor/#/households/deep-dive/HOUSEHOLD-ID/HH-91352876
 
-==============================================================================================================
+C: The Aladdin Wealth front end is served by the Aladdin Wealth appplication server backend
 
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+D: The Aladdin Wealth front end displays the requested accoutn and view
 
 ==============================================================================================================
+你看看当前目录下的redis-log-archive.sh脚本，它是用来归档redis的日志文件的，可以适配归档nginx日志文件吗？
 
+有个问题，你目前的nginx归档日志只有一个文件，可以把access.log和error.log分开打到两个tar.gz的压缩包吗
+==============================================================================================================
+你再帮我看看这个命令是啥意思？ 为什么要这个命令？为什么redis可以没有？
+kill -USR1 $(cat /run/nginx.pid)
+
+==============================================================================================================
+为什么redis写日志策略和nginx的写日志策略不一致呢？ 有什么底层原因吗？
 
 
 
