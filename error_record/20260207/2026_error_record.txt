@@ -513,11 +513,28 @@ Do you want to save your test plan first?
 D:\software\develop_tools\jmeter\apache-jmeter-5.4.3\bin\jmeter.properties
 我沒有在這個文件裏面搜索到jmeter.laf.class
 你幫我覆核一下
-
-
 ==============================================================================================================
+可以保存了，但是接口報錯了：
+登錄接口有問題：
+我在瀏覽器上的請求數據是：
+Payload參數：
+{"username":"test001","password":"123456","captchaVerification":"","rememberMe":true}
+General參數是：
+Request URL
+http://localhost:9600/admin-api/system/auth/login
+Request Method
+POST
+Status Code
+200 OK
+Remote Address
+[::1]:9600
+Referrer Policy
+strict-origin-when-cross-origin
 
+jmeter報錯是：
+{"code":500,"data":null,"msg":"Internal Server Error"}
 
+後端代碼日誌報錯我放在了當前目錄下：名字是login_error.txt
 
 
 ==============================================================================================================

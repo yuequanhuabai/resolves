@@ -1,7 +1,4 @@
 
- ▐▛███▜▌   Claude Code v2.1.62
-▝▜█████▛▘  Opus 4.6 · Claude Pro
-  ▘▘ ▝▝    D:\software\develop_tools\git\gitee\pap
 
 > 基本条件：                                                                
                                                                             

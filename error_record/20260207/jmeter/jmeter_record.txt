@@ -1,0 +1,591 @@
+
+ ▐▛███▜▌   Claude Code v2.1.62
+▝▜█████▛▘  Opus 4.6 · Claude Pro
+  ▘▘ ▝▝    D:\software\develop_tools\git\gitee\pap
+
+> 基本条件：                                                                
+                                                                            
+  基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro                  
+                                                                            
+                                                                            
+                                                                            
+  需求：                                                                    
+                                                                            
+  目前需要進行壓測，但是我對jmeter不是很熟悉;                               
+                                                                            
+  你可以教教我如何使用jemeter進行壓測嗎？                                   
+                                                                            
+  我的jmeter版本是：apache-jmeter-5.4.3                                     
+                                                                            
+  我把jmeter的首頁截圖放在了當前目錄下了，jmeter.png                        
+                                                                            
+  先從宏觀開始拆解它的菜單吧                                                
+                                                                            
+                                                                            
+
+● Let me first look at your JMeter screenshot.
+
+● Read 1 file (ctrl+o to expand)
+
+● 好的，我看到了你的 JMeter 5.4.3 界面。下面從宏觀角度拆解整個界面：
+
+  ---
+  JMeter 界面宏觀拆解
+
+  一、頂部菜單欄（6個菜單）
+
+  ┌─────────┬──────────┬───────────────────────────────────────────────┐
+  │  菜單   │   用途   │                   常用操作                    │
+  ├─────────┼──────────┼───────────────────────────────────────────────┤
+  │ File    │ 文件管理 │ 新建/打開/保存測試計劃（.jmx 文件），模板功能 │
+  ├─────────┼──────────┼───────────────────────────────────────────────┤
+  │ Edit    │ 編輯操作 │ 複製/粘貼/刪除測試元素，查找/替換             │
+  ├─────────┼──────────┼───────────────────────────────────────────────┤
+  │ Search  │ 搜索     │ 在測試計劃樹中搜索元素                        │
+  ├─────────┼──────────┼───────────────────────────────────────────────┤
+  │ Run     │ 運行控制 │ 啟動/停止壓測，遠程啟動（分佈式壓測）         │
+  ├─────────┼──────────┼───────────────────────────────────────────────┤
+  │ Options │ 選項設置 │ 界面語言、日誌級別、外觀主題                  │
+  ├─────────┼──────────┼───────────────────────────────────────────────┤
+  │ Tools   │ 工具     │ 函數助手（構造動態參數用）、生成HTML報告      │
+  ├─────────┼──────────┼───────────────────────────────────────────────┤
+  │ Help    │ 幫助     │ 官方文檔、版本信息                            │
+  └─────────┴──────────┴───────────────────────────────────────────────┘
+
+  二、工具欄（圖標按鈕，從左到右）
+
+  📄 新建  |  📂 打開模板  |  💾 保存  |  ✂️ 剪切  |  📋 複製  |  📌 粘貼
+  ➕ 添加元素  |  ➖ 刪除元素  |  ✏️ 切換啟用/禁用
+  ▶️ 啟動測試  |  ⏩ 不暫停啟動  |  ⏹ 停止  |  🔴 強制停止
+  🔍 搜索  |  🔄 清除結果  |  ❓ 幫助
+
+  最常用的就是 綠色 ▶️ 啟動 和 灰色 ⏹ 停止。
+
+  三、左側面板 — 測試計劃樹
+
+  你現在看到的 Test Plan
+  就是測試計劃的根節點。所有測試元素都掛在這棵樹下面。核心結構是：
+
+  Test Plan（測試計劃）
+   └── Thread Group（線程組）← 壓測的核心，定義並發用戶數
+        ├── Sampler（取樣器）← 具體的請求，如 HTTP Request
+        ├── Config Element（配置元素）← 如 HTTP Header Manager
+        ├── Listener（監聽器）← 查看結果，如 View Results Tree
+        ├── Timer（定時器）← 控制請求間隔
+        ├── Assertion（斷言）← 驗證響應是否正確
+        └── Pre/Post Processor（前/後置處理器）← 提取參數等
+
+  四、右側面板 — Test Plan 配置區
+
+  你截圖中右側顯示的就是 Test Plan 的配置，幾個關鍵選項：
+
+  ┌───────────────────────┬──────────────────────────────────────────────────┐
+  │         選項          │                       含義                       │
+  ├───────────────────────┼──────────────────────────────────────────────────┤
+  │ User Defined          │ 全局變量，所有線程組共享（如 base_url、token）   │
+  │ Variables             │                                                  │
+  ├───────────────────────┼──────────────────────────────────────────────────┤
+  │ Run Thread Groups     │ 勾選 = 線程組串行執行；不勾 = 並行執行           │
+  │ consecutively         │                                                  │
+  ├───────────────────────┼──────────────────────────────────────────────────┤
+  │ Run tearDown Thread   │ 主線程結束後執行清理線程組                       │
+  │ Groups...             │                                                  │
+  ├───────────────────────┼──────────────────────────────────────────────────┤
+  │ Functional Test Mode  │ 記錄完整響應數據，壓測時千萬不要勾，嚴重影響性能 │
+  ├───────────────────────┼──────────────────────────────────────────────────┤
+  │ Add directory or jar  │ 加載外部 jar（如 JDBC 驅動）                     │
+  │ to classpath          │                                                  │
+  └───────────────────────┴──────────────────────────────────────────────────┘
+
+  ---
+  壓測你的 PAP 系統的基本思路
+
+  針對你的後端 API（http://localhost:8080/admin-api/...），壓測流程是：
+
+  1. 右鍵 Test Plan → Add → Threads → Thread Group（設並發數）
+  2. 右鍵 Thread Group → Add → Sampler → HTTP Request（配置 API）
+  3. 右鍵 Thread Group → Add → Config Element → HTTP Header Manager（加 token）
+  4. 右鍵 Thread Group → Add → Listener → Summary Report（看結果）
+  5. 點 ▶️ 運行
+
+  ---
+  要繼續深入哪個部分？比如我可以：
+  - 手把手教你建一個壓測你 PAP 登錄接口的完整測試計劃
+  - 詳細講解某個菜單的每個子項
+  - 講解 Thread Group 的參數含義（並發數、Ramp-Up、循環次數）
+
+✻ Churned for 33s
+
+> /export jemeter_use_guide.md 
+  ⎿  Conversation exported to: jemeter_use_guide.txt
+
+> 先不用你介紹jmeter軟件了，你直接告訴我步驟吧，                            
+                                                                            
+  讓我直接查詢這個buylist接口                                               
+                                                                            
+  http://localhost:9600/admin-api/buyList/page?pageNo=1\&pageSize=10\&busin 
+  essType=1\&assetType=\&businessId=\&name=\&approvalStatus=1\&orderBy=name 
+  \&orderDirection=asc                                                      
+                                                                            
+  但是它是要先登錄的                                                        
+                                                                            
+                                                                            
+                                                                            
+  你告訴我jmeter如何先登錄，再做這個查詢操作                                
+                                                                            
+  登錄的接口是這個：                                                        
+                                                                            
+  http://localhost:9600/admin-api/system/auth/login                         
+                                                                            
+  帳號是：test001 ，密碼是:123456                                           
+                                                                            
+                                                                            
+                                                                            
+  你告訴我jmeter的操作步驟來實現buylist模塊的查詢                           
+                                                                            
+                                                                            
+
+● Let me先看一下你的登錄接口和buyList接口的代碼，確認請求格式。
+
+● Explore(Find login and buyList API)
+  ⎿  Done (17 tool uses · 25.9k tokens · 49s)
+  (ctrl+o to expand)
+
+● 好的，我已經確認了接口格式。下面是 JMeter 完整操作步驟：
+
+  ---
+  JMeter 壓測步驟（登錄 + 查詢 buyList）
+
+  第 1 步：添加 Thread Group（線程組）
+
+  1. 左側面板右鍵 Test Plan → Add → Threads (Users) → Thread Group
+  2. 配置（先用小量測試通不通）：
+    - Number of Threads: 1（先設 1 個用戶跑通流程）
+    - Ramp-Up Period: 1
+    - Loop Count: 1
+
+  ---
+  第 2 步：添加登錄請求
+
+  右鍵 Thread Group → Add → Sampler → HTTP Request，配置如下：
+
+  ┌─────────────────────┬──────────────────────────────┐
+  │        欄位         │              值              │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Name                │ 登錄                         │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Protocol            │ http                         │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Server Name or IP   │ localhost                    │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Port Number         │ 9600                         │
+  ├─────────────────────┼──────────────────────────────┤
+  │ HTTP Request Method │ POST                         │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Path                │ /admin-api/system/auth/login │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Body Data           │ 見下方                       │
+  └─────────────────────┴──────────────────────────────┘
+
+  切換到 Body Data 標籤頁，填入：
+
+  {
+    "username": "test001",
+    "password": "123456"
+  }
+
+  然後，還需要為這個登錄請求加一個 HTTP Header：
+
+  右鍵 登錄（剛建的請求） → Add → Config Element → HTTP Header Manager
+
+  點 Add 添加一行：
+
+  ┌──────────────┬──────────────────┐
+  │     Name     │      Value       │
+  ├──────────────┼──────────────────┤
+  │ Content-Type │ application/json │
+  └──────────────┴──────────────────┘
+
+  ---
+  第 3 步：提取登錄返回的 Token
+
+  右鍵 登錄 → Add → Post Processors → JSON Extractor，配置：
+
+  ┌────────────────────────────┬────────────────────┐
+  │            欄位            │         值         │
+  ├────────────────────────────┼────────────────────┤
+  │ Name                       │ 提取Token          │
+  ├────────────────────────────┼────────────────────┤
+  │ Names of created variables │ accessToken        │
+  ├────────────────────────────┼────────────────────┤
+  │ JSON Path expressions      │ $.data.accessToken │
+  ├────────────────────────────┼────────────────────┤
+  │ Default Values             │ TOKEN_NOT_FOUND    │
+  └────────────────────────────┴────────────────────┘
+
+  這會把登錄返回的 accessToken 存到變量 ${accessToken} 中。
+
+  ---
+  第 4 步：添加 buyList 查詢請求
+
+  右鍵 Thread Group → Add → Sampler → HTTP Request，配置如下：
+
+  ┌─────────────────────┬─────────────────────────┐
+  │        欄位         │           值            │
+  ├─────────────────────┼─────────────────────────┤
+  │ Name                │ 查詢buyList             │
+  ├─────────────────────┼─────────────────────────┤
+  │ Protocol            │ http                    │
+  ├─────────────────────┼─────────────────────────┤
+  │ Server Name or IP   │ localhost               │
+  ├─────────────────────┼─────────────────────────┤
+  │ Port Number         │ 9600                    │
+  ├─────────────────────┼─────────────────────────┤
+  │ HTTP Request Method │ GET                     │
+  ├─────────────────────┼─────────────────────────┤
+  │ Path                │ /admin-api/buyList/page │
+  └─────────────────────┴─────────────────────────┘
+
+  切換到 Parameters 標籤頁，點 Add 逐行添加：
+
+  ┌────────────────┬───────┐
+  │      Name      │ Value │
+  ├────────────────┼───────┤
+  │ pageNo         │ 1     │
+  ├────────────────┼───────┤
+  │ pageSize       │ 10    │
+  ├────────────────┼───────┤
+  │ businessType   │ 1     │
+  ├────────────────┼───────┤
+  │ approvalStatus │ 1     │
+  ├────────────────┼───────┤
+  │ orderBy        │ name  │
+  ├────────────────┼───────┤
+  │ orderDirection │ asc   │
+  └────────────────┴───────┘
+
+  ---
+  第 5 步：為 buyList 請求加 Token 頭
+
+  右鍵 查詢buyList → Add → Config Element → HTTP Header Manager
+
+  點 Add 添加：
+
+  ┌───────────────┬───────────────────────┐
+  │     Name      │         Value         │
+  ├───────────────┼───────────────────────┤
+  │ Authorization │ Bearer ${accessToken} │
+  └───────────────┴───────────────────────┘
+
+  ${accessToken} 就是第 3 步從登錄響應中提取的 token。
+
+  ---
+  第 6 步：添加結果監聽器
+
+  右鍵 Thread Group → Add → Listener → View Results Tree
+
+  再加一個：右鍵 Thread Group → Add → Listener → Summary Report
+
+  ---
+  最終的測試計劃樹結構
+
+  Test Plan
+   └── Thread Group
+        ├── 登錄 (HTTP Request - POST)
+        │    ├── HTTP Header Manager (Content-Type: application/json)
+        │    └── 提取Token (JSON Extractor)
+        ├── 查詢buyList (HTTP Request - GET)
+        │    └── HTTP Header Manager (Authorization: Bearer ${accessToken})
+        ├── View Results Tree
+        └── Summary Report
+
+  ---
+  第 7 步：先跑通流程
+
+  1. 點工具欄 綠色 ▶️ 啟動
+  2. 點左側 View Results Tree 查看結果
+  3. 檢查：
+    - 登錄 請求：Response code 應該是 200，Response body 有 accessToken
+    - 查詢buyList 請求：Response code 應該是 200，能看到分頁數據
+
+  第 8 步：跑通後調大並發
+
+  回到 Thread Group，修改：
+
+  ┌───────────────────┬──────────────────────┬──────────────────────┐
+  │       欄位        │         含義         │        建議值        │
+  ├───────────────────┼──────────────────────┼──────────────────────┤
+  │ Number of Threads │ 並發用戶數           │ 50、100、200 逐步加  │
+  ├───────────────────┼──────────────────────┼──────────────────────┤
+  │ Ramp-Up Period    │ 多少秒內啟動所有用戶 │ 10（10秒內逐步啟動） │
+  ├───────────────────┼──────────────────────┼──────────────────────┤
+  │ Loop Count        │ 每個用戶循環次數     │ 10 或勾 Infinite     │
+  └───────────────────┴──────────────────────┴──────────────────────┘
+
+  然後到 Summary Report
+  看關鍵指標：Average（平均響應時間）、Throughput（吞吐量/QPS）、Error 
+  %（錯誤率）。
+
+✻ Worked for 1m 24s
+
+> 我點擊綠色按鈕開始的時候，它給我一個告警：                                
+                                                                            
+  Warning！                                                                 
+                                                                            
+  You should save your test plan before running it.                         
+                                                                            
+  If you are using supporting data files(ie, for CSV Data Set or            
+  \_StringFromFile),                                                        
+                                                                            
+  then it is particularly important to first save your test script          
+                                                                            
+  Do you want to save your test plan first?                                 
+                                                                            
+  &nbsp;                      Yes   No                                      
+                                                                            
+                                                                            
+
+● 這是正常提示，JMeter 建議你在運行前先保存測試計劃。
+
+  點 Yes，然後：
+
+  1. 選擇一個保存位置（比如你當前項目目錄下）
+  2. 文件名取 buylist_test.jmx
+  3. 點保存
+
+  保存完後測試會自動開始運行。以後修改了測試計劃，再次運行時也會彈這個提示，直接
+  點 Yes 就好。
+
+> 但是我點擊Yes的時候，它沒有彈出指定目錄讓我保存，我看到右上角的黃色提示好 
+  像有報錯，                                                                
+                                                                            
+  報錯信息我放在了當前目錄下，名字是jemeter\_error.txt                      
+                                                                            
+                                                                            
+                                                                            
+                                                                            
+
+● Read 1 file (ctrl+o to expand)
+
+● 這是 JMeter 5.4.3 的 DarkLaf 主題與高版本 JDK 不兼容 的已知 bug。DarkLaf
+  的文件選擇器無法訪問 sun.awt.shell.ShellFolder，導致保存對話框打不開。
+
+  有兩個解決方案，選一個就行：
+
+  ---
+  方案 A：改 JMeter 主題（推薦，最簡單）
+
+  1. 打開文件：D:\software\develop_tools\jmeter\apache-jmeter-5.4.3\bin\jmeter.p
+  roperties
+  2. 搜索 jmeter.laf.class，找到類似這行：
+  #jmeter.laf.class=com.github.weisj.darklaf.DarkLaf
+  3. 把它改成使用系統默認主題：
+  jmeter.laf.class=javax.swing.UIManager
+  3. 或者直接用跨平台主題：
+  jmeter.laf.class=javax.swing.plaf.metal.MetalLookAndFeel
+  4. 重啟 JMeter
+
+  ---
+  方案 B：加 JVM 參數開放模組權限
+
+  1. 打開文件：D:\software\develop_tools\jmeter\apache-jmeter-5.4.3\bin\jmeter.b
+  at（Windows）或 jmeter（bash）
+  2. 找到 JVM 參數區域，添加：
+  --add-opens java.desktop/sun.awt.shell=ALL-UNNAMED
+  3. 重啟 JMeter
+
+  ---
+  建議用方案 A，改一行配置就好，改完重啟 JMeter
+  後再重新操作之前的步驟。你要先告訴我你的 JDK 版本嗎？還是直接試方案 A？
+
+> 你幫我看看：                                                              
+                                                                            
+  D:\\software\\develop\_tools\\jmeter\\apache-jmeter-5.4.3\\bin\\jmeter.pr 
+  operties                                                                  
+                                                                            
+  我沒有在這個文件裏面搜索到jmeter.laf.class                                
+                                                                            
+  你幫我覆核一下                                                            
+                                                                            
+                                                                            
+
+● Searched for 1 pattern (ctrl+o to expand)
+
+● 找到了。這個文件裡沒有 jmeter.laf.class，但有 jmeter.laf 配置項（在第 136
+  行）。
+
+  你需要做的是在第 136 行下面加一行，取消 DarkLaf 主題：
+
+● Read 1 file (ctrl+o to expand)
+
+● Update(D:\software\develop_tools\jmeter\apache-jmeter-5.4.3\bin\jmeter.propert
+        ies)
+  ⎿  Added 1 line
+      134  
+      135  # Failing that, the JMeter default LAF can be defined:
+      136  #jmeter.laf=System
+      137 +jmeter.laf=System                                             
+      138  
+      139  # If none of the above jmeter.laf properties are defined, JMet
+           er uses the CrossPlatform LAF.
+      140  # This is because the CrossPlatform LAF generally looks better
+            than the System LAF.
+
+● 已經幫你改好了。在第 136 行原本被注釋的 #jmeter.laf=System 下面新增了一行：
+
+  jmeter.laf=System
+
+  這會讓 JMeter 使用 Windows 系統原生主題，繞過 DarkLaf 的 bug。
+
+  現在請 關閉 JMeter 再重新打開，然後重新操作之前的步驟。你會發現界面風格變成了
+  Windows 原生樣式，保存對話框也能正常彈出了。
+
+> /export jmeter_operate.md 
+  ⎿  Conversation exported to: jmeter_operate.txt
+
+> 我的jdk版本是jdk17，但是我剛才用了方案A，還是無法保存                     
+                                                                            
+                                                                            
+
+● 那我們用方案 B，加 JVM 參數。讓我先看一下你的 jmeter.bat 文件。
+
+● Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● 找到原因了！第 112 行已經有一系列 --add-opens，但缺少 sun.awt.shell
+  這個模組。需要補上。
+
+● Update(D:\software\develop_tools\jmeter\apache-jmeter-5.4.3\bin\jmeter.bat)
+  ⎿  Added 1 line, removed 1 line
+      109  ) else (
+      110      rem Java 9 at least
+      111      set current_minor=9
+      112 -    set JAVA9_OPTS=--add-opens java.desktop/sun.awt=ALL-UNNAME
+          -D --add-opens java.desktop/sun.swing=ALL-UNNAMED --add-opens j
+          -ava.desktop/javax.swing.text.html=ALL-UNNAMED --add-opens java
+          -.desktop/java.awt=ALL-UNNAMED --add-opens java.desktop/java.aw
+          -t.font=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED
+          - --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-open
+          -s=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.bas
+          -e/java.util=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UN
+          -NAMED                                                         
+      112 +    set JAVA9_OPTS=--add-opens java.desktop/sun.awt=ALL-UNNAME
+          +D --add-opens java.desktop/sun.awt.shell=ALL-UNNAMED --add-ope
+          +ns java.desktop/sun.swing=ALL-UNNAMED --add-opens java.desktop
+          +/javax.swing.text.html=ALL-UNNAMED --add-opens java.desktop/ja
+          +va.awt=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-
+          +UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-open
+          +s=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base
+          +/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.util
+          +=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED      
+      113  )
+      114  
+      115  
+
+● 已經在 jmeter.bat 第 112 行補上了缺少的模組權限：
+
+  --add-opens java.desktop/sun.awt.shell=ALL-UNNAMED
+
+  報錯的根因就是 DarkLaf 的文件選擇器需要訪問 sun.awt.shell.ShellFolder，而 JDK
+  17 默認不開放這個模組。
+
+  現在請 關閉 JMeter 
+  再重新打開，然後再試一次保存。這次應該能正常彈出文件選擇對話框了。
+
+> 可以保存了，但是接口報錯了：                                              
+                                                                            
+  登錄接口有問題：                                                          
+                                                                            
+  我在瀏覽器上的請求數據是：                                                
+                                                                            
+  Payload參數：                                                             
+                                                                            
+  {"username":"test001","password":"123456","captchaVerification":"","remem 
+  berMe":true}                                                              
+                                                                            
+  General參數是：                                                           
+                                                                            
+  Request URL                                                               
+                                                                            
+  http://localhost:9600/admin-api/system/auth/login                         
+                                                                            
+  Request Method                                                            
+                                                                            
+  POST                                                                      
+                                                                            
+  Status Code                                                               
+                                                                            
+  200 OK                                                                    
+                                                                            
+  Remote Address                                                            
+                                                                            
+  \[::1]:9600                                                               
+                                                                            
+  Referrer Policy                                                           
+                                                                            
+  strict-origin-when-cross-origin                                           
+                                                                            
+                                                                            
+                                                                            
+  jmeter報錯是：                                                            
+                                                                            
+  {"code":500,"data":null,"msg":"Internal Server Error"}                    
+                                                                            
+                                                                            
+                                                                            
+  後端代碼日誌報錯我放在了當前目錄下：名字是login\_error.txt                
+                                                                            
+                                                                            
+
+● Read 1 file (ctrl+o to expand)
+
+● 原因很清楚了：
+
+  Content-Type 'text/plain;charset=UTF-8' is not supported
+
+  JMeter 發送的 Content-Type 是 text/plain，但後端需要 application/json。
+
+  說明你的 HTTP Header Manager 
+  沒有正確掛在登錄請求下面，或者沒有生效。請按以下步驟檢查：
+
+  檢查並修正
+
+  1. 在左側樹中，確認 HTTP Header Manager 是掛在 登錄
+  請求的子節點下面，結構應該是：
+
+  Thread Group
+   └── 登錄 (HTTP Request)
+        └── HTTP Header Manager    ← 必須在這裡面
+
+  2. 點擊 HTTP Header Manager，確認裡面有這一行：
+
+  ┌──────────────┬──────────────────┐
+  │     Name     │      Value       │
+  ├──────────────┼──────────────────┤
+  │ Content-Type │ application/json │
+  └──────────────┴──────────────────┘
+
+  最常見的錯誤
+
+  如果你的 Header Manager 放成了和登錄請求平級而不是子節點，就不會生效：
+
+  Thread Group
+   ├── 登錄 (HTTP Request)        ← 請求
+   └── HTTP Header Manager        ← ❌ 錯誤！平級的話不會只作用於登錄
+
+  正確做法：右鍵點擊 登錄（HTTP Request） → Add → Config Element → HTTP Header
+  Manager，這樣它會自動成為登錄的子節點。
+
+  如果你之前加錯了位置，把舊的刪掉重新在登錄請求上右鍵添加即可。改好後再點 ▶️
+  運行試試。
+
+> 謝謝，我看到了，我把Content-Type寫成了Context-Type                        
+                                                                            
+  現在ok了                                                                  
+
+● 好的，登錄通了之後，看看 View Results Tree 裡面兩個請求的結果：
+
+  1. 登錄 — 應該返回 accessToken
+  2. 查詢buyList — 應該返回分頁數據
+
+  兩個都是 200 且有正確數據的話，就可以開始調大 Thread Group
+  的並發數進行壓測了。有問題隨時貼給我看。
