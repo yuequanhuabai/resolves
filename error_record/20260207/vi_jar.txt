@@ -1,0 +1,39 @@
+✅ 推荐的正确步骤（务必照这个顺序）
+0️⃣ 先备份（必须）
+cp app.jar app.jar.bak
+
+1️⃣ 只解压你要改的那个 yaml
+unzip app.jar BOOT-INF/classes/application.yaml
+
+
+（如果路径不确定，先用）
+
+unzip -l app.jar | grep application.yaml
+
+2️⃣ 用 vi 修改解压出来的文件
+vi BOOT-INF/classes/application.yaml
+
+
+改完保存退出。
+
+3️⃣ 把修改后的文件更新回 jar
+zip -u app.jar BOOT-INF/classes/application.yaml
+
+
+这一步是关键：
+
+-u = update
+
+只替换这个文件
+
+不会重打整个 jar
+
+4️⃣ 校验一下（建议）
+unzip -p app.jar BOOT-INF/classes/application.yaml | less
+
+
+=========================================================================================================
+linux条件下不解压文件查看jar包文件
+unzip -l app.jar | grep application
+unzip -p app.jar BOOT-INF/classes/application.yaml | less
+
