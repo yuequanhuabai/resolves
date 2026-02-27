@@ -1,0 +1,44 @@
+關於線程join操作(分叉，匯合)
+
+Thread t =new  Thread(()->{
+System.out.println("子線程開始工作");
+})
+
+t.start();
+t.join();
+
+t.start();的意思是在這個時間點上，t線程從主線程分叉開始執行;
+t.join();的意思是主線程在這個時刻開始，等待t線程執行，一直等待，直到t線程執行結束，主線程纔會繼續往下執行;
+
+相應的代碼：
+for (int i = 0; i < 5; i++) {
+      Thread t = new Thread(task);
+      t.start();
+      t.join();
+  }
+
+t線程開始執行，主線程立刻開始了等待，等t線程執行完畢，又開始了線程線程的執行，等待；主線程循環等待每個線程執行完;
+
+=====================================================================================================
+
+List<Thread> threads = new ArrayList<>();
+  for (int i = 0; i < 5; i++) {
+      Thread t = new Thread(task);
+      t.start();
+      threads.add(t);
+  }
+  for (Thread t : threads) {
+      t.join();    // ← 现在才等待
+  }
+ 這個代碼的邏輯是，所有的子線程首先開始執行，然後主線程開始等待每個線程執行完畢;
+ 和上面代碼的區別是所有的子線程都開啓了執行，然後纔是主線程一個一個的等待他們執行完，主線程在等待的過程中，其它子線程也在執行;
+ 阻塞的過程就是主線程等待其它子線程執行完成的這個過程，主線程等待的總 約= 耗時最長的那個個子線程的執行時間;
+ 子線程通過start()分叉併發執行；主線程通過join() 按順序等待它們執行完成;
+
+你上面說的邏輯：
+join的底層邏輯是wait和notify
+子線程執行結束後，會調用notifyAll()去喚醒主線程；主線程不是立刻會獲取到cpu的時間片;
+t線程run()執行結束 --> JVM調用notifyAll() --> main從waiting變成了BLOCKED(等鎖) -->
+獲取到synchronized鎖後，變成了RUNNABLE(就緒) --> 等待操作系統分配時間片 --> 真正執行(RUNNING)
+
+獲取到synchronized鎖後，變成了RUNNABLE(就緒) --> 等待操作系統分配時間片(這個步驟是操作系統的步驟，獲取鎖並不等價於獲取時間片，需要等待操作系統分配時間片,只有真正獲取時間片，才會執行線程)
