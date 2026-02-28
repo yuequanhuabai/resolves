@@ -536,9 +536,16 @@ jmeter報錯是：
 
 後端代碼日誌報錯我放在了當前目錄下：名字是login_error.txt
 
-
 ==============================================================================================================
+基本条件：
+  基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
+  需求：
+  目前需要進行壓測，但是我對jmeter不是很熟悉;
+  你可以教教我如何使用jemeter進行壓測嗎？
 
+我当前的jmeter版本是5.6.3
+我要测试的接口是：http://localhost:9600/admin-api/buyList/page?pageNo=1&pageSize=10&businessType=1&assetType=&businessId=&name=&orderBy=name&orderDirection=asc
+但是它要先登录才可以测试;
 
 
 
