@@ -1,0 +1,1013 @@
+
+ ▐▛███▜▌   Claude Code v2.1.62
+▝▜█████▛▘  Opus 4.6 · Claude Pro
+  ▘▘ ▝▝    D:\software\developmentTools\Git\gitee\newpap\pap
+
+> /clear 
+  ⎿  (no content)
+
+> 基本条件：                                                                
+    基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro                
+    需求：                                                                  
+    目前需要進行壓測，但是我對jmeter不是很熟悉;                             
+    你可以教教我如何使用jemeter進行壓測嗎？                                 
+                                                                            
+  我当前的jmeter版本是5.6.3                                                 
+  我要测试的接口是：http://localhost:9600/admin-api/buyList/page?pageNo=1&p 
+  ageSize=10&businessType=1&assetType=&businessId=&name=&orderBy=name&order 
+  Direction=asc                                                             
+  但是它要先登录才可以测试;                                                 
+  登录接口是：http://localhost:9600/admin-api/system/auth/login             
+  Payload:                                                                  
+  {"username":"test001","password":"admin","captchaVerification":"","rememb 
+  erMe":true}                                                               
+                                                                            
+  jmeter的主页截图在当前目录下：jmeter.png                                  
+                                                                            
+  你可以先教我压测查询buylist接口的步骤吗？                                 
+                                                                            
+
+● Read 1 file (ctrl+o to expand)
+  ⎿  Interrupted · What should Claude do instead?
+
+> 基本条件：                                                                
+    基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro                
+    需求：                                                                  
+    目前需要進行壓測，但是我對jmeter不是很熟悉;                             
+    你可以教教我如何使用jemeter進行壓測嗎？                                 
+                                                                            
+  我当前的jmeter版本是5.6.3                                                 
+  我要测试的接口是：http://localhost:9600/admin-api/buyList/page?pageNo=1&p 
+  ageSize=10&businessType=1&assetType=&businessId=&name=&orderBy=name&order 
+  Direction=asc                                                             
+  但是它要先登录才可以测试;                                                 
+  登录接口是：http://localhost:9600/admin-api/system/auth/login             
+  Payload:                                                                  
+  {"username":"test001","password":"admin","captchaVerification":"","rememb 
+  erMe":true}                                                               
+                                                                            
+  jmeter的主页截图在当前目录下：jmeter.png                                  
+                                                                            
+  你可以先教我压测查询buylist接口的步骤吗？                                 
+
+● 好的！我先看一下你的 JMeter 界面和登录接口的返回格式，以便给你准确的步骤。
+
+● Read 1 file (ctrl+o to expand)
+
+● Explore(Find login response format)
+  ⎿  Done (5 tool uses · 17.6k tokens · 19s)
+  (ctrl+o to expand)
+
+● 看到了你的 JMeter 界面和登录接口返回格式。登录成功后返回的 token 字段是
+  data.accessToken。
+
+  下面是完整的分步教程：
+
+  ---
+  JMeter 压测 buyList 接口 - 分步教程
+
+  整体思路：先登录拿 token → 用 token 请求 buyList 接口
+
+  ---
+  第 1 步：添加 Thread Group（线程组）
+
+  1. 左侧树形结构中，右键点击 Test Plan
+  2. 选择 Add → Threads (Users) → Thread Group
+  3. 配置参数（先用小值测试，确认通了再加大）：
+
+  ┌───────────────────────────┬─────┬────────────────────────┐
+  │           参数            │ 值  │          说明          │
+  ├───────────────────────────┼─────┼────────────────────────┤
+  │ Number of Threads (users) │ 10  │ 模拟 10 个并发用户     │
+  ├───────────────────────────┼─────┼────────────────────────┤
+  │ Ramp-up period (seconds)  │ 5   │ 5 秒内逐步启动所有线程 │
+  ├───────────────────────────┼─────┼────────────────────────┤
+  │ Loop Count                │ 10  │ 每个线程循环 10 次     │
+  └───────────────────────────┴─────┴────────────────────────┘
+
+  ---
+  第 2 步：添加「登录请求」（HTTP Request）
+
+  1. 右键 Thread Group → Add → Sampler → HTTP Request
+  2. 命名为 Login，配置如下：
+
+  ┌─────────────────────┬──────────────────────────────┐
+  │        字段         │              值              │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Protocol            │ http                         │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Server Name or IP   │ localhost                    │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Port Number         │ 9600                         │
+  ├─────────────────────┼──────────────────────────────┤
+  │ HTTP Request Method │ POST                         │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Path                │ /admin-api/system/auth/login │
+  └─────────────────────┴──────────────────────────────┘
+
+  3. 在下方 Body Data 标签页（不是 Parameters），粘贴：
+
+  {"username":"test001","password":"admin","captchaVerification":"","rememberMe"
+  :true}
+
+  4. 还需要添加 HTTP Header：右键 Login 请求 → Add → Config Element → HTTP 
+  Header Manager，添加一行：
+
+  ┌──────────────┬──────────────────┐
+  │     Name     │      Value       │
+  ├──────────────┼──────────────────┤
+  │ Content-Type │ application/json │
+  └──────────────┴──────────────────┘
+
+  ---
+  第 3 步：提取登录返回的 Token
+
+  1. 右键 Login 请求 → Add → Post Processors → JSON Extractor
+  2. 配置如下：
+
+  ┌────────────────────────────┬────────────────────┐
+  │            字段            │         值         │
+  ├────────────────────────────┼────────────────────┤
+  │ Names of created variables │ accessToken        │
+  ├────────────────────────────┼────────────────────┤
+  │ JSON Path expressions      │ $.data.accessToken │
+  ├────────────────────────────┼────────────────────┤
+  │ Match No.                  │ 1                  │
+  ├────────────────────────────┼────────────────────┤
+  │ Default Values             │ TOKEN_NOT_FOUND    │
+  └────────────────────────────┴────────────────────┘
+
+  这一步会把登录返回的 token 提取到 JMeter 变量 ${accessToken} 中。
+
+  ---
+  第 4 步：添加「Only Once Controller」（仅执行一次控制器）
+
+  登录只需要执行一次，不需要每次循环都登录。做法：
+
+  1. 先在 Thread Group 下 右键 → Add → Logic Controller → Once Only Controller
+  2. 把刚才创建的 Login 请求和它的子元素（HTTP Header Manager、JSON
+  Extractor）拖拽到 Once Only Controller 下面
+
+  这样每个线程只会登录一次，后续循环直接复用 token。
+
+  ---
+  第 5 步：添加「buyList 查询请求」（HTTP Request）
+
+  1. 右键 Thread Group → Add → Sampler → HTTP Request（注意：放在 Once Only
+  Controller 外面，直接在 Thread Group 下）
+  2. 命名为 Query BuyList，配置如下：
+
+  ┌─────────────────────┬─────────────────────────┐
+  │        字段         │           值            │
+  ├─────────────────────┼─────────────────────────┤
+  │ Protocol            │ http                    │
+  ├─────────────────────┼─────────────────────────┤
+  │ Server Name or IP   │ localhost               │
+  ├─────────────────────┼─────────────────────────┤
+  │ Port Number         │ 9600                    │
+  ├─────────────────────┼─────────────────────────┤
+  │ HTTP Request Method │ GET                     │
+  ├─────────────────────┼─────────────────────────┤
+  │ Path                │ /admin-api/buyList/page │
+  └─────────────────────┴─────────────────────────┘
+
+  3. 在 Parameters 标签页添加以下参数：
+
+  ┌────────────────┬────────┐
+  │      Name      │ Value  │
+  ├────────────────┼────────┤
+  │ pageNo         │ 1      │
+  ├────────────────┼────────┤
+  │ pageSize       │ 10     │
+  ├────────────────┼────────┤
+  │ businessType   │ 1      │
+  ├────────────────┼────────┤
+  │ assetType      │ (留空) │
+  ├────────────────┼────────┤
+  │ businessId     │ (留空) │
+  ├────────────────┼────────┤
+  │ name           │ (留空) │
+  ├────────────────┼────────┤
+  │ orderBy        │ name   │
+  ├────────────────┼────────┤
+  │ orderDirection │ asc    │
+  └────────────────┴────────┘
+
+  4. 添加 Header 传 token：右键 Query BuyList → Add → Config Element → HTTP 
+  Header Manager，添加两行：
+
+  ┌───────────────┬───────────────────────┐
+  │     Name      │         Value         │
+  ├───────────────┼───────────────────────┤
+  │ Authorization │ Bearer ${accessToken} │
+  ├───────────────┼───────────────────────┤
+  │ Content-Type  │ application/json      │
+  └───────────────┴───────────────────────┘
+
+  ${accessToken} 就是第 3 步提取出来的变量，JMeter 会自动替换。
+
+  ---
+  第 6 步：添加监听器查看结果
+
+  右键 Thread Group，添加以下监听器（可以全加）：
+
+  1. Add → Listener → View Results Tree — 查看每个请求的详细请求/响应（调试用）
+  2. Add → Listener → Summary Report —
+  查看汇总统计（吞吐量、平均响应时间、错误率）
+  3. Add → Listener → Aggregate Report — 查看聚合报告（更详细的百分位数据）
+
+  ---
+  最终的树形结构应该是这样：
+
+  Test Plan
+  └── Thread Group
+      ├── Once Only Controller
+      │   └── Login (HTTP Request)
+      │       ├── HTTP Header Manager (Content-Type: application/json)
+      │       └── JSON Extractor (提取 accessToken)
+      ├── Query BuyList (HTTP Request)
+      │   └── HTTP Header Manager (Authorization: Bearer ${accessToken})
+      ├── View Results Tree
+      ├── Summary Report
+      └── Aggregate Report
+
+  ---
+  第 7 步：先调试，再压测
+
+  1. 先把 Thread Group 设为 1 个线程、1 次循环
+  2. 点击顶部工具栏的 绿色播放按钮 ▶ 运行
+  3. 在 View Results Tree 中查看：
+    - Login 请求：Response data 里应该能看到 accessToken
+    - Query BuyList 请求：应该返回正常的业务数据（code: 0）
+  4. 确认两个请求都成功后（绿色），再把线程数调大开始压测
+
+  ---
+  常用压测场景参考
+
+  ┌──────────┬─────────┬─────────┬──────┐
+  │   场景   │ Threads │ Ramp-up │ Loop │
+  ├──────────┼─────────┼─────────┼──────┤
+  │ 冒烟测试 │ 1       │ 1       │ 1    │
+  ├──────────┼─────────┼─────────┼──────┤
+  │ 轻度压测 │ 10      │ 5       │ 10   │
+  ├──────────┼─────────┼─────────┼──────┤
+  │ 中度压测 │ 50      │ 10      │ 20   │
+  ├──────────┼─────────┼─────────┼──────┤
+  │ 重度压测 │ 100     │ 20      │ 50   │
+  └──────────┴─────────┴─────────┴──────┘
+
+  建议从小到大逐步增加，观察服务器的响应时间和错误率变化。
+
+  有任何步骤不清楚或者运行遇到问题，随时告诉我！
+
+✻ Crunched for 1m 8s
+
+> Ramp-up 5 参数是什么意思？在5秒内并发请求吗？ 
+
+● Ramp-up 参数解释
+
+  Ramp-up 不是"在 5 秒内同时并发"，而是在 5 秒内逐步启动所有线程。
+
+  举个例子
+
+  假设 Threads = 10，Ramp-up = 5：
+
+  时间轴 (秒)
+  0s ──── 1s ──── 2s ──── 3s ──── 4s ──── 5s
+  │       │       │       │       │       │
+  启动    启动    启动    启动    启动
+  线程    线程    线程    线程    线程
+  1,2     3,4     5,6     7,8     9,10
+
+  JMeter 会均匀分配：每隔 5s / 10线程 = 0.5s 启动一个线程，逐步加压。
+
+  不同 Ramp-up 值的区别
+
+  ┌─────────┬────────────────────────────────────────────┐
+  │ Ramp-up │                    效果                    │
+  ├─────────┼────────────────────────────────────────────┤
+  │ 0       │ 所有 10 个线程瞬间同时启动，真正的并发冲击 │
+  ├─────────┼────────────────────────────────────────────┤
+  │ 5       │ 5 秒内逐步启动，模拟用户陆续到来           │
+  ├─────────┼────────────────────────────────────────────┤
+  │ 10      │ 每秒启动 1 个线程，更平缓的加压            │
+  └─────────┴────────────────────────────────────────────┘
+
+  怎么选？
+
+  - 想测极端并发（比如秒杀场景）→ 设为 0
+  - 想模拟真实用户访问（正常压测）→ 设为线程数的 1/2 到 1/1，比如 10 个线程设
+  5~10 秒
+  - 想观察性能拐点（逐步发现瓶颈）→ 设大一些，慢慢加压
+
+  你的场景是测 buyList 查询接口，建议先用 Ramp-up = 5
+  观察，如果想测极限并发能力可以改成 0。
+
+> 我还有其它的接口要测试，那我就要每次都创建一个Thread                      
+  Group吗，登录接口也是重复的                                               
+
+● 不需要重复！有两种常用方案：
+
+  ---
+  方案一：一个 Thread Group 测多个接口（简单推荐）
+
+  把所有接口放在同一个 Thread Group 下：
+
+  Test Plan
+  └── Thread Group
+      ├── Once Only Controller
+      │   └── Login
+      │       ├── HTTP Header Manager
+      │       └── JSON Extractor (提取 accessToken)
+      ├── HTTP Header Manager (共享的，带 Authorization) ←
+  放这一层，所有请求自动继承
+      ├── Query BuyList (HTTP Request)
+      ├── Query 接口B (HTTP Request)
+      ├── Query 接口C (HTTP Request)
+      ├── View Results Tree
+      └── Summary Report
+
+  关键技巧：把带 Authorization: Bearer ${accessToken} 的 HTTP Header Manager 
+  放在 Thread Group 层级，这样下面所有请求都会自动继承这个
+  Header，不需要每个请求单独加。
+
+  这种方案每次循环会依次执行所有接口。
+
+  ---
+  方案二：多个 Thread Group 独立测试（需要独立控制并发数时）
+
+  如果你想对不同接口设置不同的并发数，比如 buyList 用 50 并发、接口 B 用 100
+  并发，那就需要多个 Thread Group。
+
+  这时用 setUp Thread Group 来统一登录：
+
+  Test Plan
+  ├── setUp Thread Group          ← 最先执行，只用来登录
+  │   └── Login (HTTP Request)
+  │       ├── HTTP Header Manager
+  │       └── JSON Extractor + BeanShell PostProcessor
+  │
+  ├── Thread Group 1 - BuyList    ← 10 并发
+  │   ├── HTTP Header Manager (Authorization: Bearer ${__property(accessToken)})
+  │   └── Query BuyList
+  │
+  ├── Thread Group 2 - 接口B      ← 50 并发
+  │   ├── HTTP Header Manager (Authorization: Bearer ${__property(accessToken)})
+  │   └── Query 接口B
+  │
+  └── Thread Group 3 - 接口C      ← 100 并发
+      ├── HTTP Header Manager (Authorization: Bearer ${__property(accessToken)})
+      └── Query 接口C
+
+  关键步骤：setUp Thread Group 里存 token 为全局属性
+
+  在 Login 请求下，除了 JSON Extractor，还要加一个脚本把 token
+  提升为全局属性（跨 Thread Group 共享）：
+
+  1. 右键 Login → Add → Post Processors → JSR223 PostProcessor
+  2. Language 选 groovy
+  3. 脚本内容：
+
+  props.put("accessToken", vars.get("accessToken"))
+
+  4. 其它 Thread Group 里引用时用 ${__property(accessToken)} 而不是
+  ${accessToken}
+
+  setUp Thread Group 怎么创建？
+
+  右键 Test Plan → Add → Threads (Users) → setUp Thread Group
+
+  它和普通 Thread Group 的区别：一定会最先执行，执行完毕后其他 Thread Group
+  才会开始。设置为 1 个线程、1 次循环即可。
+
+  ---
+  怎么选？
+
+  ┌───────────────────────────────────────────────────┬────────────────┐
+  │                       场景                        │     选哪个     │
+  ├───────────────────────────────────────────────────┼────────────────┤
+  │ 所有接口用相同并发数，一起测                      │ 方案一（简单） │
+  ├───────────────────────────────────────────────────┼────────────────┤
+  │ 不同接口要不同并发数 / 想单独看每个接口的性能数据 │ 方案二         │
+  └───────────────────────────────────────────────────┴────────────────┘
+
+  建议先用方案一跑通所有接口，后续需要精细化再切到方案二。
+
+> 如果我用方案二，我在每次启动A接口Thread Group的压测时，它会先调用Setup    
+  Thread Group吗？                                                          
+
+● 不会自动单独触发
+
+  JMeter 的执行逻辑是：点击 ▶ 运行时，整个 Test Plan 一起执行：
+
+  点击 ▶ 运行
+     │
+     ├── 1. 先执行 setUp Thread Group（登录）
+     ├── 2. 再执行所有启用的 Thread Group（同时开始）
+     └── 3. 最后执行 tearDown Thread Group（如果有）
+
+  你不能单独启动某一个 Thread Group。
+
+  ---
+  如果只想测某一个接口怎么办？
+
+  禁用不需要的 Thread Group：右键 → Disable
+
+  比如你只想测接口 B：
+
+  Test Plan
+  ├── setUp Thread Group          ✅ 保持启用（登录）
+  ├── Thread Group 1 - BuyList    ❌ 右键 → Disable（灰色，跳过）
+  ├── Thread Group 2 - 接口B      ✅ 保持启用（只跑这个）
+  └── Thread Group 3 - 接口C      ❌ 右键 → Disable（灰色，跳过）
+
+  点击 ▶ 运行后，JMeter 会：
+  1. 先执行 setUp Thread Group（登录拿 token）
+  2. 只执行 Thread Group 2（接口 B）
+  3. 跳过被 Disable 的 Thread Group 1 和 3
+
+  想切换测其它接口时，右键 Enable / Disable 切换即可。
+
+> 你可以把登录的token提取为全局token，并且在另外的接口里添加该token         
+  这中间的步骤可以详细讲讲吗？                                              
+  和之前的测试步骤一样写详细一些；我刚刚测试另一个Thread                    
+  Group试了，失败了，msg：Unauthorized                                      
+
+● 好的，下面一步步详细教你，从 setUp Thread Group 到其它 Thread Group 引用 token
+   的完整流程。
+
+  ---
+  第 1 步：创建 setUp Thread Group
+
+  1. 左侧 右键 Test Plan
+  2. 选择 Add → Threads (Users) → setUp Thread Group
+  3. 配置：
+
+  ┌───────────────────┬─────────────┐
+  │       参数        │     值      │
+  ├───────────────────┼─────────────┤
+  │ Name              │ Login Setup │
+  ├───────────────────┼─────────────┤
+  │ Number of Threads │ 1           │
+  ├───────────────────┼─────────────┤
+  │ Ramp-up period    │ 1           │
+  ├───────────────────┼─────────────┤
+  │ Loop Count        │ 1           │
+  └───────────────────┴─────────────┘
+
+  setUp Thread Group 只是用来登录拿 token，所以 1 个线程跑 1 次就够了。
+
+  ---
+  第 2 步：在 setUp Thread Group 下添加 Login 请求
+
+  1. 右键 Login Setup → Add → Sampler → HTTP Request
+  2. 命名为 Login，配置：
+
+  ┌─────────────────────┬──────────────────────────────┐
+  │        字段         │              值              │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Protocol            │ http                         │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Server Name or IP   │ localhost                    │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Port Number         │ 9600                         │
+  ├─────────────────────┼──────────────────────────────┤
+  │ HTTP Request Method │ POST                         │
+  ├─────────────────────┼──────────────────────────────┤
+  │ Path                │ /admin-api/system/auth/login │
+  └─────────────────────┴──────────────────────────────┘
+
+  3. 点击下方 Body Data 标签页，粘贴：
+
+  {"username":"test001","password":"admin","captchaVerification":"","rememberMe"
+  :true}
+
+  ---
+  第 3 步：给 Login 请求添加 HTTP Header Manager
+
+  1. 右键 Login 请求 → Add → Config Element → HTTP Header Manager
+  2. 点击下方的 Add 按钮，添加一行：
+
+  ┌──────────────┬──────────────────┐
+  │     Name     │      Value       │
+  ├──────────────┼──────────────────┤
+  │ Content-Type │ application/json │
+  └──────────────┴──────────────────┘
+
+  ---
+  第 4 步：添加 JSON Extractor 提取 token
+
+  1. 右键 Login 请求 → Add → Post Processors → JSON Extractor
+  2. 配置：
+
+  ┌────────────────────────────┬────────────────────┐
+  │            字段            │         值         │
+  ├────────────────────────────┼────────────────────┤
+  │ Name                       │ Extract Token      │
+  ├────────────────────────────┼────────────────────┤
+  │ Names of created variables │ accessToken        │
+  ├────────────────────────────┼────────────────────┤
+  │ JSON Path expressions      │ $.data.accessToken │
+  ├────────────────────────────┼────────────────────┤
+  │ Match No. (0 for Random)   │ 1                  │
+  ├────────────────────────────┼────────────────────┤
+  │ Default Values             │ TOKEN_NOT_FOUND    │
+  └────────────────────────────┴────────────────────┘
+
+  这一步把 token 存到了当前线程的变量 ${accessToken} 里，但这个变量只在 setUp 
+  Thread Group 内部有效，其它 Thread Group 读不到。所以需要下一步。
+
+  ---
+  第 5 步：添加 JSR223 PostProcessor 把 token 存为全局属性（关键步骤！）
+
+  这一步是你之前失败的原因——token 没有提升为全局属性。
+
+  1. 右键 Login 请求 → Add → Post Processors → JSR223 PostProcessor
+  2. 配置：
+
+  ┌──────────┬─────────────────────────────────────┐
+  │   字段   │                 值                  │
+  ├──────────┼─────────────────────────────────────┤
+  │ Name     │ Save Token to Property              │
+  ├──────────┼─────────────────────────────────────┤
+  │ Language │ groovy（下拉选择，默认就是 groovy） │
+  └──────────┴─────────────────────────────────────┘
+
+  3. 在下方的 Script 文本框中输入：
+
+  props.put("accessToken", vars.get("accessToken"))
+  log.info("=== Token saved: " + vars.get("accessToken"))
+
+  vars.get() = 读取当前线程变量
+  props.put() = 存为全局属性，所有 Thread Group 都能读
+  log.info() = 打日志方便确认 token 是否拿到了
+
+  ---
+  第 6 步：给 setUp Thread Group 添加 View Results Tree（调试用）
+
+  1. 右键 Login Setup → Add → Listener → View Results Tree
+
+  方便你确认登录是否成功、token 是否正确提取。
+
+  ---
+  此时 setUp Thread Group 的结构：
+
+  setUp Thread Group (Login Setup)
+  ├── Login (HTTP Request)
+  │   ├── HTTP Header Manager         (Content-Type: application/json)
+  │   ├── JSON Extractor               (提取 accessToken)
+  │   └── JSR223 PostProcessor         (props.put 存为全局属性)
+  └── View Results Tree
+
+  ---
+  第 7 步：创建业务接口 Thread Group
+
+  1. 右键 Test Plan → Add → Threads (Users) → Thread Group
+  2. 命名为 BuyList Test，配置：
+
+  ┌───────────────────┬─────────────┐
+  │       参数        │     值      │
+  ├───────────────────┼─────────────┤
+  │ Number of Threads │ 1（先调试） │
+  ├───────────────────┼─────────────┤
+  │ Ramp-up period    │ 1           │
+  ├───────────────────┼─────────────┤
+  │ Loop Count        │ 1           │
+  └───────────────────┴─────────────┘
+
+  ---
+  第 8 步：在 Thread Group 层级添加 HTTP Header Manager（带 token）
+
+  注意！是在 Thread Group 层级添加，不是在某个请求下面添加，这样该 Thread Group
+  下所有请求都会自动携带这个 Header。
+
+  1. 右键 BuyList Test → Add → Config Element → HTTP Header Manager
+  2. 点击 Add 按钮，添加两行：
+
+  ┌───────────────┬───────────────────────────────────┐
+  │     Name      │               Value               │
+  ├───────────────┼───────────────────────────────────┤
+  │ Authorization │ Bearer ${__property(accessToken)} │
+  ├───────────────┼───────────────────────────────────┤
+  │ Content-Type  │ application/json                  │
+  └───────────────┴───────────────────────────────────┘
+
+  注意！ 这里用的是 ${__property(accessToken)}，不是 ${accessToken}。
+  - ${accessToken} → 读当前线程的局部变量（跨 Thread Group 读不到，会为空）
+  - ${__property(accessToken)} → 读全局属性（第 5 步存入的，跨 Thread Group 
+  可读）
+
+  这就是你之前报 Unauthorized 的原因——用了 ${accessToken} 导致 token 为空。
+
+  ---
+  第 9 步：添加 BuyList 查询请求
+
+  1. 右键 BuyList Test → Add → Sampler → HTTP Request
+  2. 命名为 Query BuyList，配置：
+
+  ┌─────────────────────┬─────────────────────────┐
+  │        字段         │           值            │
+  ├─────────────────────┼─────────────────────────┤
+  │ Protocol            │ http                    │
+  ├─────────────────────┼─────────────────────────┤
+  │ Server Name or IP   │ localhost               │
+  ├─────────────────────┼─────────────────────────┤
+  │ Port Number         │ 9600                    │
+  ├─────────────────────┼─────────────────────────┤
+  │ HTTP Request Method │ GET                     │
+  ├─────────────────────┼─────────────────────────┤
+  │ Path                │ /admin-api/buyList/page │
+  └─────────────────────┴─────────────────────────┘
+
+  3. 在 Parameters 标签页点击 Add 添加参数：
+
+  ┌────────────────┬────────┐
+  │      Name      │ Value  │
+  ├────────────────┼────────┤
+  │ pageNo         │ 1      │
+  ├────────────────┼────────┤
+  │ pageSize       │ 10     │
+  ├────────────────┼────────┤
+  │ businessType   │ 1      │
+  ├────────────────┼────────┤
+  │ assetType      │ (留空) │
+  ├────────────────┼────────┤
+  │ businessId     │ (留空) │
+  ├────────────────┼────────┤
+  │ name           │ (留空) │
+  ├────────────────┼────────┤
+  │ orderBy        │ name   │
+  ├────────────────┼────────┤
+  │ orderDirection │ asc    │
+  └────────────────┴────────┘
+
+  ---
+  第 10 步：添加监听器
+
+  右键 BuyList Test → Add → Listener：
+
+  1. View Results Tree — 查看请求详情
+  2. Summary Report — 查看汇总数据
+
+  ---
+  最终完整结构：
+
+  Test Plan
+  │
+  ├── setUp Thread Group (Login Setup)     ← 最先执行
+  │   ├── Login (HTTP Request)
+  │   │   ├── HTTP Header Manager           (Content-Type: application/json)
+  │   │   ├── JSON Extractor                ($.data.accessToken → accessToken)
+  │   │   └── JSR223 PostProcessor          (props.put 存为全局属性)
+  │   └── View Results Tree
+  │
+  ├── Thread Group (BuyList Test)          ← 登录完成后执行
+  │   ├── HTTP Header Manager               (Authorization: Bearer
+  ${__property(accessToken)})
+  │   ├── Query BuyList (HTTP Request)
+  │   ├── View Results Tree
+  │   └── Summary Report
+  │
+  ├── Thread Group (接口B Test)             ← 以后加的其它接口，结构一样
+  │   ├── HTTP Header Manager               (Authorization: Bearer
+  ${__property(accessToken)})
+  │   ├── 接口B (HTTP Request)
+  │   └── ...
+
+  ---
+  调试检查清单
+
+  跑之前确认这几点：
+
+  1. setUp Thread Group 的 Login：在 View Results Tree 里看 Response
+  Body，确认有 accessToken 值
+  2. JSR223 PostProcessor：Language 选的是 groovy
+  3. 业务 Thread Group 的 Header：token 用的是 ${__property(accessToken)} 而不是
+   ${accessToken}
+  4. 执行顺序：setUp Thread Group 在树形结构中排在其它 Thread Group 上面
+
+  先用 1 线程 1 循环跑一次，在 View Results Tree 确认 BuyList 返回 "code": 0
+  后，再加大并发量。
+
+✻ Worked for 44s
+
+> 我的查询BuyList接口还是没有读到accessToken                                
+  这个是查询buylist接口jmeter的Request Headers：                            
+  Connection: keep-alive                                                    
+  Content-Type: application/json                                            
+  Authorization: Bearer ${_property(accessToken)}                           
+  Host: localhost:9600                                                      
+  User-Agent: Apache-HttpClient/4.5.14 (Java/17.0.12)                       
+                                                                            
+  是设置出了问题吗？                                                        
+  我的jmeter文件保存在了这个目录：D:\software\developmentTools\jmeter\pap-l 
+  ogin-query_buylist                                                        
+  Pre-Pap-Login.jmx和Pap-query-Buylist.jmx两个文件                          
+  Pre-Pap-Login.jmx是登录接口，我可以看到返回的token                        
+  Pap-query-Buylist.jmx是查询buylist的接口，token没有取到                   
+                                                                            
+  你可以帮我看看吗？                                                        
+
+● 我看到了两个问题！先让我读一下你的 JMX 文件确认一下。
+
+● Read 2 files (ctrl+o to expand)
+
+● 找到了！你有 两个问题：
+
+  ---
+  问题一：两个独立的 .jmx 文件无法共享 token
+
+  你把登录和查询分成了 两个独立的 .jmx 文件，它们是完全隔离的 Test
+  Plan，props.put() 存的全局属性只在同一个 .jmx 文件内有效。
+
+  必须把 setUp Thread Group 和业务 Thread Group 放在同一个 .jmx 文件里。
+
+  ---
+  问题二：下划线写少了一个
+
+  你的 Header 里写的是：
+  ${_property(accessToken)}     ← 一个下划线 ✘
+
+  正确的应该是：
+  ${__property(accessToken)}    ← 两个下划线 ✔
+
+  ---
+  修复方法
+
+  不需要从头来，只要把两个合并到一个文件里：
+
+  步骤 1：打开 Pre-Pap-Login.jmx
+
+  在 JMeter 中打开你的登录文件 Pre-Pap-Login.jmx。
+
+  步骤 2：把查询请求添加进来
+
+  在同一个文件里，右键 Test Plan → Add → Threads (Users) → Thread 
+  Group，然后按照之前的教程配置 BuyList 查询请求。
+
+  步骤 3：修正 Authorization Header
+
+  在新建的 Thread Group 的 HTTP Header Manager 里，确保 Authorization 的值是：
+
+  Bearer ${__property(accessToken)}
+
+  注意 __property 是两个下划线。
+
+  步骤 4：另存为新文件
+
+  File → Save Test Plan as → 保存为 Pap-All-Test.jmx
+
+  最终结构：
+
+  Test Plan                              ← 同一个 .jmx 文件
+  ├── setUp Thread Group (Login)         ← 原来 Pre-Pap-Login.jmx 的内容
+  │   └── Login (HTTP Request)
+  │       ├── HTTP Header Manager
+  │       ├── JSON Extractor
+  │       └── JSR223 PostProcessor        (props.put)
+  │
+  └── Thread Group (BuyList Test)        ← 新加的
+      ├── HTTP Header Manager             (Bearer ${__property(accessToken)})  ←
+   两个下划线!
+      ├── Query BuyList (HTTP Request)
+      ├── View Results Tree
+      └── Summary Report
+
+  这样点击 ▶ 运行时，JMeter 会先执行 setUp 登录拿 token，再用 token 跑 BuyList
+  查询。
+
+> 先不管这些了，它只是不可以保存而已，但是我可以使用jmeter，                
+  我还有另一个问题：                                                        
+  我想把jmeter接口的ip参数弄成公共参数，这个怎么弄                          
+
+● 把 IP 配置为公共参数
+
+  两种方式，推荐第一种：
+
+  方式一：User Defined Variables（最常用）
+
+  1. 右键 Test Plan → Add → Config Element → User Defined Variables
+  2. 点击 Add 添加以下变量：
+
+  ┌──────────┬───────────┐
+  │   Name   │   Value   │
+  ├──────────┼───────────┤
+  │ BASE_URL │ localhost │
+  ├──────────┼───────────┤
+  │ PORT     │ 9600      │
+  └──────────┴───────────┘
+
+  3. 然后在所有 HTTP Request 里，把原来写死的值改成变量：
+
+  ┌───────────────────┬───────────┬─────────────┐
+  │       字段        │   原来    │    改为     │
+  ├───────────────────┼───────────┼─────────────┤
+  │ Server Name or IP │ localhost │ ${BASE_URL} │
+  ├───────────────────┼───────────┼─────────────┤
+  │ Port Number       │ 9600      │ ${PORT}     │
+  └───────────────────┴───────────┴─────────────┘
+
+  以后切环境只改一处就行：
+
+  ┌──────┬─────────────────┬──────┐
+  │ 环境 │    BASE_URL     │ PORT │
+  ├──────┼─────────────────┼──────┤
+  │ 本地 │ localhost       │ 9600 │
+  ├──────┼─────────────────┼──────┤
+  │ DEV  │ 192.168.1.100   │ 9600 │
+  ├──────┼─────────────────┼──────┤
+  │ SIT  │ sit.example.com │ 443  │
+  └──────┴─────────────────┴──────┘
+
+  ---
+  方式二：HTTP Request Defaults（更省事）
+
+  这种方式连变量都不用写，直接设一个默认值，所有 HTTP Request 自动继承。
+
+  1. 右键 Test Plan → Add → Config Element → HTTP Request Defaults
+  2. 配置：
+
+  ┌───────────────────┬───────────┐
+  │       字段        │    值     │
+  ├───────────────────┼───────────┤
+  │ Protocol          │ http      │
+  ├───────────────────┼───────────┤
+  │ Server Name or IP │ localhost │
+  ├───────────────────┼───────────┤
+  │ Port Number       │ 9600      │
+  └───────────────────┴───────────┘
+
+  3. 然后所有 HTTP Request 里的 Protocol、Server Name、Port 留空不填，JMeter
+  会自动用 Defaults 的值
+
+  好处：HTTP Request 里只需要填 Method 和 Path，更干净。
+
+  ---
+  两种方式可以组合用
+
+  Test Plan
+  ├── User Defined Variables         (BASE_URL=localhost, PORT=9600)
+  ├── HTTP Request Defaults          (${BASE_URL}, ${PORT})
+  ├── setUp Thread Group
+  │   └── Login                      (只填 Path: /admin-api/system/auth/login)
+  └── Thread Group
+      └── Query BuyList              (只填 Path: /admin-api/buyList/page)
+
+  这样每个 HTTP Request 只需要填 Path，IP
+  和端口全部由顶层统一管理。切环境时改一处 User Defined Variables 即可。
+
+> 我觉得方式二比较方便；                                                    
+  另外可以把token参数提取为公共请求头吗？                                   
+  不是每个接口都要写一遍Authorization  bearer ${accessToken}                
+  ,还有Content-Type  application/json                                       
+                                                                            
+  jmeter可以实现吗                                                          
+
+● 可以！和 HTTP Request Defaults 一样的思路，把 HTTP Header Manager 放在 Test 
+  Plan 层级，所有请求自动继承。
+
+  步骤
+
+  1. 右键 Test Plan → Add → Config Element → HTTP Header Manager
+  2. 点击 Add 添加两行：
+
+  ┌───────────────┬───────────────────────────────────┐
+  │     Name      │               Value               │
+  ├───────────────┼───────────────────────────────────┤
+  │ Content-Type  │ application/json                  │
+  ├───────────────┼───────────────────────────────────┤
+  │ Authorization │ Bearer ${__property(accessToken)} │
+  └───────────────┴───────────────────────────────────┘
+
+  3. 然后删除每个 Thread Group / HTTP Request 下面单独的 HTTP Header Manager
+
+  ---
+  最终的结构
+
+  Test Plan
+  ├── HTTP Request Defaults            (http, localhost, 9600)
+  ├── HTTP Header Manager              (Content-Type + Authorization) ← 全局共享
+  │
+  ├── setUp Thread Group (Login)
+  │   └── Login (HTTP Request)          (只填 POST + Path)
+  │       ├── HTTP Header Manager       ← 登录单独覆盖，只要 Content-Type，不要
+  Authorization
+  │       ├── JSON Extractor
+  │       └── JSR223 PostProcessor
+  │
+  ├── Thread Group (BuyList Test)       ← 不需要单独加 Header 了
+  │   ├── Query BuyList (HTTP Request)   (只填 GET + Path + Parameters)
+  │   ├── View Results Tree
+  │   └── Summary Report
+  │
+  └── Thread Group (接口B Test)          ← 也不需要
+      └── 接口B (HTTP Request)           (只填 Method + Path)
+
+  注意一点
+
+  登录接口本身不需要 Authorization Header（还没有 token），但 Test Plan 层级的
+  Header 会对所有请求生效，包括登录请求。
+
+  解决办法：给 Login 请求单独加一个 HTTP Header Manager，只写 Content-Type：
+
+  ┌──────────────┬──────────────────┐
+  │     Name     │      Value       │
+  ├──────────────┼──────────────────┤
+  │ Content-Type │ application/json │
+  └──────────────┴──────────────────┘
+
+  JMeter 的规则：子级的 HTTP Header Manager 会覆盖父级的，所以登录请求只会带
+  Content-Type，不会带 Authorization。其它没有单独 Header Manager 的请求则继承
+  Test Plan 层级的全局配置。
+
+> 还有个问题，可以把View Result Tree                                        
+  的请求记录删除吗？因为我想重新并发测试，太多了看的有点乱                  
+
+● 两种方式：
+
+  方式一：清除所有监听器的结果（推荐）
+
+  点击菜单栏 Run → Clear All（或按快捷键 Ctrl + E）
+
+  会清除所有 Listener（View Results Tree、Summary Report 等）的记录。
+
+  方式二：只清除当前监听器
+
+  1. 点击左侧选中你要清除的 View Results Tree
+  2. 点击菜单栏 Run → Clear（或按快捷键 Ctrl + Shift + E）
+
+  只清除当前选中的 Listener 记录，其它不受影响。
+
+  ---
+
+  ┌──────────────────┬──────────────────────────┐
+  │      快捷键      │           效果           │
+  ├──────────────────┼──────────────────────────┤
+  │ Ctrl + E         │ 清除所有监听器的记录     │
+  ├──────────────────┼──────────────────────────┤
+  │ Ctrl + Shift + E │ 清除当前选中监听器的记录 │
+  └──────────────────┴──────────────────────────┘
+
+  建议每次重新压测前按一下 Ctrl + E 清空，保持结果干净。
+
+> jmeter压测单个接口的时候如何查看平均耗时？ 
+
+● 查看平均耗时
+
+  你之前添加的 Summary Report 就有，如果没加的话：
+
+  右键 Thread Group → Add → Listener → Summary Report
+
+  运行后会显示一个表格：
+
+  ┌────────────┬──────────────────────────────┐
+  │    字段    │             含义             │
+  ├────────────┼──────────────────────────────┤
+  │ Average    │ 平均响应时间（毫秒）         │
+  ├────────────┼──────────────────────────────┤
+  │ Min        │ 最短响应时间                 │
+  ├────────────┼──────────────────────────────┤
+  │ Max        │ 最长响应时间                 │
+  ├────────────┼──────────────────────────────┤
+  │ Std. Dev.  │ 标准差（越小说明响应越稳定） │
+  ├────────────┼──────────────────────────────┤
+  │ Throughput │ 吞吐量（每秒处理的请求数）   │
+  ├────────────┼──────────────────────────────┤
+  │ Error %    │ 错误率                       │
+  └────────────┴──────────────────────────────┘
+
+  ---
+  想看更详细的百分位数据
+
+  右键 Thread Group → Add → Listener → Aggregate Report
+
+  比 Summary Report 多了这些：
+
+  ┌──────────┬──────────────────────────────────────┐
+  │   字段   │                 含义                 │
+  ├──────────┼──────────────────────────────────────┤
+  │ Median   │ 中位数（50% 的请求在这个时间内完成） │
+  ├──────────┼──────────────────────────────────────┤
+  │ 90% Line │ 90% 的请求在这个时间内完成           │
+  ├──────────┼──────────────────────────────────────┤
+  │ 95% Line │ 95% 的请求在这个时间内完成           │
+  ├──────────┼──────────────────────────────────────┤
+  │ 99% Line │ 99% 的请求在这个时间内完成           │
+  └──────────┴──────────────────────────────────────┘
+
+  压测报告通常关注 Average、90% Line 和 Throughput 这三个指标。
+
+  ---
+  两个 Listener 的区别
+
+  ┌──────────────────────┬────────────────┬──────────────────┐
+  │                      │ Summary Report │ Aggregate Report │
+  ├──────────────────────┼────────────────┼──────────────────┤
+  │ 平均耗时             │ ✅             │ ✅               │
+  ├──────────────────────┼────────────────┼──────────────────┤
+  │ 百分位 (P90/P95/P99) │ ❌             │ ✅               │
+  ├──────────────────────┼────────────────┼──────────────────┤
+  │ 性能开销             │ 更小           │ 稍大             │
+  └──────────────────────┴────────────────┴──────────────────┘
+
+  建议两个都加上，日常看 Summary Report，出报告时看 Aggregate Report。
