@@ -546,52 +546,100 @@ jmeter報錯是：
 我当前的jmeter版本是5.6.3
 我要测试的接口是：http://localhost:9600/admin-api/buyList/page?pageNo=1&pageSize=10&businessType=1&assetType=&businessId=&name=&orderBy=name&orderDirection=asc
 但是它要先登录才可以测试;
+登录接口是：http://localhost:9600/admin-api/system/auth/login
+Payload:
+{"username":"test001","password":"admin","captchaVerification":"","rememberMe":true}
 
+jmeter的主页截图在当前目录下：jmeter.png
 
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+你可以先教我压测查询buylist接口的步骤吗？
 
 ==============================================================================================================
-
-
-==============================================================================================================
-
+如果我用方案二，我在每次启动A接口Thread Group的压测时，它会先调用Setup Thread Group吗？
 
 ==============================================================================================================
+在 Login 请求下，除了 JSON Extractor，还要加一个脚本把 token 提升为全局属性（跨 Thread Group 共享）：
 
-
-
-==============================================================================================================
-
-
-
+  1. 右键 Login → Add → Post Processors → JSR223 PostProcessor
+  2. Language 选 groovy
+  3. 脚本内容：
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+你可以把登录的token提取为全局token，并且在另外的接口里添加该token 这中间的步骤可以详细讲讲吗？
+和之前的测试步骤一样写详细一些；我刚刚测试另一个Thread Group试了，失败了，msg：Unauthorized
 
 ==============================================================================================================
+我的查询BuyList接口还是没有读到accessToken
+这个是查询buylist接口jmeter的Request Headers：
+Connection: keep-alive
+Content-Type: application/json
+Authorization: Bearer ${_property(accessToken)}
+Host: localhost:9600
+User-Agent: Apache-HttpClient/4.5.14 (Java/17.0.12)
 
+是设置出了问题吗？
+我的jmeter文件保存在了这个目录：D:\software\developmentTools\jmeter\pap-login-query_buylist
+Pre-Pap-Login.jmx和Pap-query-Buylist.jmx两个文件
+Pre-Pap-Login.jmx是登录接口，我可以看到返回的token
+Pap-query-Buylist.jmx是查询buylist的接口，token没有取到
 
-
+你可以帮我看看吗？
 
 ==============================================================================================================
+帮我看看，我的内网的jmeter无法保存TestPlan，我内网的jdk环境时jdk17，内网的jmeter版本时5.4.1；下面是保存时cmd的报错信息：
+Uncaught Exception java.lang.IllegalAccessError: class com.github.weisj.darklaf.ui.filechooser.DarkFilePaneUIBridge$DetailsTableModel
+(in unmamed module @0x55a561cf) cannot access class sun.awt.shell.ShellFolder (in module java.desktop)
+because module java.desktop does not export sun.awt.shell to unnamed module @0x55a561cf in thread
+ Thread[AWT-EventQueue-0,6,main]. See log file for details
 
+==============================================================================================================
+我尝试了方案二无效：
+现在我尝试方案一：
+你帮我看看我本地的jmeter配置方案一要修改的位置在哪里：
+我本地的jmeter.bat的位置在这里：D:\software\developmentTools\jmeter\apache-jmeter-5.6.3\bin
+你定位好后，我去内网找这个位置添加参数
 
+==============================================================================================================
+我对比了内网的这个参数和我本地机器的参数好像就是差这个
+下面这些参数时一样的
+--add-opens java.desktop/sun.awt=ALL-UNNAMED
+--add-opens java.desktop/sun.swing=ALL-UNNAMED
+--add-opens java.desktop/javax.swing.text.html=ALL-UNNAMED
+--add-opens java.desktop/java.awt=ALL-UNNAMED
+--add-opens java.desktop/java.awt.font=ALL-UNNAMED
+--add-opens=java.base/java.lang=ALL-UNNAMED
+--add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+--add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+--add-opens=java.base/java.util=ALL-UNNAMED
+--add-opens=java.base/java.text=ALL-UNNAMED
+但是我在内网jmeter.bat的 set JAVA9_OPTS参数后添加了这项： --add-opens=java.desktop/sun.awt.shell=ALL-UNNAMED
+但是我在启动的时候有个WARNING: package sun.awt.shell not in java.desktop
+报错的时候还是报错，无法保存
+
+==============================================================================================================
+我尝试了你上面两个修改，还是不行；
+下面是jdk信息
+java -version
+java version "17.0.4.1" 2022-08-18 LTS
+Java(TM) SE Runtime Environment (build 17.0.4.1+1-LTS-2)
+Java HotSpot(TM) 64-Bit Server VM (build 17.0.4.1+1-LTS-2,mixed mode,sharing)
+
+java --list-modules | findstr java.desktop
+java.desktop@17.0.4.1
+
+==============================================================================================================
+方案二不行，移除了darklaf-*.jar无法启动：
+我点击jmeter.bat直接报错了
+An error occurred: com/github/weisj/darklaf/theme/Theme
+errorlevel=1
+Press any key to continue
+
+==============================================================================================================
+我觉得方式二比较方便；
+另外可以把token参数提取为公共请求头吗？
+不是每个接口都要写一遍Authorization  bearer ${accessToken} ,还有Content-Type  application/json
+
+jmeter可以实现吗
 ==============================================================================================================
 
 
