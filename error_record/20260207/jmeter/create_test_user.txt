@@ -1,0 +1,89 @@
+ Plan to implement                                                                                                                                                         │
+│                                                                                                                                                                           │
+│ Plan: Batch Create Test Users via API                                                                                                                                     │
+│                                                                                                                                                                           │
+│ Context                                                                                                                                                                   │
+│                                                                                                                                                                           │
+│ User needs to perform load testing on the PAP system with multiple users. Currently there are not enough test accounts. We need to:                                       │
+│ 1. Create a new role test_maker that copies all permissions from the existing "业务发起" (code: business) role                                                            │
+│ 2. Batch create 10 test users (t001~t010) with the same department/post as test001, and assign them the test_maker role                                                   │
+│                                                                                                                                                                           │
+│ Implementation                                                                                                                                                            │
+│                                                                                                                                                                           │
+│ Create a single standalone Java file:                                                                                                                                     │
+│ - File: pocpro/pap-server/src/test/java/cn/bochk/pap/BatchUserCreator.java                                                                                                │
+│                                                                                                                                                                           │
+│ This tool uses JDK 17 built-in HttpClient + Jackson (already on classpath via Spring Boot) to call the backend REST APIs.                                                 │
+│                                                                                                                                                                           │
+│ Execution Flow                                                                                                                                                            │
+│                                                                                                                                                                           │
+│ 1. Login as admin → get accessToken                                                                                                                                       │
+│ 2. Query all roles → find "业务发起" (code=business) → get its roleId                                                                                                     │
+│ 3. Query role's menu permissions → get menuIds                                                                                                                            │
+│ 4. Query role detail → get dataScope + dataScopeDeptIds                                                                                                                   │
+│ 5. Query users → find test001 → get deptId, postIds                                                                                                                       │
+│ 6. Create new role "test_maker" → get newRoleId                                                                                                                           │
+│ 7. Assign menu permissions to new role (same as "业务发起")                                                                                                               │
+│ 8. Assign data scope to new role (same as "业务发起")                                                                                                                     │
+│ 9. Loop t001~t010:                                                                                                                                                        │
+│    a. Create user (same dept/post as test001, password=123456)                                                                                                            │
+│    b. Assign role test_maker to user                                                                                                                                      │
+│ 10. Print summary                                                                                                                                                         │
+│                                                                                                                                                                           │
+│ API Calls Used                                                                                                                                                            │
+│                                                                                                                                                                           │
+│ ┌──────┬────────┬───────────────────────────────────────────────────────┬─────────────────────────────┐                                                                   │
+│ │ Step │ Method │                         Path                          │           Purpose           │                                                                   │
+│ ├──────┼────────┼───────────────────────────────────────────────────────┼─────────────────────────────┤                                                                   │
+│ │ 1    │ POST   │ /admin-api/system/auth/login                          │ Admin login                 │                                                                   │
+│ ├──────┼────────┼───────────────────────────────────────────────────────┼─────────────────────────────┤                                                                   │
+│ │ 2    │ GET    │ /admin-api/system/role/page?pageSize=100              │ Find "业务发起" role        │                                                                   │
+│ ├──────┼────────┼───────────────────────────────────────────────────────┼─────────────────────────────┤                                                                   │
+│ │ 3    │ GET    │ /admin-api/system/permission/list-role-menus?roleId=X │ Get menu IDs                │                                                                   │
+│ ├──────┼────────┼───────────────────────────────────────────────────────┼─────────────────────────────┤                                                                   │
+│ │ 4    │ GET    │ /admin-api/system/role/get?id=X                       │ Get role detail (dataScope) │                                                                   │
+│ ├──────┼────────┼───────────────────────────────────────────────────────┼─────────────────────────────┤                                                                   │
+│ │ 5    │ GET    │ /admin-api/system/user/page?username=test001          │ Get test001 info            │                                                                   │
+│ ├──────┼────────┼───────────────────────────────────────────────────────┼─────────────────────────────┤                                                                   │
+│ │ 6    │ POST   │ /admin-api/system/role/create                         │ Create test_maker role      │                                                                   │
+│ ├──────┼────────┼───────────────────────────────────────────────────────┼─────────────────────────────┤                                                                   │
+│ │ 7    │ POST   │ /admin-api/system/permission/assign-role-menu         │ Copy menu permissions       │                                                                   │
+│ ├──────┼────────┼───────────────────────────────────────────────────────┼─────────────────────────────┤                                                                   │
+│ │ 8    │ POST   │ /admin-api/system/permission/assign-role-data-scope   │ Copy data scope             │                                                                   │
+│ ├──────┼────────┼───────────────────────────────────────────────────────┼─────────────────────────────┤                                                                   │
+│ │ 9a   │ POST   │ /admin-api/system/user/create                         │ Create each user            │                                                                   │
+│ ├──────┼────────┼───────────────────────────────────────────────────────┼─────────────────────────────┤                                                                   │
+│ │ 9b   │ POST   │ /admin-api/system/permission/assign-user-role         │ Assign role to user         │                                                                   │
+│ └──────┴────────┴───────────────────────────────────────────────────────┴─────────────────────────────┘                                                                   │
+│                                                                                                                                                                           │
+│ Key Design Decisions                                                                                                                                                      │
+│                                                                                                                                                                           │
+│ - Standalone main() method — run directly from IDE, no Spring context needed                                                                                              │
+│ - JDK HttpClient — no extra dependencies, JDK 17 built-in                                                                                                                 │
+│ - Jackson ObjectMapper — already on classpath via Spring Boot starter                                                                                                     │
+│ - Configurable — BASE_URL, admin credentials, user prefix, count all as constants at top of file                                                                          │
+│ - Idempotent-friendly — checks if user already exists before creating, prints clear logs                                                                                  │
+│                                                                                                                                                                           │
+│ Configurable Constants                                                                                                                                                    │
+│                                                                                                                                                                           │
+│ BASE_URL = "http://localhost:9600"                                                                                                                                        │
+│ ADMIN_USERNAME = "admin"                                                                                                                                                  │
+│ ADMIN_PASSWORD = "admin"                                                                                                                                                  │
+│ REFERENCE_ROLE_CODE = "business"        // 参考角色标识                                                                                                                   │
+│ NEW_ROLE_NAME = "test_maker"            // 新角色名称                                                                                                                     │
+│ NEW_ROLE_CODE = "test_maker"            // 新角色标识                                                                                                                     │
+│ REFERENCE_USERNAME = "test001"          // 参考用户                                                                                                                       │
+│ USER_PREFIX = "t"                       // 用户名前缀                                                                                                                     │
+│ USER_START = 1                          // 起始编号                                                                                                                       │
+│ USER_COUNT = 10                         // 创建数量                                                                                                                       │
+│ USER_PASSWORD = "123456"                // 统一密码                                                                                                                       │
+│                                                                                                                                                                           │
+│ Verification                                                                                                                                                              │
+│                                                                                                                                                                           │
+│ 1. Run BatchUserCreator.main() in IDE (ensure backend is running on localhost:9600)                                                                                       │
+│ 2. Check console output — should see 10 users created successfully                                                                                                        │
+│ 3. Login as t001/123456 on the frontend http://localhost:5173                                                                                                             │
+│ 4. Verify t001 has the same menu/data permissions as a "业务发起" role user                                                                                               │
+│ 5. Check user management page in admin — t001~t010 should all have test_maker role
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
