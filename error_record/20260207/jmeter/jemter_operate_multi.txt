@@ -1,10 +1,4 @@
 
- ▐▛███▜▌   Claude Code v2.1.62
-▝▜█████▛▘  Opus 4.6 · Claude Pro
-  ▘▘ ▝▝    D:\software\developmentTools\Git\gitee\newpap\pap
-
-> /clear 
-  ⎿  (no content)
 
 > 基本条件：                                                                
     基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro                
