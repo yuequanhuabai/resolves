@@ -753,14 +753,35 @@ Jmeter可以實現這個嗎？
 这个怎么在Jmeter上配置测试？
 就一用户登录接口为准，如何在Jmeter上配置
 
+==============================================================================================================
+你的.jmx文件打开有报错，你直接基于我已有.jmx文件帮我检查一下吧
+路径：D:\software\developmentTools\Git\GitProjects\workSpaceTwo\resolves\error_record\20260207\jmeter\laptop_PAP压测.jmx
 
+我详细问问参数：
+setUp Thread Group设置：
+Number of Threads(users) : 1
+Ramp-up period (seconds) : 1
+Duration (seconds) : 600
+
+Constant Throughput Timer的设置：
+Target throughput (in samples per minute): 18.0
+
+前面的setUp Thread Group设置参数
+Number of Threads(users) : 1    单线程执行
+Ramp-up period (seconds) : 1    这个1是什么意思？
+Duration (seconds) : 600        这个是持续执行600秒，10分钟的意思吗？
+
+Constant Throughput Timer的设置：
+Target throughput (in samples per minute): 18.0   这个18.0我也不清楚是什么意思？
+
+上面这些参数和这个要求有什么关联：
+1.单交易负载测试：执行200%目标TPS，对单只交易分别运行“运行10分钟”的测试
 
 ==============================================================================================================
+10分钟我理解，就是总压测时间
+我还是不特别理解 目标业务TPS 0.15和执行200%目标TPS 0.3
+6.667s一次发起请求？ 执行200%目标TPS 0.3 是：约13秒发起一次？
 
-
-
-
-==============================================================================================================
 
 
 
