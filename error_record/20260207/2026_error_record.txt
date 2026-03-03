@@ -868,20 +868,89 @@ http://localhost:9600/admin-api/buyList/updateNew
 ==============================================================================================================
 批量發起流程給我一個詳細的Jmeter步驟，我已經導出數據來了
 
+==============================================================================================================
+你是不是错了，这个不是PROC_INST_ID_ 流程实例id吗，你为什么说是taskId
 
-
-
+{"id":"0e8306b6-163d-11f1-b16b-005056c00008","reason":""}
 
 ==============================================================================================================
+  -- 用你前端传的 id 分别查两个字段，看哪个能查到
+  SELECT * FROM ACT_RU_TASK WHERE ID_ = 'a1781c13-13a9-11f1-a884-94b60949a5a6';
+  SELECT * FROM ACT_RU_TASK WHERE PROC_INST_ID_ = 'a1781c13-13a9-11f1-a884-94b60949a5a6';
 
+  如果这个任务已经审批完了，ACT_RU_TASK 查不到，去历史表查：
 
-
+  SELECT ID_, PROC_INST_ID_, NAME_ FROM ACT_HI_TASKINST
+  WHERE ID_ = 'a1781c13-13a9-11f1-a884-94b60949a5a6';
 
 ==============================================================================================================
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
 
+需求：要对当前项目做buylist模块的发起审批的压测：
+我的步骤：
+方案：批量初始化 + 批量發起
 
-==============================================================================================================
+  第一步：在數據庫初始化大量 buyList 基礎數據
 
+  -- 批量插入初始化數據（bizStatus=0，相當於系統默認值，可以直接發起）
+  INSERT INTO IHUB_BUY_LIST (id, name, business_id, business_type, approval_status,
+      biz_status, record_version, del_flag, edit_flag, valid_start_datetime)
+  SELECT
+      LOWER(NEWID()),                          -- 隨機UUID作為id
+      'Stress Test List ' + CAST(n AS VARCHAR), -- name
+      'LIST_STRESS_' + CAST(n AS VARCHAR),     -- 每條不同的 businessId
+      1,                                        -- businessType
+      0,                                        -- approvalStatus: 待提交
+      0,                                        -- bizStatus: system(初始)
+      0,                                        -- recordVersion
+      0,                                        -- delFlag: 正常
+      1,                                        -- editFlag: 可編輯
+      GETDATE()
+  FROM (
+      SELECT ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS n
+      FROM sys.objects a CROSS JOIN sys.objects b  -- 笛卡爾積生成行數
+  ) nums
+  WHERE n <= 1000;  -- 生成1000條
+
+  第二步：導出 CSV 給 JMeter
+
+  SELECT business_id, record_version
+  FROM IHUB_BUY_LIST
+  WHERE business_id LIKE 'LIST_STRESS_%'
+    AND biz_status = 0
+    AND del_flag = 0;
+
+  導出為 buylist_init.csv：
+  business_id,record_version
+  LIST_STRESS_1,0
+  LIST_STRESS_2,0
+  ...
+
+  第三步：JMeter CSV Data Set + HTTP Request
+
+  [{
+    "id": null,
+    "buyListId": null,
+    "businessId": "${business_id}",
+    "assetType": "Bond",
+    "productCode": "XS937663002",
+    "clientId": "",
+    "approvalStatus": 0,
+    "clientCount": 1,
+    "hasMultipleClients": false,
+    "productCodeError": false,
+    "recordVersion": ${record_version},
+    "businessType": 1
+  }]
+
+  注意事項：
+  - businessId 必須唯一（每個線程用不同的），否則版本校驗會衝突
+  - productCode（如 XS937663002）必須在 SECURITY_MASTER 表中存在，否則 checkData 會校驗失敗
+  - buyListId 在純新增場景下前端傳的值後端不直接用，後端會自己查 businessId 對應的記錄
+  - 併發時如果兩個請求用相同的 businessId，第二個會因為 recordVersion 不匹配而失敗
+
+还需要注意什么内容吗
 
 ==============================================================================================================
 
