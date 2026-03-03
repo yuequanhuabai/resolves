@@ -1066,16 +1066,36 @@ Sharing mode:
   ├─────────────────────────────┼──────┼─────────────────────────────────────┤
   │ Same user on each iteration │ 勾选 │                                     │
 
+==============================================================================================================
+我还是有点不理解：
+1.单交易负载测试：执行200%目标TPS，对单只交易分别运行“运行10分钟”的测试
+业务目标TPS: 0.45
+执行200%目标TPS: 0.9
 
+为什么它的Jmeter Thread Group要这样设置:
+Number of Threads(users): 5
+Ramp-up period (seconds): 10
+Loop Count: Infinite
+
+Specify Thread lifetime
+Duration (seconds) : 600   这个我理解，总压测持续时间10分钟
+
+还有Constant Throughput Timer
+
+Target throughput(in samples per minute): 54.0
+Calculate Throughput based on: all active threads in current thread group
+其它的这些参数又是什么意思：
+this thread only
+all active threads
+all active threads in current thread group
+all active threads (shared)
+all active threads in current thread group (shared）
+
+你可以帮我解析一下吗？
 
 ==============================================================================================================
 
-
-
-==============================================================================================================
-
-
-
+ TPS = 并发线程数 / 平均响应时间(秒)
 
 ==============================================================================================================
 
