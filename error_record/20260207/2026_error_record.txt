@@ -1098,12 +1098,18 @@ all active threads in current thread group (shared）
  TPS = 并发线程数 / 平均响应时间(秒)
 
 ==============================================================================================================
+CSV Data Set Config的配置 Configure the CSV Data Source配置
+的Sharing mode属性的下面四个选项又是什么意思呢？
 
+Allthreads All threads
+Current thread group
+Current thread
+Edit
 
-
+我在单交易负载测试中应该选哪个呢？
 
 ==============================================================================================================
-
+混合交易负载测试呢？
 
 
 

@@ -1,0 +1,157 @@
+ 混合交易负载测试的要求是 5 种交易同时并发运行，每种交易维持各自的 TPS，总共跑 30 分钟。
+
+  压测标准回顾
+
+  2.混合交易负载测试：执行100%目标TPS，多支交易按一定比例并发，运行时长30分钟
+
+  交易序号  交易名称      业务目标TPS  执行100%目标TPS
+  1        用户登录       0.15        0.15
+  2        搜索数据       1.5         1.5
+  3        上传数据       0.45        0.45
+  4        发起数据审批    0.45        0.45
+  5        数据同意审批    0.45        0.45
+                                     ─────
+                          总计 TPS:   3.0
+
+  JMeter 整体结构
+
+  Test Plan
+  ├── 全局 HTTP Header Manager (Authorization + Content-Type)
+  ├── 全局 HTTP Request Defaults (host, port)
+  │
+  ├── setUp Thread Group [1线程, 1次]
+  │   └── Login → 提取 token → props.put
+  │
+  ├── Thread Group 1 — 用户登录        TPS=0.15  (9次/分钟)
+  │   ├── Constant Throughput Timer → 9.0
+  │   └── HTTP Request (login)
+  │
+  ├── Thread Group 2 — 搜索数据        TPS=1.5   (90次/分钟)
+  │   ├── Constant Throughput Timer → 90.0
+  │   └── HTTP Request (search)
+  │
+  ├── Thread Group 3 — 上传数据        TPS=0.45  (27次/分钟)
+  │   ├── Constant Throughput Timer → 27.0
+  │   └── HTTP Request (upload)
+  │
+  ├── Thread Group 4 — 发起数据审批     TPS=0.45  (27次/分钟)
+  │   ├── CSV Data Set Config (buylist_init.csv)
+  │   ├── Constant Throughput Timer → 27.0
+  │   └── HTTP Request (submit approval)
+  │
+  └── Thread Group 5 — 数据同意审批     TPS=0.45  (27次/分钟)
+      ├── CSV Data Set Config (approve_init.csv)
+      ├── Constant Throughput Timer → 27.0
+      └── HTTP Request (approve)
+
+  关键区别：5 个 Thread Group 并行执行，互不干扰，各自维持自己的 TPS。
+
+  每个 Thread Group 配置
+
+  线程数估算
+
+  公式：线程数 = TPS × 预估响应时间(秒)，向上取整并留余量
+
+  交易           TPS   预估响应时间  计算线程数  建议线程数
+  ─────────────────────────────────────────────────────
+  用户登录       0.15   1秒          0.15 → 1    2
+  搜索数据       1.5    1秒          1.5  → 2    3
+  上传数据       0.45   2秒          0.9  → 1    3
+  发起数据审批   0.45   3秒          1.35 → 2    3
+  数据同意审批   0.45   3秒          1.35 → 2    3
+
+  统一配置
+
+  每个 Thread Group 都设置：
+
+  ┌───────────────────┬──────────┬──────────────────┐
+  │       属性        │    值    │       说明       │
+  ├───────────────────┼──────────┼──────────────────┤
+  │ Number of Threads │ 见上表   │ 各自不同         │
+  ├───────────────────┼──────────┼──────────────────┤
+  │ Ramp-Up Period    │ 10       │ 10 秒内逐步启动  │
+  ├───────────────────┼──────────┼──────────────────┤
+  │ Loop Count        │ Infinite │ 由 Duration 控制 │
+  ├───────────────────┼──────────┼──────────────────┤
+  │ Scheduler         │ 勾选     │                  │
+  ├───────────────────┼──────────┼──────────────────┤
+  │ Duration          │ 1800     │ 30 分钟          │
+  └───────────────────┴──────────┴──────────────────┘
+
+  Constant Throughput Timer 配置
+
+  每个 Thread Group 各自加一个 Timer：
+
+  ┌──────────────┬───────────────────┬────────────────────────────────────────────┐
+  │     交易     │ Target throughput │             Calculate based on             │
+  ├──────────────┼───────────────────┼────────────────────────────────────────────┤
+  │ 用户登录     │ 9.0               │ All active threads in current thread group │
+  ├──────────────┼───────────────────┼────────────────────────────────────────────┤
+  │ 搜索数据     │ 90.0              │ All active threads in current thread group │
+  ├──────────────┼───────────────────┼────────────────────────────────────────────┤
+  │ 上传数据     │ 27.0              │ All active threads in current thread group │
+  ├──────────────┼───────────────────┼────────────────────────────────────────────┤
+  │ 发起数据审批 │ 27.0              │ All active threads in current thread group │
+  ├──────────────┼───────────────────┼────────────────────────────────────────────┤
+  │ 数据同意审批 │ 27.0              │ All active threads in current thread group │
+  └──────────────┴───────────────────┴────────────────────────────────────────────┘
+
+  为什么用 in current thread group 而不是 all active threads？
+
+  5 个线程组并行运行，每组有自己的 TPS 目标
+
+  如果用 All active threads：
+    Timer 会把所有线程组的线程都算进来
+    搜索的 Timer 把审批的线程也算了，节奏就乱了
+
+  用 in current thread group：
+    每个 Timer 只看自己线程组的线程 → 各自独立控制 ✅
+
+  CSV Sharing Mode 在混合测试中怎么选
+
+  情况：发起审批(Thread Group 4) 和 同意审批(Thread Group 5)
+       用的是不同的 CSV 文件
+
+  Thread Group 4: buylist_init.csv     → 待提交的 businessId
+  Thread Group 5: approve_init.csv     → 待审批的 businessId（已提交状态的数据）
+
+  两个 CSV 互不相关，各自选 All threads 或 Current thread group 都可以
+
+  但有一个重要前提：
+
+  "数据同意审批" 审批的数据，必须是已经 "发起数据审批" 提交过的
+
+  如果两个线程组同时跑：
+    0s    Thread Group 4 开始发起审批（数据从 bizStatus=0 → 提交中）
+    0s    Thread Group 5 开始同意审批（需要已提交的数据）
+          ↑ 此时可能还没有已提交的数据，审批会失败！
+
+  解决方案
+
+  方案 A：提前准备两批独立数据（推荐）
+
+    第一批：1000 条 bizStatus=0 的数据 → 给 "发起审批" 用
+    第二批：1000 条 bizStatus=1, approvalStatus=1 的已提交数据 → 给 "同意审批" 用
+
+    两批数据互不依赖，可以同时跑
+
+  方案 B：先跑发起，再跑审批
+
+    阶段1（0~15分钟）：只跑 Thread Group 4（发起审批）
+    阶段2（15~30分钟）：加入 Thread Group 5（同意审批）
+
+    通过 Scheduler 的 Startup delay 控制：
+      Thread Group 4: Startup delay = 0
+      Thread Group 5: Startup delay = 900（延迟15分钟启动）
+
+  数据量估算
+
+  30 分钟 = 1800 秒
+
+  发起审批: 0.45 TPS × 1800 = 810 次 → CSV 至少 810 行
+  同意审批: 0.45 TPS × 1800 = 810 次 → CSV 至少 810 行
+  搜索数据: 不消耗 CSV（重复查询同一个接口即可）
+  上传数据: 看接口是否需要唯一数据
+  用户登录: 不消耗 CSV（同一账号重复登录）
+
+  建议各准备 1000+ 行数据
