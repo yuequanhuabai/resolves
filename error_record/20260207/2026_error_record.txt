@@ -805,9 +805,69 @@ watch -n 1 "free -m && top -bn1 | grep 'Cpu(s)'"
 这个id是什么参数
 是ACT_RU_TASK的id吗？
 
+==============================================================================================================
+基本条件：
+基于当前目录下的前后端代码，前端poc-pro-ui，后端：pocpro
 
+需求：
+我在進行壓測工作，現在進行到了審批操作了，具體後端代碼是：cn.bochk.pap.server.bpm.controller.admin.task.BpmTaskController的@PutMapping("/approve")方法
+
+你詳細看看這個審批的邏輯
 
 ==============================================================================================================
+我目前看前端傳入的參數就兩個，{"id":"cfc65bb2-13a9-11f1-a884-94b60949a5a6","reason":""}
+這個id是什麼id？在flowable的哪個表裏面，我在壓測的時候可以直接從該表獲取當前用戶的帶審批任務id集合進行一次性審批實現壓測嗎？
+
+==============================================================================================================
+我剛剛對buyList進行了一次提交操作，我在approve001帳號可以看到，buyList的數據是Buy List Name是：Pvb Bond Top Focus List
+它對應的任務是哪個在act_ru_task表裏面
+
+SELECT t.ID_, t.ASSIGNEE_, t.NAME_, t.PROC_INST_ID_, t.CREATE_TIME_,b.NAME,b.MAKER_DATETIME
+  FROM ACT_RU_TASK t
+  INNER JOIN IHUB_BUY_LIST b ON t.PROC_INST_ID_ = b.process_instance_id
+  WHERE b.name = 'Pvb Bond Top Focus List'
+    AND b.approval_status = 1        -- 1=pending
+    AND t.SUSPENSION_STATE_ = 1
+   order by b.maker_datetime desc
+
+
+  SELECT * from ACT_RU_TASK art WHERE PROC_INST_ID_  ='0e7942a1-163d-11f1-b16b-005056c00008'
+
+==============================================================================================================
+那我可以把這些屬於該用戶的代辦流程全部查詢出來，存放在csv中，
+然後在Jmeter中調用審批接口，併發的從裏面取值，進行併發測試嗎？
+
+==============================================================================================================
+我還想批量發起請求呢？
+但是發現有點問題，有三種發起流程的情況：1.純新增數據的發起；2.在已經審批后的數據上進行添加數據，重新發起；3.原數據不修改也可以發起；
+第二種和第三種帶有processInstanceId，第一種沒有processInstanceId；
+你可以幫我詳細看看流程發起的邏輯嗎？ 這個接口：
+http://localhost:9600/admin-api/buyList/updateNew
+
+純新增數據發起：
+[{"id":null,"buyListId":"B3FC3F93-8985-4639-AE69-C5BF1F2D65D6","businessId":"LIST_EQ_THM_1","assetType":"Bond","productCode":"XS937663002","clientId":"","approvalStatus":2,"clientCount":1,"hasMultipleClients":false,"productCodeError":false,"recordVersion":0,"businessType":1}]
+
+已審批后新增數據發起：
+[{"id":"199423c6ba1b45f3a09b4d85b4964df3","businessId":"LIST_BND_THM_3","buyListId":"d63f5540-4dc9-480a-a78b-58ed5484fb75","recordVersion":5,"assetType":"Bond","productCode":"XS937663001","clientId":"PVBQ000101","clientCount":1,"hasMultipleClients":false,"processInstanceId":"3b3d02f0-1643-11f1-b16b-005056c00008","taskId":null,"businessType":1},{"id":"3d4065407973457c937ab3e59230f19c","businessId":"LIST_BND_THM_3","buyListId":"d63f5540-4dc9-480a-a78b-58ed5484fb75","recordVersion":5,"assetType":"Bond","productCode":"XS937663004","clientId":"PVBQ000104","clientCount":1,"hasMultipleClients":false,"processInstanceId":"3b3d02f0-1643-11f1-b16b-005056c00008","taskId":null,"businessType":1},{"id":null,"buyListId":"d63f5540-4dc9-480a-a78b-58ed5484fb75","businessId":"LIST_BND_THM_3","assetType":"Bond","productCode":"XS937663003","clientId":"","approvalStatus":1,"clientCount":1,"hasMultipleClients":false,"productCodeError":false,"recordVersion":5,"businessType":1}]
+原數據不修改再次發起
+[
+  {"id":"23ff0edbb4f84c179ea2f33d3d226e4d","businessId":"LIST_BND_THM_3","buyListId":"858c9032-e6e0-46c8-9992-7acdaff17ca3","recordVersion":4,"assetType":"Bond","productCode":"XS937663001","clientId":"PVBQ000101","clientCount":1,"hasMultipleClients":false,"processInstanceId":"cfa1958d-13a9-11f1-a884-94b60949a5a6","taskId":null,"businessType":1},
+  {"id":"3133a787d8a84f178f1943985a4c429b","businessId":"LIST_BND_THM_3","buyListId":"858c9032-e6e0-46c8-9992-7acdaff17ca3","recordVersion":4,"assetType":"Bond","productCode":"XS937663004","clientId":"PVBQ000104","clientCount":1,"hasMultipleClients":false,"processInstanceId":"cfa1958d-13a9-11f1-a884-94b60949a5a6","taskId":null,"businessType":1}
+]
+你可以幫我看看後端是如何處理的嗎？
+我壓測該如何批量生成對應的發起數據
+
+==============================================================================================================
+用你這個方式發起流程，上面那種在act_ru_task表中獲取指定任務的方式來進行審批操作，
+你梳理一下整個代碼，看看會不會有什麽問題？無論是flowable框架流程，還是業務的流程；
+好像還有一個問題，就是審批的傳參只有兩個{"id":"cfc65bb2-13a9-11f1-a884-94b60949a5a6","reason":""}，那怎麽知道是審批通過還是拒絕？
+
+==============================================================================================================
+你上面那個批量生成ihub_buy_list的數據是不是有點問題，應該還需要批量生成對應的detail數據吧
+
+==============================================================================================================
+批量發起流程給我一個詳細的Jmeter步驟，我已經導出數據來了
+
 
 
 
