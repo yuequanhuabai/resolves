@@ -1,0 +1,100 @@
+ 对，act_ru_task 是查看当前待处理任务的表。以下是压测后查看任务的完整 SQL：
+
+  数据关联关系
+
+  IHUB_BUY_LIST.process_instance_id
+          │
+          ▼
+  act_ru_execution.PROC_INST_ID_  (流程执行实例)
+          │
+          ├──→ act_ru_execution.BUSINESS_KEY_  (存的是 buyList 的 ID，反向关联)
+          ├──→ act_ru_task.PROC_INST_ID_       (当前待处理的任务)
+          └──→ act_hi_taskinst.PROC_INST_ID_   (历史任务记录)
+
+  常用查询 SQL
+
+  1. 查看当前待处理任务（act_ru_task）
+
+  -- 查看压测产生的所有待处理任务
+  SELECT
+      t.ID_,
+      t.NAME_,
+      t.ASSIGNEE_,
+      t.CREATE_TIME_,
+      t.PROC_INST_ID_,
+      t.TASK_DEF_KEY_,
+      t.STATE_
+  FROM act_ru_task t
+  INNER JOIN act_ru_execution e
+      ON t.PROC_INST_ID_ = e.PROC_INST_ID_
+  WHERE e.BUSINESS_KEY_ LIKE 'LIST_STRESS_%'
+    AND e.PARENT_ID_ IS NULL
+  ORDER BY t.CREATE_TIME_ DESC;
+
+  2. 从 IHUB_BUY_LIST 关联查看
+
+  -- 通过 buylist 表关联查看任务状态
+  SELECT
+      b.business_id,
+      b.biz_status,
+      b.approval_status,
+      b.process_instance_id,
+      t.ID_ AS task_id,
+      t.NAME_ AS task_name,
+      t.ASSIGNEE_ AS assignee,
+      t.CREATE_TIME_
+  FROM IHUB_BUY_LIST b
+  LEFT JOIN act_ru_task t
+      ON b.process_instance_id = t.PROC_INST_ID_
+  WHERE b.business_id LIKE 'LIST_STRESS_%'
+    AND b.del_flag = 0
+  ORDER BY b.business_id;
+
+  3. 统计压测结果
+
+  -- 压测任务统计
+  SELECT
+      '已发起流程数' AS metric,
+      COUNT(*) AS count
+  FROM IHUB_BUY_LIST
+  WHERE business_id LIKE 'LIST_STRESS_%'
+    AND process_instance_id IS NOT NULL
+    AND del_flag = 0
+
+  UNION ALL
+
+  SELECT
+      '当前待处理任务数',
+      COUNT(*)
+  FROM act_ru_task t
+  INNER JOIN act_ru_execution e
+      ON t.PROC_INST_ID_ = e.PROC_INST_ID_
+  WHERE e.BUSINESS_KEY_ LIKE 'LIST_STRESS_%'
+    AND e.PARENT_ID_ IS NULL
+
+  UNION ALL
+
+  SELECT
+      '发起失败数（无流程ID）',
+      COUNT(*)
+  FROM IHUB_BUY_LIST
+  WHERE business_id LIKE 'LIST_STRESS_%'
+    AND process_instance_id IS NULL
+    AND biz_status != 0
+    AND del_flag = 0;
+
+  Flowable 关键表说明
+
+  ┌──────────────────┬──────────────┬──────────────────────────────────────────────────────┐
+  │       表名       │   前缀含义   │                         用途                         │
+  ├──────────────────┼──────────────┼──────────────────────────────────────────────────────┤
+  │ act_ru_task      │ ru = runtime │ 当前待处理的任务，审批完成后记录会被删除             │
+  ├──────────────────┼──────────────┼──────────────────────────────────────────────────────┤
+  │ act_ru_execution │ ru = runtime │ 运行中的流程实例，BUSINESS_KEY_ 存的是 buyList 的 ID │
+  ├──────────────────┼──────────────┼──────────────────────────────────────────────────────┤
+  │ act_hi_taskinst  │ hi = history │ 所有任务的历史记录（含已完成），永久保留             │
+  ├──────────────────┼──────────────┼──────────────────────────────────────────────────────┤
+  │ act_hi_procinst  │ hi = history │ 流程实例历史，包含开始/结束时间                      │
+  └──────────────────┴──────────────┴──────────────────────────────────────────────────────┘
+
+  简单记：ru 表只有进行中的数据，任务完成后会移到 hi 表。压测后如果任务都还在等待审批，就查 act_ru_task；如果已经审批完了，就查 act_hi_taskinst。
