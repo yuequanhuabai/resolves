@@ -1,0 +1,81 @@
+ 完整壓測流程梳理與問題分析                                                                                                                                                                                                                                                                                                                                                                              整體鏈路
+
+  發起流程 (updateNewList)
+    ├── 版本校驗 (recordVersion 樂觀鎖)
+    ├── 數據校驗 (checkData)
+    ├── 更新舊主表 + 插入新主表 (IHUB_BUY_LIST)
+    ├── 插入明細表 (IHUB_BUY_LIST_DETAILS)
+    ├── 創建 Flowable 流程實例 → 生成 ACT_RU_TASK
+    └── 推送消息通知
+             ↓
+  審批 (approveTask)
+    ├── 校驗任務存在 + assignee 匹配
+    ├── 校驗流程實例存在
+    ├── 更新 task 狀態 → APPROVE
+    ├── taskService.complete() → 推進流程
+    └── 流程結束 → 觸發 Event
+             ↓
+  業務回調 (BpmBuyListStatusListener)
+    ├── updateProcessStatus(businessKey, status=2)
+    ├── 更新舊主表 + 插入新主表 (bizStatus=2, approvalStatus=2)
+    └── 複製明細到新記錄
+
+  壓測潛在問題
+
+  問題 1：發起和審批的用戶不能相同
+
+  approveTask 校驗 task.getAssignee() == loginUserId。審批人是流程模型中配置的，不是發起人。壓測時：
+  - 發起用 maker 帳號
+  - 審批用 approve001 帳號
+  - 兩個帳號需要不同的 Token
+
+  問題 2：發起和審批之間有時間依賴
+
+  發起流程後，Flowable 需要時間創建任務到 ACT_RU_TASK。不能發起後立刻審批，需要：
+  1. 先批量發起所有流程
+  2. 等待全部任務生成完畢
+  3. 再從 ACT_RU_TASK 導出 task ID
+  4. 最後批量審批
+
+  問題 3：recordVersion 併發衝突（最大風險）
+
+  // line 282-287
+  BuyListDO originalList = listMapper.selectOne(
+      .eq(BuyListDO::getBusinessId, updateReqVO.get(0).getBusinessId())
+      .orderByDesc(BuyListDO::getRecordVersion)
+      .last("OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY"));
+  validateRecordVersion(updateReqVO.get(0), originalList);
+
+  如果兩個請求用相同的 businessId 併發發起，都讀到 recordVersion=0，第一個成功後版本變為 1，第二個校驗就會失敗。 所以壓測發起時，每個線程必須用不同的 businessId。
+
+  問題 4：審批後業務回調的事務問題
+
+  approveTask 有 @Transactional，流程結束後觸發 Spring Event → BpmBuyListStatusListener.onEvent() → updateProcessStatus()（也有 @Transactional）。
+
+  審批操作在 approveTask 事務內 complete 後，如果流程只有一個審批節點，會同步觸發 updateProcessStatus，意味著：
+  - Flowable 引擎操作 + 業務主表更新 + 明細表複製 全在一個大事務裡
+  - 併發量大時，DB 鎖競爭會比較嚴重
+
+  問題 5：approveTask 沒有冪等保護
+
+  沒有檢查 task 的當前 status 是否已經是 APPROVE。正常情況下 Flowable complete 後 task 從 ACT_RU_TASK 移除所以查不到會報 TASK_NOT_EXISTS，但在極端併發下理論上可能有問題。
+
+  問題 6：初始化數據必須有對應的 SECURITY_MASTER
+
+  // line 408-427 getBuyListDetailsDoForMaker
+  Set<String> clientIdSet = getClientIdSet(reqVO.getAssetType(), reqVO.getProductCode());
+
+  發起時會根據 assetType + productCode 去查 SECURITY_MASTER 表獲取 clientId 列表。如果壓測用的 productCode 在 SECURITY_MASTER 中不存在，明細表會沒有數據插入。確保壓測用的 productCode（如
+  XS937663002）在 SECURITY_MASTER 中有記錄。
+
+  建議的壓測方案
+
+  第一階段：批量初始化（SQL 直接插入 IHUB_BUY_LIST，bizStatus=0）
+      ↓
+  第二階段：JMeter 用 maker 帳號併發調用 /buyList/updateNew（每線程不同 businessId）
+      ↓
+  第三階段：等待全部流程創建完成
+      ↓
+  第四階段：SQL 導出 ACT_RU_TASK 中 approve001 的 task ID 到 CSV
+      ↓
+  第五階段：JMeter 用 approve001 帳號併發調用 /bpm/task/approve
