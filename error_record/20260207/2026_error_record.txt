@@ -1247,6 +1247,9 @@ http://localhost:9600/admin-api/buyList/updateNew
 
 
 ==============================================================================================================
+./init_sql.sh --profile=dev --sql="/root/init_script/create.sql,/root/init_script/create_table_base.sql,/root/init_script/create_table_business.sql"
+
+./init_sql.sh --profile=dev --sql="/root/init_script/Initialization.sql,/root/init_script/data_init.sql"
 
 
 
