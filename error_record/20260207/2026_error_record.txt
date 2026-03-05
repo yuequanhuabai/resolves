@@ -1251,11 +1251,17 @@ http://localhost:9600/admin-api/buyList/updateNew
 
 ./init_sql.sh --profile=dev --sql="/root/init_script/Initialization.sql,/root/init_script/data_init.sql"
 
-
-
-
 ==============================================================================================================
-
+linux如何確認某個目錄下是否有足夠的空間？ 例如我想確認/var目錄下是否有足夠的空間
+df -h 的結果如下：
+df -h
+Filesystem      Size  Used Avail Use% Mounted on
+devtmpfs        898M     0  898M   0% /dev
+tmpfs           914M     0  914M   0% /dev/shm
+tmpfs           914M   97M  817M  11% /run
+tmpfs           914M     0  914M   0% /sys/fs/cgroup
+/dev/vda3        40G  3.0G   37G   8% /
+tmpfs           183M     0  183M   0% /run/user/0
 
 
 

@@ -67,7 +67,7 @@ useradd -m -s /bin/bash devops
 
 # 设置密码
 passwd devops
-
+Aa+123,.
 # 赋予 sudo 权限
 usermod -aG wheel devops
 
