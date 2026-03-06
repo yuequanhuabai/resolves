@@ -231,7 +231,7 @@ sudo /opt/mssql/bin/mssql-conf setup
 ```
 
 ### 3.5 2G 内存关键设置 — 限制内存使用
-
+AaBb137246!!!!!
 ```bash
 # 限制 SQL Server 最大使用 768MB 内存（给系统和其他进程留空间）
 sudo /opt/mssql/bin/mssql-conf set memory.memorylimitmb 768
