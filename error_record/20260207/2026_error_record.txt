@@ -1263,6 +1263,68 @@ tmpfs           914M     0  914M   0% /sys/fs/cgroup
 /dev/vda3        40G  3.0G   37G   8% /
 tmpfs           183M     0  183M   0% /run/user/0
 
+==============================================================================================================
+我现在有另一个问题，就是为什么审批同意之后只有一条数据呢？ 按照代码的逻辑，审批后会有两条数据吧，一条是原来的pending的数据变为了审批状态approved的数据，另一条是审批后的新的pending状态的数据;
+你看看buylist模块的代码？
+这个是提交代码：
+@PutMapping("/updateNew")
+    @Operation(summary = "更新業務")
+    @PreAuthorize("@ss.hasPermission('buy:list:update')")
+    public CommonResult<ParseResultVO> updateNewList(@Valid @RequestBody List<BuyListReqVO> updateReqVO) {
+        ParseResultVO result = listService.updateNewList(updateReqVO);
+        return success(result);
+    }
+
+审批代码逻辑：会调用cn.bochk.pap.server.business.service.Impl.BuyListServiceImpl的updateProcessStatus方法吧
+
+你详细看看逻辑
+
+==============================================================================================================
+linux里面归档日志，查询对应接口的相应日志成功，如何查看;日志文件是log.gz文件里面查询指定接口;
+
+==============================================================================================================
+请求接口的时候没有前后的拦截器，就是没有那种成功或者失败的标识，但是现在要求证明该接口请求成功了：
+下面是登录接口的本地IDEA的日志：
+2026-03-05 15:32:37.845|DEBUG|http-nio-9600-exec-25|o.s.security.web.FilterChainProxy|doFilterInternal|223|Securing POST /admin-api/system/auth/login
+2026-03-05 15:32:37.907|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.o.O.selectList|debug|135|==>  Preparing: SELECT id,access_token,refresh_token,user_id,user_type,user_info,client_id,scopes,expires_time,create_time,update_time,creator,updater,deleted FROM system_oauth2_access_token WHERE deleted=0 AND (access_token = ?)
+2026-03-05 15:32:37.908|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.o.O.selectList|debug|135|==> Parameters: 4df9ab92a9624b4aabdc3d51e2f0ee13(String)
+2026-03-05 15:32:38.081|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.o.O.selectList|debug|135|<==      Total: 1
+2026-03-05 15:32:38.172|DEBUG|http-nio-9600-exec-25|o.s.s.w.c.HttpSessionSecurityContextRepository|setContextInSession|178|Stored SecurityContextImpl [Authentication=UsernamePasswordAuthenticationToken [Principal=LoginUser(id=2, userType=2, info={nickname=test001, deptId=null}, tenantId=null, scopes=null, expiresTime=2026-03-05T16:31:46.645961, context=null, visitTenantId=null), Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=127.0.0.1, SessionId=null], Granted Authorities=[]]] to HttpSession [org.apache.catalina.session.StandardSessionFacade@3d34ae2]
+2026-03-05 15:32:38.172|DEBUG|http-nio-9600-exec-25|o.s.security.web.FilterChainProxy|lambda$doFilterInternal$3|227|Secured POST /admin-api/system/auth/login
+2026-03-05 15:32:38.180|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.u.A.selectList|debug|135|==>  Preparing: SELECT id,username,password,nickname,remark,dept_id,post_ids,email,mobile,sex,avatar,status,login_ip,login_date,create_time,update_time,creator,updater,deleted FROM system_users WHERE deleted=0 AND (username = ?)
+2026-03-05 15:32:38.181|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.u.A.selectList|debug|135|==> Parameters: test001(String)
+2026-03-05 15:32:38.361|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.u.A.selectList|debug|135|<==      Total: 1
+2026-03-05 15:32:38.406|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.l.LoginLogMapper.insert|debug|135|==>  Preparing: INSERT INTO system_login_log ( log_type, user_id, user_type, username, result, user_ip, user_agent, create_time, update_time, creator, updater ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+2026-03-05 15:32:38.406|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.l.LoginLogMapper.insert|debug|135|==> Parameters: 100(Integer), 2(Long), 2(Integer), test001(String), 0(Integer), 127.0.0.1(String), Apache-HttpClient/4.5.14 (Java/17.0.12)(String), 2026-03-05T15:32:38.406768900(LocalDateTime), 2026-03-05T15:32:38.406768900(LocalDateTime), 2(String), 2(String)
+2026-03-05 15:32:38.478|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.l.LoginLogMapper.insert|debug|135|<==    Updates: 1
+2026-03-05 15:32:38.480|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.u.A.updateById|debug|135|==>  Preparing: UPDATE system_users SET login_ip=?, login_date=?, update_time=?, updater=? WHERE id=? AND deleted=0
+2026-03-05 15:32:38.481|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.u.A.updateById|debug|135|==> Parameters: 127.0.0.1(String), 2026-03-05T15:32:38.479574(LocalDateTime), 2026-03-05T15:32:38.480571500(LocalDateTime), 2(String), 2(Long)
+2026-03-05 15:32:38.531|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.u.A.updateById|debug|135|<==    Updates: 1
+2026-03-05 15:32:38.582|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.o.O.insert|debug|135|==>  Preparing: INSERT INTO system_oauth2_refresh_token ( refresh_token, user_id, user_type, client_id, expires_time, create_time, update_time, creator, updater ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ? )
+2026-03-05 15:32:38.582|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.o.O.insert|debug|135|==> Parameters: aa5b4733fd1141949c991474fc28bfdd(String), 2(Long), 2(Integer), default(String), 2026-03-05T17:02:38.581302(LocalDateTime), 2026-03-05T15:32:38.582298800(LocalDateTime), 2026-03-05T15:32:38.582298800(LocalDateTime), 2(String), 2(String)
+2026-03-05 15:32:38.630|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.o.O.insert|debug|135|<==    Updates: 1
+2026-03-05 15:32:38.631|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.u.A.selectById|debug|135|==>  Preparing: SELECT id,username,password,nickname,remark,dept_id,post_ids,email,mobile,sex,avatar,status,login_ip,login_date,create_time,update_time,creator,updater,deleted FROM system_users WHERE id=? AND deleted=0
+2026-03-05 15:32:38.631|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.u.A.selectById|debug|135|==> Parameters: 2(Long)
+2026-03-05 15:32:38.752|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.u.A.selectById|debug|135|<==      Total: 1
+2026-03-05 15:32:38.779|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.o.O.insert|debug|135|==>  Preparing: INSERT INTO system_oauth2_access_token ( access_token, refresh_token, user_id, user_type, user_info, client_id, expires_time, create_time, update_time, creator, updater ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )
+2026-03-05 15:32:38.779|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.o.O.insert|debug|135|==> Parameters: d94d49f249874f8fa8d2b2d0c19aa9a7(String), aa5b4733fd1141949c991474fc28bfdd(String), 2(Long), 2(Integer), {"nickname":"test001","deptId":null}(String), default(String), 2026-03-05T17:02:38.778784200(LocalDateTime), 2026-03-05T15:32:38.779770800(LocalDateTime), 2026-03-05T15:32:38.779770800(LocalDateTime), 2(String), 2(String)
+2026-03-05 15:32:38.834|DEBUG|http-nio-9600-exec-25|c.b.p.s.s.d.m.o.O.insert|debug|135|<==    Updates: 1
+
+该怎么截图？
+
+
+==============================================================================================================
+我还有一个重要的事情，就是查询内网测试环境的接口请求成功的日志，你帮我看看后端的logback日志配置文件，如何在linux里卖的归档日志文件里查询
+
+
+INFRA_API_ACCESS_LOG
+==============================================================================================================
+你可以帮我加一个请求体和返回体的拦截器吗？需要证明请求成功了
+
+==============================================================================================================
+Spring框架没有servlet的拦截器吗？可以获取请求体和返回体的信息？
+
+==============================================================================================================
 
 
 ==============================================================================================================
