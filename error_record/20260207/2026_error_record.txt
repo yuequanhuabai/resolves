@@ -1368,10 +1368,11 @@ REDHAT_SUPPORT_PRODUCT_VERSION="7"
 ==============================================================================================================
 你再帮我梳理一下这个方法的逻辑：cn.bochk.pap.server.business.controller.BenchmarkController#insertBrBenchmarkBMI
 
+https://w6.hai916.com:8888/#/dashboard
 
 你再帮我梳理一下这个方法的逻辑：cn.bochk.pap.server.business.controller.BenchmarkController#insertBrBenchmarkCW
 ==============================================================================================================
-
+weishenm@qq.com
 
 
 
