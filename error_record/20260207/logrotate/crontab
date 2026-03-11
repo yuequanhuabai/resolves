@@ -1,0 +1,1 @@
+0 2 * * * sudo /usr/sbin/logrotate -v -s /opt/project/PAP/logrotate/logrotate.state /opt/project/PAP/logrotate/logrotate.conf > /opt/project/PAP/logrotate/logrotate.log 2>&1
