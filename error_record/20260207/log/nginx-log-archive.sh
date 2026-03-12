@@ -63,7 +63,7 @@ if [ ${#LOG_FILES[@]} -eq 0 ]; then
 fi
 
 # 磁盘空间检查
-LOG_TOTAL_SIZE=$(du -sc "${LOG_FILES[@]}" 2>/dev/null | tail -1 | awk '{print $1}')
+LOG_TOTAL_SIZE=$(du -sk "${LOG_FILES[@]}" 2>/dev/null | awk '{sum+=$1} END{print sum}')
 # 检查日志目录：cp 副本需要与日志等量的空间
 LOG_DIR_AVAIL=$(df -k "$LOG_DIR" | tail -1 | awk '{print $4}')
 if [ "$LOG_DIR_AVAIL" -lt "$LOG_TOTAL_SIZE" ]; then

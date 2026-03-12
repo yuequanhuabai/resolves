@@ -42,6 +42,8 @@ fi
 HOSTNAME=$(hostname)
 # 当前日期
 DATETIME=$(date +%Y%m%d)
+# logback history 目录的日期格式（yyyy-MM-dd）
+DATE_DASH=$(date +%Y-%m-%d)
 # 归档文件名
 ARCHIVE_NAME="${HOSTNAME}.${MODULE}.applog.${DATETIME}"
 
@@ -51,19 +53,28 @@ if [ -f "$ARCHIVE_DIR/${ARCHIVE_NAME}.tar.gz" ]; then
     exit 0
 fi
 
-# 查找所有非空的 IHUB 日志文件，存入数组
+# 查找所有非空的 IHUB 活跃日志文件，存入数组
 LOG_FILES=()
 while IFS= read -r -d '' f; do
     LOG_FILES+=("$f")
 done < <(find "$LOG_DIR" -name "IHUB_*.log" -size +0c -print0 2>/dev/null)
 
-if [ ${#LOG_FILES[@]} -eq 0 ]; then
+# 查找 history 目录下当天的滚动日志文件
+HISTORY_FILES=()
+if [ -d "$LOG_DIR/history" ]; then
+    while IFS= read -r -d '' f; do
+        HISTORY_FILES+=("$f")
+    done < <(find "$LOG_DIR/history" -name "IHUB_*.${DATE_DASH}.*.log" -size +0c -print0 2>/dev/null)
+fi
+
+if [ ${#LOG_FILES[@]} -eq 0 ] && [ ${#HISTORY_FILES[@]} -eq 0 ]; then
     echo "$(date) - no log files to archive, skip." >> "$ARCHIVE_DIR/archive.log"
     exit 0
 fi
 
-# 磁盘空间检查
-LOG_TOTAL_SIZE=$(du -sc "${LOG_FILES[@]}" 2>/dev/null | tail -1 | awk '{print $1}')
+# 磁盘空间检查（活跃日志 + history 当天日志）
+ALL_FILES=("${LOG_FILES[@]}" "${HISTORY_FILES[@]}")
+LOG_TOTAL_SIZE=$(du -sk "${ALL_FILES[@]}" 2>/dev/null | awk '{sum+=$1} END{print sum}')
 # 检查日志目录：cp 副本需要与日志等量的空间
 LOG_DIR_AVAIL=$(df -k "$LOG_DIR" | tail -1 | awk '{print $4}')
 if [ "$LOG_DIR_AVAIL" -lt "$LOG_TOTAL_SIZE" ]; then
@@ -92,15 +103,19 @@ while IFS= read -r -d '' f; do
     ROTATED_FILES+=("$f")
 done < <(find "$LOG_DIR" -name "IHUB_*.log-${DATETIME}" -print0 2>/dev/null)
 
-# 将所有轮转文件打包归档到 /LOG，打包成功后才删除临时文件
-if [ ${#ROTATED_FILES[@]} -gt 0 ]; then
-    TAR_LIST=()
-    for f in "${ROTATED_FILES[@]}"; do
-        TAR_LIST+=("$(basename "$f")")
-    done
+# 将轮转文件 + history 当天文件一起打包归档到 /LOG
+TAR_LIST=()
+for f in "${ROTATED_FILES[@]}"; do
+    TAR_LIST+=("$(basename "$f")")
+done
+for f in "${HISTORY_FILES[@]}"; do
+    TAR_LIST+=("history/$(basename "$f")")
+done
+
+if [ ${#TAR_LIST[@]} -gt 0 ]; then
     tar -czf "$ARCHIVE_DIR/${ARCHIVE_NAME}.tar.gz" -C "$LOG_DIR" "${TAR_LIST[@]}" || log_error "failed to create tar archive ${ARCHIVE_NAME}.tar.gz"
 
-    # 删除轮转的临时文件
+    # 只删除轮转的临时文件，history 文件由 logback 自行管理
     for f in "${ROTATED_FILES[@]}"; do
         rm -f "$f"
     done
