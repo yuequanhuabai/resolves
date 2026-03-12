@@ -1,0 +1,47 @@
+nginx-log-archive.sh 脚本逻辑说明
+=====================================
+
+日志源：/opt/project/PAP/nginx/logs/*.log
+归档目标：/LOG/{主机名}.nginx.{YYYYMMDD}.tar.gz
+错误日志：/LOG/archive_error.log
+运行日志：/LOG/archive.log
+
+一、安全保障
+-----------
+1. set -e           任意命令失败立即退出，防止后续步骤在异常状态下继续执行
+2. flock 文件锁     通过 /tmp/archive_nginx.lock 防止多个实例同时运行
+3. 权限检查         检查日志目录可读、归档目录存在且可写
+4. 幂等检查         当天归档文件已存在则跳过，避免重复归档覆盖
+5. 磁盘空间检查     分别检查日志目录（cp 副本空间）和归档目录（tar.gz 空间）
+
+二、归档流程
+-----------
+步骤1：查找日志文件
+  - find 查找 /opt/project/PAP/nginx/logs/ 下所有非空的 *.log 文件
+  - 使用 -print0 + 数组存储，安全处理含空格或特殊字符的文件名
+  - 无文件则记录日志并退出
+
+步骤2：磁盘空间检查
+  - du -sk 计算所有日志文件总大小（KB）
+  - df -k 获取日志目录可用空间，不足则报错退出
+  - df -k 获取归档目录可用空间，不足则报错退出
+
+步骤3：copytruncate 轮转
+  - 第一轮循环：将每个 *.log 复制为 *.log-{YYYYMMDD}（全部复制成功后才进入下一步）
+  - 第二轮循环：清空所有原日志文件
+  - 分两轮执行保证原子性：任一 cp 失败时原文件不会被清空
+  - 使用 copytruncate 方式，文件 inode 不变，Nginx 无需感知，无需 kill -USR1
+
+步骤4：打包归档
+  - find 查找当天产生的 *.log-{YYYYMMDD} 轮转文件
+  - tar -czf 打包为 /LOG/{主机名}.nginx.{YYYYMMDD}.tar.gz
+  - tar 成功后才删除轮转临时文件；失败则保留临时文件可手动恢复
+
+步骤5：记录归档日志
+  - 向 /LOG/archive.log 写入一条归档完成记录
+
+三、错误处理
+-----------
+  - 所有错误通过 log_error 函数统一处理
+  - 错误信息格式：{时间} - [nginx] ERROR: {错误描述}
+  - 写入 /LOG/archive_error.log 后退出脚本
