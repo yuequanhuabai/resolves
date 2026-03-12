@@ -1519,20 +1519,35 @@ https://localhost:9080/saml2/authenticate/adfs
 先帮我把逻辑梳理清晰，先宏观准确，核心，简洁的讲讲
 
 ==============================================================================================================
+再帮我看看当前目录下的：nginx-log-archive.sh shell脚本
 
+当前目录下的redis-log-archive.sh和redis-log-archive-v2.sh有什么区别？
 
+你帮我总结一下redis-log-archive.sh的逻辑
 
+你刷新一下当前目录，我新加了crontab和logrotate.conf文件，logrotate.conf文件你核心看redis的部分
+你梳理一下当前新加的两个文件的redis部分逻辑
+
+你在已有的redis-log-archive.sh脚本上修改一下，按照crontab和logrotate.conf文件中redis部分的逻辑，以这个为准，包括文件名和路径等全部按照这个逻辑来
 ==============================================================================================================
+我有个问题，redis的所有日志全部是redis.log这个文件里面吗
 
-
-
-
+还有一个问题，如果报错的话，需要把错误信息记录下来生成一个文件;
+如果没有当前错误记录文件会自动创建该文件吗？
 ==============================================================================================================
+你再看看当前目录下的nginx-log-archive.sh脚本，也可以把它改成基于crontab和logrotate.conf文件中nginx部分的逻辑吗
+和redis-log-archive.sh脚本一样？
+你可以理解我的需求吗？ 你先复述一遍你的理解
 
+需要考虑一下权限问题，实际执行的是非root用户，有没有kill -USR1的权限
 
-
-
+以你训练数据历史，一版shell脚本会有哪些问题？ 我这种日志归档的shell脚本会存在哪些问题？先讲宏观视角问题，后面具体到细节我后面会问你
 ==============================================================================================================
+你再看看 D:\software\developmentTools\Git\gitee\newpap\pap\pocpro 项目的应用日志，logback配置文件位置： D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\pap-server\src\main\resources\logback-spring.xml
+因为logback不支持归档，所以也需要单独写一个应用归档脚本;
+具体参考当前目录crontab和logrotate.conf文件中最后一个部分的逻辑：#  PAP 应用日志（logback 写入的分级日志文件）
+具体的脚本参考当前的nginx-log-archive.sh或redis-log-archive.sh脚本
+你可以理解我的需求吗？你先复述一遍你的理解
 
 
 
