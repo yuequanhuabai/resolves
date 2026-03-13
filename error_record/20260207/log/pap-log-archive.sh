@@ -40,10 +40,10 @@ fi
 
 # 主机名
 HOSTNAME=$(hostname)
-# 当前日期
-DATETIME=$(date +%Y%m%d)
-# logback history 目录的日期格式（yyyy-MM-dd）
-DATE_DASH=$(date +%Y-%m-%d)
+# 前一天日期（脚本凌晨执行，归档前一天日志）
+DATETIME=$(date -d "yesterday" +%Y%m%d)
+# logback history 目录的日期格式（yyyy-MM-dd），取前一天
+DATE_DASH=$(date -d "yesterday" +%Y-%m-%d)
 # 归档文件名
 ARCHIVE_NAME="${HOSTNAME}.${MODULE}.applog.${DATETIME}"
 

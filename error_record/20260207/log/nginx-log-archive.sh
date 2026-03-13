@@ -40,8 +40,8 @@ fi
 
 # 主机名
 HOSTNAME=$(hostname)
-# 当前日期
-DATETIME=$(date +%Y%m%d)
+# 前一天日期（脚本凌晨执行，归档前一天日志）
+DATETIME=$(date -d "yesterday" +%Y%m%d)
 # 归档文件名
 ARCHIVE_NAME="${HOSTNAME}.${MODULE}.${DATETIME}"
 
