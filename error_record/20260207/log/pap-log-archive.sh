@@ -57,14 +57,14 @@ fi
 LOG_FILES=()
 while IFS= read -r -d '' f; do
     LOG_FILES+=("$f")
-done < <(find "$LOG_DIR" -name "IHUB_*.log" -size +0c -print0 2>/dev/null)
+done < <(find "$LOG_DIR" -maxdepth 1 -name "IHUB_*.log" -size +0c -print0 2>/dev/null)
 
 # 查找 archive 目录下当天的滚动日志文件
 HISTORY_FILES=()
 if [ -d "$LOG_DIR/archive" ]; then
     while IFS= read -r -d '' f; do
         HISTORY_FILES+=("$f")
-    done < <(find "$LOG_DIR/archive" -name "IHUB_*.${DATE_DASH}.*.log" -size +0c -print0 2>/dev/null)
+    done < <(find "$LOG_DIR/archive" -maxdepth 1 -name "IHUB_*.${DATE_DASH}.*.log" -size +0c -print0 2>/dev/null)
 fi
 
 if [ ${#LOG_FILES[@]} -eq 0 ] && [ ${#HISTORY_FILES[@]} -eq 0 ]; then
@@ -101,7 +101,7 @@ done
 ROTATED_FILES=()
 while IFS= read -r -d '' f; do
     ROTATED_FILES+=("$f")
-done < <(find "$LOG_DIR" -name "IHUB_*.log-${DATETIME}" -print0 2>/dev/null)
+done < <(find "$LOG_DIR" -maxdepth 1 -name "IHUB_*.log-${DATETIME}" -print0 2>/dev/null)
 
 # 将轮转文件 + archive 当天文件一起打包归档到 /LOG
 TAR_LIST=()

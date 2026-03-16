@@ -55,7 +55,7 @@ fi
 LOG_FILES=()
 while IFS= read -r -d '' f; do
     LOG_FILES+=("$f")
-done < <(find "$LOG_DIR" -name "*.log" -size +0c -print0 2>/dev/null)
+done < <(find "$LOG_DIR" -maxdepth 1 -name "*.log" -size +0c -print0 2>/dev/null)
 
 if [ ${#LOG_FILES[@]} -eq 0 ]; then
     echo "$(date) - no log files to archive, skip." >> "$ARCHIVE_DIR/archive.log"
@@ -90,7 +90,7 @@ done
 ROTATED_FILES=()
 while IFS= read -r -d '' f; do
     ROTATED_FILES+=("$f")
-done < <(find "$LOG_DIR" -name "*.log-${DATETIME}" -print0 2>/dev/null)
+done < <(find "$LOG_DIR" -maxdepth 1 -name "*.log-${DATETIME}" -print0 2>/dev/null)
 
 # 将所有轮转文件打包归档到 /LOG，打包成功后才删除临时文件
 if [ ${#ROTATED_FILES[@]} -gt 0 ]; then
