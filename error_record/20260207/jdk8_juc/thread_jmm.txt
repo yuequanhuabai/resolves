@@ -1,16 +1,4 @@
 
-╭─── Claude Code v2.1.59 ──────────────────────────────────────────────────────╮
-│                                                    │ Tips for getting        │
-│                 Welcome back Ethon!                │ started                 │
-│                                                    │ Ask Claude to create a… │
-│                       ▐▛███▜▌                      │ ─────────────────────── │
-│                      ▝▜█████▛▘                     │ Recent activity         │
-│                        ▘▘ ▝▝                       │ No recent activity      │
-│                                                    │                         │
-│   Opus 4.6 · Claude Pro · waming313@gmail.com's    │                         │
-│   Organization                                     │                         │
-│   D:\software\develop_tools\git\gitee\thread_jmm   │                         │
-╰──────────────────────────────────────────────────────────────────────────────╯
 
 > 關於java的多線程問題：你知道在多核多線程的情況下，出現原本應該執行在後面  
   的指令在另一個核先執行了；這種現象普遍嗎                                  
