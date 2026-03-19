@@ -1,0 +1,81 @@
+一. 通用检查
+
+1.1基本规范
+
+无拼写错误-- 变量名，函数名，注释，日志文本，错误提示均无拼写错误（建议IDE安装拼写检查插件如：Code Spell Checker）
+无调试代码残留-- 无console.log, System.out.println, debugger, TODO/FIXME (需要临时保留的需注明JIRA编号)
+无硬编码敏感资讯-- 代码中不包含密码，密钥，Token，IP地址，端口等，一律走配置文件/环境变量/Vault
+无硬编码环境相关值-- 不存在 dev/uat/prod字样的URL，数据库连接串写死在代码中
+提交粒度合理-- 一个PR只做一件事（一个功能/一个bugfix），不夹带无关改动
+Commit message 规范 -- 格式为 [IHUB-xxx] type: 简述，type包含feat/fix/refactor/chore/docs
+不包含本地配置文件-- .idea/, .vscode/ , node_modules/ , target/ 等不在提交中
+
+1.2 安全检查
+
+无日志泄露敏感数据-- 日志中不打印用户密码，身份证号，银行卡号，Session Token等
+输入验证到位-- 所有外部输入（用户请求参数，文件上传，URL参数）均有伺服器端校验，不仅依赖前端校验
+权限控制正确-- 接口是否正确标注了权限注释， SSO Token 校验是否完整，是否存在越权访问可能
+无SSRF风险-- 后端不直接使用用户输入拼接URL发起内部请求
+
+二、前端（Vue）检查
+
+2.1 代码结构与质量
+
+组件命名规范-- 使用PascalCase，文件名与组件名一致 (如 ProductList.vue)
+Props定义完整-- 所有props必须声明类型(type) 和是否必填(required) ,有预设值的必须声明default
+v-for必须带key-- 且key为唯一标识(id), 禁止使用index作为key(列表有增删操作时会导致渲染异常)
+v-if和v-for不同时在同一元素上-- 这是Vue常见性能陷阱
+无记忆体泄露-- 组件销毁时(onUnmounted) 是否清理了定时器，事件监听器，WebSocket连接
+异步请求有loading和错误处理-- 所有API调用必须有loading状态，try-catch错误提示，不可静默失败
+无直接操作DOM-- 不使用document.getElementById等原生DOM操作，使用Vue ref
+
+2.2 安全
+无XSS风险 -- 不适用v-html 渲染用户输入内容；必须使用时必须经过DOMPurify等转义处理
+路由守卫完整-- 未登入用户访问任何页面均被拦截跳转至SSO登入；Token过期有处理逻辑;
+敏感数据不存localStorage-- Token存储方式安全（推荐httpOnly cookie），不在前端存储投资产品敏感数据
+API请求携带认证资讯-- Axios拦截器正确附加Authorization Header， 401响应统一处理跳转
+
+2.3 SSO整合
+
+BOCHK SSO 回调处理正确-- 回调URL参数解析逻辑正确， 边界情况（Token无效，过期，缺失）有处理
+SSO登出处理-- 退出时同时清楚IHUB会话和通知BOCHK SSO登出
+Session 超时提示-- 会话超时前有倒计时提示，超时后自动跳转SSO重新认证
+
+2.5 常见低级错误（重点排查）
+
+API地址拼写正确 -- 对比后端Controller路径，确认无漏写，错写（如 /api/prodcut --> /api/product）
+异步调用正确使用await-- 需要等待结果的地方不能漏写await，否则拿到Promise对象而非数据
+响应式数据正确声明-- 对象/数组使用 reactive(), 基本类型使用ref(), 不要返回来或遗漏
+条件判断无隐式类型问题-- 如0、""、null、undefined的判断是否符合预期
+
+三、 后端(Spring Boot)检查
+
+3.1 代码结构与质量
+
+分层清晰-- Controller只做参数接受和响应封装，不写业务逻辑；Service层不直接操作HttpServletRequest
+API返回统一响应结构-- 使用统一Result<T>或ResponseEntity包装，包含code/message/data
+异常处理统一 -- 通过@ControllerAdvice+ @ExceptionHandler全局捕捉，不在每个Controller里try-catch
+无业务代码中的空指针风险-- 对可能为null的返回值有判断处理 (数据库查询结果，外部接口返回等)
+日志级别正确 --  正常流程用info ，异常用error(带堆栈)，调试资讯用debug(不要再生产级别打印)
+
+3.2 安全
+
+SQL注入防范 -- 所有数据库操作使用参数化查询/PreparedStatement，绝对进制字符串拼接SQL
+SSO Token校验-- 每个接口调用前均验证Token有效性，Token刷新机制正确
+接口幂等性-- 涉及数据变更的接口 (新增/修改/删除) 考虑重复提交场景
+CORS配置最小化-- 仅允许IHUB前端域名，不适用*通配符
+文件上传安全 -- 如涉及文件上传，校验文件类型，大小，存储路径不可被用户控制
+
+3.3 数据传输
+
+定时而南无配置可控 -- ControlM shell env config 表达式抽取到配置文件，不要硬编码
+失败重试机制 -- 向Aladdin 传输失败时有重试，告警，日志记录
+数据一致性 -- 传输前后数据完整性校验（条数，关键栏位 checksum）
+传输幂等 -- 重复传输同一批数据不会导致Aladdin侧数据重复
+
+3.4 常见低级错误（重点排查）
+@Transactional使用正确 -- 标注在public方法上，内部方法互调不会导致事务失效(代理机制问题)
+Bean注入方式正确 -- 推荐构造注入，避免@Autowired 栏位注入导致空指针
+接口HTTP Method 正确 -- 查询用GET，变更用POST/PUT/DELETE， 不要全部用POST
+日期时间处理正确 -- 使用LocalDateTime 而非 Date， 序列化格式统一(ISO 8601)
+配置文件 profile正确 -- application-dev.yaml/application-uat.yml不混淆，不将dev配置提交uat
