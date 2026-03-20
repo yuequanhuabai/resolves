@@ -1,4 +1,13 @@
 
 synchronied 锁
 
-线程
+1.wait -->释放锁-->进入waitSet--> 别的线程notify-->从waitSet到EntryList，竞争锁-->获取锁-->RUNNABLE-->等待os调用cpu的时间片
+
+2.synchronized：
+  竞争失败-->进入cxq-->转移到EntryList-->Owner释放锁-->从EntryList中选一个-->RUNNABLE
+
+3.park
+  park-->挂起，在CLH队列中排队-->前驱节点释放锁，调用unpark-->被唤醒--->RUNNABLE
+
+4.sleep(ms)--> TIMED_WAITING
+         sleep(1000)-->OS注册一个定时器-->线程挂起-->时间到，OS定时器触发-->放回就绪队列-->RUNNABLE
