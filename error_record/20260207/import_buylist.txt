@@ -1,0 +1,1054 @@
+ ▐▛███▜▌   Claude Code v2.1.81
+▝▜█████▛▘  Sonnet 4.6 · Claude Pro
+  ▘▘ ▝▝    D:\software\developmentTools\Git\gitee\newpap\pap
+
+> /clear                                                                        
+  ⎿  (no content)
+
+> 当前目录下：pocpro后端项目                                                    
+                                                                                
+技术设计评审：                                                                  
+模块：buylist模块                                                               
+具体详情：buylist模块的导入：                                                   
+                                                                                
+你可以基于buylist模块的导入代码以及对应的依赖做一个技术设计评审吗？             
+                                                                                
+你可以理解我的需求吗？ 你先复述一遍你的理解                                     
+
+● 我理解你的需求：
+
+  你希望我对 buylist 模块的导入（Import）功能 进行一次技术设计评审。具体来说：
+
+  1. 阅读 buylist 模块中与"导入"相关的代码 — 包括 Controller
+  层的导入接口、Service 层的导入逻辑、数据校验、Excel 解析、数据持久化等
+  2. 梳理相关依赖 — 导入功能依赖了哪些组件/工具类/框架（如
+  EasyExcel、MapStruct、校验框架等）
+  3. 从技术设计角度进行评审 — 评估架构合理性、代码质量、异常处理、性能、可维护性
+  、安全性等方面，指出优点和潜在问题，并给出改进建议
+
+  我现在开始查找 buylist 模块的导入相关代码。
+
+● Explore(Explore buylist import code)
+  ⎿  Done (40 tool uses · 72.2k tokens · 4m 1s)
+  (ctrl+o to expand)
+
+● BuyList 导入功能 — 技术设计评审
+
+  ---
+  一、整体架构概览
+
+  导入流程：POST /admin-api/buyList/parse-file → Controller →
+  Service（解析+校验） → 返回 ParseResultVO
+
+  HTTP Request (file + businessType)
+      ↓
+  BuyListController.parseFile()
+      ↓
+  BuyListServiceImpl.parseAndValidateFile()
+      ├─ 文件类型检测 (Excel/CSV)
+      ├─ 文件大小校验 (≤10MB)
+      ├─ 文件解析
+      │   ├─ Excel → EasyExcel + BuyListExcelListener → List<BuyListImportDTO>
+      │   └─ CSV   → BufferedReader 手动解析 → List<BuyListImportDTO>
+      ├─ 数据校验链
+      │   ├─ 行数上限 (≤150)
+      │   ├─ 必填字段校验
+      │   ├─ AssetType 合法性校验 (BUY_LIST='Y')
+      │   ├─ ProductCode 重复校验
+      │   └─ ClientId 匹配校验 (SECURITY_MASTER 表)
+      └─ 返回 ParseResultVO
+
+  涉及文件：
+
+  ┌────────────┬─────────────────────────────────────────────────────────────┐
+  │     层     │                            文件                             │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ Controller │ BuyListController.java — parseFile()                        │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ Service    │ BuyListService.java / BuyListServiceImpl.java —             │
+  │            │ parseAndValidateFile()                                      │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ Listener   │ BuyListExcelListener.java — EasyExcel 行解析                │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ DTO/VO     │ BuyListImportDTO.java, ParseResultVO.java,                  │
+  │            │ ImportErrorVO.java                                          │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ Mapper     │ AssetTypeMapper.java, BuyListDetailsMapper.java             │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ DO         │ BuyListDO.java, BuyListDetailsDo.java, AssetTypeDo.java     │
+  └────────────┴─────────────────────────────────────────────────────────────┘
+
+  ---
+  二、优点
+
+  1. 分层清晰 — Controller 只做参数接收和权限校验，业务逻辑集中在 Service
+  层，符合项目整体架构规范。
+  2. 多格式支持 — 同时支持 CSV 和
+  Excel（.xlsx/.xls），通过文件扩展名分发到不同解析器，扩展性好。
+  3. 校验链设计合理 — 校验按依赖顺序分阶段执行（行数→必填→AssetType合法→重复→Cli
+  entId匹配），前置校验失败的行会被标记 valid=false，后续校验自动跳过。
+  4. 错误信息详尽 — ImportErrorVO
+  返回行号、字段名、错误描述，前端可精确定位问题行。
+  5. 安全性基本到位 — 文件大小限制（10MB）、文件类型白名单、Spring Security
+  权限控制（buy:list:import）、MyBatis 参数化查询防 SQL 注入。
+  6. EasyExcel Listener 模式 — 使用 AnalysisEventListener<Map<Integer, String>>
+  按列索引读取，避免表头名称匹配问题，容错性更强。
+
+  ---
+  三、问题与改进建议
+
+  问题 1：N+1 查询性能问题（严重）
+
+  validateRows() 中对每一行都调用 getClientIdSet()，而 getClientIdSet() 内部：
+  - 查询 AssetTypeMapper.selectListByType(assetType) — 一次 DB 查询
+  - 对每个 AssetTypeDo 调用 securityMasterService.getSecurityMasterReqVO() +
+  getAssetTypeNewDataMap() — 又是 DB 查询
+
+  150 行数据，假设平均每行对应 2 个 AssetTypeDo，就是 150 × (1 + 2) = 450+ 次 DB
+   查询。
+
+  建议：
+  - 按 assetType 分组，相同 assetType 的行共享一次查询结果
+  - 预加载：先提取所有不重复的 (assetType, productCode) 对，批量查询后构建
+  Map<String, Set<String>> 缓存，再逐行匹配
+
+  // 伪代码
+  Map<String, Set<String>> assetTypeToProductCodes = rows.stream()
+      .collect(groupingBy(BuyListImportDTO::getAssetType,
+               mapping(BuyListImportDTO::getProductCode, toSet())));
+
+  Map<String, Map<String, Set<String>>> cache = new HashMap<>();
+  for (String assetType : assetTypeToProductCodes.keySet()) {
+      // 一次加载该 assetType 下所有 productCode 的 clientId 映射
+      cache.put(assetType, batchLoadClientIds(assetType));
+  }
+  // 然后逐行从 cache 查找
+
+  问题 2：CSV 解析过于简单，缺乏健壮性（中等）
+
+  当前 CSV 解析用 line.split(",", -1)，存在以下问题：
+  - 不支持引号包裹的字段：如果值中包含逗号（"Bond, Type A"），会被错误分割
+  - 不支持换行符在引号内的情况
+  - 不处理 BOM 头：UTF-8 with BOM 文件第一个字段会带有 \uFEFF
+  - 不处理不同编码：硬编码 UTF-8，如果文件是 GBK/GB2312 会乱码
+
+  建议：
+  - 使用成熟的 CSV 解析库（如 Apache Commons CSV 或 OpenCSV），项目已有 OpenCSV
+  依赖
+  - 至少增加 BOM 头处理
+
+  // 使用 OpenCSV 示例
+  try (CSVReader reader = new CSVReader(new InputStreamReader(
+          new BOMInputStream(file.getInputStream()), StandardCharsets.UTF_8))) {
+      reader.readNext(); // skip header
+      String[] fields;
+      while ((fields = reader.readNext()) != null) {
+          // ...
+      }
+  }
+
+  问题 3：getClientIdSet() 查询范围过宽（中等）
+
+  default List<AssetTypeDo> selectListByType(String assetType) {
+      return selectList(new LambdaQueryWrapperX<AssetTypeDo>()
+          .eq(AssetTypeDo::getAssetType, assetType)
+          .and(wrapper -> wrapper
+              .eq(AssetTypeDo::getBuyList, "Y")
+              .or()
+              .eq(AssetTypeDo::getHouseViewList, "Y")  // ← 这里
+          ));
+  }
+
+  这个方法在 BuyList 导入场景下，还查了 houseViewList='Y' 的记录。BuyList
+  导入应该只关心 buyList='Y' 的 AssetType，混入 HouseViewList
+  的数据可能导致不应该匹配的 productCode 被错误匹配。
+
+  建议： 为 BuyList 导入单独提供一个查询方法，只筛选 buyList='Y'。
+
+  问题 4：BuyListExcelListener 全量加载到内存（低风险但值得关注）
+
+  BuyListExcelListener 将所有行一次性加载到 List<BuyListImportDTO>。虽然有 150
+  行上限，当前不是问题，但：
+  - 行数上限校验在解析完成之后才做，如果用户上传一个 10MB 的 Excel
+  文件且行数远超 150 行，所有行仍会被解析进内存
+  - 文件大小限制 10MB，但 10MB Excel 可以包含数万行
+
+  建议： 在 BuyListExcelListener.invoke()
+  中增加行数检查，超过上限后提前终止解析：
+
+  @Override
+  public void invoke(Map<Integer, String> data, AnalysisContext context) {
+      if (dataList.size() >= MAX_ROWS) {
+          throw new ExcelAnalysisStopException("Exceeded max row limit");
+      }
+      // ... existing logic
+  }
+
+  问题 5：接口设计 — 只"解析校验"不"持久化"（设计层面）
+
+  当前 /parse-file
+  接口只做解析和校验，返回数据给前端，但没有对应的"确认导入"接口将数据写入
+  IHUB_BUY_LIST_DETAILS。这意味着：
+  - 前端拿到校验通过的数据后，需要通过另一个接口提交保存
+  - 如果存在时间差，校验时通过的 productCode 在保存时可能已失效（TOCTOU 问题）
+
+  建议： 确认是否有对应的保存接口。如果有，建议在保存时做一次轻量级的二次校验。
+  如果没有，需要补充。
+
+  问题 6：错误码定义不规范（低）
+
+  ErrorCode BUSINESSTYPE_ERROR = new ErrorCode(21, "...");
+  ErrorCode IMPORT_ERROR = new ErrorCode(25, "...");
+
+  错误码使用简单递增整数（21, 25, 26...），没有模块前缀，容易和其他模块冲突。项
+  目其他模块如果也从小数字开始，会产生碰撞。
+
+  建议： 参考 ruoyi-vue-pro 的错误码规范，使用模块前缀，如 1_030_001_001 格式。
+
+  问题 7：BuyListAssetTypeEnum 硬编码（低）
+
+  BuyListAssetTypeEnum 中硬编码了 25 种 AssetType
+  映射关系，但实际校验用的是数据库查询 IHUB_ASSET_TYPE WHERE 
+  BUY_LIST='Y'。这个枚举似乎是历史遗留代码，当前导入流程中没有使用。
+
+  建议： 确认此枚举是否还有其他地方使用，如无则清理。
+
+  问题 8：缺少事务控制
+
+  parseAndValidateFile() 方法没有 @Transactional 注解。虽然当前只是读操作，但如
+  果未来加入"解析+保存"一体化流程，需要注意事务管理。
+
+  ---
+  四、安全性评审
+
+  ┌─────────────┬───────┬───────────────────────────────────────────────────┐
+  │    项目     │ 状态  │                       说明                        │
+  ├─────────────┼───────┼───────────────────────────────────────────────────┤
+  │ 文件类型校  │ 需改  │ 当前只检查扩展名，建议增加 MIME                   │
+  │ 验          │ 进    │ 类型或文件头（Magic Bytes）校验，防止恶意文件伪装 │
+  ├─────────────┼───────┼───────────────────────────────────────────────────┤
+  │ 文件大小限  │ ✅    │ 10MB 上限                                         │
+  │ 制          │       │                                                   │
+  ├─────────────┼───────┼───────────────────────────────────────────────────┤
+  │ 权限控制    │ ✅    │ @PreAuthorize("@ss.hasPermission('buy:list:import │
+  │             │       │ ')")                                              │
+  ├─────────────┼───────┼───────────────────────────────────────────────────┤
+  │ SQL 注入    │ ✅    │ MyBatis 参数化查询                                │
+  ├─────────────┼───────┼───────────────────────────────────────────────────┤
+  │ 路径穿越    │ ✅    │ 未使用文件名做文件系统操作，无风险                │
+  ├─────────────┼───────┼───────────────────────────────────────────────────┤
+  │ XXE 攻击    │ ✅    │ EasyExcel 底层使用 Apache POI，默认禁用外部实体   │
+  ├─────────────┼───────┼───────────────────────────────────────────────────┤
+  │ 日志脱敏    │ 需关  │ log.debug 输出了                                  │
+  │             │ 注    │ assetType/productCode，如果这些是敏感数据需评估   │
+  └─────────────┴───────┴───────────────────────────────────────────────────┘
+
+  ---
+  五、总结
+
+  ┌──────────┬────────┬────────────────────────────────────┐
+  │   维度   │  评分  │                说明                │
+  ├──────────┼────────┼────────────────────────────────────┤
+  │ 架构设计 │ 良好   │ 分层清晰，职责明确                 │
+  ├──────────┼────────┼────────────────────────────────────┤
+  │ 代码质量 │ 良好   │ 可读性强，命名规范                 │
+  ├──────────┼────────┼────────────────────────────────────┤
+  │ 性能     │ 需优化 │ N+1 查询是主要瓶颈                 │
+  ├──────────┼────────┼────────────────────────────────────┤
+  │ 健壮性   │ 需改进 │ CSV 解析脆弱，Excel 行数无提前截断 │
+  ├──────────┼────────┼────────────────────────────────────┤
+  │ 安全性   │ 良好   │ 基本防护到位，文件类型校验可加强   │
+  ├──────────┼────────┼────────────────────────────────────┤
+  │ 可维护性 │ 良好   │ 校验逻辑拆分为独立方法，易扩展     │
+  └──────────┴────────┴────────────────────────────────────┘
+
+  优先修复建议（按重要性排序）：
+  1. 🔴 解决 getClientIdSet() 的 N+1 查询问题 — 按 assetType 分组批量查询
+  2. 🟡 修复 selectListByType() 混入 HouseViewList 数据的问题
+  3. 🟡 使用成熟 CSV 库替代手动 split(",")
+  4. 🟢 在 ExcelListener 中增加行数上限提前终止
+  5. 🟢 增加文件 Magic Bytes 校验
+
+✻ Cooked for 5m 19s
+
+> 你再帮我看看getClientIdSet()的逻辑，我记得这个是查数据，还有缓存redis         
+
+● 让我深入查看 getClientIdSet() 的完整调用链，特别是 SecurityMasterService
+  中的缓存逻辑。
+
+● Explore(Explore getClientIdSet and SecurityMasterService cache)
+  ⎿  Done (51 tool uses · 60.0k tokens · 2m 38s)
+  (ctrl+o to expand)
+
+● 好的，完整调用链已经梳理清楚。以下是 getClientIdSet() 的深度分析：
+
+  ---
+  getClientIdSet() 完整调用链
+
+  getClientIdSet(assetType, productCode)
+  │
+  ├─① assetTypeMapper.selectListByType(assetType)        ← 每次查 DB
+  │   → List<AssetTypeDo>  (BUY_LIST='Y' OR HOUSE_VIEW_LIST='Y')
+  │
+  └─② For each AssetTypeDo:
+      │
+      ├─③ getSecurityMasterReqVO(assetTypeDo)             ← 部分有缓存
+      │   ├─ getBusinessDate()                            ← Redis 缓存 1h
+  (@Cacheable "businessDate#1h")
+      │   ├─ tableSwitchLogMapper.selectOne(name, date)   ← 每次查 DB
+      │   └─ 构建 SecurityMasterReqVO {
+      │         tableName: "BR_SECURITY_MASTER_BND_1",
+      │         matchField: "ISIN",
+      │         conditionSql: "AND STATUS='ACTIVE'"
+      │       }
+      │
+      └─④ getAssetTypeNewDataMap(vo)                      ← Redis 缓存 1h
+  (@Cacheable "brSecurityMasterData")
+          ├─ Cache Key: "brSecurityMasterData::BR_SECURITY_MASTER_BND_1"
+          ├─ Cache HIT  → 直接返回 Map<productCode, List<clientId>>
+          └─ Cache MISS → 查 DB:
+              SELECT ISIN AS match_field_value, CLIENT_ID
+              FROM BR_SECURITY_MASTER_BND_1
+              WHERE ISIN IS NOT NULL AND ISIN != ''
+              ${conditionSql}
+              → 结果按 match_field_value 分组 → 存入 Redis → 返回
+
+  ---
+  缓存结构
+
+  ┌────────────────┬────────────────────┬───────────┬──────┬────────────────┐
+  │     缓存名     │      Key 示例      │  Value    │ TTL  │      说明      │
+  │                │                    │   类型    │      │                │
+  ├────────────────┼────────────────────┼───────────┼──────┼────────────────┤
+  │ businessDate#1 │ "BusinessDate"     │ Date      │ 1h   │ 当前业务日期   │
+  │ h              │                    │           │      │                │
+  ├────────────────┼────────────────────┼───────────┼──────┼────────────────┤
+  │                │                    │ Map<Strin │ 1h   │ 整张 SECURITY_ │
+  │ brSecurityMast │ "BR_SECURITY_MASTE │ g, List<S │ (默  │ MASTER 表的    │
+  │ erData         │ R_BND_1"           │ tring>>   │ 认)  │ productCode→cl │
+  │                │                    │           │      │ ientId 映射    │
+  └────────────────┴────────────────────┴───────────┴──────┴────────────────┘
+
+  Redis 中 brSecurityMasterData 的值结构：
+  {
+    "ISIN_001": ["CLIENT_A", "CLIENT_B"],
+    "ISIN_002": ["CLIENT_C"],
+    "ISIN_003": ["CLIENT_D", "CLIENT_E"]
+  }
+
+  ---
+  问题分析
+
+  问题 1：有缓存后 N+1 问题已缓解，但仍有冗余查询
+
+  有了 @Cacheable 后，getAssetTypeNewDataMap() 在缓存命中时确实不查
+  DB。但每次调用 getClientIdSet() 仍然有：
+
+  - selectListByType(assetType) — 每行每次都查 DB，无缓存
+  - tableSwitchLogMapper.selectOne() — 每个 AssetTypeDo 都查 DB，无缓存
+
+  假设 150 行导入数据，10 种不同 assetType，每种 assetType 对应 2 个
+  AssetTypeDo：
+
+  ┌──────────────────────────────────┬────────┬─────────────────────────────┐
+  │               操作               │  缓存  │        实际调用次数         │
+  ├──────────────────────────────────┼────────┼─────────────────────────────┤
+  │ selectListByType()               │ 无     │ 150 次                      │
+  ├──────────────────────────────────┼────────┼─────────────────────────────┤
+  │ getBusinessDate()                │ 有     │ 1 次 (后续走缓存)           │
+  │                                  │ (1h)   │                             │
+  ├──────────────────────────────────┼────────┼─────────────────────────────┤
+  │ tableSwitchLogMapper.selectOne() │ 无     │ 150 × 2 = 300 次            │
+  ├──────────────────────────────────┼────────┼─────────────────────────────┤
+  │ getAssetTypeNewDataMap()         │ 有     │ 最多 20 次 (10 assetType ×  │
+  │                                  │ (1h)   │ 2 表)                       │
+  └──────────────────────────────────┴────────┴─────────────────────────────┘
+
+  总计：约 450+ 次 DB 查询，其中大部分是重复的 selectListByType 和 selectOne。
+
+  改进建议：
+
+  // 在 validateRows() 层面做分组预加载
+  Map<String, List<AssetTypeDo>> assetTypeCache = new HashMap<>();
+  Map<String, SecurityMasterReqVO> reqVOCache = new HashMap<>();
+
+  for (BuyListImportDTO row : rows) {
+      String at = row.getAssetType();
+      if (!assetTypeCache.containsKey(at)) {
+          assetTypeCache.put(at, assetTypeMapper.selectListByType(at));
+          for (AssetTypeDo ado : assetTypeCache.get(at)) {
+              String key = ado.getAssetType() + "_" + ado.getSystemCode();
+              reqVOCache.put(key,
+  securityMasterService.getSecurityMasterReqVO(ado));
+          }
+      }
+  }
+  // 然后逐行从本地缓存查找，不再重复查 DB
+
+  这样可将 450+ 次 DB 查询降至 ~30 次。
+
+  问题 2：SQL 注入风险（严重）
+
+  SecurityMasterMapper.xml 中使用了 ${}（字符串拼接） 而非 #{}（参数化）：
+
+  SELECT ${matchField} AS match_field_value, CLIENT_ID
+  FROM ${tableName}
+  WHERE ${matchField} IS NOT NULL
+    AND ${matchField} != ''
+  <if test="conditionSql != null and conditionSql != ''">
+      ${conditionSql}
+  </if>
+
+  三个变量全部是 ${} 拼接：
+  - ${matchField} — 来自 IHUB_ASSET_TYPE.FIELD（数据库管理的，风险低）
+  - ${tableName} — 由代码拼接生成（风险低）
+  - ${conditionSql} — 来自 IHUB_ASSET_TYPE.CONDITION_SQL（存储在 DB 中的原始 SQL
+   片段）
+
+  虽然这些值都来自数据库而非用户输入，风险相对可控，但 conditionSql
+  本质上是存储在 DB 中的动态 SQL，如果 IHUB_ASSET_TYPE
+  表的数据被篡改（比如通过管理后台），就可以注入任意 SQL。
+
+  建议：
+  - 对 conditionSql 做白名单校验（只允许 AND、=、IN、LIKE 等安全操作符）
+  - 或者将条件结构化存储，用代码拼接而非存原始 SQL
+
+  问题 3：@Cacheable 缓存穿透风险
+
+  @Cacheable(value = "brSecurityMasterData", key = "#vo.tableName", 
+             unless = "#result == null || #result.isEmpty()")
+
+  unless 条件表示 空结果不缓存。如果某个 tableName
+  对应的表确实为空，每次查询都会穿透到 DB。在导入场景下，150 行相同 assetType
+  对应空表时，会产生 150 次穿透查询。
+
+  建议： 空结果也应缓存（可设置较短 TTL），或在导入时做本地去重后只查一次。
+
+  问题 4：缓存与数据一致性
+
+  brSecurityMasterData 缓存 TTL 为 1h，但 SECURITY_MASTER
+  表可能在这期间更新（表切换）。TableSwitchLog 的 tableSuffix 变化后（如从 _1
+  切到 _2），由于 key 变了（BR_SECURITY_MASTER_BND_1 →
+  BR_SECURITY_MASTER_BND_2），新 key 会 cache miss 去查新表，这个设计是合理的 —
+  表切换机制天然实现了缓存刷新。
+
+  但旧 key BR_SECURITY_MASTER_BND_1 的缓存会残留 1h 无人使用，占用 Redis
+  内存。非大问题，但值得知晓。
+
+  问题 5：getSecurityMasterReqVO() 缺少空值防御
+
+  TableSwitchLogDo switchLogDo = tableSwitchLogMapper.selectOne(...);
+  // ← 没有 null check！
+  vo.setTableName(SecurityMasterUtils.getSecurityMasterTableName(
+      assetTypeDo.getSecurityMasterTableName(), switchLogDo.getTableSuffix()));
+
+  如果 TableSwitchLog 查不到记录（当天没有有效的表切换日志），switchLogDo 为
+  null，直接 NPE。虽然调用方有 if (vo==null) continue，但这里会抛 NPE 而非返回
+  null。
+
+  建议： 加空值检查：
+  if (switchLogDo == null) {
+      log.warn("No valid TableSwitchLog found for {}",
+  assetTypeDo.getSystemCode());
+      return null;
+  }
+
+  ---
+  总结
+
+  ┌────────────┬─────────────────────────────────────────────────────────────┐
+  │    维度    │                            评估                             │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ 缓存策略   │ 核心数据（SECURITY_MASTER映射）有 Redis 缓存 1h，设计合理   │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ 缓存命中率 │ 导入场景下命中率高（相同 tableName 只查一次）               │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ 性能瓶颈   │ selectListByType 和 tableSwitchLogMapper.selectOne          │
+  │            │ 无缓存，是主要冗余                                          │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ SQL 注入   │ ${conditionSql} 拼接存在潜在风险                            │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ 空值防御   │ getSecurityMasterReqVO 缺少 switchLogDo null check          │
+  ├────────────┼─────────────────────────────────────────────────────────────┤
+  │ 缓存穿透   │ 空结果不缓存，可能产生穿透                                  │
+  └────────────┴─────────────────────────────────────────────────────────────┘
+
+  最关键的优化：在 validateRows() 层做 assetType 级别的本地去重缓存，避免同一 
+  assetType 被反复查询 selectListByType 和 selectOne。
+
+✻ Worked for 3m 10s
+
+> 我看了450+的数据库查询次数太多了，selectListByType()                          
+和tableSwitchLogMapper.selectOne()                                              
+操作是否可以添加到redis缓存中，减少数据库的查询次数来优化？                     
+
+● 可以，但需要根据这两个数据的特性选择合适的策略。让我先确认一下现有缓存相关的配
+  置和代码。
+
+  Read 3 files (ctrl+o to expand)
+
+● 再看一下还有哪些地方调用了这些方法，以及 getClientIdSet 的完整上下文。
+
+  Searched for 3 patterns, read 3 files (ctrl+o to expand)
+
+● 好的，现在全貌已经清楚。以下是我的分析和方案建议：
+
+  ---
+  现状分析
+
+  当前调用链中有 两层缓存 和 两个无缓存的热点：
+
+  ┌─────────────────────────────────┬──────────────────┬───────────────────┐
+  │              操作               │       缓存       │ 150 行导入实际调  │
+  │                                 │                  │      用次数       │
+  ├─────────────────────────────────┼──────────────────┼───────────────────┤
+  │ getBusinessDate()               │ Redis 1h         │ 1 次（后续命中缓  │
+  │                                 │                  │ 存）              │
+  ├─────────────────────────────────┼──────────────────┼───────────────────┤
+  │ getAssetTypeNewDataMap(vo)      │ Redis 1h，key=ta │ 最多 ~20 次（按   │
+  │                                 │ bleName          │ tableName 去重）  │
+  ├─────────────────────────────────┼──────────────────┼───────────────────┤
+  │ selectListByType(assetType)     │ 无               │ 150               │
+  │                                 │                  │ 次（每行一次）    │
+  ├─────────────────────────────────┼──────────────────┼───────────────────┤
+  │ tableSwitchLogMapper.selectOne( │                  │ ~300 次（每行 ×   │
+  │ )                               │ 无               │ 每个              │
+  │                                 │                  │ AssetTypeDo）     │
+  └─────────────────────────────────┴──────────────────┴───────────────────┘
+
+  后两个是主要冗余。
+
+  ---
+  方案对比：Redis 缓存 vs 本地方法级缓存
+
+  对于这两个查询，我建议 两种方案结合：
+
+  方案 A：给 getSecurityMasterReqVO 加 Redis 缓存（推荐）
+
+  getSecurityMasterReqVO 内部包含了 tableSwitchLogMapper.selectOne()，它的入参是
+   AssetTypeDo（本质上是 systemCode），一天之内结果不会变。适合 Redis 缓存，且
+  BuyList、HouseViewList、ModelPortfolio 三个模块都调用它，全局受益。
+
+  缓存 key: systemCode (如 "BND", "EQT")
+  缓存 value: SecurityMasterReqVO
+  TTL: 与 businessDate 缓存对齐，1h
+
+  方案 B：给 selectListByType 加 Redis 缓存（推荐）
+
+  IHUB_ASSET_TYPE 是配置表，数据变更频率很低（管理员操作），非常适合 Redis
+  缓存。
+
+  缓存 key: assetType (如 "Bond")
+  缓存 value: List<AssetTypeDo>
+  TTL: 1h
+
+  两者都加缓存后的效果
+
+  ┌──────────────────────────────────┬─────────┬────────────────────────────┐
+  │               操作               │ 优化前  │           优化后           │
+  ├──────────────────────────────────┼─────────┼────────────────────────────┤
+  │ selectListByType()               │ 150 次  │ ≤10 次 DB（按 assetType    │
+  │                                  │ DB      │ 去重，后续走 Redis）       │
+  ├──────────────────────────────────┼─────────┼────────────────────────────┤
+  │ tableSwitchLogMapper.selectOne() │ ~300 次 │ ≤20 次 DB（按 systemCode   │
+  │                                  │  DB     │ 去重，后续走 Redis）       │
+  ├──────────────────────────────────┼─────────┼────────────────────────────┤
+  │ 总 DB 查询                       │ ~450+   │ ~30                        │
+  └──────────────────────────────────┴─────────┴────────────────────────────┘
+
+  ---
+  具体实现方案
+
+  需要改动 3 个文件：
+
+  1. AssetTypeMapper — 不动，查询逻辑保持不变
+
+  selectListByType 是 Mapper 的 default 方法，不能直接加 @Cacheable（Spring
+  代理不了接口 default 方法）。所以需要把缓存加在 Service 层。
+
+  2. SecurityMasterImplService — 加两个缓存
+
+  // ========== 改动 1：给 getSecurityMasterReqVO 加 Redis 缓存 ==========
+  @Cacheable(value = "tableSwitchLog#1h", 
+             key = "#assetTypeDo.systemCode", 
+             unless = "#result == null")
+  @Override
+  public SecurityMasterReqVO getSecurityMasterReqVO(AssetTypeDo assetTypeDo) {
+      TableSwitchLogDo switchLogDo = tableSwitchLogMapper.selectOne(
+
+  SecurityMasterUtils.getTableSwitchLogName(assetTypeDo.getSystemCode()),
+              getBusinessDate());
+      if (switchLogDo == null) {  // ← 顺便补上 null check
+          log.warn("No valid TableSwitchLog for systemCode={}",
+  assetTypeDo.getSystemCode());
+          return null;
+      }
+      SecurityMasterReqVO vo = new SecurityMasterReqVO();
+      vo.setAssetType(assetTypeDo.getAssetType());
+      vo.setTableName(SecurityMasterUtils.getSecurityMasterTableName(
+              assetTypeDo.getSecurityMasterTableName(),
+  switchLogDo.getTableSuffix()));
+      vo.setMatchField(assetTypeDo.getField());
+      vo.setConditionSql(assetTypeDo.getConditionSql());
+      return vo;
+  }
+
+  但有一个问题：同一个 systemCode（如 "BND"）可能对应多个 AssetTypeDo，它们的
+  field 和 conditionSql 不同。所以 key 不能只用 systemCode，需要用更精确的 key：
+
+  // 正确的 key：包含影响结果的所有因素
+  @Cacheable(value = "securityMasterReqVO#1h", 
+             key = "#assetTypeDo.id",  // 用 AssetTypeDo 的唯一 ID
+             unless = "#result == null")
+
+  3. 新增 AssetTypeCacheService — 封装 selectListByType 的缓存
+
+  由于 @Cacheable 不能直接加在 Mapper 接口的 default 方法上，新建一个薄封装：
+
+  @Service
+  public class AssetTypeCacheService {
+
+      @Resource
+      private AssetTypeMapper assetTypeMapper;
+
+      @Cacheable(value = "assetTypeListByType#1h", 
+                 key = "#assetType",
+                 unless = "#result == null || #result.isEmpty()")
+      public List<AssetTypeDo> selectListByType(String assetType) {
+          return assetTypeMapper.selectListByType(assetType);
+      }
+  }
+
+  4. BuyListServiceImpl — 改为调用缓存版本
+
+  // 原来
+  List<AssetTypeDo> assetTypeDos = assetTypeMapper.selectListByType(assetType);
+  // 改为
+  List<AssetTypeDo> assetTypeDos =
+  assetTypeCacheService.selectListByType(assetType);
+
+  ---
+  需要注意的风险点
+
+  1. 缓存一致性 — IHUB_ASSET_TYPE 变更时
+
+  IHUB_ASSET_TYPE 是配置表，如果管理员修改了资产类型配置，1h 内缓存不会更新。
+
+  建议： 在资产类型管理的更新接口中加 @CacheEvict：
+  @CacheEvict(value = "assetTypeListByType#1h", key = "#assetType")
+  public void updateAssetType(String assetType, ...) { ... }
+
+  2. 缓存一致性 — TableSwitchLog 切换时
+
+  表切换（如 _1 → _2）发生时，securityMasterReqVO 缓存中的旧 tableName
+  就过时了。
+
+  建议： 表切换 batch job 执行后，清理相关缓存：
+  @CacheEvict(value = "securityMasterReqVO#1h", allEntries = true)
+  public void onTableSwitch() { ... }
+
+  或者使用更短的 TTL（如 #10m），在切换频率和查询效率之间取平衡。
+
+  3. getSecurityMasterReqVO 的 key 设计
+
+  同一个 systemCode 下可能有多条 AssetTypeDo（不同 field、conditionSql），但
+  tableSwitchLog 查询只依赖 systemCode + businessDate，而 VO 构建还依赖 field 和
+   conditionSql。
+
+  所以有两个策略：
+  - 策略 A（推荐）：key 用 #assetTypeDo.id，精确到每条配置记录
+  - 策略 B：只缓存 tableSwitchLog.selectOne() 的结果（按 systemCode），VO
+  构建不缓存
+
+  策略 B 更精准，因为真正重复查 DB 的瓶颈是 selectOne()：
+
+  // 只缓存 tableSuffix 查询
+  @Cacheable(value = "tableSwitchLog#1h", key = "#systemCode")
+  public TableSwitchLogDo getCachedSwitchLog(String systemCode) {
+      return tableSwitchLogMapper.selectOne(
+          SecurityMasterUtils.getTableSwitchLogName(systemCode),
+          getBusinessDate());
+  }
+
+  @Override
+  public SecurityMasterReqVO getSecurityMasterReqVO(AssetTypeDo assetTypeDo) {
+      TableSwitchLogDo switchLogDo =
+  getCachedSwitchLog(assetTypeDo.getSystemCode());
+      if (switchLogDo == null) {
+          return null;
+      }
+      // ... 构建 VO（不缓存，因为构建逻辑很轻量）
+  }
+
+  4. 其他模块的影响
+
+  selectListByType 和 getSecurityMasterReqVO 还被以下模块调用：
+  - HouseViewListServiceImpl — 同样的导入场景
+  - ModelPortfolioServiceImpl — 同样的导入场景
+
+  加 Redis 缓存后这些模块同样受益，无需额外改动。
+
+  ---
+  最终推荐方案
+
+  ┌────────────────┬─────────────────┬────────┬─────┬────────────────────────┐
+  │    缓存目标    │     缓存层      │  Key   │ TTL │        实现方式        │
+  ├────────────────┼─────────────────┼────────┼─────┼────────────────────────┤
+  │ selectListByTy │ 新建 AssetTypeC │ assetT │ 1h  │ @Cacheable("assetTypeL │
+  │ pe             │ acheService     │ ype    │     │ istByType#1h")         │
+  ├────────────────┼─────────────────┼────────┼─────┼────────────────────────┤
+  │ tableSwitchLog │ SecurityMasterI │ system │     │ @Cacheable("tableSwitc │
+  │ .selectOne     │ mplService      │ Code   │ 1h  │ hLog#1h")              │
+  │                │ 新方法          │        │     │                        │
+  └────────────────┴─────────────────┴────────┴─────┴────────────────────────┘
+
+  优化效果：~450+ 次 DB 查询 → ~30 次，后续全部走 Redis，与现有
+  brSecurityMasterData 和 businessDate#1h 缓存风格一致。
+
+  需要我直接写代码实现吗？
+
+✻ Sautéed for 1m 29s
+
+> 暂时先放一下，你先把csv文件的导入逻辑给我重新梳理一遍;我说的是宏观骨架逻辑;   
+
+● 让我重新读一下完整的导入主流程代码。
+
+  Read 2 files (ctrl+o to expand)
+
+● 好的，宏观骨架如下：
+
+  ---
+  BuyList 导入 — 宏观骨架
+
+  POST /admin-api/buyList/parse-file (file, businessType)
+  │
+  │   ┌─────────────────────────────────────┐
+  │   │  parseAndValidateFile(file, type)   │
+  │   └─────────────────────────────────────┘
+  │
+  ├── 【阶段一】前置校验
+  │   ├─ businessType 合法？(1 或 2)
+  │   └─ 文件大小 ≤ 10MB？
+  │
+  ├── 【阶段二】文件解析
+  │   ├─ 扩展名判断 → Excel / CSV / 拒绝
+  │   ├─ CSV:  BufferedReader 逐行 split(",") → List<BuyListImportDTO>
+  │   ├─ Excel: EasyExcel + Listener → List<BuyListImportDTO>
+  │   └─ 空文件？→ 报错返回
+  │
+  ├── 【阶段三】数据校验  validateRows(rows)
+  │   │
+  │   ├─ ❶ 行数上限校验（≤150）              → 超限直接返回
+  │   │
+  │   ├─ ❷ 必填字段校验                      → 逐行检查
+  │   │   └─ assetType 和 productCode 都空 → 标记 valid=false，跳过
+  │   │   └─ 只有一个空 → 记录错误
+  │   │
+  │   ├─ ❸ AssetType 合法性校验
+  │   │   └─ DB 查一次：SELECT DISTINCT ASSET_TYPE WHERE BUY_LIST='Y'
+  │   │   └─ 逐行比对是否在合法集合中
+  │   │
+  │   ├─ ❹ ProductCode 重复校验
+  │   │   └─ 同一 assetType 下 productCode 不能重复
+  │   │
+  │   │   ※ 如果 ❷❸❹ 产生了任何 error → 直接返回，不进入 ❺
+  │   │
+  │   └─ ❺ ClientId 匹配校验（逐行循环）
+  │       └─ getClientIdSet(assetType, productCode)
+  │           ├─ DB: selectListByType(assetType)       ← 无缓存
+  │           └─ For each AssetTypeDo:
+  │               ├─ getSecurityMasterReqVO(assetTypeDo)
+  │               │   ├─ getBusinessDate()              ← Redis 缓存 1h
+  │               │   └─ tableSwitchLogMapper.selectOne  ← 无缓存
+  │               │   → 得到 tableName, matchField, conditionSql
+  │               │
+  │               └─ getAssetTypeNewDataMap(vo)          ← Redis 缓存 1h
+  │                   → Map<productCode, List<clientId>>
+  │                   → 用 productCode 查找匹配的 clientId
+  │
+  │       ├─ 找不到 → 记录错误
+  │       └─ 找到   → 回填 row.clientId, row.valid=true
+  │
+  ├── 【阶段四】组装返回
+  │   ├─ 有 errors → { valid: false, errors: [...] }
+  │   └─ 无 errors → { valid: true,  data: [rows with clientId] }
+  │
+  └── 返回 ParseResultVO 给前端
+
+  整个接口只做"解析+校验"，不做持久化。 前端拿到校验通过的数据后，再通过 /update
+   或 /updateNew 接口提交保存。
+
+  ---
+  核心要点：
+  - 阶段二（解析）和阶段三（校验）串行，先解析完全部行，再统一校验
+  - 校验链 ❷❸❹ 是批量校验，有错就提前返回，不进入 ❺
+  - 校验 ❺ 是逐行循环，每行独立调用 getClientIdSet()，这也是性能瓶颈所在
+  - getAssetTypeNewDataMap 按 tableName 缓存了整张 SECURITY_MASTER
+  表的映射，所以 ❺ 真正的 DB 开销在 selectListByType 和
+  selectOne，不在最终的数据查找
+
+✻ Brewed for 39s
+
+> 你再帮我看看cn.bochk.pap.server.business.controller.BuyListController#updateL 
+ist前端导入修改后的提交操作的逻辑                                               
+@PutMapping("/update")                                                          
+
+  Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+● 现在全貌清楚了。以下是 updateList 的宏观骨架：
+
+  ---
+  updateList — 宏观骨架
+
+  PUT /admin-api/buyList/update  (List<BuyListReqVO>)
+  │
+  │   ┌──────────────────────────────────────┐
+  │   │  updateList(List<BuyListReqVO>)      │
+  │   └──────────────────────────────────────┘
+  │
+  ├── 【阶段一】前置校验  preCheckMakerSubmitData()
+  │   ├─ 列表不能为空
+  │   ├─ 每行 assetType + productCode 不能为空
+  │   ├─ 行数 ≤ 150
+  │   └─ assetType + productCode 组合去重校验（同 parse-file 的重复校验）
+  │
+  ├── 【阶段二】数据版本校验
+  │   ├─ 用 businessId + businessType 查 IHUB_BUY_LIST 最新版本记录
+  │   └─ 前端提交的 recordVersion == DB 中的 recordVersion？
+  │      └─ 不一致 → 返回版本冲突错误（防并发覆盖）
+  │
+  ├── 【阶段三】业务数据 Redis 校验  checkDataInRedis()
+  │   └─ ⚠️ 当前逻辑已被注释掉，实际上是空校验，直接返回空 errors
+  │
+  ├── 【阶段四】操作主表  updateOldAndInsertNewByBizStatus()
+  │   │  （不是 UPDATE，而是 "软失效旧记录 + INSERT 新记录" 的版本链模式）
+  │   │
+  │   ├─ 旧记录处理 updateOldBuyList()
+  │   │   ├─ bizStatus=0（首次提交）→ 保留可见，标记不可编辑
+  │   │   ├─ bizStatus=1（submit再编辑）→ 标记删除
+  │   │   ├─ bizStatus=2/3（审批后重新发起）→ 保留可见
+  │   │   └─ bizStatus=4（restart再编辑）→ 标记删除
+  │   │
+  │   └─ 新记录插入 insertNewBuyListByOriginalBizStatus()
+  │       ├─ 新 UUID 作为 id
+  │       ├─ recordVersion + 1
+  │       ├─ approvalStatus = PENDING
+  │       ├─ maker = 当前登录用户
+  │       └─ historyId 设置（根据 bizStatus 不同指向不同的历史起点）
+  │
+  ├── 【阶段五】操作详情表  insertBuyListDetail()
+  │   │  （Maker 入口，status=null）
+  │   │
+  │   ├─ 按 assetType + productCode 分组去重（防重复扩展）
+  │   └─ 对每组调用 getBuyListDetailsDoForMaker()
+  │       └─ ★ 再次调用 getClientIdSet(assetType, productCode)
+  │           → 从 Redis/DB 获取该 productCode 对应的所有 clientId
+  │           → 每个 clientId 生成一条 BuyListDetailsDo
+  │           → 批量 insert 到 IHUB_BUY_LIST_DETAILS
+  │
+  ├── 【阶段六】发起 BPM 流程  startProcess()
+  │   └─ 创建 Flowable 流程实例，更新 processInstanceId
+  │
+  ├── 【阶段七】推送消息通知  sendNotification()
+  │   └─ 发送站内通知给管理员
+  │
+  └── 返回 { valid: true }
+
+  ---
+  几个关键点
+
+  1. checkDataInRedis() 已失效
+
+  // 核心校验逻辑全部被注释掉了
+  // assetTypeDataMap.containsKey(productCode) ← 注释状态
+
+  这意味着 updateList 路径上 没有做 productCode 在 SECURITY_MASTER 
+  中的有效性校验。前端如果绕过 parse-file 直接调 update，可以提交任意
+  productCode。
+
+  2. getClientIdSet 在详情插入时被二次调用
+
+  parse-file 阶段已经校验并拿到了 clientId，但 updateList 并没有使用前端传回的
+  clientId，而是在 getBuyListDetailsDoForMaker() 中 重新查了一遍 
+  Redis/DB。也就是说同样的数据查了两次。
+
+  3. 对比 updateNewList — 它有有效的校验
+
+  updateNewList 用的是 checkData()（非 checkDataInRedis），这个方法：
+  - 批量查 selectListByTypes — 一次查出所有 assetType
+  - 批量查 listMap() — 一次查出所有 tableSwitchLog
+  - 然后逐行校验 productCode 是否存在
+
+  这个写法比 getClientIdSet 的逐行查询高效很多，已经做了你前面提到的"按
+  assetType 分组预加载"优化。
+
+  4. 主表用的是"版本链"模式而非直接 UPDATE
+
+  每次提交不是修改原记录，而是：旧记录标记失效 → 插入新记录（version+1）→ 通过
+  historyId 串联版本链。这保证了审计追溯能力。
+
+  ---
+  updateList vs updateNewList 对比
+
+  ┌─────────────────┬─────────────────────────┬────────────────────────────┐
+  │      维度       │       updateList        │       updateNewList        │
+  ├─────────────────┼─────────────────────────┼────────────────────────────┤
+  │ 数据校验        │ checkDataInRedis() —    │ checkData() — 有效校验     │
+  │                 │ 已注释，空校验          │                            │
+  ├─────────────────┼─────────────────────────┼────────────────────────────┤
+  │ 版本校验失败处  │ 返回错误 VO             │ 抛异常（不返回友好提示）   │
+  │ 理              │                         │                            │
+  ├─────────────────┼─────────────────────────┼────────────────────────────┤
+  │ 查询优化        │ 无（靠详情插入时逐行查  │ 有（批量预加载 assetType + │
+  │                 │ ）                      │  tableSwitchLog）          │
+  ├─────────────────┼─────────────────────────┼────────────────────────────┤
+  │ 事务注解        │ 无 @Transactional       │ 有 @Transactional(rollback │
+  │                 │                         │ For)                       │
+  └─────────────────┴─────────────────────────┴────────────────────────────┘
+
+  updateList 缺少
+  @Transactional，如果详情插入到一半失败，主表已更新但详情不完整，会产生脏数据。
+
+✻ Baked for 1m 16s
+
+> 看错了，是这个方法updateNewList，@PutMapping("/updateNew") 不是updateList     
+● 好的，updateNewList 的代码我前面已经读到了，让我确认一下它引用的几个关键方法。
+
+  Searched for 2 patterns, read 1 file (ctrl+o to expand)
+
+● 好了，全貌清楚。以下是 updateNewList 的宏观骨架：
+
+  ---
+  updateNewList — 宏观骨架
+
+  PUT /admin-api/buyList/updateNew  (List<BuyListReqVO>)
+  │
+  │   ┌─────────────────────────────────────────┐
+  │   │  updateNewList(List<BuyListReqVO>)      │
+  │   │  @Transactional(rollbackFor)            │
+  │   └─────────────────────────────────────────┘
+  │
+  ├── 【阶段一】前置校验  preCheckMakerSubmitData()
+  │   ├─ 列表不能为空
+  │   ├─ 每行 assetType + productCode 不能为空
+  │   ├─ 行数 ≤ 150
+  │   └─ assetType + productCode 组合去重校验
+  │
+  ├── 【阶段二】数据版本校验
+  │   ├─ 用 businessId + businessType 查 DB 最新版本
+  │   └─ 前端 recordVersion == DB recordVersion？
+  │      └─ 不一致 → 抛异常（乐观锁，防并发覆盖）
+  │
+  ├── 【阶段三】业务数据正确性校验  checkData()  ★ 核心校验
+  │   │
+  │   │  ┌─ 批量预加载（只查一次）─────────────────────┐
+  │   │  │ ① 提取所有不重复的 assetType                │
+  │   │  │ ② selectListByTypes(list) → 一次查出所有     │
+  │   │  │    AssetTypeDo（BUY_LIST='Y' OR HVL='Y'）    │
+  │   │  │ ③ listMap() → 一次查出当天所有               │
+  │   │  │    TableSwitchLog → Map<targetTable, suffix> │
+  │   │  │ ④ 拼接所有 SecurityMasterReqVO               │
+  │   │  │    → Map<assetTypeDo.id, ReqVO>              │
+  │   │  └──────────────────────────────────────────────┘
+  │   │
+  │   │  ┌─ 逐行校验 ──────────────────────────────────┐
+  │   │  │ For each row:                                │
+  │   │  │   找到该行 assetType 对应的 AssetTypeDo      │
+  │   │  │   ↓                                          │
+  │   │  │   getAssetTypeNewDataMap(reqVO)  ← Redis缓存 │
+  │   │  │   ↓                                          │
+  │   │  │   检查 productCode 是否在 Map 中存在         │
+  │   │  │                                              │
+  │   │  │   特殊：Equities 对应多张表，                │
+  │   │  │         任意一张表命中即合法（anyMatch）      │
+  │   │  │   其他：每张表都必须命中（forEach 报错）      │
+  │   │  └──────────────────────────────────────────────┘
+  │   │
+  │   └─ 有 errors → 直接返回，不进入后续阶段
+  │
+  ├── 【阶段四】操作主表  updateOldAndInsertNewByBizStatus()
+  │   │  （版本链模式：软失效旧记录 + INSERT 新记录）
+  │   │
+  │   ├─ updateOldBuyList()  → 旧记录根据 bizStatus 标记删除/保留
+  │   └─ insertNewBuyList()  → 新记录 version+1, status=PENDING, historyId 串联
+  │
+  ├── 【阶段五】操作详情表  insertBuyListDetail()
+  │   │  （Maker 入口）
+  │   │
+  │   ├─ 按 assetType + productCode 分组去重
+  │   └─ getBuyListDetailsDoForMaker()
+  │       └─ ★ 再次调用 getClientIdSet(assetType, productCode)
+  │           → 查 Redis/DB 拿 clientId 集合
+  │           → 每个 clientId 生成一条 IHUB_BUY_LIST_DETAILS
+  │           → 批量 insert
+  │
+  ├── 【阶段六】发起 BPM 流程  startProcess()
+  │
+  ├── 【阶段七】推送消息通知  sendNotification()
+  │
+  └── 返回 { valid: true }
+
+  ---
+  与 parseAndValidateFile 的对比
+
+  ┌───────────────┬───────────────────────────────┬─────────────────────────┐
+  │     维度      │ parseAndValidateFile（导入解  │ updateNewList（提交保存 │
+  │               │             析）              │           ）            │
+  ├───────────────┼───────────────────────────────┼─────────────────────────┤
+  │ 查询优化      │ 无 — getClientIdSet 逐行查    │ 有 — checkData          │
+  │               │                               │ 批量预加载              │
+  ├───────────────┼───────────────────────────────┼─────────────────────────┤
+  │ AssetType     │ 每行调 selectListByType × 150 │ 一次                    │
+  │ 查询          │  次                           │ selectListByTypes(list) │
+  ├───────────────┼───────────────────────────────┼─────────────────────────┤
+  │ TableSwitchLo │ 每行调 selectOne × 300 次     │ 一次 listMap() 查全部   │
+  │ g             │                               │                         │
+  ├───────────────┼───────────────────────────────┼─────────────────────────┤
+  │ clientId 获取 │ 校验时查一遍                  │ 阶段三校验查一遍 +      │
+  │               │                               │ 阶段五插入又查一遍      │
+  └───────────────┴───────────────────────────────┴─────────────────────────┘
+
+  ---
+  关键问题
+
+  1. clientId 被查了两遍
+
+  阶段三 checkData() 已经通过 getAssetTypeNewDataMap() 拿到了 Map<productCode, 
+  List<clientId>>，但结果没有保存下来。到了阶段五 getBuyListDetailsDoForMaker()
+  又调 getClientIdSet() 重新查一遍。
+
+  虽然第二遍大概率命中 Redis 缓存，但调用链本身是冗余的（getClientIdSet
+  还要逐行查 selectListByType + selectOne，这两个无缓存）。
+
+  2. checkData() 中非 Equities 的校验逻辑可能有问题
+
+  // 非 Equities：对每个匹配的 AssetTypeDo 都校验
+  assetTypes.forEach(assetTypeDo -> {
+      if (!assetType.equals(assetTypeDo.getAssetType())) return;
+      Map<String, List<String>> assetTypeDataMap = securityMasterService
+              .getAssetTypeNewDataMap(listMap.get(assetTypeDo.getId()));
+      if (!assetTypeDataMap.containsKey(productCode)) {
+          errors.add(...);  // ← 每张表找不到都加一个 error
+      }
+  });
+
+  如果一个 assetType 对应 2 个 AssetTypeDo（2 张 SECURITY_MASTER
+  表），productCode 只在其中一张表存在，这里会报一个错误（另一张表没找到）。而
+  Equities 用的是 anyMatch（任意一张命中即可）。这个差异是否是有意为之？
+
+  3. checkData() 的批量预加载模式值得推广到 parseAndValidateFile
+
+  checkData() 的查询模式明显更高效：
+
+  // ① 一次查出所有 AssetTypeDo
+  List<AssetTypeDo> assetTypes =
+  assetTypeMapper.selectListByTypes(updateAssetTypeList);
+  // ② 一次查出所有 TableSwitchLog
+  Map<String, String> stringStringMap = listMap();
+  // ③ 构建 ReqVO Map
+  // ④ 逐行校验时只查 Redis 缓存
+
+  parseAndValidateFile 中的 validateRows() → getClientIdSet()
+  完全可以复用这个模式来解决 450+ 次 DB 查询的问题。
+
+✻ Brewed for 1m 6s
