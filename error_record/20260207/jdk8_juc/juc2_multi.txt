@@ -1,16 +1,4 @@
 
-╭─── Claude Code v2.1.29 ──────────────────────────────────────────────────────╮
-│                                                    │ Tips for getting        │
-│                 Welcome back Ethon!                │ started                 │
-│                                                    │ Run /init to create a … │
-│                       ▐▛███▜▌                      │ ─────────────────────── │
-│                      ▝▜█████▛▘                     │ Recent activity         │
-│                        ▘▘ ▝▝                       │ No recent activity      │
-│                                                    │                         │
-│   Opus 4.5 · Claude Pro · waming313@gmail.com's    │                         │
-│   Organization                                     │                         │
-│ D:\software\develop_tools\git\github\workspace\mu… │                         │
-╰──────────────────────────────────────────────────────────────────────────────╯
 
 > 我想問你關於多線程的問題，講講Java中線程有哪些實現方式？                  
                                                                             
