@@ -1,16 +1,4 @@
 
-╭─── Claude Code v2.1.25 ──────────────────────────────────────────────────────╮
-│                                                    │ Tips for getting        │
-│                 Welcome back Ethon!                │ started                 │
-│                                                    │ Run /init to create a … │
-│                       ▐▛███▜▌                      │ ─────────────────────── │
-│                      ▝▜█████▛▘                     │ Recent activity         │
-│                        ▘▘ ▝▝                       │ No recent activity      │
-│                                                    │                         │
-│   Opus 4.5 · Claude Pro · waming313@gmail.com's    │                         │
-│   Organization                                     │                         │
-│ D:\software\developmentTools\Git\gitee\newpap\spr… │                         │
-╰──────────────────────────────────────────────────────────────────────────────╯
 
 > 我想问你关于Java线程的问题，目前java线程有哪些实现方式？                  
   回复需要准确，核心，简洁                                                  
