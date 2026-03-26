@@ -2,7 +2,7 @@
 set -e
 
 # PAP 应用日志目录
-LOG_DIR="/opt/project/PAP/IHUB/back-end/logs"
+LOG_DIR="/opt/project/PAP/IHUB/log"
 # 归档目录
 ARCHIVE_DIR="/LOG"
 # 模块名
