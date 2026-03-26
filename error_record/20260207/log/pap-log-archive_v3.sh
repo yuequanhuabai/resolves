@@ -40,9 +40,15 @@ fi
 
 # 主机名
 HOSTNAME=$(hostname)
-# 昨天日期（两种格式）
-YESTERDAY=$(date -d "yesterday" +%Y-%m-%d)
-YESTERDAY_SHORT=$(date -d "yesterday" +%Y%m%d)
+# 昨天日期（支持传入参数模拟"今天"，用法：./pap-log-archive.sh 2026-03-27）
+if [ -n "$1" ]; then
+    date -d "$1" +%Y-%m-%d >/dev/null 2>&1 || { echo "invalid date: $1"; exit 1; }
+    YESTERDAY=$(date -d "$1 -1 day" +%Y-%m-%d)
+    YESTERDAY_SHORT=$(date -d "$1 -1 day" +%Y%m%d)
+else
+    YESTERDAY=$(date -d "yesterday" +%Y-%m-%d)
+    YESTERDAY_SHORT=$(date -d "yesterday" +%Y%m%d)
+fi
 
 # ============================================================
 # 第一步：收集 archive 目录下所有需要归档的日期（<= 昨天）
