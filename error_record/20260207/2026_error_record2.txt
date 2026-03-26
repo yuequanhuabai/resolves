@@ -810,41 +810,95 @@ cipher:
 你再帮我补全一下 ABAFixDemo 的实现
 
 ==============================================================================================================
+帮我看看当前目录下的包：com.he.multi.multi.simple.threadgroup.cas.varhandle
+下的类报错:
+代码行: private static final VarHandle VALUE;
 
+报错内容: set language level to 9 Modules，private methods in interfaces, etc
+
+需要再pom文件中加入：
+<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>9</source>
+                    <target>9</target>
+                </configuration>
+            </plugin>
+才不报错
+但是我的jdk已经设置成了17啊
+
+==============================================================================================================
+那还有个问题，如果不显示设置
+<properties>
+        <java.version>17</java.version>
+    </properties>
+它会找默认的Jdk17版本吗？
+还是说maven的pom文件必须有这个设置？
+
+==============================================================================================================
+你的方法不起作用，只有加了
+<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>9</source>
+                    <target>9</target>
+                </configuration>
+</plugin>
+
+==============================================================================================================
+我用Oxford Advanced Learner's Dictionary 10th Edition查了一下
+它的名词意思就下面几种？
+on letter/package
+printing tool
+printed design/words
+character/quality
+on foot
+
+版本应该是version吧
 
 ==============================================================================================================
 
+1.加注释
+2. archive下二次归档,立即删除; 把IHUB_INFO
+3. start,stop
 
 
-==============================================================================================================
+现在需求发生了变化，
+日志归档新需求:
 
+2.把原来归档实时日志的逻辑改为:不归档该目录下的IHUB*.log,改为归档/opt/project/PAP/IHUB/log/目录下的server_start.log日志文件和server_stop.log日志文件,如果这两个文件不为空的话，如果不存在也不归档，跳过,同时归档archive目录下的日志;
+另外归档/opt/project/PAP/IHUB/log/archive目录下的日志逻辑改为更健壮性，有可能定时调度出现问题导致归档逻辑没有调用，如果之前的定时任务有问题的话，再下次归档的时候需要把
+之前没有归档的日志文件全部归档，例如2026/03/20-25定时调度出了问题，26日定时任务功能修复，这次要归档20-25的所有日志，把archive下的日志按照日期归档压缩为.log.gz的压缩包
+26日的日志是27日凌晨归档;对archive目录下已经归档的日志，归档完成后立即删除;
 
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+你可以理解我的新需求吗？你必须先复述一遍你的理解:
 
 ==============================================================================================================
+你可以看到当前目录下的pap-log-archive.sh shell脚本吗？
 
-
-
-
-==============================================================================================================
-
+这个归档脚本是基于这个项目设置的：D:\software\developmentTools\Git\gitee\newpap\pap\pocpro
+它的logback文件路径：D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\pap-server\src\main\resources\logback-spring.xml
 
 ==============================================================================================================
+你的确认：
+1. server_start.log 和 server_stop.log和archive目录一起打包压缩
+2.刚才说错了，归档压缩还是tar.gz文件，这个不改动
 
+你梳理一下当前脚本的逻辑到当前目录下的pap-log-archive.txt中,先把已有的文件清空再写现有的逻辑吧
 
 ==============================================================================================================
+你这个逻辑好像复杂了点，我理解：直接把server_start.log 和 server_stop.log和archive目录一起打包压缩到/LOG目录下就可以了
+然后再把server_start.log 和 server_stop.log文件清空，把archive目录下的.log文件删除
+是不是这样就可以了？
 
+==============================================================================================================
+我再说明一下archive下的是.log文件，具体的logback配置在这里：
+这个归档脚本是基于这个项目设置的：D:\software\developmentTools\Git\gitee\newpap\pap\pocpro
+它的logback文件路径：D:\software\developmentTools\Git\gitee\newpap\pap\pocpro\pap-server\src\main\resources\logback-spring.xml
 
+还有一个问题，server_start.log 和 server_stop.log你是封装在了哪个归档里面了？是每个归档压缩都放了吗？
 
 ==============================================================================================================
 
