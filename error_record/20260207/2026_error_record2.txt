@@ -1085,6 +1085,28 @@ join的先后关系到对应线程的执行先后顺序吗？ 不是相互调用
 你再帮我讲讲BlockingQueue，它的诞生背景？它的前世今生，它的应用场景
 
 ==============================================================================================================
+我怎么觉得这种写法挺好的，逻辑明确,没有什么问题啊：
+ // JDK 1.5 之前的写法（痛苦版）
+  Queue queue = new LinkedList();
+
+  // 生产者
+  synchronized (queue) {
+      while (queue.size() >= MAX) {
+          queue.wait();           // 满了，等消费者取走
+      }
+      queue.add(data);
+      queue.notifyAll();          // 通知消费者
+  }
+
+  // 消费者
+  synchronized (queue) {
+      while (queue.isEmpty()) {
+          queue.wait();           // 空了，等生产者放入
+      }
+      Object data = queue.poll();
+      queue.notifyAll();          // 通知生产者
+  }
+
 
 
 
