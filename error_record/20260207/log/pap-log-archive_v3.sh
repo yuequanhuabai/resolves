@@ -80,6 +80,7 @@ for d in "${DATES_TO_ARCHIVE[@]}"; do
     fi
 done
 
+# 如果昨天不在归档数组中，再判断一下server_start.log server_stop.log日志是否存在且不为空，如果存在且不为空，则把昨天也加入归档日期;
 if [ "$YESTERDAY_IN_LIST" = false ] && [ ! -f "$ARCHIVE_DIR/${HOSTNAME}.${MODULE}.applog.${YESTERDAY_SHORT}.tar.gz" ]; then
     for LOG_NAME in server_start.log server_stop.log; do
         if [ -f "$LOG_DIR/$LOG_NAME" ] && [ -s "$LOG_DIR/$LOG_NAME" ]; then
