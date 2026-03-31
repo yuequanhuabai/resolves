@@ -1150,30 +1150,52 @@ ${DATES_TO_ARCHIVE[@]}是啥意思？
     fi
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+我问一下：ALL_DATES的数据结构是啥？ 数组吗？ 可以打印一下吗？ 我再内网有报错，
+if [ -d "$LOG_DIR/archive" ]; then
+    ALL_DATES=$(find "$LOG_DIR/archive" -maxdepth 1 -type f -name "*.log" -size +0c -printf '%f\n' 2>/dev/null \
+        | grep -oP '\d{4}-\d{2}-\d{2}' \
+        | sort -u || true)
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+刚才的解决了，又有新的报错:  ./pap-log-archive.sh: line 158: unexpected EOF while looking for matching `""
+对应的是脚本的154的这行：ARCHIVE_AVAIL=$(df -k "$ARCHIVE_DIR" | tail -1 | awk '{print $4}')
 
 ==============================================================================================================
+这个是数组吧：DATES_TO_ARCHIVE，这个怎么打印它的所有元素，在shell里面：
+可以直接 echo "DATES_TO_ARCHIVE:  $DATES_TO_ARCHIVE"   吗？
 
+DATES_TO_ARCHIVE=()
+
+if [ -d "$LOG_DIR/archive" ]; then
+    ALL_DATES=$(find "$LOG_DIR/archive" -maxdepth 1 -type f -name "*.log" -size +0c -printf '%f\n' 2>/dev/null \
+        | grep -oP '\d{4}-\d{2}-\d{2}' \
+        | sort -u || true)
+
+    for d in $ALL_DATES; do
+        if [[ "$d" < "$YESTERDAY" || "$d" == "$YESTERDAY" ]]; then
+            DATE_SHORT_TMP=$(date -d "$d" +%Y%m%d 2>/dev/null) || continue
+            ARCHIVE_NAME="${HOSTNAME}.${MODULE}.applog.${DATE_SHORT_TMP}"
+            if [ ! -f "$ARCHIVE_DIR/${ARCHIVE_NAME}.tar.gz" ]; then
+                DATES_TO_ARCHIVE+=("$d")
+            fi
+        fi
+    done
+fi
 
 ==============================================================================================================
+快速备份文件：
+find . -maxdepth 1 -type f -name "*.log" -exec cp {} {}.bak \;
 
+还原:
+find . -maxdepth 1 -type f -name "*.log.bak" -exec sh -c 'mv "$1" "${1%.bak}"' _ {} \;
+
+==============================================================================================================
+你帮我梳理下面这两个启动日志文件是如何归档的？
+server_start.log server_stop.log
+我刚才在内网测试的时候发现
+
+==============================================================================================================
+当前归档脚本的逻辑是什么？在archive目录下的归档逻辑，归档了哪些文件？
 
 ==============================================================================================================
 
