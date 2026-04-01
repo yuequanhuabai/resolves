@@ -1278,8 +1278,10 @@ server_start.log server_stop.log
 對，你先和我說說整體架構規劃如何實現？不要羅列一大堆非核心骨架的東西
 
 ==============================================================================================================
+新版本17
 docker run -d -p 8180:8080 -e KC_BOOTSTRAP_ADMIN_USERNAME=admin -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:latest start-dev
 
+旧版本<16
 docker run -p 8180:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:latest start-dev
 
 ==============================================================================================================
