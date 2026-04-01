@@ -31,6 +31,46 @@ docker run -d -p 8180:8080 \
 - Spring Security
 - Thymeleaf（先不用 React，用最简单的方式跑通流程，后面再换）
 
+### pom.xml 依赖注意事项
+
+除了 Spring Boot Starter 依赖外，还需要手动添加 **OpenSAML** 依赖（Spring Security SAML2 依赖它来解析 SAML XML，但不会自动引入）：
+
+```xml
+<dependency>
+    <groupId>org.opensaml</groupId>
+    <artifactId>opensaml-core</artifactId>
+    <version>4.3.2</version>
+</dependency>
+<dependency>
+    <groupId>org.opensaml</groupId>
+    <artifactId>opensaml-saml-api</artifactId>
+    <version>4.3.2</version>
+</dependency>
+<dependency>
+    <groupId>org.opensaml</groupId>
+    <artifactId>opensaml-saml-impl</artifactId>
+    <version>4.3.2</version>
+</dependency>
+```
+
+> **如果 Maven 下载失败**（报 `was not found in ... during a previous attempt`），说明 Maven 缓存了之前的失败记录。执行强制更新：
+>
+> ```bash
+> mvn clean install -U
+> ```
+>
+> **如果阿里云源确实没有 OpenSAML**，需要在 `pom.xml` 中添加 Shibboleth 的 Maven 仓库：
+>
+> ```xml
+> <repositories>
+>     <repository>
+>         <id>shibboleth</id>
+>         <name>Shibboleth Maven Repository</name>
+>         <url>https://build.shibboleth.net/maven/releases/</url>
+>     </repository>
+> </repositories>
+> ```
+
 关键配置 `application.yml`：
 
 ```yaml
