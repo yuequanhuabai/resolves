@@ -11,3 +11,7 @@ synchronied 锁
 
 4.sleep(ms)--> TIMED_WAITING
          sleep(1000)-->OS注册一个定时器-->线程挂起-->时间到，OS定时器触发-->放回就绪队列-->RUNNABLE
+
+
+
+ReentrantLock、CountDownLatch、Semaphore、CyclicBarrier、BlockingQueue — 它们底层全都依赖 LockSupport
