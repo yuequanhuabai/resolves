@@ -1493,47 +1493,92 @@ public static void main(String[] args) throws RunnerException {
 
 講講這個自注入的方式如何實現，如果要改的話
 ==============================================================================================================
+我有個問題，就是關於keycloak_setup.md步驟中的第三部，因爲之前已經創建好了springboot項目，
+關於SP 的 Entity ID的填寫問題，你這邊推薦的是：http://localhost:8080/saml2/service-provider-metadata/keycloak 這個地址
+我想問下，我部署keycloak是在linux服務器上，而我的springboot項目在我的本地，這裏的localhost要不要改爲都應的keycloak的部署ip
+
+那後面的這個pattern是固定的嗎？ /saml2/service-provider-metadata/keycloak
+==============================================================================================================
+但是我發現你幫我生成的springboot項目裏面沒有值呢？
+spring:
+  security:
+    saml2:
+      relyingparty:
+        registration:
+          keycloak:
+            assertingparty:
+              metadata-uri: http://36.151.149.59:8180/realms/saml-demo/protocol/saml/descriptor
+            signing:
+              credentials:
+                - private-key-location: classpath:credentials/sp-key.pem
+                  certificate-location: classpath:credentials/sp-cert.pem
 
 
+在keycloak_setup.md文件裏面只有設置，我在General Setting裏只發現了 Client ID選證，沒有ACS URL選項
+我點擊Next下一頁是Login setting：多了Root URL，Home URL， Valid redirect URIs， Valid post logout redirect URIs，
+還有 IDP-Inittiated SSO URL name，IDP Initiated SSO Relay State， Master SAML Processing URL
+這些都咋填？
+
+那你把這個問題更新一下文檔
+==============================================================================================================
+回到implement_stemp.md的主文檔，是不是“第三步：互相注册（建立信任）” 已經完成了？
+開始第四步：跑通流程？
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+我在瀏覽器上輸入： http://localhost:8080/
+路徑跳轉了：http://36.151.149.59:8180/realms/saml-demo/protocol/saml
+但是頁面報錯：
+We are sorry...
+HTTPS required
 
 ==============================================================================================================
+你給我講講這兩個命令是啥意思？我之前也沒理解：
+  docker exec keycloak /opt/keycloak/bin/kcadm.sh config credentials \
+    --server http://localhost:8080 --realm master --user admin --password admin
+
+  docker exec keycloak /opt/keycloak/bin/kcadm.sh update realms/saml-demo -s sslRequired=NONE
 
 
+你幫我看看，我是不是成功了？下面是linux的執行記錄
+]# docker exec keycloak /opt/keycloak/bin/kcadm.sh config credentials \
+>     --server http://localhost:8080 --realm master --user admin --password admin
+Logging into http://localhost:8080 as user admin of realm master
+[root@lavm-cvkhxpagsk ~]# docker exec keycloak /opt/keycloak/bin/kcadm.sh update realms/saml-demo -s sslRequired=NONE
 
+但是我好想感覺第一條命令執行的有點彆扭的感覺,有可能沒有成功呢？會不會影響第二條的執行？
+
+這個問題是在implement_stemp.md中的問題，你更新到這個文檔吧
+
+還是有問題：
+重定向路徑：http://36.151.149.59:8180/realms/saml-demo/protocol/saml
+報錯信息：
+We are sorry...
+Invalid Request
+==============================================================================================================
+還是報錯：
+We are sorry...
+Invalid requester
+但是我已經重新註冊，並且把master下面的也刪除了
 
 ==============================================================================================================
-
-
-
+你把上面我的步驟錯誤信息記錄在文檔，同時把剛纔的問題也記錄到文檔裏
 
 ==============================================================================================================
-
-
-==============================================================================================================
-
+我現在好像可以重定向到登錄頁面了，需要輸入帳號密碼，這個帳號密碼是什麼？之前註冊的嗎？
 
 ==============================================================================================================
+我找到error頁面了
+chrome瀏覽器url是：http://localhost:8080/login?error
+內容是：
+Login with SAML 2.0
+class org.opensaml.saml.saml2.core.impl.LogoutResponseImpl cannot be cast to class org.opensaml.saml.saml2.core.Response (org.opensaml.saml.saml2.core.impl.LogoutResponseImpl and org.opensaml.saml.saml2.core.Response are in unnamed module of loader 'app')
+keycloak
 
-
+我點擊最下面的keycloak就會跳轉到剛纔的成功頁面：
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
+你把剛纔的瀏覽器隱私模式步驟記錄一下
+對，我難題也記錄一下
 
 
 ==============================================================================================================
