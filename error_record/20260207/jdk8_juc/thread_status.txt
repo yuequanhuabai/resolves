@@ -1,0 +1,45 @@
+线程等待的两种方式
+
+  1. 挂起等待（不消耗 CPU）
+
+  condition.await();    // 线程从 CPU 上撤下来，进入等待队列
+  LockSupport.park();   // 同理
+  object.wait();        // 同理
+  Thread.sleep();       // 同理
+
+  线程状态变为 WAITING，操作系统不会给它分配 CPU 时间片。就像一个人坐在椅子上睡着了，直到有人叫醒它（signal()），它才重新排队等 CPU。
+
+  2. 自旋等待（消耗 CPU）
+
+  // 忙等待 — CPU 空转
+  while (!condition) {
+      // 什么都不做，但一直在循环检查
+  }
+
+  // CAS 自旋
+  while (!atomicVar.compareAndSet(expected, newVal)) {
+      // 不断重试
+  }
+
+  线程状态还是 RUNNABLE，一直占着 CPU 在跑循环。就像一个人站在门口不停地推门看开没开。
+
+  回到你的代码
+
+  while (step != 2) {
+      condition.await();  // ← 不是空转，线程在这里真正睡了
+  }
+
+  这个 while 看起来像自旋，但它不是。每次循环体执行的是 await()，线程会挂起。被 signalAll() 唤醒后检查 while
+  条件，不满足就再次挂起，不会空转。
+
+  和真正空转的区别：
+
+  // 这个才是空转，CPU 一直在跑
+  while (step != 2) {
+      // 空的，什么都不做
+  }
+
+  // 这个不是空转，线程在 await 处挂起了
+  while (step != 2) {
+      condition.await();  // 挂起，让出 CPU
+  }
