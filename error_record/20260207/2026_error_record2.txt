@@ -1580,31 +1580,63 @@ keycloak
 你把剛纔的瀏覽器隱私模式步驟記錄一下
 對，我難題也記錄一下
 
+==============================================================================================================
+你帮我看看当前目录下的http_get.sh脚本
+
+我想把LOG_FILE参数改为下面的路径:
+/opt/project/PAP/IHUB/other_log/per_day_request_log/日期/response_$(date '+%Y%m%d_%H%M%S').log
+后面的文件名好像只要时间就可以了，因为上级目录有日期了
+
+这个脚本是每次定时调度触发的，需要检测目录存在，同时在这个目录下创建对应日期目录，如果不存在的话，然后就是把对应请求日志生成在对应的日期目录下
 
 ==============================================================================================================
+你再帮我看看当前目录下的pap-log-archive.sh脚本
 
+我需要修改一下目前的逻辑，把刚才的htt_get.sh生成的日志也要打包进来
+另外对于server_start.log / server_stop.log的存储位置做一个调整，放在：/opt/project/PAP/IHUB/other_log/server_log/目录下
+打包的时候检测该目录下的server_start.log / server_stop.log日志文件，如果它们存在且不为空，打包之后还是一样的逻辑，把日志文件清空
+另外还需要打包刚才http_get.sh脚本生成的日志文件，
+/opt/project/PAP/IHUB/other_log/per_day_request_log/ 这个目录下的所有日期文件全部打包，打包完后删除对应的日期目录和对应的日志文件
 
-
+你可以理解我的需求吗？ 你先复述一遍你的理解：记住，先不修改代码
+==============================================================================================================
+我今天的状态还是有鼻塞，还会打喷嚏，无发烧症状；但是我发现昨天是的鼻涕中带淡黄色，今天好像是淡白色的，是体内病毒被免疫系统捕获了，快要好的症状吗？
 
 ==============================================================================================================
-
-
-
+你帮我看看当前目录下的后端项目里: TABLE_SWITCH_LOG_DATA_NOT_FOUND在buylist模块的报错信息，后端在pap-back下
 
 ==============================================================================================================
+我找到了getBusinessDate()的sql了:
+"select top 1* from batch_business_date_result " +
+                    "where create_business_date < = (" +
+                    "select business_date from bank where bank_code_1 = #{Bank})" +
+                    "and type = 'P' and status = 'S' order by create_business_date desc"
+Bank参数是"012"
+另外我还找到了tableSwitchLogMapper.selectList(getBusinessDate());这个语句对应的sql及参数：
+SELECT table_switch_log_oid,target_table,operation_type,business_date,table_suffix,create_datetime,create_user,type,is_valid,last_mod_datetime,last_mod_user FROM table_switch_log
+WHERE (is_valid = ? AND business_date = ? AND target_table LIKE ?) ORDER BY business_date DESC
 
+Y(String), 2026-01-27 00:00:00.0(Timestamp), BR_SECURITY_MASTER_%(String)
+
+我得到一个结论，bank表里的business_date属性的值必须是在
+select * from batch_business_date_result where type = 'P' and status = 'S'
+和SELECT table_switch_log_oid,target_table,operation_type,business_date,table_suffix,create_datetime,create_user,type,is_valid,last_mod_datetime,last_mod_user FROM table_switch_log
+WHERE (is_valid = 'Y'  AND target_table LIKE concat('BR_SECURITY_MASTER_','%'))
+
+是batch_business_date_result的create_business_date和table_switch_log的business_date 的公共部分日期
 
 ==============================================================================================================
+我想弄一个sql来查找batch_business_date_result的create_business_date和table_switch_log的business_date 的公共部分日期
+就是下面两个sql的公共的日期：
+select * from batch_business_date_result where type = 'P' and status = 'S'
+SELECT table_switch_log_oid,target_table,operation_type,business_date,table_suffix,create_datetime,create_user,type,is_valid,last_mod_datetime,last_mod_user FROM table_switch_log
+WHERE (is_valid = 'Y'  AND target_table LIKE concat('BR_SECURITY_MASTER_','%'))
 
+因为有时候内网测试环境的bank表的business_date值有问题，我需要修改这个值，来适配
 
-==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
+SELECT DISTINCT CREATE_BUSINESS_DATE  from BATCH_BUSINESS_DATE_RESULT b
+                                   inner join table_switch_log t on b.CREATE_BUSINESS_DATE =t.business_date
+ WHERE (b.[TYPE] ='P' and b.STATUS ='S') and (t.is_valid ='Y' and t.target_table LIKE CONCAT('BR_SECURITY_MASTER_','%'));
 
 ==============================================================================================================
 
