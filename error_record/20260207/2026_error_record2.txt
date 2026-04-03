@@ -1639,7 +1639,7 @@ SELECT DISTINCT CREATE_BUSINESS_DATE  from BATCH_BUSINESS_DATE_RESULT b
  WHERE (b.[TYPE] ='P' and b.STATUS ='S') and (t.is_valid ='Y' and t.target_table LIKE CONCAT('BR_SECURITY_MASTER_','%'));
 
 ==============================================================================================================
-
+SSO登录鉴权，动态权限路由，数据检索，csv上传解析，bpm Maker-Checker审批，自动化报表生成;
 
 
 
