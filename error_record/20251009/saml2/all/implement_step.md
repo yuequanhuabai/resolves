@@ -3,154 +3,78 @@
 ## 整体架构
 
 ```
-浏览器(React)  <-->  SP(Spring Boot应用)  <-->  IdP(Keycloak)
+浏览器  <-->  SP(Spring Boot)  <-->  IdP(Keycloak)
 ```
 
 ---
 
-## 第一步：启动 Keycloak（IdP）
+## 第一步：部署 Keycloak（IdP）
 
-```bash
-docker run -d -p 8180:8080 \
-  -e KC_BOOTSTRAP_ADMIN_USERNAME=admin \
-  -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin \
-  quay.io/keycloak/keycloak:latest start-dev
-```
+在 Linux 服务器上用 Docker 启动 Keycloak，配置 Realm 和测试用户。
 
-启动后访问 `http://localhost:8180`，做三件事：
-1. 创建一个 Realm（比如叫 `saml-demo`）
-2. 在 Realm 里创建一个测试用户（设置用户名和密码）
-3. 先放着，等 SP 建好后再来注册 SP
+> 详见 `install_docker_in_centos8.md`（Docker 安装）和 `keycloak_setup.md`（Keycloak 配置）。
 
 ---
 
 ## 第二步：创建 SP（Spring Boot 项目）
 
-用 Spring Initializr 创建项目，依赖选：
-- Spring Web
-- Spring Security
-- Thymeleaf（先不用 React，用最简单的方式跑通流程，后面再换）
+技术栈：Spring Boot 3.3.6 + JDK 17 + Spring Security SAML2 + OpenSAML 4.3.2
 
-### pom.xml 依赖注意事项
-
-除了 Spring Boot Starter 依赖外，还需要手动添加 **OpenSAML** 依赖（Spring Security SAML2 依赖它来解析 SAML XML，但不会自动引入）：
-
-```xml
-<dependency>
-    <groupId>org.opensaml</groupId>
-    <artifactId>opensaml-core</artifactId>
-    <version>4.3.2</version>
-</dependency>
-<dependency>
-    <groupId>org.opensaml</groupId>
-    <artifactId>opensaml-saml-api</artifactId>
-    <version>4.3.2</version>
-</dependency>
-<dependency>
-    <groupId>org.opensaml</groupId>
-    <artifactId>opensaml-saml-impl</artifactId>
-    <version>4.3.2</version>
-</dependency>
-```
-
-> **如果 Maven 下载失败**（报 `was not found in ... during a previous attempt`），说明 Maven 缓存了之前的失败记录。执行强制更新：
->
-> ```bash
-> mvn clean install -U
-> ```
->
-> **如果阿里云源确实没有 OpenSAML**，需要在 `pom.xml` 中添加 Shibboleth 的 Maven 仓库：
->
-> ```xml
-> <repositories>
->     <repository>
->         <id>shibboleth</id>
->         <name>Shibboleth Maven Repository</name>
->         <url>https://build.shibboleth.net/maven/releases/</url>
->     </repository>
-> </repositories>
-> ```
-
-关键配置 `application.yml`：
-
-```yaml
-spring:
-  security:
-    saml2:
-      relyingparty:
-        registration:
-          keycloak:
-            assertingparty:
-              metadata-uri: http://localhost:8180/realms/saml-demo/protocol/saml/descriptor
-            signing:
-              credentials:
-                - private-key-location: classpath:credentials/sp-key.pem
-                  certificate-location: classpath:credentials/sp-cert.pem
-```
-
-生成 SP 的自签名证书：
-
-```bash
-openssl req -x509 -newkey rsa:2048 -keyout sp-key.pem -out sp-cert.pem -days 365 -nodes -subj "/CN=sp"
-```
-
-放到 `src/main/resources/credentials/` 下。
-
-写一个最简单的 Controller：
-
-```java
-@RestController
-public class HomeController {
-    @GetMapping("/")
-    public String home(@AuthenticationPrincipal Saml2AuthenticatedPrincipal principal) {
-        return "Hello, " + principal.getFirstAttribute("email");
-    }
-}
-```
+关键文件：
+- `application.yml` — SAML2 配置（entity-id、metadata-uri、签名证书）
+- `credentials/sp-key.pem` + `sp-cert.pem` — SP 自签名证书（openssl 生成）
 
 ---
 
 ## 第三步：互相注册（建立信任）
 
-**把 SP 注册到 Keycloak：**
-- 回到 Keycloak 管理界面 -> Clients -> Create Client
-- Client type 选 SAML
-- Client ID 填 SP 的 Entity ID（Spring Security 默认是 `{baseUrl}/saml2/service-provider-metadata/{registrationId}`，即 `http://localhost:8080/saml2/service-provider-metadata/keycloak`）
-- 配置 ACS URL：`http://localhost:8080/login/saml2/sso/keycloak`
+| 方向 | 方式 |
+|------|------|
+| SP → Keycloak | `application.yml` 中 `metadata-uri` 指向 Keycloak，自动拉取 IdP 元数据 |
+| Keycloak → SP | 在 Keycloak 管理界面注册 SP 的 Client ID 和 ACS URL |
 
-**Keycloak 的 Metadata SP 已经通过 `metadata-uri` 自动拉取了，不用手动配。**
+> 详见 `keycloak_setup.md` 第三步。
 
 ---
 
 ## 第四步：跑通流程
 
 1. 启动 SP（`mvn spring-boot:run`）
-2. 浏览器装 **SAML-tracer** 插件
-3. 访问 `http://localhost:8080/`
-4. 观察整个流程：
-   - SP 重定向到 Keycloak 登录页 -> 打开 SAML-tracer 看 **AuthnRequest XML**
-   - 在 Keycloak 输入用户名密码
-   - Keycloak POST 回 SP -> SAML-tracer 看 **Response + Assertion XML**
-   - SP 验签通过，显示用户信息
+2. 浏览器访问 `http://localhost:8080/`
+3. 自动跳转到 Keycloak 登录页 → 输入 `testuser / test123`
+4. 登录成功，跳回 SP 显示用户信息
+
+用 **SAML-tracer**（Chrome/Firefox 插件）抓包，可以看到两个 SAML 请求：
+
+| 请求 | 方向 | 内容 |
+|------|------|------|
+| AuthnRequest | SP → IdP | "我是 SP，请帮我认证用户" |
+| Response + Assertion | IdP → SP | "用户是 testuser，认证成功，签名担保" |
+
+> 遇到问题？详见 `keycloak_setup.md` 的常见问题排查部分。
 
 ---
 
 ## 第五步：深入调试
 
-在 SP 端打断点，重点看这几个类：
-- `Saml2WebSsoAuthenticationFilter` — 接收 IdP 返回的 Response
-- `OpenSaml5AuthenticationProvider` — 解析 Assertion、验证签名
-- `Saml2AuthenticatedPrincipal` — 最终提取出的用户身份
+在 SP 端打断点，跟踪认证到创建 Session 的完整过程：
+
+| 顺序 | 类 | 方法 | 作用 |
+|------|------|------|------|
+| 1 | `Saml2WebSsoAuthenticationFilter` | `attemptAuthentication()` | 接收 IdP POST 回来的 SAMLResponse |
+| 2 | `OpenSaml4AuthenticationProvider` | `authenticate()` | 解码 → 解析 XML → 验签 → 提取用户身份 |
+| 3 | `HttpSessionSecurityContextRepository` | `saveContext()` | 将认证结果存入 HttpSession，浏览器拿到 JSESSIONID |
+
+> SAML2 只负责认证那一下，后续访问靠 JSESSIONID cookie 维持会话。
 
 ---
 
-## 第六步（可选）：接入 React 前端
+## 第六步（可选）：接入数据库
 
-跑通之后，把 Thymeleaf 换成 React：
-- React 作为前端，请求 SP 的 API
-- 未登录时 SP 返回 302，React 跟随重定向到 Keycloak
-- 登录完成后回到 React 页面
+登录成功后连接数据库做业务查询，验证 SAML2 认证 + 业务操作的完整链路。
 
 ---
 
-> **建议：先用最简单的方式（Thymeleaf）跑通第一到第五步，确认你能看到完整的 SAML2 流程，再考虑加 React。**
+## 第七步（可选）：接入 React 前端
+
+将 Thymeleaf 替换为 React，SP 作为 API 后端提供服务。

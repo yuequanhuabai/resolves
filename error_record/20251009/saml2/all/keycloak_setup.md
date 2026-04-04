@@ -1,43 +1,226 @@
-# Keycloak 配置步骤
+# Keycloak 配置 & 常见问题排查
 
-> 前提：Keycloak 已启动，能通过 `http://<IP>:8180` 访问管理界面。
-
----
-
-## 第一步：创建 Realm
-
-1. 登录 Keycloak 管理界面（`admin/admin`）
-2. 左上角点击 `master` 下拉菜单 → `Create realm`
-3. Realm name 填 `saml-demo`
-4. 点击 `Create`
-
-> Realm 是 Keycloak 中的租户概念，相当于一个独立的认证域。不要在 master realm 上做业务配置。
+> 对应 `implement_step.md` 中每个步骤的详细操作和踩坑记录。
 
 ---
 
-## 第二步：创建测试用户
+## 一、部署 Keycloak（对应第一步）
 
-1. 左侧菜单 → `Users` → `Create new user`
-2. 填写：
+### 1.1 Docker 启动 Keycloak
+
+```bash
+docker run -d -p 8180:8080 \
+  -e KC_BOOTSTRAP_ADMIN_USERNAME=admin \
+  -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin \
+  -e KC_HOSTNAME_STRICT=false \
+  -e KC_HOSTNAME_STRICT_HTTPS=false \
+  -e KC_HTTP_ENABLED=true \
+  --name keycloak \
+  quay.io/keycloak/keycloak:latest start-dev
+```
+
+### 1.2 关闭 master Realm 的 HTTPS 要求
+
+Keycloak 有两层 HTTPS 控制：**服务器级别**和 **Realm 级别**。启动参数只解决了服务器级别，Realm 默认仍要求外部走 HTTPS。
+
+```bash
+# 登录命令行工具（容器内部走 localhost，不受 HTTPS 限制）
+docker exec keycloak /opt/keycloak/bin/kcadm.sh config credentials \
+  --server http://localhost:8080 --realm master --user admin --password admin
+
+# 关闭 master realm 的 HTTPS 要求
+docker exec keycloak /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE
+```
+
+> 第一条输出 `Logging into ...` 即登录成功，第二条无报错即执行成功。
+
+访问 `http://<CentOS IP>:8180`，用 `admin/admin` 登录。
+
+### 1.3 创建 Realm
+
+1. 左上角 `master` 下拉菜单 → `Create realm`
+2. Realm name：`saml-demo`
+3. 点击 `Create`
+
+> Realm 是 Keycloak 中的租户概念，相当于独立的认证域。不要在 master realm 上做业务配置。
+
+### 1.4 关闭 saml-demo Realm 的 HTTPS 要求
+
+新建的 Realm 默认也要求 HTTPS，需要同样关闭：
+
+```bash
+docker exec keycloak /opt/keycloak/bin/kcadm.sh config credentials \
+  --server http://localhost:8080 --realm master --user admin --password admin
+
+docker exec keycloak /opt/keycloak/bin/kcadm.sh update realms/saml-demo -s sslRequired=NONE
+```
+
+### 1.5 创建测试用户
+
+1. 确保当前在 `saml-demo` realm 下
+2. 左侧菜单 → `Users` → `Create new user`
+3. 填写：
    - Username: `testuser`
    - Email: `testuser@example.com`
    - First name: `Test`
    - Last name: `User`
-3. 点击 `Create`
-4. 切换到 `Credentials` 标签页 → `Set password`
+4. 点击 `Create`
+5. 切换到 `Credentials` 标签页 → `Set password`
    - Password: `test123`
    - Temporary: 设为 **OFF**（否则首次登录会要求改密码）
-5. 点击 `Save`
+6. 点击 `Save`
 
 ---
 
-## 第三步：等待 SP 就绪后注册 SP
+## 二、创建 SP 项目（对应第二步）
 
-这一步在 SP（Spring Boot 项目）创建完成后再回来操作。需要做的事：
+### 2.1 依赖
 
-1. 左侧菜单 → `Clients` → `Create client`
-2. Client type 选 **SAML**
-3. Client ID 填 SP 的 Entity ID：`http://localhost:8080/saml2/service-provider-metadata/keycloak`
-4. 配置 ACS URL：`http://localhost:8080/login/saml2/sso/keycloak`
+Spring Boot 3.3.6 + JDK 17，核心依赖：
+- `spring-boot-starter-web`
+- `spring-boot-starter-security`
+- `spring-boot-starter-thymeleaf`
+- `spring-security-saml2-service-provider`
+- `opensaml-core` / `opensaml-saml-api` / `opensaml-saml-impl`（4.3.2）
 
-> 具体细节见 `implement_step.md` 第三步。
+> **OpenSAML 依赖问题**：Spring Security SAML2 依赖 OpenSAML 解析 XML，但不会自动引入，需要手动添加。
+>
+> **Maven 下载失败**：报 `was not found in ... during a previous attempt`，执行 `mvn clean install -U` 强制更新。
+>
+> **阿里云源缺少 OpenSAML**：在 `pom.xml` 中添加 Shibboleth 仓库：
+> ```xml
+> <repositories>
+>     <repository>
+>         <id>shibboleth</id>
+>         <url>https://build.shibboleth.net/maven/releases/</url>
+>     </repository>
+> </repositories>
+> ```
+
+### 2.2 application.yml 配置
+
+```yaml
+server:
+  port: 8080
+
+spring:
+  security:
+    saml2:
+      relyingparty:
+        registration:
+          keycloak:
+            entity-id: http://localhost:8080/saml2/service-provider-metadata/keycloak
+            assertingparty:
+              metadata-uri: http://<CentOS IP>:8180/realms/saml-demo/protocol/saml/descriptor
+            signing:
+              credentials:
+                - private-key-location: classpath:credentials/sp-key.pem
+                  certificate-location: classpath:credentials/sp-cert.pem
+```
+
+> `entity-id` 不配也行，Spring Security 会按 `{baseUrl}/saml2/service-provider-metadata/{registrationId}` 自动生成。但建议显式配置，一目了然。
+
+### 2.3 生成 SP 自签名证书
+
+```bash
+openssl req -x509 -newkey rsa:2048 -keyout sp-key.pem -out sp-cert.pem -days 365 -nodes -subj "/CN=sp"
+```
+
+放到 `src/main/resources/credentials/` 下。
+
+---
+
+## 三、注册 SP 到 Keycloak（对应第三步）
+
+### 3.1 操作步骤
+
+在 Keycloak 管理界面，**确保切换到 `saml-demo` realm**。
+
+左侧菜单 → `Clients` → `Create client`
+
+**General Settings 页：**
+
+| 字段 | 填写内容 |
+|------|---------|
+| Client type | **SAML** |
+| Client ID | `http://localhost:8080/saml2/service-provider-metadata/keycloak` |
+
+点击 `Next`。
+
+**Login Settings 页：**
+
+| 字段 | 填写内容 |
+|------|---------|
+| Master SAML Processing URL | `http://localhost:8080/login/saml2/sso/keycloak` |
+| Valid redirect URIs | `http://localhost:8080/*` |
+
+其他字段全部留空，点击 `Save`。
+
+> Master SAML Processing URL 就是 ACS URL，Keycloak 换了个名字。
+
+### 3.2 关闭客户端签名验证
+
+Keycloak 默认要求验证 SP 的 AuthnRequest 签名，但它没有 SP 的证书，会报 `invalid_signature`。
+
+1. 点击刚注册的 SP Client
+2. 切换到 **Keys** 标签页
+3. 把 **Client signature required** 设为 **OFF**
+4. 点击 `Save`
+
+> 开发阶段先关闭，后续可以打开并上传 SP 证书。
+
+### 3.3 踩坑：Client 注册错 Realm
+
+**现象**：Keycloak 日志报 `error="client_not_found", reason="Cannot_match_source_hash"`
+
+**原因**：SP Client 注册在了 `master` realm 下，但 SP 的 `metadata-uri` 指向 `/realms/saml-demo/...`，请求发到 saml-demo realm 找不到 Client。
+
+**解决**：删掉 master 下的 Client，在 `saml-demo` realm 下重新注册。
+
+---
+
+## 四、跑通流程 & 问题排查（对应第四步）
+
+### 4.1 正常流程
+
+1. 启动 SP（`mvn spring-boot:run`）
+2. 浏览器访问 `http://localhost:8080/`
+3. 自动跳转到 Keycloak 登录页
+4. 输入 `testuser / test123`
+5. 登录成功，跳回 SP 显示用户信息和属性
+
+### 4.2 SAML-tracer 抓包
+
+SAML-tracer 是 Chrome/Firefox 浏览器扩展，安装后点击图标打开面板，自动捕获 SAML 请求（黄色高亮）。
+
+> **无痕模式下使用**：需先到 `chrome://extensions/` → SAML-tracer → 详情 → 打开"在无痕模式下启用"。
+
+### 4.3 常见报错
+
+#### `HTTPS required`
+
+**原因**：Realm 级别默认要求 HTTPS。
+
+**解决**：见上方 1.2 和 1.4 节，用 `kcadm.sh` 关闭对应 Realm 的 `sslRequired`。
+
+#### `Invalid requester` / `invalid_signature`
+
+**原因**：Keycloak 要求验证 SP 的 AuthnRequest 签名，但没有 SP 的证书。
+
+**解决**：见上方 3.2 节，关闭 Client signature required。
+
+#### `InResponseTo attribute does not match` / `no saved authentication request was found`
+
+**原因**：F12 开发者工具打开时（"Disable cache" 勾选或 SAML-tracer 插件干扰），浏览器重复发送请求，第二个 AuthnRequest 覆盖了第一个，导致 ID 不匹配。
+
+**解决**：关闭 F12 开发者工具后再测试登录流程。如需用 SAML-tracer，确保 DevTools 的 "Disable cache" 未勾选。
+
+#### `LogoutResponseImpl cannot be cast to Response`
+
+**原因**：SP 端未配置 Single Logout (SLO)。Keycloak 把 LogoutResponse 发回 SP 的登录 URL，Spring Security 误将其当作登录 Response 解析。
+
+**影响**：不影响登录流程，属于后续完善内容。
+
+#### 如何重新登录（清除 session）
+
+SP 和 Keycloak 两端都有 session，仅清一端不够。最简单的办法：用**浏览器无痕模式**打开 `http://localhost:8080/`，每次新窗口就是全新 session。
