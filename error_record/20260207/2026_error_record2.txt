@@ -1761,7 +1761,7 @@ kgwNHeoyrscTnlE/2prSIjVaXqJ9RO6LUaU=</ds:X509Certificate></ds:X509Data></ds:KeyI
 這個要如何弄？
 
 用外部數據庫吧，我這裏有數據庫信息：
- ip:106.55.7.17
+ ip:
  數據庫類型，ms server
  用戶：sa
  密碼：MyDev@2024#Sql
