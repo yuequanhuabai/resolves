@@ -77,4 +77,16 @@
 
 ## 第七步（可选）：接入 React 前端
 
-将 Thymeleaf 替换为 React，SP 作为 API 后端提供服务。
+前后端分离，React 作为独立 SPA，SP 变为纯 API 后端。
+
+```
+React (localhost:5173)  --API请求-->  SP (localhost:8080)  --SAML-->  Keycloak (8180)
+```
+
+技术栈：React 18 + React Router + Axios + Vite
+
+SP 端改动：
+- Controller 新增 `/api/user`、`/api/users` 返回 JSON
+- SecurityConfig 添加 CORS 配置 + SAML 认证成功后重定向到 React
+
+> 详见 `keycloak_setup.md` 第五部分。
