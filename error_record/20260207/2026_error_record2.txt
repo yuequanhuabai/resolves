@@ -1641,53 +1641,137 @@ SELECT DISTINCT CREATE_BUSINESS_DATE  from BATCH_BUSINESS_DATE_RESULT b
 ==============================================================================================================
 SSO登录鉴权，动态权限路由，数据检索，csv上传解析，bpm Maker-Checker审批，自动化报表生成;
 
+==============================================================================================================
+我只看到了兩個saml2協議請求：
+http://36.151.149.59:8180/realms/saml-demo/protocol/saml
+和http://localhost:8080/login/saml2/sso/keycloak
+這是正常的嗎？
+
+==============================================================================================================
+我發現了一個問題，剛纔的哪個報錯原因好像不是你說的問題，
+是打開F12之後出現的問題，如果我把F12開發者模式關掉，就沒問題;
+現在我用的是之前的代碼，我已經把你剛纔的代碼給git stash save 到本地保存了
+
+==============================================================================================================
+你幫我解析一下者連個請求吧：
+http://36.151.149.59:8180/realms/saml-demo/protocol/saml
+http://localhost:8080/login/saml2/sso/keycloak
+--
+
+http://36.151.149.59:8180/realms/saml-demo/protocol/saml的請求參數：
+<?xml version="1.0" encoding="UTF-8"?><saml2p:AuthnRequest xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol" AssertionConsumerServiceURL="http://localhost:8080/login/saml2/sso/keycloak" Destination="http://36.151.149.59:8180/realms/saml-demo/protocol/saml" ForceAuthn="false" ID="ARQc3156b7-6d94-4acf-ae71-b741f39ce9d8" IsPassive="false" IssueInstant="2026-04-04T07:38:37.290Z" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Version="2.0"><saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">http://localhost:8080/saml2/service-provider-metadata/keycloak</saml2:Issuer><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+<ds:Reference URI="#ARQc3156b7-6d94-4acf-ae71-b741f39ce9d8">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+<ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>sE13PU96k37xfw4UTicVLgIxzYKbUYx9ThmpmWmU65w=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue>
+DXyy0TR8r9UGWJDCWr0HgyOXhYOa8ajkrkmkeuEzUgFyAfxKZ3eq3Cfp3RDAgbFWBdl2uP9xxD93&#13;
+ygd18PFilyRe406BTC5OMhpICT1tl1/PEY3cRPnY5WTFHotroQmEmbyPWPSpL446DA7jGmArDxgg&#13;
+ruZm1Wc7k1geyeM0rR/DXUA8pYEl8z57oRLjYaii11mdne6Z9fEeGGdk5NA18WXuD2HxGNupMciF&#13;
+iAcA+TOfMbL6aJ9Et8K9np+ASQl0F9FdW5i79MqLzGv/vokI0n/e2mn0Wb86DJgBp54f6squ2Gns&#13;
+3uxxP4BV8aVgNyF6A71WWbCzJRq74N9h4jNy0A==
+</ds:SignatureValue>
+<ds:KeyInfo><ds:X509Data><ds:X509Certificate>MIIC+zCCAeOgAwIBAgIULgNMizdNxhw5p+LEFf8ZCSYTFZwwDQYJKoZIhvcNAQELBQAwDTELMAkG
+A1UEAwwCc3AwHhcNMjYwNDAxMTUwMjQxWhcNMjcwNDAxMTUwMjQxWjANMQswCQYDVQQDDAJzcDCC
+ASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKiozc90GhUqqOmlDURMQkQRhdGjKsdEb4ix
+AjPoM/colveCP53vx8Ourj90hhZaD9goIii3O31yU18qmlzCFttejq5xlrIS2IHDWk5MsBYBz+g0
+0xhlE3en2G3LmsC+uzvLspzn4liQycqSLxfFqH8rKPERfnCg1ibGoFlwRZ3PoPNDJU22J94Lhm6L
+L7HGgIu6lYb8KGCM+fX2XumWBE6xLV7dmvkK5enNjFN1IDVnQT8q2UJy3TrjshEahip6o4nZ3l0n
+1GaOl2JAdwgHu30x96LU0rvuzOy1D9/sV0bl+5/yLuwBU7JIJ6p5F9IxYj//sgdiKz9FRynKdsGY
+eqMCAwEAAaNTMFEwHQYDVR0OBBYEFPZY/P1dXnscS7yp8VRs/b3PLjItMB8GA1UdIwQYMBaAFPZY
+/P1dXnscS7yp8VRs/b3PLjItMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBABHp
+CSfjfn+TBVckmLHyGgSpRPEqr6SMSwSby4t9/nQM28bLFNLDmeT8JgnV8XfQiu0MtWZ4pV7+xBEd
+w24Uuy9YNtSxbeUVIYRkCpdC5SDjGLtFe9yZJvLu8KmNFYgBdF4kuSfEXWnrtMDlipKwvlsfkrd8
+xdYinfEBmwuAOJa4RJamHmWsXZDeHizxWMqLeXO7PW3dHipIKpZ4I6ScRjIuJomu7WTedqCkGd5x
+oX9zVto9fhM3yXxRzz9IOxE5gWmwx9ONKoD7aYFWVDuTQSE4/Z/CbKimA0kyrhuedi80RrRX63QO
+kgwNHeoyrscTnlE/2prSIjVaXqJ9RO6LUaU=</ds:X509Certificate></ds:X509Data></ds:KeyInfo></ds:Signature></saml2p:AuthnRequest>
+
+http://localhost:8080/login/saml2/sso/keycloak的請求參數：
+<samlp:Response xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" Destination="http://localhost:8080/login/saml2/sso/keycloak" ID="ID_82bc100e-ecb1-450d-be51-86bc1a389a0d" InResponseTo="ARQc3156b7-6d94-4acf-ae71-b741f39ce9d8" IssueInstant="2026-04-04T07:38:48.285Z" Version="2.0"><saml:Issuer>http://36.151.149.59:8180/realms/saml-demo</saml:Issuer><dsig:Signature xmlns:dsig="http://www.w3.org/2000/09/xmldsig#"><dsig:SignedInfo><dsig:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/><dsig:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/><dsig:Reference URI="#ID_82bc100e-ecb1-450d-be51-86bc1a389a0d"><dsig:Transforms><dsig:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/><dsig:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/></dsig:Transforms><dsig:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><dsig:DigestValue>29n0sLjE/ObCUwSvw20eBKPcixgQBoEh6yxnFN8ZJrM=</dsig:DigestValue></dsig:Reference></dsig:SignedInfo><dsig:SignatureValue>PAHk/CEe7m0K5Ry8PtRV52vdOsypoRV60UvdTg0Xu3D/gTOhlCFyEk1fzpQQIq/sHnP8sfT3hDSbWgOIu2weR3l+dfWrDkQ2wj65XlEa8zh6s0ylUhWnrnLhDyGjIlGsQrwszue4Hx9kU33o5DYAfB6gC9RmON0H2Z4bZMxRCxeb9cH84J50R31W/jmQOyxvYHAng4vOq5/1H5c86fwSzgQsELuamAgs1DZGTH/ptRl4EWH2zQypZDWOeMIbGmERJFaakX2N8A8O6BflUMCN+1GvQvHRw3ODwFRdT6CCN8I75qlU1MzzdT/NB0hOmfSdh8CfvSAiMW5ALVW+Y/XXlw==</dsig:SignatureValue><dsig:KeyInfo><dsig:X509Data><dsig:X509Certificate>MIICoTCCAYkCBgGdSYqzGjANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDDAlzYW1sLWRlbW8wHhcNMjYwNDAxMTQ1MzM5WhcNMzYwNDAxMTQ1NTE5WjAUMRIwEAYDVQQDDAlzYW1sLWRlbW8wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCNYLncCKSaphA6b+b7qXSKnSDKbBuzbCzxjsxYujjf/y2WvD5xwmskbbkZjA2QOV+bQMkBybLZ75jcDgCo1FZ2TJFxObbwD7fjewGlIybmF+xUMIPcX8fXnEfMNum4wsKiSth1Fejy4UrABUg2YuLgaLclGd70D5/rKTeb7HpjPIaHdoq/dQygJEEAm9JCnx3EZYaF1AUJPKwvbBqm6MI+WKyGUseO7qhQURDZKPFb5kH7CMZ0XsNcS8/PBN2eqsT/LVBZBYvRsqZg2FtIMyR3hVZlGeNdyRBoTTHnVDAiBKJl0o0IF9XfQ1DeLdNW5aMEFzkUtu1nNC/JDhonC1a1AgMBAAEwDQYJKoZIhvcNAQELBQADggEBAIkpysrcBvgH9mkro1s4AucPkJ4xyzWmUczXVMvzhD2s2kmR+jhDAaFPMwfZw8RZHwsJhEMl7cmqT3/C3j6dvf/FaLFEIKBd18TIILac2O/WpYA7he/pXno1etMH6qUXBHgOTCXxFT73a8poDKr3JE5vwtezXvoKS9xcNLbg+GVop2wS3VC3o1JEeb4d3Ckx68vy2QREyP4nrcT0xAILqRa0iKBM1RsJRgzMHokvvMu8gVi5yuvtM967n+gVKGJ3Lp8P/Y1C+K64JCEZy3hOqfAjXKRBomIcz4a/Z6cLN+fmrK7XmsAnroJEF3W5zH/9h826JBdqwlc7lsW+7QEpy+g=</dsig:X509Certificate></dsig:X509Data></dsig:KeyInfo></dsig:Signature><samlp:Status><samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success"/></samlp:Status><saml:Assertion xmlns="urn:oasis:names:tc:SAML:2.0:assertion" ID="ID_6c17e353-1ff6-461d-8882-9f20f75f989a" IssueInstant="2026-04-04T07:38:48.285Z" Version="2.0"><saml:Issuer>http://36.151.149.59:8180/realms/saml-demo</saml:Issuer><saml:Subject><saml:NameID Format="urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified">testuser</saml:NameID><saml:SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer"><saml:SubjectConfirmationData InResponseTo="ARQc3156b7-6d94-4acf-ae71-b741f39ce9d8" NotOnOrAfter="2026-04-04T07:43:46.285Z" Recipient="http://localhost:8080/login/saml2/sso/keycloak"/></saml:SubjectConfirmation></saml:Subject><saml:Conditions NotBefore="2026-04-04T07:38:46.285Z" NotOnOrAfter="2026-04-04T07:39:46.285Z"><saml:AudienceRestriction><saml:Audience>http://localhost:8080/saml2/service-provider-metadata/keycloak</saml:Audience></saml:AudienceRestriction></saml:Conditions><saml:AuthnStatement AuthnInstant="2026-04-04T07:38:48.285Z" SessionIndex="SlaXgxtrIUCBPpSPYNqbgQAH::275720d8-39b3-4d6f-a170-fa5106634ed7" SessionNotOnOrAfter="2026-04-04T17:38:48.285Z"><saml:AuthnContext><saml:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:unspecified</saml:AuthnContextClassRef></saml:AuthnContext></saml:AuthnStatement><saml:AttributeStatement><saml:Attribute Name="Role" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">uma_authorization</saml:AttributeValue></saml:Attribute><saml:Attribute Name="Role" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">view-profile</saml:AttributeValue></saml:Attribute><saml:Attribute Name="Role" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">offline_access</saml:AttributeValue></saml:Attribute><saml:Attribute Name="Role" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">default-roles-saml-demo</saml:AttributeValue></saml:Attribute><saml:Attribute Name="Role" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">manage-account</saml:AttributeValue></saml:Attribute><saml:Attribute Name="Role" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic"><saml:AttributeValue xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xs:string">manage-account-links</saml:AttributeValue></saml:Attribute></saml:AttributeStatement></saml:Assertion></samlp:Response>
 
 
 ==============================================================================================================
 
+你的返回有點亂，還是一個一個幫我解析吧：
+第一個請求：http://36.151.149.59:8180/realms/saml-demo/protocol/saml
+請求參數：
+<?xml version="1.0" encoding="UTF-8"?><saml2p:AuthnRequest xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol" AssertionConsumerServiceURL="http://localhost:8080/login/saml2/sso/keycloak" Destination="http://36.151.149.59:8180/realms/saml-demo/protocol/saml" ForceAuthn="false" ID="ARQc3156b7-6d94-4acf-ae71-b741f39ce9d8" IsPassive="false" IssueInstant="2026-04-04T07:38:37.290Z" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Version="2.0"><saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">http://localhost:8080/saml2/service-provider-metadata/keycloak</saml2:Issuer><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+<ds:Reference URI="#ARQc3156b7-6d94-4acf-ae71-b741f39ce9d8">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+<ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>sE13PU96k37xfw4UTicVLgIxzYKbUYx9ThmpmWmU65w=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue>
+DXyy0TR8r9UGWJDCWr0HgyOXhYOa8ajkrkmkeuEzUgFyAfxKZ3eq3Cfp3RDAgbFWBdl2uP9xxD93&#13;
+ygd18PFilyRe406BTC5OMhpICT1tl1/PEY3cRPnY5WTFHotroQmEmbyPWPSpL446DA7jGmArDxgg&#13;
+ruZm1Wc7k1geyeM0rR/DXUA8pYEl8z57oRLjYaii11mdne6Z9fEeGGdk5NA18WXuD2HxGNupMciF&#13;
+iAcA+TOfMbL6aJ9Et8K9np+ASQl0F9FdW5i79MqLzGv/vokI0n/e2mn0Wb86DJgBp54f6squ2Gns&#13;
+3uxxP4BV8aVgNyF6A71WWbCzJRq74N9h4jNy0A==
+</ds:SignatureValue>
+<ds:KeyInfo><ds:X509Data><ds:X509Certificate>MIIC+zCCAeOgAwIBAgIULgNMizdNxhw5p+LEFf8ZCSYTFZwwDQYJKoZIhvcNAQELBQAwDTELMAkG
+A1UEAwwCc3AwHhcNMjYwNDAxMTUwMjQxWhcNMjcwNDAxMTUwMjQxWjANMQswCQYDVQQDDAJzcDCC
+ASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKiozc90GhUqqOmlDURMQkQRhdGjKsdEb4ix
+AjPoM/colveCP53vx8Ourj90hhZaD9goIii3O31yU18qmlzCFttejq5xlrIS2IHDWk5MsBYBz+g0
+0xhlE3en2G3LmsC+uzvLspzn4liQycqSLxfFqH8rKPERfnCg1ibGoFlwRZ3PoPNDJU22J94Lhm6L
+L7HGgIu6lYb8KGCM+fX2XumWBE6xLV7dmvkK5enNjFN1IDVnQT8q2UJy3TrjshEahip6o4nZ3l0n
+1GaOl2JAdwgHu30x96LU0rvuzOy1D9/sV0bl+5/yLuwBU7JIJ6p5F9IxYj//sgdiKz9FRynKdsGY
+eqMCAwEAAaNTMFEwHQYDVR0OBBYEFPZY/P1dXnscS7yp8VRs/b3PLjItMB8GA1UdIwQYMBaAFPZY
+/P1dXnscS7yp8VRs/b3PLjItMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBABHp
+CSfjfn+TBVckmLHyGgSpRPEqr6SMSwSby4t9/nQM28bLFNLDmeT8JgnV8XfQiu0MtWZ4pV7+xBEd
+w24Uuy9YNtSxbeUVIYRkCpdC5SDjGLtFe9yZJvLu8KmNFYgBdF4kuSfEXWnrtMDlipKwvlsfkrd8
+xdYinfEBmwuAOJa4RJamHmWsXZDeHizxWMqLeXO7PW3dHipIKpZ4I6ScRjIuJomu7WTedqCkGd5x
+oX9zVto9fhM3yXxRzz9IOxE5gWmwx9ONKoD7aYFWVDuTQSE4/Z/CbKimA0kyrhuedi80RrRX63QO
+kgwNHeoyrscTnlE/2prSIjVaXqJ9RO6LUaU=</ds:X509Certificate></ds:X509Data></ds:KeyInfo></ds:Signature></saml2p:AuthnRequest>
 
+==============================================================================================================
+這個請求的目的不應該是幫我驗證一下當前用戶是否爲認證用戶嗎？
+只傳入"我是誰"對認證沒有用吧
 
 
 ==============================================================================================================
-
-
-
+還有一個問題，就是哪個entity Id 可以在配置文件裏配置嗎？ 我感覺怪怪的，因爲沒有配置就自己傳輸了，搞得我腦袋有點矇
 
 ==============================================================================================================
-
-
-==============================================================================================================
-
+我有個問題，就是用戶在keycloak完整認證之後，就應該是發起請求了吧，發起請求需要攜帶token嗎？
 
 ==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
+完成驗證成功到創建sesseion的步驟在哪裏可以看到，可以調試嗎？
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+我想把生成的session存入redis中，這個可以實現嗎？ 目前這臺機器是安裝了redis 115.190.204.179
+該如何實現，通過redis設置過期時間來控制登錄過期時間
 
 ==============================================================================================================
+目前該項目中沒有連接數據庫，可以在登錄後連接數據庫，做一個簡單的查詢操作
+這個要如何弄？
 
+用外部數據庫吧，我這裏有數據庫信息：
+ ip:106.55.7.17
+ 數據庫類型，ms server
+ 用戶：sa
+ 密碼：MyDev@2024#Sql
 
-
-
+ 創建一個簡單的用戶表，來做查詢操作，
+ user表，id，name，age三個屬性即可
+ 初始化一條數據
+用druid連接池吧，用mybatis-plus來做dao層的查詢，簡單sql可以不用手寫
 ==============================================================================================================
-
-
-==============================================================================================================
-
+我在resource目錄下新建了一個sql目錄，你把創建數據庫的腳本和建表語句，還有初始化語句分開爲三個腳本，寫在sql目錄下
 
 ==============================================================================================================
 
