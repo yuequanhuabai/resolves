@@ -93,7 +93,9 @@ IDM App
 你可以把操作這四個菜單的操作給我生成一個md的教程文檔嗎？命名flowable_ui_help.md,生成在當前目錄下
 
 ==============================================================================================================
-
+你再給我生成一個“方案二（自建微服务）”的教程flowable_springboot3_create_core.md,flowable_springboot3_create_step.md,生成在當前目錄下
+flowable_springboot3_create_core.md用來講主體架構步驟；
+flowable_springboot3_create_step.md用來講每個主體架構步驟的詳情步驟操作信息;
 
 
 

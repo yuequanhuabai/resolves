@@ -291,23 +291,7 @@ Admin App 用于监控引擎状态、管理部署、排查问题。
    - `zhangsan`（张三 - 员工）
    - `lisi`（李四 - 经理）
 4. 给所有用户授予 **Access the workflow application** 权限
-
-### 第2步：设计流程（Modeler App）
-
-1. 进入 Modeler App
-2. 创建流程：
-   - Name：`请假审批`
-   - Key：`leave-approval`
-3. 在设计器中画流程：
-
-```
-[开始] → [经理审批(lisi)] → [结束]
-```
-
-4. 选中「经理审批」User Task，设置：
-   - Name：`经理审批`
-   - Assignee：`lisi`
-5. 保存
+ 
 
 ### 第3步：部署流程（Modeler App）
 
