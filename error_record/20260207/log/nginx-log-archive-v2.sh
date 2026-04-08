@@ -4,7 +4,7 @@ set -e
 LOG_DIR="/opt/project/PAP/nginx/logs"
 ARCHIVE_DIR="/LOG"
 MODULE="nginx"
-LOCK_FILE="/tmp/archive_${MODULE}.lock"
+LOCK_FILE="/opt/project/PAP/IHUB/archive_${MODULE}.lock"
 ERROR_LOG="$ARCHIVE_DIR/archive_error.log"
 
 log_error() {

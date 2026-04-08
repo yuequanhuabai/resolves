@@ -8,7 +8,7 @@ ARCHIVE_DIR="/LOG"
 # 模块名
 MODULE="IHUB-PAP"
 # 锁文件
-LOCK_FILE="/tmp/archive_${MODULE}.lock"
+LOCK_FILE="/opt/project/PAP/IHUB/archive_${MODULE}.lock"
 # 错误日志文件
 ERROR_LOG="$ARCHIVE_DIR/archive_error.log"
 

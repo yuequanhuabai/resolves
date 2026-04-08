@@ -4,7 +4,7 @@ set -e
 LOG_DIR="/opt/project/PAP/IHUB/back-end/logs"
 ARCHIVE_DIR="/LOG"
 MODULE="IHUB-PAP"
-LOCK_FILE="/tmp/archive_${MODULE}.lock"
+LOCK_FILE="/opt/project/PAP/IHUB/archive_${MODULE}.lock"
 ERROR_LOG="$ARCHIVE_DIR/archive_error.log"
 
 log_error() {
