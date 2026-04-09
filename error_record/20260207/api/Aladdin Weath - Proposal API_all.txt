@@ -1,0 +1,26 @@
+post:
+Stateless Investment Proposal Generation.
+
+post:
+Generate and Persist an Investment Proposal.
+
+post:
+Stateless Analysis of an Investment Proposal.
+
+get:
+Retrieve Proposal by ID.
+
+post:
+Update Proposal Workflow Status.
+
+get:
+Retrieve a Specific Proposal Analysis.
+
+put:
+Update Supplemental Data for a Proposal.
+
+put:
+Verify a batch proposal generation request for further processing.
+
+get:
+Retrieve details of a batch proposal generation process.

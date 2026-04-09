@@ -1,3 +1,48 @@
 post:
-Stateless Investment Proposal Generation
+Stateless Investment Proposal Generation.
 
+This stateless endpoint creates an investment proposal given a portfolio using client-specific guidelines. The request
+requires an aggregate object representing a parent entity, which can be a single portfolio or a collection of portfolios.
+OPtional optimization parameters, such as potimization reason and buy list, and analysis settings, such as sleeve
+information and wealth projection settings, are also accepted. The endpoint returns the original portfolio, the proposed
+portfolio, a list of changes, and optionally, the proposal analysis. This API is stateless; it does not persist any generated
+proposals or their analysis within Aladdin Wealth.
+
+QUERY  PARAMETERS
+includeAnalysis             boolean
+    A true/false flag to indicate if as part of the request the proposal should be analyzed and the
+    analysis should be included as part of the response. Defaults to false.
+analytics                   Array of strings
+    Items Enum: "PORTFOLIO" "CUSTOM" "COMMENTS" "TAX" "RULES" "SCORES" "STATUS" "CHANGES" "ALL"
+    the analytics to include in the response, in comma-separated format. Default to ALL
+date                        string<date>
+    An ISO-8601 formatted string representing the date when the proposal should be analyzed
+    as of in UTC
+
+
+
+
+
+post:
+Generate and Persist an Investment Proposal.
+
+post:
+Stateless Analysis of an Investment Proposal.
+
+get:
+Retrieve Proposal by ID.
+
+post:
+Update Proposal Workflow Status.
+
+get:
+Retrieve a Specific Proposal Analysis.
+
+put:
+Update Supplemental Data for a Proposal.
+
+put:
+Verify a batch proposal generation request for further processing.
+
+get:
+Retrieve details of a batch proposal generation process.
