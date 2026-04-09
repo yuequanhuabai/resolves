@@ -374,87 +374,199 @@ curl -u admin:test -X POST \
     http://你的IP:8080/flowable-ui/process-api/repository/deployments \
     -F "file=@請假模型.bpmn20.xml"
 
+==============================================================================================================
+之前的那个模型文件我已经删除了，你帮我看看当前目录下的新模型文件：請假模型2.bpmn20.xml
 
 ==============================================================================================================
-
-
-==============================================================================================================
-
-
+这个模型有问题，现在的这个填写审批，我直接发起就到了经理节点了，而且没有审批同意或者驳回，就只有一个complete
+我想直接引用表单再试试，你告诉我表单如何引入到发起人，审批人会查看表单，点击审批同意或驳回
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+现在我已经用admin账户登录了，进入了Admin App下的Process Engine，
+把Deployments，Definitions，Instances，Tasks，Jobs，Batches，Event subscriptions
+里面的Deployments，Definitions，Instances这三个目录下的全部删除了，现在重新部署发布
 
 ==============================================================================================================
-
-
-
+你和我讲讲，目前我是用lisi登录，他是经理，一级审批人，点击进入后有 Tasks,Processes,Cases三个，这三个是啥？
 
 ==============================================================================================================
+我目前是zhangsan账号，发起人角色，在Processes页签
+左边是：
+Showing running processes
 
++ Start a process         newest first
 
+请假模型2 - April 9th 2026         started 7 minutes ago
+Started by zhang san
+请假模型2
 
+右边是：
+請假模型2 - April 9th 2026                                     Show diagram   Cancel process
+Started by: zhang san Started: 7 minutes ago
 
-
-==============================================================================================================
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+Active tasks
+Created 5 minutes ago
+LS經理審批
+Assigned to li si
+Completed tasks
+Took 2 minutes
+ZS填寫申請
+Completed by zhang san 5 minutes ago
 
 ==============================================================================================================
+但是我没有做填写操作啊，
+我就点了左边的 + Start a process,
+左边是：
+Select a process to start from the list below
+< BAck to process instances
+请假模型2
 
+右边是： 請假模型2 - April 9th 2026
+右边第二行有个 Start process
 
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
+我就点了这个Start process，就发起了流程，没有做填写操作，流程直接到了lisi经理那了
 
 ==============================================================================================================
+现在我用方案二来尝试：
+我重新用zhangsan 发起了，在Tasks找到了填写申请的任务，
+左边是：
+填寫申請            Created a few seconds ago
+This task has no description
+Assigned to zhang san
 
+右边是：
+填寫申請
+Assignee: li si Due: No due date Part of process: 請假模型2 - April 9th 2026
+No people involved
+No content items
+No comments
+No sub tasks
 
+右下方的空白区域中间有：
+This task has no details yet. You can change that by choosing one of these actions:
+ Involve someone else and start collaborating
+ Add a document and share the knowledge
+ Enlighten others by adding a comment
+ Create a sub task
+
+ 没有哪些填写的内容啊
+==============================================================================================================
+这个设置在哪里可以看到，我没有在“填写申请”下方的属性看到呢？
+Allow process initiator to complete task
+只有这些：
+Id :sid-7B7A2A7D-4A02-47 ...Name :填寫申請Documentation :No valueAsynchronous :
+
+Exclusive :
+
+Execution listeners :0 execution listenersMulti-instance type :NoneVariable aggregations (Multi-instance) :No variable aggregations configuredCardinality (Multi-instance) :No valueCollection (Multi-instance) :No valueElement variable (Multi-instance) :No valueCompletion condition (Multi-instance) :No valueIs for compensation :
+
+Assignments :Assignee ${initiator}Form key :No valueForm reference :
+No reference selected
+Validate form fields :trueDue date :No valuePriority :No valueForm properties :3 form propertiesTask listeners :0 task listenersSkip expression :No valueCategory :No valueID variable :No value
 
 ==============================================================================================================
+还是一样的，没有实现表单信息，当前用户是zhangsan,
+左边是：
+Newest first
+Created a few seconds ago
+填寫申請
+This task has no description
+Assigned to zhang san
 
+右上方：
+填寫申請
+Assignee: zhang san Due: No due date Part of process: 請假模型2 - April 9th 2026
+No people involved
+No content items
+No comments
+No sub tasks
 
-
+右边中间区域：
+This task has no details yet. You can change that by choosing one of these actions:
+ Involve someone else and start collaborating
+ Add a document and share the knowledge
+ Enlighten others by adding a comment
+ Create a sub task
 
 ==============================================================================================================
-
-
-
+就是Form properties的问题，默认的不支持吧，现在用独立的form表单ok了
+但是在zhangsan发起流程后，审批用户lisi审批的时候好像有报错信息，如何查看这个报错信息
 
 ==============================================================================================================
+这个是我的docker镜像：
+# docker ps
+CONTAINER ID   IMAGE                              COMMAND                  CREATED        STATUS        PORTS                                                           NAMES
+03ea8a5011ab   flowable/flowable-ui               "/flowable-entrypoin…"   39 hours ago   Up 39 hours   0.0.0.0:8080->8080/tcp, :::8080->8080/tcp                       flowable
+2cf0a5cb09ee   quay.io/keycloak/keycloak:latest   "/opt/keycloak/bin/k…"   8 days ago     Up 8 days     8443/tcp, 9000/tcp, 0.0.0.0:8180->8080/tcp, :::8180->8080/tcp   keycloak
 
+怎么看
+
+==============================================================================================================
+你看看我这个新的模型文件？放在了当前目录下：請假模型2.bpmn20 (1).xml
+
+==============================================================================================================
+这里的Dropdown没有name和value
+
+有General和Options两个tab
+在General下有
+Label
+Override id？复选框
+Id
+Required和Read-only的两个复选框
+Placeholder
+
+Options的tab下有：
+OPtions
++ Add a new option
+Enable options expression 复选框
+Options expression:
+${}
+You can use an expression to dynamically populate options for example by referencing a variable like this ${optionsVariable}. The expression needs to result in either a java object (java.util.List with Option objects) or its json representation.
+
+==============================================================================================================
+这个表单的form可以导出吗？我可以导出给你看看
+
+==============================================================================================================
+我知道原因了，因为那里只有一个填的，没有name和value
+我之前填的是true-同意，false-驳回
+现在我就他填了true和false，现在经理可以审批了
+
+==============================================================================================================
+现在又出现了其它的问题了，
+zhangsan提交，lisi审批，我选择了true，点击了complete之后
+wangwu用户登录这里无法看到任务呢？
+但是在lisi这里看到的是当前的任务在wangwu这里
+这个是lisi的Processes：
+請假模型2 - April 9th 2026
+Started by: zhang san Started: 8 minutes ago
+Comments +
+Active tasks
+Created 7 minutes ago
+WW董事長審批
+Assigned to wang wu
+Completed tasks
+Took a few seconds
+ZS填寫申請
+Completed by zhang san 7 minutes ago
+Took a few seconds
+LS經理審批
+Completed by li si 7 minutes ago
+
+但是我登录wangwu账号进入，是空的，Tasks和Processes都是空的
+
+==============================================================================================================
+我知道了，是我之前创建了太多的App了，我进入错了App 这个怎么删除啊，我想把多余的都删掉，太乱了
+
+我目前的admin账号的App那里只有一个，但是我用wangwu登录，这里又好几个之前创建的，还有一个Task App，这个是怎么回事？
+==============================================================================================================
+帮我看看当前目录下的pap-back后端项目启动报错问题：
+启动日志在当前目录下的start_error.log文件中
+
+还是有报错，我把新日志覆盖了原文件，还是start_error.log文件，你读取一下
+==============================================================================================================
+现在整个流程可以正常运行了，但是我现在有个问题，就是多了一个“填写申请”，
+一般应该是开始节点就会触发流程，就是实际场景中第一个节点是填写审批节点，你理解我的意思吗？
+你先复述一遍你的理解：
 
 
 
