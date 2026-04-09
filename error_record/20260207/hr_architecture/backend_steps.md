@@ -376,32 +376,76 @@ hr-admin          hr-system          hr-framework        hr-common
 
 ---
 
-### Step 2：配置 hr-admin 啟動模塊
+### Step 2：配置 hr-admin 啟動模塊 ✅ 已完成
 
 > **前置條件**：Step 1 完成，依賴下載成功
 
-#### 2.1 清理 IDEA 自動生成的模板代碼
+#### 2.1 清理 IDEA 自動生成的模板代碼 ✅
 
-每個子模塊的 `src/main/java` 和 `src/test/java` 下可能有 IDEA 自動生成的 `App.java` 和 `AppTest.java`，全部刪除。
+每個子模塊的 `src/main/java` 和 `src/test/java` 下有 IDEA 自動生成的 `App.java` 和 `AppTest.java`，全部刪除。
 
-#### 2.2 創建包結構
+**刪除的文件清單（共 8 個）：**
 
-在 `hr-admin/src/main/java/` 下創建包：
+| 模塊 | 刪除的文件 | 位置 |
+|------|-----------|------|
+| hr-common | `App.java` | `src/main/java/com/hr/` |
+| hr-common | `AppTest.java` | `src/test/java/com/hr/` |
+| hr-framework | `App.java` | `src/main/java/com/hr/` |
+| hr-framework | `AppTest.java` | `src/test/java/com/hr/` |
+| hr-system | `App.java` | `src/main/java/com/hr/` |
+| hr-system | `AppTest.java` | `src/test/java/com/hr/` |
+| hr-admin | `App.java` | `src/main/java/com/hr/` |
+| hr-admin | `AppTest.java` | `src/test/java/com/hr/` |
+
+**為什麼要刪？**
+
+- 這些是 Maven archetype (`maven-archetype-quickstart`) 自動生成的佔位代碼，內容就是 `System.out.println("Hello World!")`
+- 它們的包名是 `com.hr`，但我們實際的包結構是 `com.hr.common`、`com.hr.framework` 等，不在同一個包下
+- 如果不刪，後面會跟我們自己寫的類混在一起，造成包結構混亂
+- 特別是 4 個模塊都有 `com.hr.App`，**類名完全相同會導致衝突**
+
+#### 2.2 創建包結構 ✅
+
+在每個模塊的 `src/main/java/` 下創建獨立的基礎包，並放入 `package-info.java` 佔位文件：
+
+| 模塊 | 創建的包 | 文件 |
+|------|---------|------|
+| hr-common | `com.hr.common` | `package-info.java` |
+| hr-framework | `com.hr.framework` | `package-info.java` |
+| hr-system | `com.hr.system` | `package-info.java` |
+| hr-admin | `com.hr.admin` | `package-info.java` |
+
+**為什麼包名不同？**
+
+之前 IDEA 生成的 `App.java` 都在 `com.hr` 包下，4 個模塊共用同一個包名。我們改成每個模塊有獨立的子包：
 
 ```
-com.hr.admin/
-└── HrApplication.java          # 啟動類
+com.hr
+├── common      ← hr-common 模塊的代碼都在這裡
+├── framework   ← hr-framework 模塊的代碼都在這裡
+├── system      ← hr-system 模塊的代碼都在這裡
+└── admin       ← hr-admin 模塊的代碼都在這裡
 ```
 
-同時在其它模塊創建基礎包（空包即可，後續步驟會填充）：
+這樣每個模塊的代碼邊界清晰，不會互相侵入。
+
+**什麼是 `package-info.java`？**
+
+它是 Java 官方規範中的**包級文檔文件**，作用：
+- 讓空目錄被 IDEA 和 Git 識別（空目錄會被忽略）
+- 為這個包提供 Javadoc 說明
+- 後續這個包裡有了真正的類之後，這個文件可以保留也可以刪除，不影響功能
+
+**後續代碼會放在哪？**
 
 ```
-hr-common:    com.hr.common
-hr-framework: com.hr.framework
-hr-system:    com.hr.system
+com.hr.common       → BaseEntity, R<T>, 異常類, 工具類
+com.hr.framework    → SecurityConfig, TokenService, RedisCache
+com.hr.system       → SysUser, SysUserMapper, SysUserService
+com.hr.admin        → HrApplication, Controller 層
 ```
 
-#### 2.3 啟動類 HrApplication.java
+#### 2.3 啟動類 HrApplication.java ✅
 
 文件路徑：`hr-admin/src/main/java/com/hr/admin/HrApplication.java`
 
@@ -410,8 +454,16 @@ package com.hr.admin;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
-@SpringBootApplication(scanBasePackages = "com.hr")
+@SpringBootApplication(
+    scanBasePackages = "com.hr",
+    exclude = {
+        RedisAutoConfiguration.class,
+        DataSourceAutoConfiguration.class
+    }
+)
 public class HrApplication {
 
     public static void main(String[] args) {
@@ -421,13 +473,98 @@ public class HrApplication {
 }
 ```
 
-> 注意 `scanBasePackages = "com.hr"`，確保掃描所有子模塊的 Bean。
+**逐行解釋：**
 
-#### 2.4 配置文件
+**① `@SpringBootApplication`**
+
+這是 Spring Boot 的核心註解，它其實等於 3 個註解的組合：
+
+```
+@SpringBootApplication
+  = @SpringBootConfiguration   → 標記這是一個配置類
+  + @EnableAutoConfiguration   → 開啟自動配置（Spring Boot 的魔法）
+  + @ComponentScan             → 掃描 Bean（默認掃描當前包及子包）
+```
+
+**② `scanBasePackages = "com.hr"`**
+
+這是重點。默認情況下 `@ComponentScan` 只掃描啟動類所在包及其子包，也就是 `com.hr.admin`。但我們的代碼分散在 4 個模塊：
+
+```
+com.hr.admin       ← 默認只掃描這裡
+com.hr.common      ← 掃不到！
+com.hr.framework   ← 掃不到！
+com.hr.system      ← 掃不到！
+```
+
+設成 `com.hr` 後，4 個模塊的 Bean 全部都能被掃到：
+
+```
+com.hr             ← 從這裡開始掃描
+├── admin          ✓
+├── common         ✓
+├── framework      ✓
+└── system         ✓
+```
+
+**③ `exclude = { RedisAutoConfiguration.class, DataSourceAutoConfiguration.class }`**
+
+這是**臨時措施**。Spring Boot 的自動配置檢測到你引入了 Redis 和 JDBC 的依賴，會自動嘗試連接 Redis 和數據庫。但現在：
+
+- 還沒裝 Redis / 還沒配 Redis 連接信息 → 啟動報錯
+- 還沒建數據庫 / 還沒配數據源 → 啟動報錯
+
+所以先排除這兩個自動配置，讓項目能跑起來。後面 Step 3 配好數據庫、Step 7 配好 Redis 後，會把這兩行 exclude 移除。
+
+> ⚠️ 這是臨時措施，Step 3 配好數據庫、Step 7 配好 Redis 後移除 exclude。
+
+**④ `SpringApplication.run(HrApplication.class, args)`**
+
+啟動 Spring Boot 應用。這一行做了非常多事情：
+- 創建 Spring 容器
+- 掃描所有 Bean
+- 執行自動配置
+- 啟動內嵌的 Tomcat 服務器
+
+**⑤ `System.out.println("========== 人事管理系統啟動成功 ==========")`**
+
+純粹是為了在控制台看到一個明確的成功標誌，方便確認啟動完成。
+
+#### 2.4 配置文件 ✅
 
 在 `hr-admin/src/main/resources/` 下創建 3 個配置文件：
 
-**application.yml**（主配置）：
+```
+resources/
+├── application.yml          ← 主配置（所有環境共用）
+├── application-dev.yml      ← 開發環境配置
+└── application-prod.yml     ← 生產環境配置
+```
+
+##### 為什麼要拆成 3 個文件？
+
+開發和生產環境的數據庫地址、密碼、Redis 地址都不一樣。Spring Boot 的 **Profile 機制**讓你可以按環境拆分配置：
+
+```
+application.yml         → 公共配置，永遠加載
+application-dev.yml     → 只在 dev 環境加載
+application-prod.yml    → 只在 prod 環境加載
+```
+
+主配置裡的 `spring.profiles.active: dev` 決定了當前激活哪個環境。部署生產時改成 `prod`（或啟動時加參數 `--spring.profiles.active=prod`）。
+
+三個文件的加載關係：
+
+```
+啟動時:
+  1. 先加載 application.yml (公共配置)
+  2. 讀到 spring.profiles.active: dev
+  3. 再加載 application-dev.yml (覆蓋/補充公共配置)
+```
+
+如果 dev 和主配置有相同的 key，**dev 的值會覆蓋主配置**。
+
+##### application.yml（主配置）
 
 ```yaml
 server:
@@ -465,7 +602,72 @@ knife4j:
     version: 1.0.0
 ```
 
-**application-dev.yml**（開發環境）：
+**逐項解釋：**
+
+**① server 配置**
+
+```yaml
+server:
+  port: 8080                    # 應用端口
+  servlet:
+    context-path: /api          # 所有接口加 /api 前綴
+```
+
+設了 `context-path: /api` 後，所有接口的 URL 都會自動加上 `/api` 前綴：
+
+```
+Controller 裡寫的:  /system/user
+實際訪問地址:       http://localhost:8080/api/system/user
+```
+
+這樣前端代理和 Nginx 反向代理時更清晰，一眼能區分 API 請求和靜態資源。
+
+**② spring.profiles.active**
+
+```yaml
+spring:
+  profiles:
+    active: dev                 # 激活開發環境配置
+```
+
+告訴 Spring Boot 去加載 `application-dev.yml`。
+
+**③ multipart 文件上傳限制**
+
+```yaml
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB      # 單個文件最大 10MB
+      max-request-size: 20MB   # 整個請求最大 20MB
+```
+
+預留給後續頭像上傳等功能。Spring Boot 默認只允許 1MB，太小了。
+
+**④ MyBatis-Plus 配置**
+
+| 配置 | 作用 |
+|------|------|
+| `mapper-locations` | 告訴 MyBatis 去哪找 XML 映射文件。`classpath*` 表示搜索所有模塊的 classpath |
+| `type-aliases-package` | 配了這個後，XML 裡寫 `resultType="SysUser"` 就行，不用寫全路徑 `com.hr.system.domain.SysUser` |
+| `map-underscore-to-camel-case` | 數據庫欄位 `create_time` 自動映射到 Java 的 `createTime`，不用手動一個個配 |
+| `log-impl` | 開發時在控制台打印執行的 SQL 語句，方便調試。生產環境要關掉 |
+| `logic-delete` | 配了之後，調用 MyBatis-Plus 的 `deleteById()` 不會真的 DELETE，而是 `UPDATE SET deleted=1` |
+| `id-type: auto` | 主鍵用數據庫自增（SQL Server 的 IDENTITY） |
+
+**⑤ Knife4j 配置**
+
+```yaml
+knife4j:
+  enable: true                          # 開啟 API 文檔
+  openapi:
+    title: 人事管理系統 API              # 文檔標題
+    version: 1.0.0                      # 版本號
+```
+
+開啟後，啟動應用訪問 `/api/doc.html` 就能看到交互式 API 文檔。
+
+##### application-dev.yml（開發環境）
 
 ```yaml
 spring:
@@ -473,7 +675,7 @@ spring:
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     url: jdbc:sqlserver://localhost:1433;databaseName=hr_db;encrypt=true;trustServerCertificate=true
     username: sa
-    password: your_password_here
+    password: your_password_here        # ⚠️ 需改成自己的密碼
 
   data:
     redis:
@@ -488,7 +690,38 @@ jwt:
   expiration: 1800
 ```
 
-**application-prod.yml**（生產環境，佔位）：
+**逐項解釋：**
+
+**① SQL Server 數據源**
+
+| 參數 | 含義 |
+|------|------|
+| `localhost:1433` | SQL Server 默認端口 |
+| `databaseName=hr_db` | 數據庫名（Step 3 會創建） |
+| `encrypt=true;trustServerCertificate=true` | SQL Server JDBC 新版要求加密連接，`trustServerCertificate=true` 表示信任自簽證書（開發環境用） |
+
+**② Redis**
+
+```yaml
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:                         # 空表示無密碼
+      database: 0                       # 使用 0 號庫
+```
+
+**③ JWT**
+
+```yaml
+jwt:
+  secret: HrSystemSecretKey2024ForJwtTokenGenerationAndValidation
+  expiration: 1800                      # Token 過期時間，1800 秒 = 30 分鐘
+```
+
+這是自定義配置，不是 Spring Boot 內建的。後面 Step 9 寫 `TokenService` 時會用 `@Value("${jwt.secret}")` 讀取這些值。
+
+##### application-prod.yml（生產環境，佔位）
 
 ```yaml
 spring:
@@ -510,30 +743,55 @@ jwt:
   expiration: 1800
 ```
 
-#### 2.5 臨時排除自動配置（首次啟動用）
+和 dev 結構一樣，但密碼全部用**環境變量佔位符**：
 
-因為目前還沒有創建 Redis 配置和 MyBatis Mapper，首次啟動需要臨時排除部分自動配置，否則會報錯。
-
-修改啟動類註解為：
-
-```java
-@SpringBootApplication(
-    scanBasePackages = "com.hr",
-    exclude = {
-        org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration.class,
-        org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class
-    }
-)
+```yaml
+username: ${DB_USERNAME}       # 從環境變量讀取
+password: ${DB_PASSWORD}
 ```
 
-> ⚠️ 這是臨時措施，Step 3 配好數據庫、Step 7 配好 Redis 後移除 exclude。
+**為什麼？** 生產環境的密碼不能明文寫在代碼裡（會被提交到 Git），通過環境變量注入更安全。部署時設置環境變量即可：
 
-#### 2.6 驗收
+```bash
+export DB_USERNAME=sa
+export DB_PASSWORD=實際密碼
+java -jar hr-admin.jar --spring.profiles.active=prod
+```
 
-1. 在 IDEA 中運行 `HrApplication.main()`
-2. 控制台輸出 `人事管理系統啟動成功`
-3. 訪問 `http://localhost:8080/api/doc.html`（此時可能還無法打開，Step 21 完善後可用）
-4. 確認無報錯即可
+#### 2.5 啟動驗證 ✅
+
+##### 驗證過程
+
+1. 先執行 `mvn install -DskipTests` 安裝所有模塊到本地 Maven 倉庫（模塊間依賴需要先安裝才能找到）
+2. 執行 `mvn spring-boot:run` 啟動應用
+3. 訪問 `http://localhost:8080/api/` 驗證
+
+##### 驗證結果
+
+啟動成功，關鍵日誌：
+
+```
+Tomcat started on port 8080 (http) with context path '/api'
+Started HrApplication in 1.863 seconds
+========== 人事管理系統啟動成功 ==========
+```
+
+訪問 `http://localhost:8080/api/` 返回 **401**（正確 — Spring Security 默認攔截所有未認證請求）。
+
+##### 注意事項
+
+- 如果 8080 端口被其它程式佔用，可以修改 `application.yml` 中的 `server.port` 為其它空閒端口（如 8081）
+- 目前 `Using generated security password: xxx` 的 WARN 是正常的，Step 9 配置 Spring Security 後會消失
+- 目前排除了 DataSource 和 Redis 自動配置，後續步驟配好後會移除 exclude
+
+#### 2.6 驗收清單
+
+- [x] 模板代碼（8 個 App/AppTest 文件）已刪除
+- [x] 4 個模塊基礎包結構已創建
+- [x] 啟動類 HrApplication.java 已創建
+- [x] 3 個配置文件已創建（application.yml / dev / prod）
+- [x] 應用能正常啟動，控制台輸出「人事管理系統啟動成功」
+- [x] HTTP 請求返回 401（Spring Security 攔截，正常）
 
 完成後進入 → **Step 3：創建 SQL Server 數據庫**
 
