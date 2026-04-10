@@ -1,3 +1,6 @@
 weishenm@qq.com
 
 M5f5rKxSAxSw
+
+
+内网端口防火墙范围8000-9600
