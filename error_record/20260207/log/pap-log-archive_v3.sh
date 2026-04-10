@@ -3,6 +3,8 @@ set -e
 
 # PAP 应用日志目录
 LOG_DIR="/opt/project/PAP/IHUB/log"
+# convert 请求日志目录
+CONVERT_LOG_DIR="/opt/project/PAP/IHUB/logs/convert"
 # 归档目录
 ARCHIVE_DIR="/LOG"
 # 模块名
@@ -51,10 +53,13 @@ else
 fi
 
 # ============================================================
-# 第一步：收集 archive 目录下所有需要归档的日期（<= 昨天）
+# 第一步：收集所有需要归档的日期（<= 昨天）
+# 来源1：LOG_DIR/archive/ 下文件名中的日期
+# 来源2：CONVERT_LOG_DIR/ 下的日期子目录
 # ============================================================
 DATES_TO_ARCHIVE=()
 
+# 来源1：扫描 archive/ 下文件名中的日期
 if [ -d "$LOG_DIR/archive" ]; then
     ALL_DATES=$(find "$LOG_DIR/archive" -maxdepth 1 -type f -name "*.log" -size +0c -printf '%f\n' 2>/dev/null \
         | grep -oP '\d{4}-\d{2}-\d{2}' \
@@ -71,6 +76,29 @@ if [ -d "$LOG_DIR/archive" ]; then
     done
 fi
 
+# 来源2：扫描 CONVERT_LOG_DIR/ 下的日期子目录（格式 YYYYMMDD）
+if [ -d "$CONVERT_LOG_DIR" ]; then
+    CONVERT_DATES=$(find "$CONVERT_LOG_DIR" -maxdepth 1 -mindepth 1 -type d -printf '%f\n' 2>/dev/null \
+        | grep -P '^\d{8}$' | sort -u || true)
+
+    for ds in $CONVERT_DATES; do
+        d=$(date -d "$ds" +%Y-%m-%d 2>/dev/null) || continue
+        if [[ "$d" < "$YESTERDAY" || "$d" == "$YESTERDAY" ]]; then
+            ARCHIVE_NAME="${HOSTNAME}.${MODULE}.applog.${ds}"
+            if [ ! -f "$ARCHIVE_DIR/${ARCHIVE_NAME}.tar.gz" ]; then
+                # 去重：已在列表中则跳过
+                already=false
+                for existing in "${DATES_TO_ARCHIVE[@]}"; do
+                    if [ "$existing" = "$d" ]; then already=true; break; fi
+                done
+                if [ "$already" = false ]; then
+                    DATES_TO_ARCHIVE+=("$d")
+                fi
+            fi
+        fi
+    done
+fi
+
 # 如果昨天不在列表中，检查 server 日志是否需要归档
 YESTERDAY_IN_LIST=false
 for d in "${DATES_TO_ARCHIVE[@]}"; do
@@ -80,7 +108,6 @@ for d in "${DATES_TO_ARCHIVE[@]}"; do
     fi
 done
 
-# 如果昨天不在归档数组中，再判断一下server_start.log server_stop.log日志是否存在且不为空，如果存在且不为空，则把昨天也加入归档日期;
 if [ "$YESTERDAY_IN_LIST" = false ] && [ ! -f "$ARCHIVE_DIR/${HOSTNAME}.${MODULE}.applog.${YESTERDAY_SHORT}.tar.gz" ]; then
     for LOG_NAME in server_start.log server_stop.log; do
         if [ -f "$LOG_DIR/$LOG_NAME" ] && [ -s "$LOG_DIR/$LOG_NAME" ]; then
@@ -113,28 +140,42 @@ for DATE in "${DATES_TO_ARCHIVE[@]}"; do
         continue
     fi
 
-    # 收集该日期的 archive 目录文件
-    TAR_LIST=()
+    # LOG_TAR_LIST：相对 LOG_DIR 的文件（archive/ 文件 + server 日志）
+    # CONVERT_TAR_LIST：相对 LOGS_BASE_DIR 的文件（logs/convert/YYYYMMDD/ 文件）
+    LOG_TAR_LIST=()
     ARCHIVE_SOURCE_FILES=()
+    CONVERT_TAR_LIST=()
+    CONVERT_SOURCE_FILES=()
+    LOGS_BASE_DIR=$(dirname "$CONVERT_LOG_DIR")
 
+    # 收集该日期的 archive 目录文件
     if [ -d "$LOG_DIR/archive" ]; then
         while IFS= read -r -d '' f; do
-            TAR_LIST+=("archive/$(basename "$f")")
+            LOG_TAR_LIST+=("archive/$(basename "$f")")
             ARCHIVE_SOURCE_FILES+=("$f")
         done < <(find "$LOG_DIR/archive" -maxdepth 1 -type f \( -name "*.${DATE}.*.log" -o -name "*.${DATE}.log" \) -size +0c -print0 2>/dev/null)
+    fi
+
+    # 收集该日期的 convert 请求日志文件
+    CONVERT_DATE_DIR="$CONVERT_LOG_DIR/${DATE_SHORT}"
+    if [ -d "$CONVERT_DATE_DIR" ]; then
+        while IFS= read -r -d '' f; do
+            CONVERT_TAR_LIST+=("convert/${DATE_SHORT}/$(basename "$f")")
+            CONVERT_SOURCE_FILES+=("$f")
+        done < <(find "$CONVERT_DATE_DIR" -maxdepth 1 -type f -name "*.log" -print0 2>/dev/null)
     fi
 
     # 昨天的归档加入 server 日志（存在且非空才加入）
     if [ "$DATE" = "$YESTERDAY" ]; then
         for LOG_NAME in server_start.log server_stop.log; do
             if [ -f "$LOG_DIR/$LOG_NAME" ] && [ -s "$LOG_DIR/$LOG_NAME" ]; then
-                TAR_LIST+=("$LOG_NAME")
+                LOG_TAR_LIST+=("$LOG_NAME")
             fi
         done
     fi
 
     # 该日期没有文件需要归档
-    if [ ${#TAR_LIST[@]} -eq 0 ]; then
+    if [ ${#LOG_TAR_LIST[@]} -eq 0 ] && [ ${#CONVERT_TAR_LIST[@]} -eq 0 ]; then
         continue
     fi
 
@@ -142,6 +183,10 @@ for DATE in "${DATES_TO_ARCHIVE[@]}"; do
     TOTAL_SIZE=0
     if [ ${#ARCHIVE_SOURCE_FILES[@]} -gt 0 ]; then
         TOTAL_SIZE=$(du -sk "${ARCHIVE_SOURCE_FILES[@]}" 2>/dev/null | awk '{sum+=$1} END{print sum}')
+    fi
+    if [ ${#CONVERT_SOURCE_FILES[@]} -gt 0 ]; then
+        S=$(du -sk "${CONVERT_SOURCE_FILES[@]}" 2>/dev/null | awk '{sum+=$1} END{print sum}')
+        TOTAL_SIZE=$((TOTAL_SIZE + S))
     fi
     if [ "$DATE" = "$YESTERDAY" ]; then
         for LOG_NAME in server_start.log server_stop.log; do
@@ -159,7 +204,15 @@ for DATE in "${DATES_TO_ARCHIVE[@]}"; do
     fi
 
     # 打包压缩
-    tar -czf "$ARCHIVE_DIR/${ARCHIVE_NAME}.tar.gz" -C "$LOG_DIR" "${TAR_LIST[@]}" \
+    # LOG_TAR_LIST 以 LOG_DIR 为基准，CONVERT_TAR_LIST 以 LOGS_BASE_DIR 为基准
+    TAR_ARGS=()
+    if [ ${#LOG_TAR_LIST[@]} -gt 0 ]; then
+        TAR_ARGS+=(-C "$LOG_DIR" "${LOG_TAR_LIST[@]}")
+    fi
+    if [ ${#CONVERT_TAR_LIST[@]} -gt 0 ]; then
+        TAR_ARGS+=(-C "$LOGS_BASE_DIR" "${CONVERT_TAR_LIST[@]}")
+    fi
+    tar -czf "$ARCHIVE_DIR/${ARCHIVE_NAME}.tar.gz" "${TAR_ARGS[@]}" \
         || log_error "failed to create tar archive ${ARCHIVE_NAME}.tar.gz"
 
     # 删除 archive 目录下已归档的源文件
@@ -167,12 +220,21 @@ for DATE in "${DATES_TO_ARCHIVE[@]}"; do
         rm -f "$f"
     done
 
+    # 删除 convert 日期子目录下已归档的源文件，子目录为空则删除
+    for f in "${CONVERT_SOURCE_FILES[@]}"; do
+        rm -f "$f"
+    done
+    if [ -d "$CONVERT_DATE_DIR" ] && [ -z "$(ls -A "$CONVERT_DATE_DIR" 2>/dev/null)" ]; then
+        rmdir "$CONVERT_DATE_DIR"
+    fi
+
     # 标记 server 日志已归档
     if [ "$DATE" = "$YESTERDAY" ]; then
         SERVER_LOGS_ARCHIVED=true
     fi
 
-    echo "$(date) - archived ${ARCHIVE_NAME}.tar.gz (files: ${#TAR_LIST[@]})" >> "$ARCHIVE_DIR/archive.log"
+    TOTAL_FILES=$(( ${#LOG_TAR_LIST[@]} + ${#CONVERT_TAR_LIST[@]} ))
+    echo "$(date) - archived ${ARCHIVE_NAME}.tar.gz (files: ${TOTAL_FILES})" >> "$ARCHIVE_DIR/archive.log"
 done
 
 # ============================================================
