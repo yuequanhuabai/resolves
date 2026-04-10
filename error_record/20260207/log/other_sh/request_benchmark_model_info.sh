@@ -11,7 +11,7 @@ PATTERN="/admin-api/benchmark/insert-bmi"
 URL="http://${HOSTNAME}:${PORT}/${PATTERN}"
 
 # 响应日志目录
-BASE_LOG_DIR="/opt/project/PAP/IHUB/other_log/per_day_request_log"
+BASE_LOG_DIR="/opt/project/PAP/IHUB/logs/convert"
 if [ ! -d "${BASE_LOG_DIR}" ]; then
     mkdir -p "${BASE_LOG_DIR}"
 fi
