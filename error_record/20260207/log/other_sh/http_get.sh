@@ -1,18 +1,19 @@
 #!/bin/bash
-#   新版本新增功能，指定日志文件的输出目录/opt/project/PAP/IHUB/other_log/per_day_request_log，而不是当前执行目录
+
 # 请求参数配置
-IP="127.0.0.1"
+IP="10.41.242.159"
+HOSTNAME=$(/bin/hostname)
 PORT="8080"
-PATTERN="api/health"
+PATTERN="/admin-api/buyList/insert-tsl"
+
 
 # 拼接完整URL
-URL="http://${IP}:${PORT}/${PATTERN}"
+URL="http://${HOSTNAME}:${PORT}/${PATTERN}"
 
 # 响应日志目录
 BASE_LOG_DIR="/opt/project/PAP/IHUB/other_log/per_day_request_log"
 if [ ! -d "${BASE_LOG_DIR}" ]; then
-    echo "基础日志目录不存在: ${BASE_LOG_DIR}"
-    exit 1
+    mkdir -p "${BASE_LOG_DIR}"
 fi
 
 # 按日期创建子目录
@@ -20,7 +21,7 @@ LOG_DIR="${BASE_LOG_DIR}/$(date '+%Y%m%d')"
 if [ ! -d "${LOG_DIR}" ]; then
     mkdir -p "${LOG_DIR}"
 fi
-LOG_FILE="${LOG_DIR}/response_$(date '+%H%M%S').log"
+LOG_FILE="${LOG_DIR}/response_$(date '+%Y%m%d_%H%M%S').log"
 
 # 最大重试次数
 MAX_RETRIES=2
