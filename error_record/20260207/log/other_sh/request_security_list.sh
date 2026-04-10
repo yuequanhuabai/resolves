@@ -21,7 +21,7 @@ LOG_DIR="${BASE_LOG_DIR}/$(date '+%Y%m%d')"
 if [ ! -d "${LOG_DIR}" ]; then
     mkdir -p "${LOG_DIR}"
 fi
-LOG_FILE="${LOG_DIR}/response_$(date '+%Y%m%d_%H%M%S').log"
+LOG_FILE="${LOG_DIR}/security_list_response_$(date '+%Y%m%d_%H%M%S').log"
 
 # 最大重试次数
 MAX_RETRIES=2
