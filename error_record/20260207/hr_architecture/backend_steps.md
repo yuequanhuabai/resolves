@@ -795,48 +795,496 @@ Started HrApplication in 1.863 seconds
 
 完成後進入 → **Step 3：創建 SQL Server 數據庫**
 
-### Step 3：創建 SQL Server 數據庫
+### Step 3：創建 SQL Server 數據庫 ✅ 已完成
 
-1. 創建數據庫 `hr_db`
-2. 執行建表腳本 (參考 backend_architecture.md 第二節)：
-   - sys_user
-   - sys_dept
-   - sys_post
-   - sys_role
-   - sys_menu
-   - sys_user_role
-   - sys_role_menu
-   - sys_role_dept
-   - sys_oper_log
-3. 創建索引
-4. 插入初始化數據：
-   - 超級管理員帳號 (admin / admin123)
-   - 頂級部門
-   - 基礎崗位
-   - 管理員角色
-   - 系統菜單 + 按鈕權限
+#### 3.1 SQL 腳本位置
+
+腳本路徑：`hr-backend/sql/init.sql`
+
+該腳本包含 4 部分，按順序執行：
+
+```
+第一部分：創建數據庫 hr_db
+第二部分：創建 9 張表 (帶 IF NOT EXISTS 防重複)
+第三部分：創建 6 個索引
+第四部分：插入初始化數據
+```
+
+腳本特點：
+- 全部使用 `IF NOT EXISTS` 判斷，**重複執行不會出錯**
+- 使用 `SET IDENTITY_INSERT ... ON` 顯式指定主鍵 ID（為了讓菜單/角色/部門 ID 固定，便於後續關聯）
+
+#### 3.2 數據庫表清單
+
+| # | 表名 | 用途 | 主鍵 |
+|---|------|------|------|
+| 1 | sys_dept | 部門表（樹形） | dept_id IDENTITY |
+| 2 | sys_post | 崗位表 | post_id IDENTITY |
+| 3 | sys_role | 角色表 | role_id IDENTITY |
+| 4 | sys_menu | 菜單/權限表 | menu_id IDENTITY |
+| 5 | sys_user | 用戶表 | user_id IDENTITY |
+| 6 | sys_user_role | 用戶-角色關聯 | (user_id, role_id) |
+| 7 | sys_role_menu | 角色-菜單關聯 | (role_id, menu_id) |
+| 8 | sys_role_dept | 角色-部門關聯（數據權限） | (role_id, dept_id) |
+| 9 | sys_oper_log | 操作日誌表 | oper_id IDENTITY |
+
+#### 3.3 索引清單
+
+| # | 索引名 | 表 | 欄位 | 用途 |
+|---|--------|-----|------|------|
+| 1 | idx_user_dept | sys_user | dept_id | 按部門查用戶 |
+| 2 | idx_user_post | sys_user | post_id | 按崗位查用戶 |
+| 3 | idx_user_status | sys_user | (status, deleted) | 用戶列表過濾 |
+| 4 | idx_dept_parent | sys_dept | parent_id | 部門樹查詢 |
+| 5 | idx_menu_parent | sys_menu | parent_id | 菜單樹查詢 |
+| 6 | idx_oper_log_time | sys_oper_log | oper_time | 日誌按時間查詢 |
+
+#### 3.4 初始化數據
+
+| 表 | 數據 | 條數 |
+|----|------|------|
+| sys_dept | 7 個部門（總公司 → 研發/人事/財務/市場 → 前端組/後端組） | 7 |
+| sys_post | 4 個崗位（董事長/總經理/部門經理/普通員工） | 4 |
+| sys_role | 2 個角色（超級管理員/普通角色） | 2 |
+| sys_menu | 1 個目錄 + 5 個菜單 + 22 個按鈕權限 | 28 |
+| sys_user | 3 個用戶（admin/zhangsan/lisi） | 3 |
+| sys_user_role | admin → 管理員，zhangsan/lisi → 普通角色 | 3 |
+| sys_role_menu | 管理員 28 條 + 普通角色 7 條 | 35 |
+
+**測試帳號：**
+
+| 帳號 | 密碼 | 角色 | 數據權限範圍 |
+|------|------|------|--------|
+| admin | admin123 | 超級管理員 | 全部數據 |
+| zhangsan | admin123 | 普通角色 | 僅本人 |
+| lisi | admin123 | 普通角色 | 僅本人 |
+
+> 密碼是 BCrypt 加密後的值：`$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2`，明文都是 `admin123`
+
+#### 3.5 部門樹結構
+
+```
+[1] 總公司                    ancestors=0
+ └─ [2] 研發部                ancestors=0,1
+ │   ├─ [6] 前端組            ancestors=0,1,2
+ │   └─ [7] 後端組            ancestors=0,1,2
+ ├─ [3] 人事部                ancestors=0,1
+ ├─ [4] 財務部                ancestors=0,1
+ └─ [5] 市場部                ancestors=0,1
+```
+
+`ancestors` 欄位存儲祖級路徑，是空間換時間的優化：
+- 查所有子部門時可以用 `WHERE ancestors LIKE '0,1%'`，避免遞歸查詢
+- 數據權限「本部門及以下」也用這個欄位
+
+#### 3.6 菜單結構
+
+```
+[1] 系統管理 (M目錄)
+ ├─ [10] 用戶管理 (C菜單) sys:user:list
+ │   ├─ [101] 用戶查詢 (F按鈕) sys:user:query
+ │   ├─ [102] 用戶新增 sys:user:add
+ │   ├─ [103] 用戶修改 sys:user:edit
+ │   ├─ [104] 用戶刪除 sys:user:remove
+ │   ├─ [105] 重置密碼 sys:user:resetPwd
+ │   └─ [106] 用戶匯出 sys:user:export
+ ├─ [11] 角色管理 sys:role:list
+ │   └─ [111-114] 查詢/新增/修改/刪除按鈕
+ ├─ [12] 菜單管理 sys:menu:list
+ │   └─ [121-124] 查詢/新增/修改/刪除按鈕
+ ├─ [13] 部門管理 sys:dept:list
+ │   └─ [131-134] 查詢/新增/修改/刪除按鈕
+ └─ [14] 崗位管理 sys:post:list
+     └─ [141-144] 查詢/新增/修改/刪除按鈕
+```
+
+`menu_type` 三種類型：
+- **M (目錄)**：頂級分類，左側菜單樹的折疊節點
+- **C (菜單)**：實際的頁面，對應 Vue 路由
+- **F (按鈕)**：頁面內按鈕的權限標識
+
+#### 3.7 執行方式
+
+1. 用 SQL Server Management Studio (SSMS) 或 DBeaver / Navicat 連接到 SQL Server
+2. 打開 `hr-backend/sql/init.sql`
+3. 執行整個腳本
+4. 看到 `========== 人事管理系統數據庫初始化完成 ==========` 即成功
+
+#### 3.8 驗證結果
+
+完成後運行驗證程式檢查，全部通過：
+
+**表檢查（9/9）** ✅
+```
+sys_user ✓ sys_dept ✓ sys_post ✓ sys_role ✓ sys_menu ✓
+sys_user_role ✓ sys_role_menu ✓ sys_role_dept ✓ sys_oper_log ✓
+```
+
+**索引檢查（6/6）** ✅
+```
+idx_user_dept ✓ idx_user_post ✓ idx_user_status ✓
+idx_dept_parent ✓ idx_menu_parent ✓ idx_oper_log_time ✓
+```
+
+**數據量檢查** ✅
+```
+sys_user 3 條, sys_dept 7 條, sys_post 4 條, sys_role 2 條
+sys_menu 28 條, sys_user_role 3 條, sys_role_menu 35 條
+sys_role_dept 0 條, sys_oper_log 0 條
+```
+
+**用戶 → 角色關聯** ✅
+```
+admin    → 超級管理員
+zhangsan → 普通角色
+lisi     → 普通角色
+```
+
+**角色 → 菜單關聯** ✅
+```
+[1] 超級管理員  綁定菜單數: 28 (全部)
+[2] 普通角色    綁定菜單數: 7  (僅查詢)
+```
+
+#### 3.9 驗收清單
+
+- [x] 數據庫 hr_db 已創建
+- [x] 9 張表已創建
+- [x] 6 個索引已創建
+- [x] 初始化數據已插入
+- [x] 用戶/角色/菜單/部門關聯關係正確
+
+完成後進入 → **Step 4：基礎設施 (hr-common 模塊)**
 
 ---
 
 ## 階段二：公共模塊 (hr-common)
 
-### Step 4：基礎設施
+### Step 4：基礎設施 ✅ 已完成
 
-1. 創建 `BaseEntity.java` — 公共欄位 (createBy, createTime, updateBy, updateTime, deleted)
-2. 創建 `R<T>` — 統一響應體
-3. 創建 `PageResult<T>` — 分頁響應體
-4. 創建 `PageQuery` — 分頁請求參數 (pageNum, pageSize)
-5. 創建常量類 `Constants.java`、`HttpStatus.java`
-6. 創建枚舉類 `StatusEnum`、`GenderEnum`、`MenuTypeEnum`、`DataScopeEnum`
+#### 概覽
 
-### Step 5：異常處理
+| 子步驟 | 內容 | 涉及檔案 |
+|---|---|---|
+| 4.1 | BaseEntity 實體基類 | `core/domain/BaseEntity.java` |
+| 4.2 | R<T> 統一響應體 | `core/domain/R.java` |
+| 4.3 | PageResult<T> 分頁響應體 | `core/domain/PageResult.java` |
+| 4.4 | PageQuery 分頁請求參數 | `core/domain/PageQuery.java` |
+| 4.5 | HttpStatus + Constants 常量類 | `constant/HttpStatus.java`、`constant/Constants.java` |
+| 4.6 | 4 個業務枚舉 | `enums/StatusEnum.java`、`GenderEnum.java`、`MenuTypeEnum.java`、`DataScopeEnum.java` |
 
-1. 創建 `BusinessException.java` — 業務異常
-2. 創建 `GlobalExceptionHandler.java` — 全局異常處理器
-   - 處理 BusinessException → 400
-   - 處理 MethodArgumentNotValidException → 400
-   - 處理 AccessDeniedException → 403
-   - 處理 Exception → 500
+#### 包結構
+
+```
+hr-common/src/main/java/com/hr/common/
+  ├── core/domain/
+  │   ├── BaseEntity.java          # 實體基類（審計欄位 + 邏輯刪除）
+  │   ├── R.java                   # 統一響應體
+  │   ├── PageResult.java          # 分頁響應體
+  │   └── PageQuery.java           # 分頁請求參數
+  ├── constant/
+  │   ├── HttpStatus.java          # HTTP/業務狀態碼
+  │   └── Constants.java           # 通用常量、Redis Key 前綴等
+  ├── enums/
+  │   ├── StatusEnum.java          # 0正常 / 1停用
+  │   ├── GenderEnum.java          # 0未知 / 1男 / 2女
+  │   ├── MenuTypeEnum.java        # M目錄 / C菜單 / F按鈕
+  │   └── DataScopeEnum.java       # 1全部 / 2自訂 / 3本部門 / 4本部門及以下 / 5僅本人
+  └── package-info.java
+```
+
+---
+
+#### 4.1 BaseEntity 實體基類
+
+**目的**：所有資料庫表都有 `create_by / create_time / update_by / update_time / deleted` 5 個共有欄位，抽到父類避免重複。
+
+**關鍵點**：
+- `@TableField(fill = FieldFill.INSERT)` — 插入時自動填充（用於 createBy、createTime）
+- `@TableField(fill = FieldFill.INSERT_UPDATE)` — 插入和更新都填充（用於 updateBy、updateTime）
+- `@TableLogic` — 邏輯刪除欄位，搭配 application.yml 的 `logic-delete-field: deleted` 生效
+- `@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")` — 時間 JSON 序列化格式
+- `implements Serializable` + `serialVersionUID = 1L` — 為 Redis 緩存、深拷貝等場景做準備
+- 用 `@Getter @Setter` 而非 `@Data`，避免父類覆蓋子類的 `toString/equals`
+
+**待後續配套**：
+- MetaObjectHandler（Step 7 hr-framework）— 真正執行 createBy/createTime 自動填充
+- 子實體類（Step 9+）— SysUser、SysDept 等 extends BaseEntity
+
+---
+
+#### 4.2 R<T> 統一響應體
+
+**目的**：所有 Controller 返回值統一包裝為 `{ code, msg, data }` 結構，前端只需處理一種格式。
+
+**欄位**：
+- `code` — 狀態碼（int，避免 NPE）
+- `msg` — 提示訊息
+- `data` — 業務數據（泛型 T）
+
+**靜態工廠方法**：
+- 成功：`R.ok()` / `R.ok(data)` / `R.ok(msg, data)` / `R.ok(msg)`
+- 失敗：`R.fail()` / `R.fail(msg)` / `R.fail(code, msg)`
+- 工具：`isSuccess()`
+
+**設計細節**：
+- 用 `@Data`（=`@Getter @Setter @ToString @EqualsAndHashCode`），響應體日誌打印需要 toString
+- 靜態方法寫 `<T>` 是方法級別的泛型聲明，呼叫端可推斷 T
+- 內建 `SUCCESS=200`、`FAIL=500`，後續會改為引用 `HttpStatus.SUCCESS / ERROR`
+
+**典型使用**：
+```java
+return R.ok(user);
+return R.fail("用戶名已存在");
+return R.fail(HttpStatus.UNAUTHORIZED, "未授權");
+```
+
+---
+
+#### 4.3 PageResult<T> 分頁響應體
+
+**目的**：分頁查詢有固定 4 個資訊（total / rows / pageNum / pageSize），單獨封裝便於前端 `el-table` + `el-pagination` 解析。
+
+**欄位**：`total`、`rows`、`pageNum`、`pageSize`（均為 long，跟著 MyBatis-Plus IPage 類型走）
+
+**靜態工廠方法**：
+- `PageResult.of(IPage<T>)` — 從 MyBatis-Plus 的 IPage 一行轉換
+- `PageResult.empty()` — 空結果（`Collections.emptyList()`，零分配）
+
+**為什麼不直接返回 IPage？**
+IPage 欄位名是 `records / current / size`，不夠直觀；封裝後欄位語意化，且未來換 ORM 不影響 Controller。
+
+**典型使用**：
+```java
+@GetMapping("/list")
+public R<PageResult<SysUser>> list(SysUserQuery query) {
+    IPage<SysUser> page = userService.selectPage(query);
+    return R.ok(PageResult.of(page));
+}
+```
+
+---
+
+#### 4.4 PageQuery 分頁請求參數
+
+**目的**：所有分頁查詢的請求 DTO 繼承此類，自動具備分頁與排序欄位。
+
+**欄位**：
+- `pageNum` / `pageSize`（Long，可為 null）
+- `orderByColumn` — 排序欄位名
+- `isAsc` — 排序方向（"asc" / "desc"，跟 RuoYi 風格一致）
+
+**常量**：
+- `DEFAULT_PAGE_NUM = 1`
+- `DEFAULT_PAGE_SIZE = 10`
+- `MAX_PAGE_SIZE = 500`（防止前端傳過大值拖垮 DB）
+
+**核心方法**：
+- `<T> Page<T> buildPage()` — 構造 MyBatis-Plus 的 Page 對象（方法級泛型，T 由呼叫方決定）
+- `getSafePageNum()` / `getSafePageSize()` — 校驗合法性（非法時返回默認值或上限），保留原始值便於日誌排查
+
+**⚠️ 安全提醒**：`orderByColumn` 是 SQL 注入高危點，後續 Service 實作時要做白名單校驗。
+
+**典型使用**：
+```java
+public class SysUserQuery extends PageQuery {
+    private String username;
+    private Integer status;
+}
+// Service 層
+Page<SysUser> page = query.buildPage();
+return userMapper.selectPage(page, wrapper);
+```
+
+---
+
+#### 4.5 HttpStatus + Constants 常量類
+
+**HttpStatus.java** — 集中管理 HTTP/業務狀態碼：
+- 2xx：SUCCESS(200)、CREATED(201)、ACCEPTED(202)、NO_CONTENT(204)
+- 3xx：MOVED_PERM(301)、SEE_OTHER(303)、NOT_MODIFIED(304)
+- 4xx：BAD_REQUEST(400)、UNAUTHORIZED(401)、FORBIDDEN(403)、NOT_FOUND(404)、BAD_METHOD(405)、CONFLICT(409)、UNSUPPORTED_TYPE(415)
+- 5xx：ERROR(500)、NOT_IMPLEMENTED(501)、SERVICE_UNAVAILABLE(503)
+- 業務碼：WARN(601)（前端顯示黃色警告框，與 500 紅色錯誤區分）
+
+**Constants.java** — 通用常量：
+- 字符編碼：UTF8、GBK
+- 通用標誌：SUCCESS("0")、FAIL("1")、YES("Y")、NO("N")、TRUE、FALSE
+- 用戶相關：SYSTEM_USER、ANONYMOUS、ADMIN_USERNAME、ADMIN_USER_ID(1L)、ADMIN_ROLE_ID(1L)
+- 樹狀結構：TOP_PARENT_ID(0L)、ANCESTORS_SEPARATOR(",")
+- HTTP：HTTP、HTTPS
+- Token / 認證：TOKEN_HEADER("Authorization")、TOKEN_PREFIX("Bearer ")、JWT_USER_ID、JWT_USERNAME
+- Redis Key 前綴：LOGIN_TOKEN_KEY、USER_PERMS_KEY、USER_ROLES_KEY、CAPTCHA_KEY、RATE_LIMIT_KEY
+
+**設計原則**：
+- 兩個類都用 `final class` + 私有構造器，禁止實例化和繼承
+- Redis Key 用 `:` 分隔（Redis 慣例，配合 RedisInsight 工具樹狀展示）
+- Key 前綴以冒號結尾，方便拼接：`LOGIN_TOKEN_KEY + userId` → `login_token:1`
+
+---
+
+#### 4.6 4 個業務枚舉
+
+| 枚舉 | code 類型 | 取值 | 對應欄位 |
+|---|---|---|---|
+| StatusEnum | Integer | NORMAL(0) / DISABLED(1) | sys_user.status 等 |
+| GenderEnum | Integer | UNKNOWN(0) / MALE(1) / FEMALE(2) | sys_user.gender |
+| MenuTypeEnum | String | DIR("M") / MENU("C") / BUTTON("F") | sys_menu.menu_type |
+| DataScopeEnum | Integer | ALL(1) / CUSTOM(2) / DEPT(3) / DEPT_AND_CHILD(4) / SELF(5) | sys_role.data_scope |
+
+**統一結構**：每個枚舉都包含
+- `code`（資料庫值）+ `desc`（中文描述）
+- `@Getter` 自動生成 getter
+- `getByCode(code)` — 從資料庫值反查枚舉，找不到返回 null
+- `isValid(code)` — 校驗值合法性
+
+**設計細節**：
+- 為什麼用枚舉而非常量類？這 4 組值都是「有限互斥 + 編碼-描述成對 + 可迭代」場景
+- 為什麼 MenuTypeEnum 的 code 是 String？因為 init.sql 裡 menu_type 是 CHAR(1)，存的就是 'M'/'C'/'F' 字面字母
+- 為什麼 code 用 Integer 而非 int？方法參數可能為 null（前端 JSON / DB 查詢結果），用 Integer 才能判空提前返回
+- 為什麼 Entity 不直接用枚舉欄位？目前 Entity 仍用 Integer，業務層再用 `StatusEnum.getByCode(...)` 轉換，更靈活、容錯性更好（將來 DB 加新狀態時不會反序列化失敗）
+- 為什麼不抽 BaseEnum 接口？避免過度設計，4 個枚舉各 30 行還在可接受範圍
+
+---
+
+#### 驗收檢查
+
+- [x] hr-common 模塊編譯通過（`mvn -pl hr-common -am compile`）
+- [x] 包結構符合架構規範（core/domain、constant、enums）
+- [x] 所有 POJO 實現 Serializable 並聲明 serialVersionUID
+- [x] 所有靜態工廠方法/常量類使用 final class + 私有構造器
+- [x] 4 個枚舉均提供 getByCode() 與 isValid() 工具方法
+
+完成後進入 → **Step 5：異常處理**
+
+### Step 5：異常處理 ✅ 已完成
+
+#### 概覽
+
+| 子步驟 | 內容 | 涉及檔案 |
+|---|---|---|
+| 5.1 | BusinessException 業務異常 | `core/exception/BusinessException.java` |
+| 5.2 | GlobalExceptionHandler 全局異常處理器 | `core/exception/GlobalExceptionHandler.java` |
+
+#### 包結構新增
+
+```
+hr-common/src/main/java/com/hr/common/
+  └── core/exception/
+      ├── BusinessException.java        # 業務異常
+      └── GlobalExceptionHandler.java   # 全局異常處理器
+```
+
+---
+
+#### 5.1 BusinessException 業務異常
+
+**目的**：把**業務異常**和**系統異常**分開。
+- 業務異常（用戶名已存在、密碼錯誤、庫存不足）→ 預期內，msg 可原樣返回前端
+- 系統異常（NPE、SQL、磁碟滿）→ 預期外，記日誌 + 返回兜底訊息
+
+**為什麼繼承 RuntimeException 而非 Exception？**
+- 不強制 try-catch / throws，業務代碼乾淨
+- 與 Spring 全家桶（DataAccessException、TransactionException）保持一致風格
+
+**欄位**：
+- `code`（int，final）— 錯誤碼，預設 `HttpStatus.ERROR (500)`
+- `message`（繼承自 RuntimeException）
+
+**4 個構造器**：
+| 構造器 | 場景 |
+|---|---|
+| `BusinessException(msg)` | 最常見，預設 code=500 |
+| `BusinessException(code, msg)` | 自訂狀態碼（401/403/409 等） |
+| `BusinessException(msg, cause)` | 包裝其他異常但仍當業務異常處理 |
+| `BusinessException(code, msg, cause)` | 完整版 |
+
+**設計細節**：
+- `code` 用 `final` 強制不可變，與 RuntimeException.message 保持一致
+- 用 `@Getter` 而非 `@Data`：code 是 final 沒 setter，異常物件不應該用 equals 比較
+- **不在構造器寫日誌**：業務異常頻繁觸發，由 GlobalExceptionHandler 統一決定日誌級別
+- `serialVersionUID = 1L`（RuntimeException 已實現 Serializable）
+
+**典型使用**：
+```java
+throw new BusinessException("用戶名已存在");
+throw new BusinessException(HttpStatus.FORBIDDEN, "帳號已停用");
+throw new BusinessException("外部服務不可用", ioException);
+```
+
+---
+
+#### 5.2 GlobalExceptionHandler 全局異常處理器
+
+**目的**：統一捕獲所有 Controller 拋出的異常，包裝成標準 `R<?>` 響應返回前端。
+
+**核心註解**：
+- `@RestControllerAdvice` = `@ControllerAdvice` + `@ResponseBody`，全局攔截 + 自動 JSON
+- `@Slf4j` — Lombok 自動生成 log 物件
+- `@ExceptionHandler(XxxException.class)` — 標記某方法處理某種異常
+
+**處理的 9 種異常**：
+
+| # | 異常類型 | HTTP 碼 | 日誌級別 | 觸發場景 |
+|---|---|---|---|---|
+| 1 | BusinessException | 自訂（默認 500） | WARN | 業務代碼主動拋出 |
+| 2 | MethodArgumentNotValidException | 400 | WARN | `@RequestBody @Valid` 校驗失敗 |
+| 3 | BindException | 400 | WARN | `@ModelAttribute @Valid` 校驗失敗（form/query） |
+| 4 | ConstraintViolationException | 400 | WARN | Controller 上 `@Validated` + 單參數校驗 |
+| 5 | MissingServletRequestParameterException | 400 | WARN | 必填參數缺失 |
+| 6 | HttpMessageNotReadableException | 400 | WARN | JSON 解析失敗 |
+| 7 | HttpRequestMethodNotSupportedException | 405 | WARN | HTTP 方法不允許 |
+| 8 | NoHandlerFoundException | 404 | WARN | 路徑不存在 |
+| 9 | Exception（兜底） | 500 | **ERROR**（含完整堆疊） | 預期外的系統異常 |
+
+**設計細節**：
+
+1. **業務異常 vs 系統異常的日誌級別差異**
+   - WARN：用戶可自行處理、不需告警；ERROR：觸發監控告警
+   - 如果業務異常用 ERROR，會把告警系統淹沒，半夜把開發叫起來
+
+2. **系統異常絕不返回原始 message**
+   - `e.getMessage()` 可能含表名、欄位名、IP、token 等敏感資訊
+   - 統一返回「系統繁忙，請稍後重試」，技術細節只進日誌
+
+3. **`log.error("...", e.getMessage(), e)` 最後的 e 是關鍵**
+   - SLF4J 約定：最後一個 Throwable 參數會打印完整堆疊，前面的 `{}` 不會消費它
+   - 線上問題排查必須要有完整 stack trace
+
+4. **Spring Security 異常不在此處理**
+   - `AccessDeniedException` / `AuthenticationException` 由 Step 8 配置的 `AuthenticationEntryPoint` 和 `AccessDeniedHandler` 統一處理（這是 Security 的標準做法）
+   - 這樣 hr-common 不用引入 spring-security 依賴，保持模組職責清晰
+
+5. **`formatFieldError` 私有工具方法**
+   - 3 個校驗異常處理器共用，把 FieldError 轉成 `"username: 不能為空"` 字串
+   - 抽取出來避免重複，將來改格式只改一處
+
+6. **`@RestControllerAdvice` 跨模組生效原理**
+   - 它本身是 `@Component`，會被 Spring 掃描
+   - 啟動類 `HrApplication` 配置了 `scanBasePackages = "com.hr"`，自動發現 hr-common 下的 advice
+
+**待後續配套**：
+- `NoHandlerFoundException` 需要在 `application.yml` 加配置才會觸發（Step 7 補上）：
+  ```yaml
+  spring:
+    mvc:
+      throw-exception-if-no-handler-found: true
+    web:
+      resources:
+        add-mappings: false
+  ```
+
+---
+
+#### 驗收檢查
+
+- [x] hr-common 模塊編譯通過（`mvn -pl hr-common -am compile`）
+- [x] BusinessException 繼承 RuntimeException、code 為 final
+- [x] GlobalExceptionHandler 處理 9 種異常，業務 WARN / 系統 ERROR
+- [x] 系統異常不暴露原始 message，記錄完整堆疊
+- [x] hr-common 未引入 spring-security 依賴
+
+完成後進入 → **Step 6：工具類**
 
 ### Step 6：工具類
 
