@@ -1,5 +1,34 @@
 {
-"proxiedPositions": [],
-  "proposal": {},
-  "analysis": {}
+"proxiedPositions": [
+  "00c85e22-17b4-4c52-a20a-7b68bf301dd1"
+],
+  "proposal": {
+    "id": "5d5db126-d7c4-4d6e-a679-2451d4cd7a43",
+    "name": "My Proposal",
+    "original": {},
+    "proposed": {},
+    "changes": [],
+    "metadata": {},
+    "sleeveTags": [],
+    "linkedEntitySelections": [],
+    "simulatedPerformanceUserInputs": {},
+    "lastUpdatedBy": "apiuser",
+    "lastUpdatedTimestamp": "2019-08-24T14:15:22Z",
+    "createdBy": "apiuser",
+    "creationTimestamp": "2019-08-24T14:15:22Z"
+  },
+  "analysis": {
+    "id": "1c8b8b66-9c1c-4f16-8513-34318b3c257f",
+    "date": "2022-02-02",
+    "original": {},
+    "proposed": {},
+    "customAnalytics": [],
+    "comments": [],
+    "taxAnalytics": {},
+    "proposalTaxAnalytics": {},
+    "ruleEvaluations": [],
+    "scores": [],
+    "status": {},
+    "changeAnalytics": []
+  }
 }
