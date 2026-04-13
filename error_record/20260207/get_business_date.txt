@@ -1,0 +1,3 @@
+SELECT DISTINCT CREATE_BUSINESS_DATE  from BATCH_BUSINESS_DATE_RESULT b
+                                   inner join table_switch_log t on b.CREATE_BUSINESS_DATE =t.business_date
+ WHERE (b.[TYPE] ='P' and b.STATUS ='S') and (t.is_valid ='Y' and t.target_table LIKE CONCAT('BR_SECURITY_MASTER_','%'));
