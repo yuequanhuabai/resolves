@@ -824,9 +824,13 @@ echo "1111111111111111111111111111111111111111111">server_start.log
 echo "222222222222222222222222222222222222222222222222">server_stop.log
 
 ==============================================================================================================
-sql exist ,update , check size;
-
-
+mybatis-plus的这个语法：
+LambdaQueryWrapperX<BenchmarkDO> queryWrapper = new LambdaQueryWrapperX<BenchmarkDO>()
+                .eqIfPresent(BenchmarkDO::getDelFlag, 0)
+                .eqIfPresent(BenchmarkDO::getEditFlag, reqVO.getEditFlag())
+                .eqIfPresent(BenchmarkDO::getBusinessType, reqVO.getBusinessType());
+如果后面的这个：.eqIfPresent(BenchmarkDO::getBusinessType, reqVO.getBusinessType());
+存在的时候且不为0怎么写？
 
 ==============================================================================================================
 
