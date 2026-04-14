@@ -36,4 +36,37 @@ def decrypt_password(cipher_b64: str, hex_key: str) -> str:
 
 def get_engine(env: str):
     """  根据环境名称，读取properties，解密密码，建立SQLAlchemy Engine """
-    env = env.
+    env = env.uper()
+    if env not in DB_CONFIGS:
+        raise ValueError(f"未知环境: {env},可选：{list(DB_CONFIGS.keys())}")
+
+        cfg=DB_CONFIGS[env]
+        encrypted_pwd=cfg['properties']
+        password=decrypt_password(encrypted_pwd,cfg['hex_key'])
+
+        url=(
+         f"mssql+pymssql://{cfg['user']}:{password}"
+         f"@{cfg['host']}:{cfg['port']}/{cfg['database']}?charset=utf8"
+        )
+
+        engine=create_engine(url,pool_pre_ping=True,pool_recycle=1800,echo=False)
+
+        print(f"ok [{env}] 连接建立成功 --> {cfg['host']}/{cfg['database']}")
+        return engine
+
+
+def PAPQuery(sql: str, env: str, chunksize: int =500) -> pd.DataFrame:
+    """ 执行查询，不锁表，用完自动释放连接 """
+
+    env_engine = get_engine(env)
+
+    with env_engine.connect() as conn:
+        conn.execute(text("SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED"))
+        if chunksize:
+            return pd.concat(
+            pd.read_sql(text(sql),conn,chunksize=chunksize)
+            ignore_index=True
+            )
+            return pd.read_sql(text(sql),conn)
+
+AVAILABLE_ENVS =sorted(DB_CONFIGS.keys())
