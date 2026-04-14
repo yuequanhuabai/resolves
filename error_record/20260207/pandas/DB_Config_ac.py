@@ -46,7 +46,39 @@ DB_CONFIGS = {
         'database': 'PAPDB',
         'properties': 'EUPSYAE28gIFDK8HHmA1VA==',
         'hex_key': '076CD005914A4F2FD1DE7AB280E37FC8'
-    }
+    },
+    'SIT1': {
+            'host': '10.33.213.100',
+            'port': 10139,
+            'user': 'papusr',
+            'database': 'PAPDB',
+            'properties': 'EUPSYAE28gIFDK8HHmA1VA==',
+            'hex_key': '076CD005914A4F2FD1DE7AB280E37FC8'
+        },
+    'SIT3': {
+                'host': '10.33.213.100',
+                'port': 10140,
+                'user': 'papusr',
+                'database': 'PAPDB',
+                'properties': 'EUPSYAE28gIFDK8HHmA1VA==',
+                'hex_key': '076CD005914A4F2FD1DE7AB280E37FC8'
+            },
+            'USMF': {
+                    'host': '10.41.104.179',
+                    'port': 10139,
+                    'user': 'papusr',
+                    'database': 'PAPDB',
+                    'properties': 'EUPSYAE28gIFDK8HHmA1VA==',
+                    'hex_key': '076CD005914A4F2FD1DE7AB280E37FC8'
+                },
+                'USMK': {
+                        'host': '10.41.104.179',
+                        'port': 10138,
+                        'user': 'papusr',
+                        'database': 'PAPDB',
+                        'properties': 'EUPSYAE28gIFDK8HHmA1VA==',
+                        'hex_key': '076CD005914A4F2FD1DE7AB280E37FC8'
+                    },
 }
 
 
