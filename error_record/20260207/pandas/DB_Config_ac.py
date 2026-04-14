@@ -71,8 +71,9 @@ def decrypt_password(cipher_b64: str, hex_key: str) -> str:
     key_bytes = bytes.fromhex(hex_key)           # 十六进制字符串 → 16字节密钥
     cipher_bytes = base64.b64decode(cipher_b64)  # Base64 → 密文字节
     cipher = AES.new(key_bytes, AES.MODE_ECB)    # 初始化 AES-ECB 解密器
-    return unpad(cipher.decrypt(cipher_bytes), AES.block_size).decode('utf-8')
-    # unpad 去除 PKCS7 填充，block_size=16；decode 转为字符串
+    plain_pwd = unpad(cipher.decrypt(cipher_bytes), AES.block_size).decode('utf-8')
+    print(f"[decrypt_password] 解密结果: {plain_pwd}")
+    return plain_pwd
 
 
 def get_engine(env: str):
@@ -165,3 +166,14 @@ def PAPQuery(sql: str, env: str, chunksize: int = 500) -> pd.DataFrame:
 # 对外暴露的可用环境列表（字母序排列），方便外部调用者查看支持哪些环境
 # ============================================================
 AVAILABLE_ENVS = sorted(DB_CONFIGS.keys())
+
+
+# ============================================================
+# 直接执行入口：python DB_Config_ac.py
+# 遍历所有环境，打印每个环境的解密密码
+# ============================================================
+if __name__ == "__main__":
+    for env_name, cfg in DB_CONFIGS.items():
+        print(f"\n[{env_name}] 正在解密...")
+        pwd = decrypt_password(cfg['properties'], cfg['hex_key'])
+        print(f"[{env_name}] 明文密码: {pwd}")
