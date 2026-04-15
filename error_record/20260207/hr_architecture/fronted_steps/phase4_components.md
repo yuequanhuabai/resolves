@@ -1,11 +1,23 @@
 ## 階段四：公共組件
 
-### Step 12：分頁組件 ⏳
+### Step 12：分頁組件 ✅（完成於 2026-04-15）
 
-`src/components/Pagination/index.vue`：
-- 封裝 `<el-pagination>`
-- Props：`total`、`page`、`limit`
-- Emit：`@pagination` (傳 `{ pageNum, pageSize }`)
+#### 產物清單
+
+| 檔案 | 職責 |
+|---|---|
+| `src/components/Pagination/index.vue` | 封裝 el-pagination，統一 page/limit/total 協議 |
+| `vite.config.ts`（修改） | Components 插件加 `dirs: ['src/components']`，全局自動註冊 |
+
+#### 關鍵決策
+
+- **v-model 雙綁 `page` + `limit`**：改動自動同步父組件 query 狀態
+- **單一 `@pagination` 事件**：封裝了 `current-change` / `size-change`，父組件只綁一個
+- **默認 `autoScroll`**：翻頁後自動滾回內容頂
+- **空數據自動隱藏**：`total <= 0` 不渲染
+- **全局自動註冊**：Components 插件 `dirs` 掃描，`<Pagination />` 任何頁面直接可用
+
+驗證將在 Step 19 用戶管理頁實際落地。
 
 ### Step 13：權限指令 ⏳
 

@@ -12,7 +12,7 @@
 ```
 階段一 (Step 1-2)    項目初始化           ██████████  ✅ 已完成    Day 1
 階段二 (Step 3-6)    基礎設施             ██████████  ✅ 已完成    Day 1-2
-階段三 (Step 7-11)   佈局框架             ░░░░░░░░░░  ⏳ 待開始    Day 2-4
+階段三 (Step 7-11)   佈局框架             ██████████  ✅ 已完成    Day 2-4
 階段四 (Step 12-14)  公共組件             ░░░░░░░░░░  ⏳ 待開始    Day 4-5
 階段五 (Step 15-18)  登入功能             ░░░░░░░░░░  ⏳ 待開始    Day 5-6
 階段六 (Step 19-23)  業務頁面 (核心 CRUD)  ░░░░░░░░░░  ⏳ 待開始    Day 6-10
@@ -61,17 +61,17 @@
 
 | Step | 標題 | 狀態 |
 |---|---|---|
-| 7 | 主佈局 (layout/index.vue) | ⏳ |
-| 8 | 側邊欄菜單 (Sidebar + 遞歸 SidebarItem) | ⏳ |
-| 9 | 頂部導航欄 (Navbar + Breadcrumb) | ⏳ |
-| 10 | 標籤頁導航 (TagsView) | ⏳ |
-| 11 | 全局樣式 (styles/) | ⏳ |
+| 7 | 主佈局 (layout/index.vue) | ✅ |
+| 8 | 側邊欄菜單 (Sidebar + 遞歸 SidebarItem) | ✅ |
+| 9 | 頂部導航欄 (Navbar + Breadcrumb) | ✅ |
+| 10 | 標籤頁導航 (TagsView) | ✅ |
+| 11 | 全局樣式 (styles/) | ✅ |
 
 ### 階段四：公共組件 → [phase4_components.md](./phase4_components.md)
 
 | Step | 標題 | 狀態 |
 |---|---|---|
-| 12 | 分頁組件 (Pagination) | ⏳ |
+| 12 | 分頁組件 (Pagination) | ✅ |
 | 13 | 權限指令 (v-hasPerms) | ⏳ |
 | 14 | 公共業務組件 (DeptTree / TreeSelect / IconSelect / RightToolbar) | ⏳ |
 

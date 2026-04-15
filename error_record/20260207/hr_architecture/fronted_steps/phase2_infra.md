@@ -229,33 +229,96 @@ router.beforeEach:
 
 ---
 
-## 當前未解 Bug（2026-04-15）
+## 踩坑記錄：登入後 `/getInfo` 始終 401（2026-04-15 已解決）
 
-### 登入後 token 未保存到 localStorage，`/getInfo` 報 401
+### 症狀
 
-**現象：**
-- 前端點擊登入按鈕
-- 後端日誌顯示 `SELECT * FROM sys_user WHERE username = ?` + `UPDATE sys_user SET login_ip...` 正常執行（admin 用戶登入成功）
-- 但 `localStorage` 無 `hr-token` 鍵
-- 隨後 `/api/getInfo` 返回 401 `Full authentication is required`
-- 用戶反饋 Network 面板看不到 `/login` 請求，但控制台有 `Request failed with status code 401`
+- `POST /api/login` → 200，返回 `{code:200, data:{token:"eyJ..."}}` ✅
+- 前端正確保存 token，發起 `GET /api/getInfo` 帶 `Authorization: Bearer eyJ...`
+- 後端返回 `{code:401, msg:"認證失敗，請重新登入"}`
+- 後端日誌：`Full authentication is required to access this resource`
 
-**矛盾點：**
-後端 SQL 確實跑了 = login 請求到了後端 → 但前端 Network 看不到 = 可能是過濾器設置或 Preserve log 未開。
+### 排查軌跡（三層剝洋蔥）
 
-**已確認的正確配置：**
-- 後端 `context-path=/api`，endpoint `POST /api/login`，返回 `R<Map<String,String>>` = `{code, msg, data:{token}}`
-- Vite proxy `/api` → `http://localhost:8080`（不 rewrite，路徑保留）
-- 前端 `authApi.login` → `request({ url: '/login', method: 'post' })` → 實際 URL `/api/login`
-- 響應攔截器 `code===200` 時返回 `data` 字段 → `authApi.login` 拿到 `{token}`
-- `userStore.login` 解構 `{token: newToken}` → `setToken(newToken)`
+**第一層：前端 Network 請求確認**
+在 `api/request.ts` 的攔截器裡加 `console.log` 打印請求/響應完整內容。
+確認 login 請求發出、響應正常、token 在 header 裡傳遞。問題不在前端。
 
-**最可疑假設：** login 響應體結構和 `ApiResponse<{token}>` 實際不匹配，導致 `data` 是 undefined，解構 `{token}` 拋錯 → token 沒存 → 後續 getInfo 無 Authorization 頭 → 401。
+**第二層：Redis 服務本身**
+後端用 JWT + Redis 混合方案（JWT 只存 UUID，真正的 LoginUser 存 Redis）。
+`Get-NetTCPConnection -LocalPort 6379` 發現遠程服務器 Redis 沒啟動一個月。
+啟動後 `systemctl start redis`，問題依舊。
 
-**下次排查步驟：**
-1. Network 面板開 Preserve log + 過濾器選 All，重試登入
-2. 重點看 `POST /api/login` 的 **Response body** 實際結構
-3. Console 看 401 錯誤的完整堆棧，定位拋出位置
-4. 確認地址欄翻譯圖標為「顯示原文」狀態（翻譯會破壞 Vue 事件綁定）
+**第三層：Redis 序列化**
+在 `TokenService.createToken` 和 `getLoginUser` 加詳細日誌，發現：
+- 寫入成功：`[TokenService] 寫入 Redis key=login_token:xxx`
+- 讀取拋異常：
+  ```
+  Problem deserializing 'setterless' property ("authorities"):
+  no way to handle typed deser with setterless yet
+  ```
+
+### 根本原因：Jackson 序列化/反序列化不對稱
+
+`LoginUser implements UserDetails`，被迫實現了 `getAuthorities()`。這是一個**計算型 getter**：
+
+```java
+@Override
+public Collection<? extends GrantedAuthority> getAuthorities() {
+    // 從 permissions 和 roles 現場推導，不是真實字段
+    return permissions.stream().map(SimpleGrantedAuthority::new)...
+}
+```
+
+`GenericJackson2JsonRedisSerializer`（底層 Jackson）的行為：
+
+| 階段 | 規則 | 結果 |
+|---|---|---|
+| **序列化** | 掃描所有 public getter，當成字段寫出去 | `getAuthorities()` 被當「authorities 字段」寫進 JSON |
+| **反序列化** | 對每個 JSON 字段找 setter 或真實 field 塞值 | 找不到 → 走 setterless 兜底 → 撞上多態類型（`@class:SimpleGrantedAuthority`）→ 投降 |
+
+異常拋出時，**整個 LoginUser 對象為 null**（Jackson 是全有或全無，不是部分成功）：
+
+```
+authorities 字段炸  →  LoginUser = null
+                 →  TokenService.getLoginUser() 返回 null
+                 →  JwtAuthenticationFilter 不設 SecurityContext
+                 →  /getInfo 觸發 AuthenticationEntryPointImpl → 401
+```
+
+**雖然 JWT token 本身完全有效**（簽名對、key 對、Redis 裡能找到對應 JSON），但那份 JSON 讀不回 Java 對象，token 就廢了。
+
+### 修復
+
+`hr-framework/security/LoginUser.java` 給所有計算型 getter 加 `@JsonIgnore`：
+
+```java
+@JsonIgnore
+@Override
+public Collection<? extends GrantedAuthority> getAuthorities() { ... }
+
+@JsonIgnore @Override public boolean isAccountNonExpired() { return true; }
+@JsonIgnore @Override public boolean isAccountNonLocked() { return true; }
+@JsonIgnore @Override public boolean isCredentialsNonExpired() { return true; }
+@JsonIgnore @Override public boolean isEnabled() { return true; }
+```
+
+序列化時 Jackson 跳過這些 getter，JSON 不再冗餘寫入。反序列化後業務層調 `getAuthorities()` 照樣從 `permissions + roles` 現算，零功能損失。
+
+修復後還需：
+1. 重啟後端（LoginUser 類需重新加載）
+2. `redis-cli flushdb` 清掉舊的壞 JSON（否則重啟後仍讀舊格式）
+
+### 經驗教訓
+
+1. **JWT + Redis 混合方案的脆弱點**：JWT 只是索引，所有身份信息綁在 Redis 那個對象的序列化/反序列化能力上。對象讀不回 = token 作廢。
+2. **`UserDetails` + `GenericJackson2JsonRedisSerializer` 是經典踩坑組合**。RuoYi 原項目用 `FastJsonRedisSerializer` 對這類 getter-only 屬性更寬容，切換序列化器時會踩這個雷。
+3. **計算型 getter 要顯式告訴 Jackson 別當字段**。凡是「方法名是 getXxx/isXxx，但對象裡沒有對應 field 或 setter」的 getter，一律 `@JsonIgnore`。
+4. **診斷多層協作的 Bug 按鏈路順序逐層剝離**：前端打印 → 中間件服務存活 → 序列化協議細節。跳層看很容易把時間浪費在「懷疑人生」。
+
+### 附加產出
+
+- `api/request.ts` 的三處 `console.log`（請求/響應/錯誤）保留著作為日常調試工具
+- `TokenService` 的 `[TokenService] 寫入/讀 Redis` 日誌保留，便於後續類似問題快速定位
 
 ---

@@ -871,3 +871,68 @@ public R<Void> add(@RequestBody SysUser user) { ... }
 完成後進入 → **階段四：業務模塊（Step 12 實體類）**
 
 ---
+
+## 踩坑記錄：`/logout` 返回「不支援 GET」（2026-04-15）
+
+### 症狀
+
+前端點擊退出按鈕，後端返回「不支援的 HTTP 方法：GET，支援的方法為：POST」。前端明明發的是 POST。
+
+### 根因
+
+`SecurityConfig` 沒禁用 Spring Security 默認的 `LogoutFilter`，它在 Filter 鏈上早於 Controller：
+
+```
+前端 POST /logout
+  → LogoutFilter 攔截（認為是自己的默認 url）
+  → 執行 session.invalidate() + 清 SecurityContext
+  → 302 redirect 到 /login?logout
+  → 瀏覽器自動發 GET /login
+  → AuthController 只有 @PostMapping("/login") → 返回「不支援 GET」
+```
+
+前端看到的「GET 錯誤」不是前端發的，是 LogoutFilter 跳轉鏈路的末端。
+
+### 修復
+
+`SecurityConfig.filterChain` 加一行：
+
+```java
+.logout(logout -> logout.disable())
+```
+
+### 為什麼必須禁用 LogoutFilter
+
+它為傳統 session-based 應用設計：
+
+| LogoutFilter 幹的事 | 我們的情況 |
+|---|---|
+| 清 HttpSession | STATELESS，根本沒 session |
+| 清 SecurityContext | 每請求從 JWT 重建，當前請求結束就沒了 |
+| 302 跳 /login?logout | SPA 路由由前端控制 |
+| ❌ **不刪 Redis 的 login_token** | **致命漏洞** |
+
+**關鍵**：LogoutFilter 不知道 Redis 裡還存著 LoginUser。用戶以為登出了，但 JWT 在 TTL 過期前（30 分鐘）仍然有效。我們自訂的 `AuthController.logout()` 調 `TokenService.delLoginUser()` 刪 Redis key，token 立即作廢 —— 這才是真正登出。
+
+### 為什麼登出用 POST 而不是 GET
+
+禁了 LogoutFilter 理論上可以寫 `@GetMapping("/logout")`，但業界慣例用 POST：
+
+1. **GET 會被意外觸發** —— 攻擊者放 `<img src="/logout">` 在評論區，用戶加載頁面就被強制登出
+2. **REST 語義** —— GET 應冪等無副作用，登出會刪 Redis key 屬於狀態變更
+3. **瀏覽器預取** —— 某些瀏覽器預取 `<a href>` 的 GET 鏈接，鼠標劃過都可能觸發
+4. **與 login 對稱** —— login POST，logout 也 POST，風格一致
+
+### 經驗教訓
+
+Spring Security 的默認過濾器（FormLogin / HttpBasic / Logout）都為傳統 Web 應用設計，切到 SPA + JWT 架構時**要顯式禁用**，否則在意料之外的地方攔截請求。SecurityConfig 裡一口氣全禁：
+
+```java
+.formLogin(form -> form.disable())
+.httpBasic(basic -> basic.disable())
+.logout(logout -> logout.disable())
+```
+
+之後登入/登出全走自訂 Controller + JwtAuthenticationFilter，鏈路清晰。
+
+---

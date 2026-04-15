@@ -44,72 +44,369 @@ node_modules/  package-lock.json  README.md  tsconfig.app.json  tsconfig.node.js
 沒有在network裏面看到 login請求：
 但是登錄的時候報錯了：Request failed with status code 401
 
+==============================================================================================================
+先不管錯誤的原因吧，你先幫我梳理一下，從前端到後端登錄整個過程，我先瞭解宏觀架構，再基於宏觀架構去分析定位具體代碼，
+你幫我生成login_archive.md文檔吧，生成在當前目錄下
 
 ==============================================================================================================
+我確認一下，前端登錄發起請求的代碼在這裏嗎？auth.ts文件裏的
+export function login(data: LoginBody) {
+  return request<LoginResult>({
+    url: '/login',
+    method: 'post',
+    data
+  })
+}
+如果我想查看請求的全url，請求參數，怎麼打印查看？
 
+==============================================================================================================
+前端console的結果出來了：是不是端口問題？後端端口是8080端口
+[HTTP →] POST /api/login {params: undefined, data: {…}, headers: AxiosHeaders$1}data: password: "admin123"username: "admin"[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()headers: AxiosHeaders$1 {Accept: 'application/json, text/plain, */*', Content-Type: 'application/json'}Accept: "application/json, text/plain, */*"Content-Type: "application/json"clear: (...)concat: (...)constructor: (...)delete: (...)get: (...)getAccept: (...)getAcceptEncoding: (...)getAuthorization: (...)getContentLength: (...)getContentType: (...)getSetCookie: (...)getUserAgent: (...)has: (...)hasAccept: (...)hasAcceptEncoding: (...)hasAuthorization: (...)hasContentLength: (...)hasContentType: (...)hasUserAgent: (...)normalize: (...)set: (...)setAccept: (...)setAcceptEncoding: (...)setAuthorization: (...)setContentLength: (...)setContentType: (...)setUserAgent: (...)toJSON: (...)toString: (...)Symbol(Symbol.toStringTag): (...)[[Prototype]]: Objectparams: undefined[[Prototype]]: Object
+request.ts:43 [HTTP ←] /login 200 {code: 200, msg: '操作成功', data: {…}, success: true}code: 200data: {token: 'eyJhbGciOiJIUzM4NCJ9.eyJsb2dpbl90b2tlbiI6ImM0MWVhO…EWnIQqP90G8j6YBozyyqIcN1QR96aK9kxwLj4dz0ETQLdPSWJ'}token: "eyJhbGciOiJIUzM4NCJ9.eyJsb2dpbl90b2tlbiI6ImM0MWVhOTk2YTQ2NzQ5Njk5ZTBmYWYyNjZiNzNlMzY2In0.u7n91IP6jKocc2DEWnIQqP90G8j6YBozyyqIcN1QR96aK9kxwLj4dz0ETQLdPSWJ"[[Prototype]]: Objecttoken: "eyJhbGciOiJIUzM4NCJ9.eyJsb2dpbl90b2tlbiI6ImM0MWVhOTk2YTQ2NzQ5Njk5ZTBmYWYyNjZiNzNlMzY2In0.u7n91IP6jKocc2DEWnIQqP90G8j6YBozyyqIcN1QR96aK9kxwLj4dz0ETQLdPSWJ"[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()msg: "操作成功"success: true[[Prototype]]: Object
+request.ts:27 [HTTP →] GET /api/getInfo {params: undefined, data: undefined, headers: AxiosHeaders$1}data: undefinedheaders: AxiosHeaders$1 {Accept: 'application/json, text/plain, */*', Content-Type: undefined, Authorization: 'Bearer eyJhbGciOiJIUzM4NCJ9.eyJsb2dpbl90b2tlbiI6Im…EWnIQqP90G8j6YBozyyqIcN1QR96aK9kxwLj4dz0ETQLdPSWJ'}params: undefined[[Prototype]]: Object
+request.ts:92  GET http://localhost:5173/api/getInfo 401 (Unauthorized)
+dispatchXhrRequest @ axios.js?v=b6334622:2042
+xhr @ axios.js?v=b6334622:1952
+dispatchRequest @ axios.js?v=b6334622:2417
+Promise.then
+_request @ axios.js?v=b6334622:2620
+request @ axios.js?v=b6334622:2537
+wrap @ axios.js?v=b6334622:12
+(anonymous) @ request.ts:92
+(anonymous) @ auth.ts:20
+(anonymous) @ user.ts:20
+wrappedAction @ pinia.js?v=b6334622:4799
+store.<computed> @ pinia.js?v=b6334622:4486
+(anonymous) @ permission.ts:27
+(anonymous) @ vue-router.js?v=b6334622:819
+runWithContext @ vue-router.js?v=b6334622:801
+(anonymous) @ vue-router.js?v=b6334622:819
+(anonymous) @ vue-router.js?v=b6334622:803
+runWithContext @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:4539
+runWithContext @ vue-router.js?v=b6334622:2573
+(anonymous) @ vue-router.js?v=b6334622:2775
+Promise.then
+(anonymous) @ vue-router.js?v=b6334622:2775
+runGuardQueue @ vue-router.js?v=b6334622:2775
+(anonymous) @ vue-router.js?v=b6334622:2588
+Promise.then
+navigate @ vue-router.js?v=b6334622:2584
+pushWithRedirect @ vue-router.js?v=b6334622:2545
+push @ vue-router.js?v=b6334622:2498
+onSubmit @ index.vue:26
+await in onSubmit
+callWithErrorHandling @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:1873
+callWithAsyncErrorHandling @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:1880
+emit @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:4637
+(anonymous) @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:6829
+handleClick @ es-BoMMJKEe.js?v=b6334622:15863
+callWithErrorHandling @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:1873
+callWithAsyncErrorHandling @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:1880
+invoker @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:7620
+request.ts:59 [HTTP ✗] /getInfo 401 {code: 401, msg: '認證失敗，請重新登入', data: null, success: false}
 
+==============================================================================================================
+redis的服務我在application-yaml文件裏面有配置啊：
+這個是該機器上的redis狀態：
+    │                 • MobaXterm Personal Edition v22.1 •                 │
+    │               (SSH client, X server and network tools)               │
+    │                                                                      │
+    │ ⮞ SSH session to root@115.190.204.179                                │
+    │   • Direct SSH      :  ✓                                             │
+    │   • SSH compression :  ✓                                             │
+    │   • SSH-browser     :  ✓                                             │
+    │   • X11-forwarding  :  ✗  (disabled or not supported by server)      │
+    │                                                                      │
+    │ ⮞ For more info, ctrl+click on help or visit our website.            │
+    └──────────────────────────────────────────────────────────────────────┘
+
+Last login: Thu Apr 16 02:58:35 2026 from 120.240.178.226
+[root@upaphklapp01 ~]# vi /etc/redis/redis.conf
+[root@upaphklapp01 ~]# systemctl status redis
+○ redis.service - Redis
+     Loaded: loaded (/etc/systemd/system/redis.service; enabled; preset: disabled)
+     Active: inactive (dead) since Mon 2026-03-16 14:01:43 CST; 1 month 0 days ago
+   Duration: 27.509s
+   Main PID: 151388 (code=exited, status=0/SUCCESS)
+        CPU: 67ms
+[root@upaphklapp01 ~]# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 00:16:3e:2a:69:7a brd ff:ff:ff:ff:ff:ff
+    altname enp3s1
+    inet 192.168.24.193/16 brd 192.168.255.255 scope global dynamic noprefixroute eth0
+       valid_lft 300166583sec preferred_lft 300166583sec
+    inet6 fe80::216:3eff:fe2a:697a/64 scope link
+       valid_lft forever preferred_lft forever
+
+==============================================================================================================
+我現在開啓了：
+ systemctl status redis
+● redis.service - Redis
+     Loaded: loaded (/etc/systemd/system/redis.service; enabled; preset: disabled)
+     Active: active (running) since Thu 2026-04-16 03:10:32 CST; 4s ago
+    Process: 942143 ExecStart=/usr/local/bin/redis-server /etc/redis/redis.conf (code=exited, status=0/SUCCESS)
+   Main PID: 942144 (redis-server)
+      Tasks: 6 (limit: 11789)
+     Memory: 6.9M (peak: 7.4M)
+        CPU: 16ms
+     CGroup: /system.slice/redis.service
+             └─942144 "/usr/local/bin/redis-server 0.0.0.0:6379"
+，另外redis的配置文件我從服務器下載下來放在了當前目錄下了，是redis.conf,是我用redis-cli輸入info查看到的當前redis的配置文件位置config_file:/etc/redis/redis.conf
+，另外我後端的配置文件就在hr-admin的resource目錄下application-dev.yml
+
+==============================================================================================================
+還是失敗呢？
+前端console報錯：
+[HTTP →] POST /api/login {params: undefined, data: {…}, headers: AxiosHeaders$1}
+request.ts:43 [HTTP ←] /login 200 {code: 200, msg: '操作成功', data: {…}, success: true}
+request.ts:27 [HTTP →] GET /api/getInfo {params: undefined, data: undefined, headers: AxiosHeaders$1}
+request.ts:92  GET http://localhost:5173/api/getInfo 401 (Unauthorized)
+dispatchXhrRequest @ axios.js?v=b6334622:2042
+xhr @ axios.js?v=b6334622:1952
+dispatchRequest @ axios.js?v=b6334622:2417
+Promise.then
+_request @ axios.js?v=b6334622:2620
+request @ axios.js?v=b6334622:2537
+wrap @ axios.js?v=b6334622:12
+(anonymous) @ request.ts:92
+(anonymous) @ auth.ts:20
+(anonymous) @ user.ts:20
+wrappedAction @ pinia.js?v=b6334622:4799
+store.<computed> @ pinia.js?v=b6334622:4486
+(anonymous) @ permission.ts:27
+(anonymous) @ vue-router.js?v=b6334622:819
+runWithContext @ vue-router.js?v=b6334622:801
+(anonymous) @ vue-router.js?v=b6334622:819
+(anonymous) @ vue-router.js?v=b6334622:803
+runWithContext @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:4539
+runWithContext @ vue-router.js?v=b6334622:2573
+(anonymous) @ vue-router.js?v=b6334622:2775
+Promise.then
+(anonymous) @ vue-router.js?v=b6334622:2775
+runGuardQueue @ vue-router.js?v=b6334622:2775
+(anonymous) @ vue-router.js?v=b6334622:2588
+Promise.then
+navigate @ vue-router.js?v=b6334622:2584
+pushWithRedirect @ vue-router.js?v=b6334622:2545
+pushWithRedirect @ vue-router.js?v=b6334622:2530
+push @ vue-router.js?v=b6334622:2498
+onSubmit @ index.vue:26
+await in onSubmit
+callWithErrorHandling @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:1873
+callWithAsyncErrorHandling @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:1880
+emit @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:4637
+(anonymous) @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:6829
+handleClick @ es-BoMMJKEe.js?v=b6334622:15863
+callWithErrorHandling @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:1873
+callWithAsyncErrorHandling @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:1880
+invoker @ vue.runtime.esm-bundler-7RPVkgMH.js?v=b6334622:7620
+request.ts:59 [HTTP ✗] /getInfo 401 {code: 401, msg: '認證失敗，請重新登入', data: null, success: false}
+
+後端的日誌：
+Can not find table primary key in Class: "com.hr.system.domain.SysUserRole".
+2026-04-15T20:45:45.019+08:00  WARN 14832 --- [           main] c.b.m.core.injector.DefaultSqlInjector   : class com.hr.system.domain.SysUserRole ,Not found @TableId annotation, Cannot use Mybatis-Plus 'xxById' Method.
+Can not find table primary key in Class: "com.hr.system.domain.SysRoleMenu".
+2026-04-15T20:45:45.145+08:00  WARN 14832 --- [           main] c.b.m.core.injector.DefaultSqlInjector   : class com.hr.system.domain.SysRoleMenu ,Not found @TableId annotation, Cannot use Mybatis-Plus 'xxById' Method.
+Can not find table primary key in Class: "com.hr.system.domain.SysRoleDept".
+2026-04-15T20:45:45.160+08:00  WARN 14832 --- [           main] c.b.m.core.injector.DefaultSqlInjector   : class com.hr.system.domain.SysRoleDept ,Not found @TableId annotation, Cannot use Mybatis-Plus 'xxById' Method.
+2026-04-15T20:45:45.674+08:00  INFO 14832 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@414d2821, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@7378c4a4, org.springframework.security.web.context.SecurityContextHolderFilter@7ebaf0d, org.springframework.security.web.header.HeaderWriterFilter@1ecec098, org.springframework.web.filter.CorsFilter@6694fb1b, org.springframework.security.web.authentication.logout.LogoutFilter@3a5e4f32, com.hr.framework.security.JwtAuthenticationFilter@618f627b, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@5690c2a8, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@17e2835c, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@61ce238e, org.springframework.security.web.session.SessionManagementFilter@8ecc457, org.springframework.security.web.access.ExceptionTranslationFilter@61b0af9f, org.springframework.security.web.access.intercept.AuthorizationFilter@5db90818]
+2026-04-15T20:45:46.089+08:00  INFO 14832 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/api'
+2026-04-15T20:45:46.089+08:00  INFO 14832 --- [           main] com.hr.admin.HrApplication               : Started HrApplication in 3.526 seconds (process running for 4.077)
+========== 人事管理系統啟動成功 ==========
+2026-04-15T20:46:45.516+08:00  INFO 14832 --- [nio-8080-exec-1] o.apache.tomcat.util.http.parser.Cookie  : A cookie header was received [Hm_lvt_a1ff8825baa73c3a78eb96aa40325abc=1772365327,1772456458,1772623257,1774869411] that contained an invalid cookie. That cookie will be ignored.
+ Note: further occurrences of this error will be logged at DEBUG level.
+2026-04-15T20:46:45.522+08:00  INFO 14832 --- [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-15T20:46:45.522+08:00  INFO 14832 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-15T20:46:45.524+08:00  INFO 14832 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3dce05a2] was not registered for synchronization because synchronization is not active
+2026-04-15T20:46:45.690+08:00  INFO 14832 --- [nio-8080-exec-1] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-04-15T20:46:45.979+08:00  INFO 14832 --- [nio-8080-exec-1] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection ConnectionID:1 ClientConnectionId: e884676c-db61-49c6-931e-b0537b104a24
+2026-04-15T20:46:45.981+08:00  INFO 14832 --- [nio-8080-exec-1] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+JDBC Connection [HikariProxyConnection@734956469 wrapping ConnectionID:1 ClientConnectionId: e884676c-db61-49c6-931e-b0537b104a24] will not be managed by Spring
+==>  Preparing: SELECT * FROM sys_user WHERE username = ? AND deleted = 0
+==> Parameters: admin(String)
+<==    Columns: user_id, dept_id, post_id, username, password, nickname, email, phone, gender, avatar, status, login_ip, login_time, remark, create_by, create_time, update_by, update_time, deleted
+<==        Row: 1, 1, 2, admin, $2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2, 超級管理員, admin@hr.com, 13800000001, 1, null, 0, null, 2026-04-15 20:40:10.1966667, null, admin, 2026-04-10 20:46:40.1000000, null, null, 0
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3dce05a2]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@43ef359f] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1355548234 wrapping ConnectionID:1 ClientConnectionId: e884676c-db61-49c6-931e-b0537b104a24] will not be managed by Spring
+==>  Preparing: UPDATE sys_user SET login_ip = ?, login_time = GETDATE() WHERE user_id = ?
+==> Parameters: null, 1(Long)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@43ef359f]
+2026-04-15T20:46:46.841+08:00  WARN 14832 --- [nio-8080-exec-3] c.h.f.s.h.AuthenticationEntryPointImpl   : [認證失敗] URI: /api/getInfo, 原因: Full authentication is required to access this resource
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@8ec1b37] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1192685153 wrapping ConnectionID:1 ClientConnectionId: e884676c-db61-49c6-931e-b0537b104a24] will not be managed by Spring
+==>  Preparing: SELECT * FROM sys_user WHERE username = ? AND deleted = 0
+==> Parameters: admin(String)
+<==    Columns: user_id, dept_id, post_id, username, password, nickname, email, phone, gender, avatar, status, login_ip, login_time, remark, create_by, create_time, update_by, update_time, deleted
+<==        Row: 1, 1, 2, admin, $2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2, 超級管理員, admin@hr.com, 13800000001, 1, null, 0, null, 2026-04-15 20:46:41.7933333, null, admin, 2026-04-10 20:46:40.1000000, null, null, 0
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@8ec1b37]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@572c984c] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@658051374 wrapping ConnectionID:1 ClientConnectionId: e884676c-db61-49c6-931e-b0537b104a24] will not be managed by Spring
+==>  Preparing: UPDATE sys_user SET login_ip = ?, login_time = GETDATE() WHERE user_id = ?
+==> Parameters: null, 1(Long)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@572c984c]
+2026-04-15T20:48:26.603+08:00  WARN 14832 --- [nio-8080-exec-2] c.h.f.s.h.AuthenticationEntryPointImpl   : [認證失敗] URI: /api/getInfo, 原因: Full authentication is required to access this resource
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7aab0095] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@1953296816 wrapping ConnectionID:1 ClientConnectionId: e884676c-db61-49c6-931e-b0537b104a24] will not be managed by Spring
+==>  Preparing: SELECT * FROM sys_user WHERE username = ? AND deleted = 0
+==> Parameters: admin(String)
+<==    Columns: user_id, dept_id, post_id, username, password, nickname, email, phone, gender, avatar, status, login_ip, login_time, remark, create_by, create_time, update_by, update_time, deleted
+<==        Row: 1, 1, 2, admin, $2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2, 超級管理員, admin@hr.com, 13800000001, 1, null, 0, null, 2026-04-15 20:48:22.1500000, null, admin, 2026-04-10 20:46:40.1000000, null, null, 0
+<==      Total: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7aab0095]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@70536be5] was not registered for synchronization because synchronization is not active
+JDBC Connection [HikariProxyConnection@894565259 wrapping ConnectionID:1 ClientConnectionId: e884676c-db61-49c6-931e-b0537b104a24] will not be managed by Spring
+==>  Preparing: UPDATE sys_user SET login_ip = ?, login_time = GETDATE() WHERE user_id = ?
+==> Parameters: null, 1(Long)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@70536be5]
+2026-04-15T20:48:50.268+08:00  WARN 14832 --- [nio-8080-exec-6] c.h.f.s.h.AuthenticationEntryPointImpl   : [認證失敗] URI: /api/getInfo, 原因: Full authentication is required to access this resource
 
 
 ==============================================================================================================
+後端日誌報錯了：
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@75b281b8]
+2026-04-15T20:52:33.098+08:00  INFO 20540 --- [nio-8080-exec-1] com.hr.framework.security.TokenService   : [TokenService] 寫入 Redis key=login_token:2d153af99e6b44ebada521b17c479fd8, ttl=1800s
+2026-04-15T20:52:33.288+08:00  WARN 20540 --- [nio-8080-exec-3] com.hr.framework.security.TokenService   : [TokenService] JWT 解析失敗: Could not read JSON:Problem deserializing 'setterless' property ("authorities"): no way to handle typed deser with setterless yet
+ at [Source: (byte[])"{"@class":"com.hr.framework.security.LoginUser","userId":1,"deptId":1,"username":"admin","nickname":"超級管理員","token":"2d153af99e6b44ebada521b17c479fd8","loginTime":1776257552540,"expireTime":1776259352540,"permissions":["java.util.HashSet",["*:*:*"]],"roles":["java.util.HashSet",["admin"]],"enabled":true,"authorities":["java.util.ArrayList",[{"@class":"org.springframework.security.core.authority.SimpleGrantedAuthority","role":"*:*:*","authority":"*:*:*"},{"@class":"org.springframework.s"[truncated 173 bytes]; line: 1, column: 330] (through reference chain: com.hr.framework.security.LoginUser["authorities"])
 
+org.springframework.data.redis.serializer.SerializationException: Could not read JSON:Problem deserializing 'setterless' property ("authorities"): no way to handle typed deser with setterless yet
+ at [Source: (byte[])"{"@class":"com.hr.framework.security.LoginUser","userId":1,"deptId":1,"username":"admin","nickname":"超級管理員","token":"2d153af99e6b44ebada521b17c479fd8","loginTime":1776257552540,"expireTime":1776259352540,"permissions":["java.util.HashSet",["*:*:*"]],"roles":["java.util.HashSet",["admin"]],"enabled":true,"authorities":["java.util.ArrayList",[{"@class":"org.springframework.security.core.authority.SimpleGrantedAuthority","role":"*:*:*","authority":"*:*:*"},{"@class":"org.springframework.s"[truncated 173 bytes]; line: 1, column: 330] (through reference chain: com.hr.framework.security.LoginUser["authorities"])
+	at org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer.deserialize(GenericJackson2JsonRedisSerializer.java:292) ~[spring-data-redis-3.2.5.jar:3.2.5]
+	at org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer.deserialize(GenericJackson2JsonRedisSerializer.java:261) ~[spring-data-redis-3.2.5.jar:3.2.5]
+	at org.springframework.data.redis.core.AbstractOperations.deserializeValue(AbstractOperations.java:360) ~[spring-data-redis-3.2.5.jar:3.2.5]
+	at org.springframework.data.redis.core.AbstractOperations$ValueDeserializingRedisCallback.doInRedis(AbstractOperations.java:62) ~[spring-data-redis-3.2.5.jar:3.2.5]
+	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:396) ~[spring-data-redis-3.2.5.jar:3.2.5]
+	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:363) ~[spring-data-redis-3.2.5.jar:3.2.5]
+	at org.springframework.data.redis.core.AbstractOperations.execute(AbstractOperations.java:97) ~[spring-data-redis-3.2.5.jar:3.2.5]
+	at org.springframework.data.redis.core.DefaultValueOperations.get(DefaultValueOperations.java:50) ~[spring-data-redis-3.2.5.jar:3.2.5]
+	at com.hr.framework.cache.RedisCache.getCacheObject(RedisCache.java:54) ~[classes/:na]
+	at com.hr.framework.security.TokenService.getLoginUser(TokenService.java:117) ~[classes/:na]
+	at com.hr.framework.security.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:57) ~[classes/:na]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191) ~[spring-security-web-6.2.4.jar:6.2.4]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:195) ~[spring-webmvc-6.1.6.jar:6.1.6]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:230) ~[spring-security-config-6.2.4.jar:6.2.4]
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:352) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:268) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.6.jar:6.1.6]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.20.jar:10.1.20]
+	at java.base/java.lang.Thread.run(Thread.java:842) ~[na:na]
+Caused by: com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Problem deserializing 'setterless' property ("authorities"): no way to handle typed deser with setterless yet
+ at [Source: (byte[])"{"@class":"com.hr.framework.security.LoginUser","userId":1,"deptId":1,"username":"admin","nickname":"超級管理員","token":"2d153af99e6b44ebada521b17c479fd8","loginTime":1776257552540,"expireTime":1776259352540,"permissions":["java.util.HashSet",["*:*:*"]],"roles":["java.util.HashSet",["admin"]],"enabled":true,"authorities":["java.util.ArrayList",[{"@class":"org.springframework.security.core.authority.SimpleGrantedAuthority","role":"*:*:*","authority":"*:*:*"},{"@class":"org.springframework.s"[truncated 173 bytes]; line: 1, column: 330] (through reference chain: com.hr.framework.security.LoginUser["authorities"])
+	at com.fasterxml.jackson.databind.exc.InvalidDefinitionException.from(InvalidDefinitionException.java:67) ~[jackson-databind-2.15.4.jar:2.15.4]
+	at com.fasterxml.jackson.databind.DeserializationContext.reportBadDefinition(DeserializationContext.java:1915) ~[jackson-databind-2.15.4.jar:2.15.4]
+	at com.fasterxml.jackson.databind.deser.impl.SetterlessProperty.deserializeAndSet(SetterlessProperty.java:113) ~[jackson-databind-2.15.4.jar:2.15.4]
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.vanillaDeserialize(BeanDeserializer.java:314) ~[jackson-databind-2.15.4.jar:2.15.4]
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer._deserializeOther(BeanDeserializer.java:215) ~[jackson-databind-2.15.4.jar:2.15.4]
+	at com.fasterxml.jackson.databind.deser.BeanDeserializer.deserialize(BeanDeserializer.java:187) ~[jackson-databind-2.15.4.jar:2.15.4]
+	at com.fasterxml.jackson.databind.jsontype.impl.AsPropertyTypeDeserializer._deserializeTypedForId(AsPropertyTypeDeserializer.java:170) ~[jackson-databind-2.15.4.jar:2.15.4]
+	at com.fasterxml.jackson.databind.jsontype.impl.AsPropertyTypeDeserializer.deserializeTypedFromObject(AsPropertyTypeDeserializer.java:136) ~[jackson-databind-2.15.4.jar:2.15.4]
+	at com.fasterxml.jackson.databind.deser.BeanDeserializerBase.deserializeWithType(BeanDeserializerBase.java:1306) ~[jackson-databind-2.15.4.jar:2.15.4]
+	at com.fasterxml.jackson.databind.deser.impl.TypeWrappedDeserializer.deserialize(TypeWrappedDeserializer.java:74) ~[jackson-databind-2.15.4.jar:2.15.4]
+	at com.fasterxml.jackson.databind.deser.DefaultDeserializationContext.readRootValue(DefaultDeserializationContext.java:323) ~[jackson-databind-2.15.4.jar:2.15.4]
+	at com.fasterxml.jackson.databind.ObjectMapper._readMapAndClose(ObjectMapper.java:4825) ~[jackson-databind-2.15.4.jar:2.15.4]
+	at com.fasterxml.jackson.databind.ObjectMapper.readValue(ObjectMapper.java:3874) ~[jackson-databind-2.15.4.jar:2.15.4]
+	at org.springframework.data.redis.serializer.JacksonObjectReader.lambda$create$0(JacksonObjectReader.java:54) ~[spring-data-redis-3.2.5.jar:3.2.5]
+	at org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer.deserialize(GenericJackson2JsonRedisSerializer.java:289) ~[spring-data-redis-3.2.5.jar:3.2.5]
+	... 70 common frames omitted
 
-
+2026-04-15T20:52:33.295+08:00  WARN 20540 --- [nio-8080-exec-3] c.h.f.s.h.AuthenticationEntryPointImpl   : [認證失敗] URI: /api/getInfo, 原因: Full authentication is required to access this resource
 
 ==============================================================================================================
-
-
-
+登錄成功了，你詳細講講剛纔是什麼原因，就加了一個@JsonIgnore註解就好了？
 
 ==============================================================================================================
-
-
-
+我理解這次錯誤的本質是用jdk序列化，然後用GenericJackson2JsonRedisSerializer反序列化失敗了？
 
 ==============================================================================================================
-
-
-==============================================================================================================
-
+那我理解就是GenericJackson2JsonRedisSerializer序列化依賴getter和setter方法，錯認了getAuthorities方法把authorities當成屬性了
+但是沒有這個屬性，是這個意思嗎？
 
 ==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
+那我理解就是和token沒有關係，即使authorities反序列化失敗了也對token沒有影響吧
 
 ==============================================================================================================
-
-
-
+開始下一步：step7吧，先說說step7要做啥？
 
 ==============================================================================================================
-
-
-
+有個其它的問題：我點擊登出的時候報錯：不支援的 HTTP 方法：GET，支援的方法為：POST
 
 ==============================================================================================================
-
-
-
-
+我有個疑問，登出用get請求不好嗎？我感覺登出用get請求應該滿合適的，爲什麼要用post請求呢?有什麼考慮嗎？通用的登出用的是get請求還是post請求？
 
 ==============================================================================================================
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
+爲什麼我感覺下面這種方式挺好的，可以不用post請求登出吧？
+ 關閉 Spring Security 默認 LogoutFilter — /logout 走自訂 Controller
+ 否則它會攔截 /logout 做 session 清理並 302 到 /login?logout（變成 GET）
 
 ==============================================================================================================
 
