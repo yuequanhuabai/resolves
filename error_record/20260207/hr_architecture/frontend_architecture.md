@@ -130,14 +130,7 @@ hr-ui/
 
 ---
 
-## 三、核心機制
-
-### 3.1 Axios 請求封裝
-
-```
-請求攔截器:
-  1. 從 localStorage 取 Token
-  2. 設入 Header: Authorization: Bearer {token}
+      
 
 響應攔截器:
   code === 200  → 返回 data
