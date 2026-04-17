@@ -1,10 +1,469 @@
-{
-  "proxiedPositions": [
-    "5ea964a4-3479-427e-a684-6cce478b5cea"
-  ],
-//   TODO 复用了generate-proposal_response的返回对象analysis,需要二次检查层级结构
+{// TODO proposal和analysis 直接复用了generate-proposal的内容，需要后期核对
+  "proposal": {
+    "id": "5d5db126-d7c4-4d6e-a679-2451d4cd7a43",
+    "name": "My Proposal",
+    "original": {
+      "id": "HH-1",
+      "name": "My Proposal",
+      "asOf": "2024-06-27T05:39:00Z",
+      "creationTimestamp": "2024-06-27T05:39:00Z",
+      "tag": "HOUSEHOLD_ID",
+      "currency": "USD",
+      "benchmark": {
+        "id": "BENCH-1",
+        "currency": "USD",
+        "components": [
+          {
+            "id": "SP-500",
+            "identifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "NVDA.OQ",
+              "clientId": "XXXX"
+            },
+            "proxyIdentifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "NVDA.OQ",
+              "clientId": "XXXX"
+            },
+            "weight": 1,
+            "posInfo": {}
+          }
+        ],
+        "metadata": {}
+      },
+      "benchmarkRef": {
+        "id": "BENCH-1",
+        "tag": "benchmark"
+      },
+      "metadata": {},
+      "supplement": {
+        "sleeveInfo": [
+          {
+            "tag": "SMA_ID",
+            "value": "BLK123",
+            "benchmark": {
+              "id": "BENCH-1",
+              "currency": "USD",
+              "components": [
+                {
+                  "id": null,
+                  "identifiers": null,
+                  "proxyIdentifiers": null,
+                  "weight": null,
+                  "posInfo": {}
+                }
+              ],
+              "metadata": {}
+            },
+            "benchmarkRef": {
+              "id": "BENCH-1",
+              "tag": "benchmark"
+            },
+            "metadata": {},
+            "fees": [
+              {
+                "category": "Client",
+                "subcategory": "Dues",
+                "startYear": 0,
+                "endYear": 15,
+                "minimumPositionMarketValue": 100,
+                "maximumPositionMarketValue": 200,
+                "amount": 4.5,
+                "paymentMethod": "P",
+                "percentMethod": "P",
+                "eventType": "E"
+              }
+            ]
+          }
+        ]
+      },
+      "portfolios": [
+        {
+          "id": "ACCT-1",
+          "name": "My proposql",
+          "asOf": "2024-06-27T05:39:00Z",
+          "currency": "USD",
+          "positions": [
+            {
+              "id": "44601f81-b293-48dc-90d6-63ad3ae941fe",
+              "identifiers": {
+                "cusip": "67066G104",
+                "sedol": "2379504",
+                "isin": "US67066G1040",
+                "ric": "NVDA.OQ",
+                "clientId": "XXXX"
+              },
+              "proxyIdentifiers": {
+                "cusip": "67066G104",
+                "sedol": "2379504",
+                "isin": "US67066G1040",
+                "ric": "NVDA.OQ",
+                "clientId": "XXXX"
+              },
+              "quantity": 250,
+              "marketValue": 22728.09,
+              "notionalMarketValue": 29768.27,
+              "posInfo": {}
+            }
+          ],
+          "openLots": [
+            {
+              "id": "fcdbbc6c-73cd-4565-ac57-36f333144676",
+              "positionId": "e373ff06-99b9-4b2c-8dd7-f7ae21636cf6",
+              "purchaseDate": "2020-03-22",
+              "quantity": 250,
+              "costBasis": 20000,
+              "lotInfo": {}
+            }
+          ],
+          "closedLots": [
+            {
+              "id": "AC2E21||2024-05-06||916",
+              "identifiers": {
+                "cusip": "67066G104",
+                "sedol": "2379504",
+                "isin": "US67066G1040",
+                "ric": "NVDA.OQ",
+                "clientId": "XXXX"
+              },
+              "proxyIdentifiers": {
+                "cusip": "67066G104",
+                "sedol": "2379504",
+                "isin": "US67066G1040",
+                "ric": "NVDA.OQ",
+                "clientId": "XXXX"
+              },
+              "purchaseDate": "2020-03-22",
+              "closedDate": "2020-03-22",
+              "realizedGainOrLoss": 3417.42,
+              "lotInfo": {}
+            }
+          ],
+          "benchmark": {
+            "id": "BENCH-1",
+            "currency": "USD",
+            "components": [
+              {
+                "id": "SP-500",
+                "identifiers": {
+                  "cusip": "67066G104",
+                  "sedol": "2379504",
+                  "isin": "US67066G1040",
+                  "ric": "NVDA.OQ",
+                  "clientId": "XXXX"
+                },
+                "proxyIdentifiers": {
+                  "cusip": "67066G104",
+                  "sedol": "2379504",
+                  "isin": "US67066G1040",
+                  "ric": "NVDA.OQ",
+                  "clientId": "XXXX"
+                },
+                "weight": 1,
+                "posInfo": {}
+              }
+            ],
+            "metadata": {}
+          },
+          "benchmarkRef": {
+            "id": "BENCH-1",
+            "tag": "benchmark"
+          },
+          "metadata": {},
+          "supplement": {
+            "sleeveInfo": [
+              {
+                "tag": "SMA_ID",
+                "value": "BLK123",
+                "benchmark": {
+                  "id": "BENCH-1",
+                  "currency": "USD",
+                  "components": [
+                    null
+                  ],
+                  "metadata": {}
+                },
+                "benchmarkRef": {
+                  "id": "BENCH-1",
+                  "tag": "benchmark"
+                },
+                "metadata": {},
+                "fees": [
+                  {
+                    "category": null,
+                    "subcategory": null,
+                    "startYear": null,
+                    "endYear": null,
+                    "minimumPositionMarketValue": null,
+                    "maximumPositionMarketValue": null,
+                    "amount": null,
+                    "paymentMethod": null,
+                    "percentMethod": null,
+                    "eventType": null
+                  }
+                ]
+              }
+            ]
+          },
+          "origin": "SYSTEM"
+        }
+      ],
+      "childAggregates": [],
+      "origin": "SYSTEM"
+    },
+    "proposed": {
+      "id": "HH-1",
+      "name": "My Proposal",
+      "asOf": "2024-06-27T05:39:00Z",
+      "creationTimestamp": "2024-06-27T05:39:00Z",
+      "tag": "HOUSEHOLD_ID",
+      "currency": "USD",
+      "benchmark": {
+        "id": "BENCH-1",
+        "currency": "USD",
+        "components": [
+          {
+            "id": "SP-500",
+            "identifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "NVDA.OQ",
+              "clientId": "XXXX"
+            },
+            "proxyIdentifiers": {
+              "cusip": "67066G104",
+              "sedol": "2379504",
+              "isin": "US67066G1040",
+              "ric": "NVDA.OQ",
+              "clientId": "XXXX"
+            },
+            "weight": 1,
+            "posInfo": {}
+          }
+        ],
+        "metadata": {}
+      },
+      "benchmarkRef": {
+        "id": "BENCH-1",
+        "tag": "benchmark"
+      },
+      "metadata": {},
+      "supplement": {
+        "sleeveInfo": [
+          {
+            "tag": "SMA_ID",
+            "value": "BLK123",
+            "benchmark": {
+              "id": "BENCH-1",
+              "currency": "USD",
+              "components": [
+                {
+                  "id": "SP-500",
+                  "identifiers": {
+                    "cusip": "67066G104",
+                    "sedol": "2379504",
+                    "isin": "US67066G1040",
+                    "ric": "NVDA.OQ",
+                    "clientId": "XXXX"
+                  },
+                  "proxyIdentifiers": {
+                    "cusip": "67066G104",
+                    "sedol": "2379504",
+                    "isin": "US67066G1040",
+                    "ric": "NVDA.OQ",
+                    "clientId": "XXXX"
+                  },
+                  "weight": 1,
+                  "posInfo": {}
+                }
+              ],
+              "metadata": {}
+            },
+            "benchmarkRef": {
+              "id": "BENCH-1",
+              "tag": "benchmark"
+            },
+            "metadata": {},
+            "fees": [
+              {
+                "category": "Client",
+                "subcategory": "Dues",
+                "startYear": 0,
+                "endYear": 15,
+                "minimumPositionMarketValue": 100,
+                "maximumPositionMarketValue": 200,
+                "amount": 4.5,
+                "paymentMethod": "P",
+                "percentMethod": "P",
+                "eventType": "E"
+              }
+            ]
+          }
+        ]
+      },
+      "portfolios": [
+        {
+          "id": "ACCT-1",
+          "name": "My proposql",
+          "asOf": "2024-06-27T05:39:00Z",
+          "currency": "USD",
+          "positions": [
+            {
+              "id": "44601f81-b293-48dc-90d6-63ad3ae941fe",
+              "identifiers": {
+                "cusip": "67066G104",
+                "sedol": "2379504",
+                "isin": "US67066G1040",
+                "ric": "NVDA.OQ",
+                "clientId": "XXXX"
+              },
+              "proxyIdentifiers": {
+                "cusip": "67066G104",
+                "sedol": "2379504",
+                "isin": "US67066G1040",
+                "ric": "NVDA.OQ",
+                "clientId": "XXXX"
+              },
+              "quantity": 250,
+              "marketValue": 22728.09,
+              "notionalMarketValue": 29768.27,
+              "posInfo": {}
+            }
+          ],
+          "openLots": [
+            {
+              "id": "fcdbbc6c-73cd-4565-ac57-36f333144676",
+              "positionId": "e373ff06-99b9-4b2c-8dd7-f7ae21636cf6",
+              "purchaseDate": "2020-03-22",
+              "quantity": 250,
+              "costBasis": 20000,
+              "lotInfo": {}
+            }
+          ],
+          "closedLots": [
+            {
+              "id": "AC2E21||2024-05-06||916",
+              "identifiers": {
+                "cusip": "67066G104",
+                "sedol": "2379504",
+                "isin": "US67066G1040",
+                "ric": "NVDA.OQ",
+                "clientId": "XXXX"
+              },
+              "proxyIdentifiers": {
+                "cusip": "67066G104",
+                "sedol": "2379504",
+                "isin": "US67066G1040",
+                "ric": "NVDA.OQ",
+                "clientId": "XXXX"
+              },
+              "purchaseDate": "2020-03-22",
+              "closedDate": "2020-03-22",
+              "realizedGainOrLoss": 3417.42,
+              "lotInfo": {}
+            }
+          ],
+          "benchmark": {
+            "id": "BENCH-1",
+            "currency": "USD",
+            "components": [
+              {
+                "id": "SP-500",
+                "identifiers": {
+                  "cusip": "67066G104",
+                  "sedol": "2379504",
+                  "isin": "US67066G1040",
+                  "ric": "NVDA.OQ",
+                  "clientId": "XXXX"
+                },
+                "proxyIdentifiers": {
+                  "cusip": "67066G104",
+                  "sedol": "2379504",
+                  "isin": "US67066G1040",
+                  "ric": "NVDA.OQ",
+                  "clientId": "XXXX"
+                },
+                "weight": 1,
+                "posInfo": {}
+              }
+            ],
+            "metadata": {}
+          },
+          "benchmarkRef": {
+            "id": "BENCH-1",
+            "tag": "benchmark"
+          },
+          "metadata": {},
+          "supplement": {
+            "sleeveInfo": [
+              {
+                "tag": "SMA_ID",
+                "value": "BLK123",
+                "benchmark": {
+                  "id": "BENCH-1",
+                  "currency": "USD",
+                  "components": [
+                    null
+                  ],
+                  "metadata": {}
+                },
+                "benchmarkRef": {
+                  "id": "BENCH-1",
+                  "tag": "benchmark"
+                },
+                "metadata": {},
+                "fees": [
+                  {
+                    "category": null,
+                    "subcategory": null,
+                    "startYear": null,
+                    "endYear": null,
+                    "minimumPositionMarketValue": null,
+                    "maximumPositionMarketValue": null,
+                    "amount": null,
+                    "paymentMethod": null,
+                    "percentMethod": null,
+                    "eventType": null
+                  }
+                ]
+              }
+            ]
+          },
+          "origin": "SYSTEM"
+        }
+      ],
+      "childAggregates": [],
+      "origin": "SYSTEM"
+    },
+    "changes": [],
+    "metadata": {},
+    "sleeveTags": [
+      "SMA_ID",
+      "CONTRACT_ID"
+    ],
+    "linkedEntitySelections": [
+      {
+        "id": "XA-2387-42",
+        "tag": "client",
+        "selectionType": "primary",
+        "metadata": {}
+      }
+    ],
+    "simulatedPerformanceUserInputs": {
+      "feeOverride": 0.01
+    },
+    "lastUpdatedBy": "apiuser",
+    "lastUpdatedTimestamp": "2019-08-24T14:15:22Z",
+    "createdBy": "apiuser",
+    "creationTimestamp": "2019-08-24T14:15:22Z"
+  },
   "analysis": {
-    "id": "3f2cce63-b8d1-4510-8c2c-37e7e67f0090",
+    "id": "1c8b8b66-9c1c-4f16-8513-34318b3c257f",
     "date": "2022-02-02",
     "original": {
       "aggregate": {
@@ -7316,5 +7775,18 @@
         "metadata": {}
       }
     ]
+  },
+  "status": {
+    "id": "a43221e7-6b11-411e-8af5-e4ca566d712d",
+    "analysisDate": "2020-09-08",
+    "expityTimestamp": "2019-08-24T14:15:22Z",
+    "metadata": {},
+    "status": "IN_PROGRESS",
+    "latestComment": "left VM with client",
+    "latestFixedComment": "Review Required",
+    "lastUpdateBy": "userxyz98",
+    "lastUpdatedTimestamp": "2019-08-24T14:15:22Z",
+    "createdBy": "userxyz98",
+    "creationTimestamp": "2019-08-24T14:15:22Z"
   }
 }
