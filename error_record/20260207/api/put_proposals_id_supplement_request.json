@@ -1,0 +1,8 @@
+{ // PUT 方法，url： /proposals/{id}/supplement
+  "proposalFees": {
+    "metadata": {},
+    "feeSchedule": {},
+    "fees": [],
+    "feeInputs": {}
+  }
+}
