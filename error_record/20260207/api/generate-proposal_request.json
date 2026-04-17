@@ -19,14 +19,14 @@
             "cusip": "67066G104",
             "sedol": "2379504",
             "isin": "US67066G1040",
-            "ric": "VNDA.OQ",
+            "ric": "NVDA.OQ",
             "clientId": "XXXX"
           },
           "proxyIdentifiers": {
             "cusip": "67066G104",
             "sedol": "2379504",
             "isin": "US67066G1040",
-            "ric": "VNDA.OQ",
+            "ric": "NVDA.OQ",
             "clientId": "XXXX"
           },
           "weight": 1,
