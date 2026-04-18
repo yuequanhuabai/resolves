@@ -14,3 +14,10 @@ git push -u origin main
 git remote add origin git@github.com:yuequanhuabai/test.git
 git branch -M main
 git push -u origin main
+
+
+https 的遠程殘酷設置：
+
+git remote -v   # 先看當前是不是 ssh
+git remote set-url origin https://github.com/xxx/xxx.git
+git push -u origin master
