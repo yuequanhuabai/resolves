@@ -1,8 +1,126 @@
 { // PUT 方法，url： /proposals/{id}/supplement
   "proposalFees": {
     "metadata": {},
-    "feeSchedule": {},
-    "fees": [],
-    "feeInputs": {}
+    "feeSchedule": {
+      "original": {
+        "schedules": [
+          {
+            "id": "string",
+            "type": "AGGREGATE",
+            "tag": "string",
+            "scheduleItems": [
+              {
+                "lowerBound": 0,
+                "upperBound": 0,
+                "name": "string",
+                "value": 0
+              }
+            ],
+            "metadata": {}
+          }
+        ]
+      },
+      "proposed": {
+        "schedules": [
+          {
+            "id": "string",
+            "type": "AGGREGATE",
+            "tag": "string",
+            "scheduleItems": [
+              {
+                "lowerBound": 0,
+                "upperBound": 0,
+                "name": "string",
+                "value": 0
+              }
+            ],
+            "metadata": {}
+          }
+        ]
+      }
+    },
+    "fees": [
+      {
+        "name": "string",
+        "original": {
+          "totals": {
+            "property1": 0,
+            "property2": 0
+          },
+          "metadata": {},
+          "components": [
+            {
+              "id": "string",
+              "type": "AGGREGATE",
+              "tag": "string",
+              "feeData": {
+                "property1": 0,
+                "property2": 0
+              },
+              "metadata": {}
+            }
+          ]
+        },
+        "proposed": {
+          "totals": {
+            "property1": 0,
+            "property2": 0
+          },
+          "metadata": {},
+          "components": [
+            {
+              "id": "string",
+              "type": "AGGREGATE",
+              "tag": "string",
+              "feeData": {
+                "property1": 0,
+                "property2": 0
+              },
+              "metadata": {}
+            }
+          ]
+        }
+      }
+    ],
+    "feeInputs": {
+      "original": {
+        "totals": {
+          "property1": 0,
+          "property2": 0
+        },
+        "metadata": {},
+        "components": [
+          {
+            "id": "string",
+            "type": "AGGREGATE",
+            "tag": "string",
+            "feeInputData": {
+              "property1": 0,
+              "property2": 0
+            },
+            "metadata": {}
+          }
+        ]
+      },
+      "proposed": {
+        "totals": {
+          "property1": 0,
+          "property2": 0
+        },
+        "metadata": {},
+        "components": [
+          {
+            "id": "string",
+            "type": "AGGREGATE",
+            "tag": "string",
+            "feeInputData": {
+              "property1": 0,
+              "property2": 0
+            },
+            "metadata": {}
+          }
+        ]
+      }
+    }
   }
 }
