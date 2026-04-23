@@ -317,53 +317,69 @@ public DaoAuthenticationProvider(PasswordEncoder passwordEncoder) {
 JWT绕过的代码在这里吗？  .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 ==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
+我看到了JwtAuthenticationFilter继承了OncePerRequestFilter类，是每次http请求都会走这里吗？
 
 ==============================================================================================================
-
-
-
+可以帮我梳理一下当前项目目录下的后端模块pap-back的BenchmarkController下的insertBrBenchmarkBMI方法吗？
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+我看了一下BrBenchmarkModelInfo2Do和BrBenchmarkModelInfo1Do
+这两个pojo的字段是一样的，那对应的表字段应该也是一样的，只是pojo名字用1和2做了区分，表明也是1，2做了区分；
+我想看看他们的数据来源逻辑：exportBenchmarkBMIExcel()，你可以帮我分析一下吗？
 
 ==============================================================================================================
+看的有点头晕；我澄清一下逻辑：
+benchmarkDo是主表，benchmarkDetail是基于主表的详情数据，benchmarkgrouping是初始化的数据，是首次操作从这里获取数据展示给前端;
 
+List<BenchmarkDO> benchmarkDOList = new ArrayList<>(queryBenchmarkList());
+这个代码是获取所有的benchmark的主表数据
+ for (BenchmarkDO benchmarkDO : benchmarkDOList) {
+            benchmarkBMIVO = new BenchmarkBMIVO();
+            benchmarkBMIVO.setId(benchmarkDO.getBusinessId());
+            benchmarkBMIVO.setType("COMPOSITE");
+            benchmarkBMIVO.setName(benchmarkDO.getName());
+            benchmarkBMIVO.setCurrency("USD");
+            benchmarkBMIVOList.add(benchmarkBMIVO);
+        }
+这个代码是把benchmark主表的字段提取出来，到BenchmarkBMIVOpojo中去了
+我有一个问题，既然上一个操作时查的全量主表数据，那
+List<String> benchmarkId = benchmarkDOList.stream().map(BenchmarkDO::getId).toList();
+        List<BenchmarkDetailsDo> benchmarkDetailsDos = benchmarkDetailsMapper.selectListByIds(benchmarkId);
+这里的代码还有必要基于benchmark的主表id去查询吗？
+直接查询所有的详情表数据就可以了吧，因为详情表的数据时基于主表关联的
+==============================================================================================================
+我有点混乱了，我看了主表benchmark的businessId和benchmark_details的businessId的数据完全不一样？
+主表的是businessId是：PB1，这种，benchmark_details的businessId是9，12，
+好像benchmark_details的businessId是benchmarkgrouping的id;
 
 ==============================================================================================================
-
-
-==============================================================================================================
-
-
+那我理解：exportBenchmarkBMIExcel这个方法返回的导出数据是由两部分组成：
+一部分是benchmark的主表：
+另一部分是benchmarkdetail和benchmarkgrouping表逻辑组合的数据，实际是benchmarkgrouping的ComponentId和ComponentName
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+我现在有个新的需求，控制详情表在前端的展示，例如把权重为0%的二级benchmarkdetails的Asia Fixed Income 在前端不予展示或者exportBenchmarkBMIExcel方法屏蔽指定的benchmark的一级或二级数据；
+有什么解决方案可以实现吗？先谈谈要实现的控制逻辑，不改代码
 
 ==============================================================================================================
+规则是可动态调配指定某个benchmark不展示，一级或者二级，如果是一级，那它下面的二级也是全部不展示的
+我目前感觉修改benchmarkgrouping添加额外字段控制好点，前端也可以基于这个字段做控制
 
+==============================================================================================================
+谢谢你的提醒，我差点走了歧路；我的修去是控制指定的benmark，不是全局模板;
+应该是：IHUB_BENCHMARK_DETAILS表加字段控制
 
+可以详细讲讲IHUB_BENCHMARK_DETAILS表的控制逻辑实现吗，这个逻辑可以在exportBenchmarkBMIExcel方法上也可以控制吗？
 
+==============================================================================================================
+那我现在在IHUB_BENCHMARK_DETAILS表加is_visible字段，默认值初始值为1 ，可见; 0是不可见
+你再帮我看看涉及到IHUB_BENCHMARK_DETAILS表对应的pojo的相关影响代码范围;
+像你刚才说的版本控制,我需要全量搜索评估影响;
+
+你可以理解我的需求吗? 你先复述一下你的理解:
+
+==============================================================================================================
+还有一个问题，初始条件下benchmarkdetail的数据应该是空的，首次触发是从benchmarkgrouping表里获取到的数据，利用这个数据才会写到benchmarkdetails表中去
 
 ==============================================================================================================
 
