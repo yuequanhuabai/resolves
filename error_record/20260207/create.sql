@@ -1,4 +1,5 @@
 
+
 CREATE TABLE testflow.dbo.BR_SECURITY_MASTER_BND_1 (
     SECURITY_MASTER_OID bigint identity(1,1) NOT NULL,
     ORIG_CLIENT_ID varchar(60) COLLATE Latin1_General_100_CI_AS_SC_UTF8 NULL
