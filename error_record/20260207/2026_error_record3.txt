@@ -1618,12 +1618,26 @@ Spatial and hedonic analysis of housing prices in Shanghai
 3.你先讀取當前的test_login_back項目吧
 文檔生成目錄路徑是：D:\software\develop_tools\git\gitee\test_login\my_login_guide
 
-
-
 ==============================================================================================================
+帮我看看当前的项目，我想push到github上，但是好像有其它的一些文件需要屏蔽;
 
+我目前是测试开发阶段，你帮我把配置文件放开吧，日志可以屏蔽
 
+下面这些文件需要屏蔽吗？ 我刚刚创建的springboot的新项目里面的文件
+maven-wrapper.properties,
+mvnw,
+mvnw.com,
+.gitattributes
 
+maven 的命令不是使用本地的maven就可以了吗？
+
+有个问题，如果加上这些配置文件，是不是不需要本地配置maven环境变量也可以运行了？
+
+我两个都配置了，在我执行的时候，怎么判断是本地的maven还是这个wrapper配置？
+
+我刚才不注意，添加了 git remote add origin  https的url https的origin 命令，它要求密码,麻烦;现在想改为ssh的，怎么做,要删掉吗
+
+  git remote set-url origin git@github.com:你的用户名/仓库名.git
 
 ==============================================================================================================
 
