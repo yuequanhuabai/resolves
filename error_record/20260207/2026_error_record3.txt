@@ -1791,96 +1791,173 @@ of the Java Runtime (class file version 61.0), this version of the Java Runtime 
 我可以理解为你上面说的是要单独处理公开url的意思吗？
 
 ==============================================================================================================
+你可以看到這個目錄下的文檔嗎？
+D:\software\develop_tools\git\gitee\test_login\my_login_guide
 
+取反的邏輯我自己已經加上了，但是現在先別添加controller和對應的模板頁面;
+我想再回到SecurityConfig.java 類;
+該類的定位和功能是啥？
+==============================================================================================================
+關於filterChain方法，如何添加具体的规则呢？
+  我想说的是这个方法的宏观可以添加哪些宏观规则，当前方法里面又可以添加哪些宏观规则
+  你理解我的需求吗？你先复述一遍你的理解:
+
+==============================================================================================================
+我問一下
+ // 4. Remember-me 规则
+            .rememberMe(remember -> remember
+                .key("mylogin-remember-me-key")          // 签名密钥
+                .tokenValiditySeconds(7 * 24 * 60 * 60) // 7 天
+                .rememberMeParameter("remember-me")      // 表单字段名
+            );
+裏的key是幹嘛？怎麼簽名？
+
+==============================================================================================================
+你可以幫我加一下login對應的controller和html頁面，html頁面儘量簡單,滿足功能即可，不要太多的css
+你可以理解我的需求嗎？ 你先複述一遍你的理解：
+
+動手，但是注意一下：
+這裏先不改，我體驗一下這個報錯：th:action="@{/login}" 而不是寫死 action="/login"
+
+訪問了http://localhost:8888  重定向到了/login這個是怎麼實現的？
+==============================================================================================================
+
+DisableEncodeUrlFilter
+WebAsyncManagerIntegrationFilter
+SecurityContextHolderFilter
+HeaderWriterFilter
+CsrfFilter
+LogoutFilter
+UsernamePasswordAuthenticationFilter
+RequestCacheAwareFilter
+SecurityContextHolderAwareRequestFilter
+RememberMeAuthenticationFilter
+AnonymousAuthenticationFilter
+ExceptionTranslationFilter
+AuthorizationFilter
+
+==============================================================================================================
+按照現在的代碼，我在頁面填寫帳號密碼，點擊登錄後，首次會打到哪個Filter上面呢？
+
+==============================================================================================================
+你幫我看看後端日誌輸出，我剛把security的日誌級別調爲了debug模式，下面是我在login頁面點擊登錄後的所有日誌，是否和預期相符合？
+2026-05-02T14:11:04.240+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-1] o.s.security.web.FilterChainProxy        : Securing POST /login
+2026-05-02T14:11:04.240+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-1] o.s.security.web.csrf.CsrfFilter         : Invalid CSRF token found for http://localhost:8888/login
+2026-05-02T14:11:04.241+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-1] o.s.s.w.access.AccessDeniedHandlerImpl   : Responding with 403 status code
+2026-05-02T14:11:04.242+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-1] o.s.security.web.FilterChainProxy        : Securing POST /error
+2026-05-02T14:11:04.242+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-02T14:11:04.242+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-1] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8888/login
+2026-05-02T14:11:04.245+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /login
+2026-05-02T14:11:04.246+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /login
+2026-05-02T14:11:04.248+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-02T14:11:04.267+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /.well-known/appspecific/com.chrome.devtools.json
+2026-05-02T14:11:04.267+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-02T14:11:04.268+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-3] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8888/.well-known/appspecific/com.chrome.devtools.json?continue to session
+2026-05-02T14:11:04.268+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-3] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8888/login
+2026-05-02T14:11:04.271+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /login
+2026-05-02T14:11:04.271+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /login
+2026-05-02T14:11:04.273+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-02T14:11:04.276+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
+2026-05-02T14:11:04.276+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-5] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-02T14:11:04.277+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-5] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8888/login
+2026-05-02T14:11:04.279+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /login
+2026-05-02T14:11:04.279+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /login
+2026-05-02T14:11:04.281+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+
+==============================================================================================================
+我沒記錯的話，jssessionid好像也是在未登錄的時候也可以生成，和和這個
+
+先不改，我有一個問題，爲什麼登錄模塊也許要進行CsrfFilter安全過濾呢？
+可以詳細這個嗎？
+CSRF攻擊不是協議，ip和端口這個嗎？ 爲什麼登錄需要校驗這個？
+我都還沒有登錄，怎麼也要校驗這個？這個過濾器在中間做了什麼？爲什麼要做這個？
+
+你可以理解我的需求嗎？ 你先複述一遍你的理解：
+==============================================================================================================
+我的瀏覽器上登錄了別人的帳號，這個不是在登錄的profile上就可以直接誒看到了嗎？很明顯的;
+
+我知道這個風險了，你再詳細講講Spring Security是如何防範的，在請求登錄頁面的時候生成一個csrkToken?發送給瀏覽器？讓瀏覽器存儲？是存在哪裏？cookie嗎？
+默認的網站不是自動攜帶cookie數據嗎？
+
+你可以理解我的需求嗎？你先複述一遍你的理解:
+==============================================================================================================
+我想調試驗證一下服務器端是怎麼控制前端表單的dom元素的值？
+th:action="@{/login}" 就是自帶隱藏屬性？
+加上這個就是會讓服務器設置瀏覽器上的該隱藏屬性？
+
+你可以理解我的需求嗎？ 你先複述一遍你的理解：
+
+==============================================================================================================
+我可以理解爲加上這個，服務器會做一個額外的處理吧，類似後端模塊的aop實現的字節碼添加？
+在真實的代碼上會加上csrfToken字段;
+
+我剛纔已經驗證了，加上th:action="@{/login}"的表單會在渲染給給瀏覽器的時候自動加上這個csrfToken,
+但是我還有一個問題，服務器也會同時存儲這個csrfToken是吧，那這個csrfToken在服務端存儲在哪裏呢？
+多人同時進行/login操作，你怎麼判斷哪個登錄請求對應的每個人的csrfToken 呢？
+
+你可以理解我的需求嗎？ 你先複述一遍你的理解:
+==============================================================================================================
+我已經改了，把登錄的login頁面改爲了th:action="@{/login}"
+另外我還要問一個問題，就是瀏覽器除了對應的cookie，本地還有其他的什麼存儲方式嗎？例如localStorage等
+
+==============================================================================================================
+之前還有一個邏輯我沒有徹底搞懂，就是爲什麼在登錄之前要生成一個jsessionid給前端瀏覽器？
+應該說是用戶首次訪問服務端的時候，爲什麼要生成一個jsessionid
+
+你可以理解我的需求嗎？你先複述一遍你的理解：
+==============================================================================================================
+對，你理解的很好，你這句話說的很好：“HttpSession 是個容器，登錄狀態只是它能裝的東西之一”，是我之前短視了
+
+==============================================================================================================
+有點奇怪，他說我帳號密碼錯誤，但是我是按照resource/init.sql目錄下的sql執行的，你幫我看看？
+2026-05-02T21:37:04.499+08:00 DEBUG 10884 --- [mylogin] [nio-8888-exec-9] o.s.security.web.FilterChainProxy        : Securing POST /login
+Hibernate: select su1_0.id,su1_0.enabled,su1_0.password,su1_0.username from sys_user su1_0 where su1_0.username=?
+2026-05-02T21:37:08.463+08:00 DEBUG 10884 --- [mylogin] [nio-8888-exec-9] o.s.s.a.dao.DaoAuthenticationProvider    : Failed to authenticate since password does not match stored value
+2026-05-02T21:37:08.463+08:00 DEBUG 10884 --- [mylogin] [nio-8888-exec-9] o.s.s.authentication.ProviderManager     : Authentication failed with provider DaoAuthenticationProvider since Bad credentials
+2026-05-02T21:37:08.463+08:00 DEBUG 10884 --- [mylogin] [nio-8888-exec-9] o.s.s.authentication.ProviderManager     : Denying authentication since all attempted providers failed
+2026-05-02T21:37:08.463+08:00 DEBUG 10884 --- [mylogin] [nio-8888-exec-9] o.s.s.w.a.r.TokenBasedRememberMeServices : Interactive login attempt was unsuccessful.
+2026-05-02T21:37:08.463+08:00 DEBUG 10884 --- [mylogin] [nio-8888-exec-9] o.s.s.w.a.r.TokenBasedRememberMeServices : Cancelling cookie
+2026-05-02T21:37:08.463+08:00 DEBUG 10884 --- [mylogin] [nio-8888-exec-9] o.s.s.web.DefaultRedirectStrategy        : Redirecting to /login?error
+2026-05-02T21:37:08.466+08:00 DEBUG 10884 --- [mylogin] [io-8888-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /login?error
+2026-05-02T21:37:08.467+08:00 DEBUG 10884 --- [mylogin] [io-8888-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /login?error
+2026-05-02T21:37:08.468+08:00 DEBUG 10884 --- [mylogin] [io-8888-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-02T21:37:08.489+08:00 DEBUG 10884 --- [mylogin] [nio-8888-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
+2026-05-02T21:37:08.490+08:00 DEBUG 10884 --- [mylogin] [nio-8888-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-02T21:37:08.490+08:00 DEBUG 10884 --- [mylogin] [nio-8888-exec-2] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8888/login
+2026-05-02T21:37:08.493+08:00 DEBUG 10884 --- [mylogin] [nio-8888-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /login
+2026-05-02T21:37:08.493+08:00 DEBUG 10884 --- [mylogin] [nio-8888-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /login
+2026-05-02T21:37:08.495+08:00 DEBUG 10884 --- [mylogin] [nio-8888-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
 
 
 ==============================================================================================================
+我使用了方案1，後期不需要DataInitiallizer了，
+現在又報錯了，是不是沒有創建安dashboard頁面的原因？
+Whitelabel Error Page
+This application has no explicit mapping for /error, so you are seeing this as a fallback.
 
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+Sat May 02 21:45:13 CST 2026
+There was an unexpected error (type=Not Found, status=404).
 
 ==============================================================================================================
-
-
-
+你幫我加一下，我先走完整個流程;
 
 ==============================================================================================================
-
-
-==============================================================================================================
-
+你可以看到當前目錄下的UsernamePasswordAuthenticationToken.md文檔嗎？
 
 ==============================================================================================================
+對，我是想讓你講講接口的抽象？例如Principal接口，你先幫我講講Principal接口，它的本質抽象是什麼？ 它的誕生背景是什麼？它的前世今生？
+你可以理解誒我的需求嗎？ 你先複述一遍你的理解：
 
-
-
+我可以理解Principal接口等價角色？而Credential就是角色的憑證材料？
 ==============================================================================================================
+身份，和身份的證明材料我可以理解這兩個抽象，爲什麼又多出來了Authorities和Roles，這兩個抽象耦合在這裏感覺有點彆扭，不知道爲啥？
+你再給我講講Authorities和Roles的本質抽象是什麼？誕生背景，前世今生？
 
-
-
-
+你可以理解我的需求嗎？ 你先複述一遍我的理解:
 ==============================================================================================================
+再講講CredentialsContainer接口吧，基於類圖文件UsernamePasswordAuthenticationToken.md講講它的本質抽象，誕生背景，前世今生？
 
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
-
+你可以理解我的需求嗎？你先複述一遍你的理解:
 ==============================================================================================================
 
 
