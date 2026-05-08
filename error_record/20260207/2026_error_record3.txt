@@ -2521,6 +2521,27 @@ if (!provider.supports(toTest)) {
 
 不是有认证后会新建一个认证对象，把认证标识改为true吗？是这里吗？copyDetails(authentication, result);
 
+==============================================================================================================
+are you or anyone in your immediate family employed by or registered with a broker-dealer, investment advisor,
+futures commission merchant, hedge fund, exchange or other financial service firm (aka a "Financial Firm")
+
+
+Employment Information
+We are rquired by law to collect certain information to offer you our products and services. Read our Privacy Policy to
+understand how your information is protected
+
+
+Employment Details
+Employment Status
+Employed
+Retired
+Self-Employed
+At-Home Trader (No Other Occupation)
+Student/Intern
+Homemaker
+Unemployed
+==============================================================================================================
+我有一個關於物理定律的疑問：世間的生物都是商增法則，但是植物卻可以利用空氣中的二氧化碳，把他們封存爲自身的能量和軀體,這是不是一個負商法則？
 
 ==============================================================================================================
 
