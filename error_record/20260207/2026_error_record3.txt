@@ -2390,65 +2390,136 @@ nothing to commit, working tree clean
 
 ==============================================================================================================
 可以詳細講講AbstractAuthenticationToken這個抽象類嗎？爲什麼到了它就變成了抽象類，而它之上是接口？講講這個設計原理；
-再講講它的本質抽象，它自身的抽象是什麼？它的誕生背景和前世今生
+
 
 你可以理解我的需求嗎？ 你先複述一遍你的理解:
 
 ==============================================================================================================
 事故編號:DCA22WA102
 ==============================================================================================================
+帮我分析一下当前项目的系统架构;
 
+==============================================================================================================
+是UsernamePasswordAuthenticationFilter的这个方法吗？
+@Override
+	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+			throws AuthenticationException {
+		if (this.postOnly && !request.getMethod().equals("POST")) {
+			throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
+		}
+		String username = obtainUsername(request);
+		username = (username != null) ? username.trim() : "";
+		String password = obtainPassword(request);
+		password = (password != null) ? password : "";
+		UsernamePasswordAuthenticationToken authRequest = UsernamePasswordAuthenticationToken.unauthenticated(username,
+				password);
+		// Allow subclasses to set the "details" property
+		setDetails(request, authRequest);
+		return this.getAuthenticationManager().authenticate(authRequest);
+	}
 
+==============================================================================================================
+我有一个问题，为什么提取账号密码后要封装为UsernamePasswordAuthenticationToken，
+它的本质抽象是什么？讲讲这个类的诞生背景，前世今生？
+你可以理解我的需求嗎？ 你先複述一遍你的理解:
+
+我还想问一个问题，就是为什么要把账号密码封装处理:
+==============================================================================================================
+刚才方法里面的这个操作setDetails(request, authRequest);
+它做了什么？
+
+那继续看这个：return this.getAuthenticationManager().authenticate(authRequest);
+它就是认证后新建的信封吗？
+
+AuthenticationProvider不是接口吗？ 具体是哪个实现类处理的这个过程？
+==============================================================================================================
+是在AbstractUserDetailsAuthenticationProvider类的这个方法里面的逻辑吗？
+
+按照抽象类的定位，我可以理解所有框架里面的核心架构的步骤一般是设置在抽象类里面？
+==============================================================================================================
+我找到了，是这里吗？
+DaoAuthenticationProvider
+
+@Override
+	@SuppressWarnings("deprecation")
+	protected void additionalAuthenticationChecks(UserDetails userDetails,
+			UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
+		if (authentication.getCredentials() == null) {
+			this.logger.debug("Failed to authenticate since no credentials provided");
+			throw new BadCredentialsException(this.messages
+				.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+		}
+		String presentedPassword = authentication.getCredentials().toString();
+		if (!this.passwordEncoder.get().matches(presentedPassword, userDetails.getPassword())) {
+			this.logger.debug("Failed to authenticate since password does not match stored value");
+			throw new BadCredentialsException(this.messages
+				.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+		}
+	}
+
+==============================================================================================================
+这里的BCryptPasswordEncoder
+的
+public boolean matches(CharSequence rawPassword, String encodedPassword) {
+        if (rawPassword == null) {
+            throw new IllegalArgumentException("rawPassword cannot be null");
+        } else if (encodedPassword != null && encodedPassword.length() != 0) {
+            if (!this.BCRYPT_PATTERN.matcher(encodedPassword).matches()) {
+                this.logger.warn("Encoded password does not look like BCrypt");
+                return false;
+            } else {
+                return BCrypt.checkpw(rawPassword.toString(), encodedPassword);
+            }
+        } else {
+            this.logger.warn("Empty encoded password");
+            return false;
+        }
+    }
+方法是在比较密码吗？
+
+==============================================================================================================
+底层是这个方法吧：
+	/**
+	 * Check that a plaintext password matches a previously hashed one
+	 * @param plaintext the plaintext password to verify
+	 * @param hashed the previously-hashed password
+	 * @return true if the passwords match, false otherwise
+	 */
+	public static boolean checkpw(String plaintext, String hashed) {
+		byte[] passwordb = plaintext.getBytes(StandardCharsets.UTF_8);
+		return equalsNoEarlyReturn(hashed, hashpwforcheck(passwordb, hashed));
+	}
+这个是passwordb用户提交的明文密码，hashed是数据库中加密的密码的hash值
+
+==============================================================================================================
+先不纠结具体的详情了，返回这里：this.getAuthenticationManager().authenticate(authRequest);代码
+为什么要获取AuthenticationManager，调用它的认证方法呢？
+
+==============================================================================================================
+但是AuthenticationManager本身是接口吧，需要具体的实现类来实现整个认证过程吧，它是怎么找到AuthenticationProvider接口的具体实现去认证的？
+
+你可以理解我的需求吗？你先复述一遍你的理解:
+==============================================================================================================
+可以详细讲讲这个吗？
+if (!provider.supports(toTest)) {
+          continue;                          // 不支持，跳过
+      }
+本质是怎么判断是否支持当前的认证方式的？
 
 
 ==============================================================================================================
-
-
-==============================================================================================================
-
+我可以理解 isAssignableFrom` 和 `instanceof` 是两个相反的操作吗
 
 ==============================================================================================================
+我梳理一下整个认证过程：
 
+过滤器-->token-->AuthenticationManager(认证管理入口)-->ProviderManger(认证入口实现)-->AuthenticationProvider(具体的认证抽象)-->DaoAuthenticationProvider(实际的实现)
+处理完认证过程返回认证结果：把结果存放到SecurityContext，然后存储session;
+后续的每次请求就是从session里获取认证？请求结束就消除认证？
+是这样吗？
+你可以理解我的需求嗎？ 你先複述一遍你的理解:
 
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
+不是有认证后会新建一个认证对象，把认证标识改为true吗？是这里吗？copyDetails(authentication, result);
 
 
 ==============================================================================================================
