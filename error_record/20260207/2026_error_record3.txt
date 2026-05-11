@@ -1865,6 +1865,88 @@ AuthorizationFilter
 2026-05-02T14:11:04.281+08:00 DEBUG 11076 --- [mylogin] [nio-8888-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
 
 ==============================================================================================================
+==============================================================================================================
+幫我分析依稀當前目錄下的demo項目的系統架構
+
+
+==============================================================================================================
+幫我梳理一下當前項目的登錄宏觀本質架構？
+你可以理解我的需求嗎？你先複述一遍你的理解:
+
+
+我想真實體驗一下這三層存儲
+ThreadLocal，
+HttpSession，
+Remember-Me Cookie
+
+我想體驗查看他們從無到有，從有到無的整個生命週期，你可以幫我設計一下嗎？
+你可以理解我的需求嗎？ 你先複述一遍你的理解：
+
+你的理解對
+我想先做最核心的;
+==============================================================================================================
+先不看這個驗證，我發現了一個可復現的錯誤：
+我在chrome瀏覽器的匿名模式的網址輸入：http://localhost:7777
+網址url變成了：http://localhost:7777/?continue
+chrome頁面報錯：
+Whitelabel Error Page
+This application has no explicit mapping for /error, so you are seeing this as a fallback.
+
+Fri May 08 23:42:07 CST 2026
+There was an unexpected error (type=Not Found, status=404).
+
+但是在第二次登錄的時候，它就能成功登錄：
+
+這是後端的所有日誌：
+2026-05-08T23:41:56.473+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /
+2026-05-08T23:41:56.473+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-08T23:41:56.474+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-2] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:7777/?continue to session
+2026-05-08T23:41:56.474+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-2] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:7777/login
+2026-05-08T23:41:56.477+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /login
+2026-05-08T23:41:56.477+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /login
+2026-05-08T23:41:56.480+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-5] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-08T23:42:07.185+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-3] o.s.security.web.FilterChainProxy        : Securing POST /login
+Hibernate: select su1_0.id,su1_0.enabled,su1_0.password,su1_0.username from sys_user su1_0 where su1_0.username=?
+2026-05-08T23:42:07.271+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-3] o.s.s.a.dao.DaoAuthenticationProvider    : Authenticated user
+2026-05-08T23:42:07.271+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-3] .s.ChangeSessionIdAuthenticationStrategy : Changed session id from 8CF4463E3E1DDEE33694DF2D8FB042CB
+2026-05-08T23:42:07.271+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-3] o.s.s.w.csrf.CsrfAuthenticationStrategy  : Replaced CSRF Token
+2026-05-08T23:42:07.271+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-3] w.c.HttpSessionSecurityContextRepository : Stored SecurityContextImpl [Authentication=UsernamePasswordAuthenticationToken [Principal=org.springframework.security.core.userdetails.User [Username=admin, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_USER]], Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=8CF4463E3E1DDEE33694DF2D8FB042CB], Granted Authorities=[ROLE_USER]]] to HttpSession [org.apache.catalina.session.StandardSessionFacade@66ae81a2]
+2026-05-08T23:42:07.271+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-3] w.a.UsernamePasswordAuthenticationFilter : Set SecurityContextHolder to UsernamePasswordAuthenticationToken [Principal=org.springframework.security.core.userdetails.User [Username=admin, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_USER]], Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=8CF4463E3E1DDEE33694DF2D8FB042CB], Granted Authorities=[ROLE_USER]]
+Hibernate: select su1_0.id,su1_0.enabled,su1_0.password,su1_0.username from sys_user su1_0 where su1_0.username=?
+2026-05-08T23:42:07.288+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-3] o.s.s.w.a.r.TokenBasedRememberMeServices : Added remember-me cookie for user 'admin', expiry: 'Fri May 15 23:42:07 CST 2026'
+2026-05-08T23:42:07.288+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-3] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:7777/?continue
+2026-05-08T23:42:07.288+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /?continue
+2026-05-08T23:42:07.288+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-6] o.s.s.w.s.HttpSessionRequestCache        : Loaded matching saved request http://localhost:7777/?continue
+2026-05-08T23:42:07.288+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-6] w.c.HttpSessionSecurityContextRepository : Retrieved SecurityContextImpl [Authentication=UsernamePasswordAuthenticationToken [Principal=org.springframework.security.core.userdetails.User [Username=admin, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_USER]], Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=8CF4463E3E1DDEE33694DF2D8FB042CB], Granted Authorities=[ROLE_USER]]]
+2026-05-08T23:42:07.288+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-6] s.s.w.a.r.RememberMeAuthenticationFilter : SecurityContextHolder not populated with remember-me token, as it already contained: 'UsernamePasswordAuthenticationToken [Principal=org.springframework.security.core.userdetails.User [Username=admin, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_USER]], Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=8CF4463E3E1DDEE33694DF2D8FB042CB], Granted Authorities=[ROLE_USER]]'
+2026-05-08T23:42:07.288+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /?continue
+2026-05-08T23:42:07.288+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /error?continue
+2026-05-08T23:42:07.288+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-6] w.c.HttpSessionSecurityContextRepository : Retrieved SecurityContextImpl [Authentication=UsernamePasswordAuthenticationToken [Principal=org.springframework.security.core.userdetails.User [Username=admin, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_USER]], Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=8CF4463E3E1DDEE33694DF2D8FB042CB], Granted Authorities=[ROLE_USER]]]
+2026-05-08T23:42:07.288+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-6] s.s.w.a.r.RememberMeAuthenticationFilter : SecurityContextHolder not populated with remember-me token, as it already contained: 'UsernamePasswordAuthenticationToken [Principal=org.springframework.security.core.userdetails.User [Username=admin, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_USER]], Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=8CF4463E3E1DDEE33694DF2D8FB042CB], Granted Authorities=[ROLE_USER]]'
+2026-05-08T23:42:07.288+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /error?continue
+2026-05-08T23:44:19.643+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /login
+2026-05-08T23:44:19.643+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-8] w.c.HttpSessionSecurityContextRepository : Retrieved SecurityContextImpl [Authentication=UsernamePasswordAuthenticationToken [Principal=org.springframework.security.core.userdetails.User [Username=admin, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_USER]], Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=8CF4463E3E1DDEE33694DF2D8FB042CB], Granted Authorities=[ROLE_USER]]]
+2026-05-08T23:44:19.643+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-8] s.s.w.a.r.RememberMeAuthenticationFilter : SecurityContextHolder not populated with remember-me token, as it already contained: 'UsernamePasswordAuthenticationToken [Principal=org.springframework.security.core.userdetails.User [Username=admin, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_USER]], Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=8CF4463E3E1DDEE33694DF2D8FB042CB], Granted Authorities=[ROLE_USER]]'
+2026-05-08T23:44:19.643+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /login
+2026-05-08T23:45:38.478+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-7] o.s.security.web.FilterChainProxy        : Securing POST /login
+Hibernate: select su1_0.id,su1_0.enabled,su1_0.password,su1_0.username from sys_user su1_0 where su1_0.username=?
+2026-05-08T23:45:38.571+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-7] o.s.s.a.dao.DaoAuthenticationProvider    : Authenticated user
+2026-05-08T23:45:38.571+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-7] .s.ChangeSessionIdAuthenticationStrategy : Changed session id from 58B8CDD1ED675D72C28082DADBB2059E
+2026-05-08T23:45:38.571+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-7] o.s.s.w.csrf.CsrfAuthenticationStrategy  : Replaced CSRF Token
+2026-05-08T23:45:38.571+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-7] w.c.HttpSessionSecurityContextRepository : Stored SecurityContextImpl [Authentication=UsernamePasswordAuthenticationToken [Principal=org.springframework.security.core.userdetails.User [Username=admin, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_USER]], Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=58B8CDD1ED675D72C28082DADBB2059E], Granted Authorities=[ROLE_USER]]] to HttpSession [org.apache.catalina.session.StandardSessionFacade@66ae81a2]
+2026-05-08T23:45:38.571+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-7] w.a.UsernamePasswordAuthenticationFilter : Set SecurityContextHolder to UsernamePasswordAuthenticationToken [Principal=org.springframework.security.core.userdetails.User [Username=admin, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_USER]], Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=58B8CDD1ED675D72C28082DADBB2059E], Granted Authorities=[ROLE_USER]]
+Hibernate: select su1_0.id,su1_0.enabled,su1_0.password,su1_0.username from sys_user su1_0 where su1_0.username=?
+2026-05-08T23:45:38.583+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-7] o.s.s.w.a.r.TokenBasedRememberMeServices : Added remember-me cookie for user 'admin', expiry: 'Fri May 15 23:45:38 CST 2026'
+2026-05-08T23:45:38.583+08:00 DEBUG 19440 --- [mylogin] [nio-7777-exec-7] o.s.s.web.DefaultRedirectStrategy        : Redirecting to /dashboard
+2026-05-08T23:45:38.586+08:00 DEBUG 19440 --- [mylogin] [io-7777-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /dashboard
+2026-05-08T23:45:38.586+08:00 DEBUG 19440 --- [mylogin] [io-7777-exec-10] w.c.HttpSessionSecurityContextRepository : Retrieved SecurityContextImpl [Authentication=UsernamePasswordAuthenticationToken [Principal=org.springframework.security.core.userdetails.User [Username=admin, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_USER]], Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=58B8CDD1ED675D72C28082DADBB2059E], Granted Authorities=[ROLE_USER]]]
+2026-05-08T23:45:38.586+08:00 DEBUG 19440 --- [mylogin] [io-7777-exec-10] s.s.w.a.r.RememberMeAuthenticationFilter : SecurityContextHolder not populated with remember-me token, as it already contained: 'UsernamePasswordAuthenticationToken [Principal=org.springframework.security.core.userdetails.User [Username=admin, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, CredentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_USER]], Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=58B8CDD1ED675D72C28082DADBB2059E], Granted Authorities=[ROLE_USER]]'
+2026-05-08T23:45:38.586+08:00 DEBUG 19440 --- [mylogin] [io-7777-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /dashboard
+
+
+==============================================================================================================
+==============================================================================================================
+
 我沒記錯的話，jssessionid好像也是在未登錄的時候也可以生成，和和這個
 
 先不改，我有一個問題，爲什麼登錄模塊也許要進行CsrfFilter安全過濾呢？
