@@ -2848,52 +2848,208 @@ java -javaagent:/path/to/skywalking-agent.jar \
 
 
 ==============================================================================================================
+讨论了tomcat的类这么多，返回到最开始的问题，Session，
+最初的诞生不是服务器启动创建的，是第一次请求的时候创建的？
 
+你可以理解我的需求吗？你复述一遍你的理解:
 
+==============================================================================================================
+Manager只是接口，我看它有四个实现类，是哪个实现类管理创建的？
+
+ManagerBase,
+PersistentManager,
+PersistentManagerBase,
+StandardManager
+
+==============================================================================================================
+还有一个问题，如何控制请求时对session创建的控制：
+例如你上面说的：
+  ② 不是所有请求都需要 Session
+
+  很多请求其实根本不需要 Session：
+  - 爬虫抓取静态首页
+  - 健康检查 /health
+  - 调用一个无状态 API GET /api/version
+  - 加载 favicon.ico、*.css、*.js
+和正常的登录请求;
+你可以理解我的需求吗？你复述一遍你的理解:
+
+==============================================================================================================
+ ��  验证步骤（启动后跟着做）
+
+  实验 A：纯净状态测无状态接口
+
+  1. 启动应用
+  2. 开一个全新无痕窗口（确保零 Cookie）
+  3. 访问 http://localhost:8080/api/version
+  4. 期望看到：
+    - 返回 JSON 里 hasSession: false
+    - DevTools → Application → Cookies → 没有 JSESSIONID
+  5. 多刷几次，永远不会出现 JSESSIONID
+
+  实验 B：登录后访问无状态接口（关键对照）
+
+  1. 同一无痕窗口，访问 http://localhost:8080/login 登录
+  2. 登录成功后 → 出现 JSESSIONID（webChain 干的）
+  3. 此时再访问 http://localhost:8080/api/version
+  4. 期望看到：
+    - hasSession: true（Cookie 自动带上，所以 Tomcat 能找到现有 Session）
+    - 但不会创建新的 Session，sessionId 和登录后那个完全一样
+    - 这证明 STATELESS 是「不主动建」，不是「强制无视已有的」
+
+  实验 C：断点验证（最严谨）
+
+  1. 在 org.apache.catalina.session.ManagerBase#createSession 方法第一行打断点
+  2. 全新无痕窗口，访问 /api/version → 断点不应触发 ✅
+  3. 访问 /login 并提交登录表单 → 断点应触发 ✅
 
 
 ==============================================================================================================
-
-
-
-
-
-==============================================================================================================
-
-
-==============================================================================================================
+我按照你上面的步骤验证，发现一个问题：
+我直接访问：http://localhost:7777/api/version 接口，
+也会走ManagerBase类的createSession逻辑，
+前端的cookie会生成有JSESSIONID
 
 
 ==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
+我按照你步骤访问：
+http://localhost:7777/api/version
+匿名浏览器：
+前端返回：
+{"app":"mylogin","version":"1.0.0","springBoot":"3.5.14","serverTime":"2026-05-12T10:28:37.166087","hasSession":false,"sessionId":null,"note":"✅ 当前请求未创建 Session（STATELESS 策略生效）"}
+浏览器cookie有JSESSIONID，value:E821C62C48468B432AD533D898D4BAAE
+后端清理启动日志后的全部日志：
+2026-05-12T10:28:37.116+08:00  INFO 21824 --- [mylogin] [nio-7777-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-12T10:28:37.116+08:00  INFO 21824 --- [mylogin] [nio-7777-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-05-12T10:28:37.117+08:00  INFO 21824 --- [mylogin] [nio-7777-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-05-12T10:28:37.121+08:00  INFO 21824 --- [mylogin] [nio-7777-exec-1] c.t.d.mylogin.filter.SessionGuardFilter  : 【SessionGuard】跑了！URI=/api/version ，forbidden=true ，已带JSESSIONID=null
+2026-05-12T10:28:37.140+08:00 DEBUG 21824 --- [mylogin] [nio-7777-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/version
+2026-05-12T10:28:37.147+08:00 DEBUG 21824 --- [mylogin] [nio-7777-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-12T10:28:37.149+08:00 DEBUG 21824 --- [mylogin] [nio-7777-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/version
+2026-05-12T10:28:37.227+08:00  INFO 21824 --- [mylogin] [nio-7777-exec-2] c.t.d.mylogin.filter.SessionGuardFilter  : 【SessionGuard】跑了！URI=/.well-known/appspecific/com.chrome.devtools.json ，forbidden=false ，已带JSESSIONID=null
+2026-05-12T10:28:37.235+08:00 DEBUG 21824 --- [mylogin] [nio-7777-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /.well-known/appspecific/com.chrome.devtools.json
+2026-05-12T10:28:37.241+08:00 DEBUG 21824 --- [mylogin] [nio-7777-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-12T10:28:37.282+08:00 DEBUG 21824 --- [mylogin] [nio-7777-exec-2] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:7777/.well-known/appspecific/com.chrome.devtools.json?continue to session
+2026-05-12T10:28:37.283+08:00 DEBUG 21824 --- [mylogin] [nio-7777-exec-2] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:7777/login
+2026-05-12T10:28:37.288+08:00  INFO 21824 --- [mylogin] [nio-7777-exec-3] c.t.d.mylogin.filter.SessionGuardFilter  : 【SessionGuard】跑了！URI=/login ，forbidden=false ，已带JSESSIONID=E821C62C48468B432AD533D898D4BAAE
+2026-05-12T10:28:37.289+08:00 DEBUG 21824 --- [mylogin] [nio-7777-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /login
+2026-05-12T10:28:37.289+08:00 DEBUG 21824 --- [mylogin] [nio-7777-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-12T10:28:37.290+08:00 DEBUG 21824 --- [mylogin] [nio-7777-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /login
 
 ==============================================================================================================
+我有个问题：
+2026-05-12T10:40:13.763+08:00  INFO 21016 --- [mylogin] [nio-7777-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-12T10:40:13.763+08:00  INFO 21016 --- [mylogin] [nio-7777-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-05-12T10:40:13.763+08:00  INFO 21016 --- [mylogin] [nio-7777-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2026-05-12T10:40:13.780+08:00  INFO 21016 --- [mylogin] [nio-7777-exec-1] c.t.d.mylogin.filter.SessionGuardFilter  : 【SessionGuard】跑了！URI=/api/version ，forbidden=true ，已带JSESSIONID=null
+2026-05-12T10:40:13.796+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/version
+2026-05-12T10:40:13.796+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-12T10:40:13.796+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/version
+2026-05-12T10:40:32.063+08:00  INFO 21016 --- [mylogin] [nio-7777-exec-2] c.t.d.mylogin.filter.SessionGuardFilter  : 【SessionGuard】跑了！URI=/.well-known/appspecific/com.chrome.devtools.json ，forbidden=true ，已带JSESSIONID=null
+2026-05-12T10:40:32.069+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /.well-known/appspecific/com.chrome.devtools.json
+2026-05-12T10:40:32.069+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-12T10:40:32.070+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /.well-known/appspecific/com.chrome.devtools.json
+2026-05-12T10:40:32.088+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /error
+2026-05-12T10:40:32.090+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-12T10:40:32.113+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-2] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:7777/error?continue to session
+2026-05-12T10:40:32.113+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-2] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:7777/login;jsessionid=2387469B58F2C7CD8FF6B2363D9030B7
+2026-05-12T10:40:32.113+08:00  INFO 21016 --- [mylogin] [nio-7777-exec-3] c.t.d.mylogin.filter.SessionGuardFilter  : 【SessionGuard】跑了！URI=/login;jsessionid=2387469B58F2C7CD8FF6B2363D9030B7 ，forbidden=false ，已带JSESSIONID=2387469B58F2C7CD8FF6B2363D9030B7
+2026-05-12T10:40:32.113+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-3] s.s.w.f.HttpStatusRequestRejectedHandler : Rejecting request due to: The request was rejected because the URL contained a potentially malicious String ";"
 
+org.springframework.security.web.firewall.RequestRejectedException: The request was rejected because the URL contained a potentially malicious String ";"
+	at org.springframework.security.web.firewall.StrictHttpFirewall.rejectedBlocklistedUrls(StrictHttpFirewall.java:548) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.firewall.StrictHttpFirewall.getFirewalledRequest(StrictHttpFirewall.java:518) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:211) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:319) ~[spring-security-config-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$4(HandlerMappingIntrospector.java:267) ~[spring-webmvc-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:240) ~[spring-security-config-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at com.t.d.mylogin.filter.SessionGuardFilter.doFilterInternal(SessionGuardFilter.java:67) ~[classes/:na]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:88) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:492) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:113) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:83) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:72) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:342) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:399) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1797) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:973) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:491) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at java.base/java.lang.Thread.run(Thread.java:842) ~[na:na]
 
+2026-05-12T10:40:32.130+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /error
+2026-05-12T10:40:32.130+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-12T10:40:32.132+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-3] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:7777/error?continue to session
+2026-05-12T10:40:32.132+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-3] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:7777/login
+2026-05-12T10:40:32.134+08:00  INFO 21016 --- [mylogin] [nio-7777-exec-4] c.t.d.mylogin.filter.SessionGuardFilter  : 【SessionGuard】跑了！URI=/login ，forbidden=false ，已带JSESSIONID=2387469B58F2C7CD8FF6B2363D9030B7
+2026-05-12T10:40:32.134+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /login
+2026-05-12T10:40:32.136+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-12T10:40:32.136+08:00 DEBUG 21016 --- [mylogin] [nio-7777-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /login
+
+我的操作，打开匿名浏览器
+先不打开F12，访问http://localhost:7777/api/version只有前7行的日志，
+返回：{"app":"mylogin","version":"1.0.0","springBoot":"3.5.14","serverTime":"2026-05-12T10:40:13.813145200","hasSession":false,"sessionId":null,"note":"✅ 当前请求未创建 Session（STATELESS 策略生效）"}
+再打开F12，后面自动多了第七行后的日志
+
+==============================================================================================================
+现在打开F12也没有jsessionid了
+后端日志：
+2026-05-12T11:00:28.019+08:00  INFO 4080 --- [mylogin] [nio-7777-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-12T11:00:28.019+08:00  INFO 4080 --- [mylogin] [nio-7777-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-05-12T11:00:28.019+08:00  INFO 4080 --- [mylogin] [nio-7777-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2026-05-12T11:00:28.019+08:00  INFO 4080 --- [mylogin] [nio-7777-exec-1] c.t.d.mylogin.filter.SessionGuardFilter  : 【SessionGuard】跑了！URI=/api/version ，forbidden=true ，已带JSESSIONID=null
+2026-05-12T11:00:28.036+08:00 DEBUG 4080 --- [mylogin] [nio-7777-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/version
+2026-05-12T11:00:28.055+08:00 DEBUG 4080 --- [mylogin] [nio-7777-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-12T11:00:28.056+08:00 DEBUG 4080 --- [mylogin] [nio-7777-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/version
+2026-05-12T11:00:41.485+08:00  INFO 4080 --- [mylogin] [nio-7777-exec-2] c.t.d.mylogin.filter.SessionGuardFilter  : 【SessionGuard】跑了！URI=/.well-known/appspecific/com.chrome.devtools.json ，forbidden=true ，已带JSESSIONID=null
+2026-05-12T11:00:41.489+08:00 DEBUG 4080 --- [mylogin] [nio-7777-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /.well-known/appspecific/com.chrome.devtools.json
+2026-05-12T11:00:41.490+08:00 DEBUG 4080 --- [mylogin] [nio-7777-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-12T11:00:41.490+08:00 DEBUG 4080 --- [mylogin] [nio-7777-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /.well-known/appspecific/com.chrome.devtools.json
+2026-05-12T11:00:41.508+08:00 DEBUG 4080 --- [mylogin] [nio-7777-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /error
+2026-05-12T11:00:41.509+08:00 DEBUG 4080 --- [mylogin] [nio-7777-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /error
+2026-05-12T11:00:41.542+08:00 DEBUG 4080 --- [mylogin] [nio-7777-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+
+==============================================================================================================
+还有一个问题，就是之前的调试在匿名浏览器的Network都没有显示时怎么回事，只能查看后端的请求日志？
+
+==============================================================================================================
+算了，我以后还是看后端日志吧，这个更加可靠;
+还有一个问题，还是把session创建的逻辑放开吧，我觉的未登录创建，然后登录后合并session这个逻辑挺好的
+
+==============================================================================================================
+http://localhost:7777/api/version
+还有一个问题，我想查看http响应返回给浏览器的set-cookie的这个过程
 ==============================================================================================================
 
 
