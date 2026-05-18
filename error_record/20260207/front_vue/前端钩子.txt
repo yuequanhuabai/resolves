@@ -1,0 +1,153 @@
+`onMounted` 和 `onUnmounted` 的使用场景分别是什么？
+
+● onMounted 的使用場景
+
+  組件出現在頁面後，需要主動觸發一次的初始化操作。
+
+  // 1. 拉取初始數據（最常見）
+  onMounted(fetchUsers)
+
+  // 2. 初始化第三方庫（圖表、地圖、編輯器）
+  onMounted(() => {
+    chart = echarts.init(document.getElementById('chart'))
+  })
+
+  // 3. 開啟定時器
+  onMounted(() => {
+    timer = setInterval(refreshData, 5000)
+  })
+
+  // 4. 監聽瀏覽器事件
+  onMounted(() => {
+    window.addEventListener('resize', handleResize)
+  })
+
+  ---
+  onUnmounted 的使用場景
+
+  組件從頁面移除前，需要清理資源，防止內存泄漏。
+
+  // 1. 清除定時器
+  onUnmounted(() => {
+    clearInterval(timer)
+  })
+
+  // 2. 移除瀏覽器事件監聽
+  onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
+  })
+
+  // 3. 銷毀第三方庫實例
+  onUnmounted(() => {
+    chart.dispose()
+  })
+
+  ---
+  為什麼要成對使用？
+
+  onMounted 開啟的資源，Vue 不會自動回收，必須在 onUnmounted 裡手動清理：
+
+  定時器場景：
+    onMounted  → setInterval 開始跑
+    用戶跳轉到其他頁面 → 組件卸載
+    沒有 onUnmounted → 定時器還在後台跑，持續發請求，內存泄漏 ❌
+
+    onUnmounted → clearInterval → 定時器停掉 ✅
+
+  類比 Java：相當於 @PostConstruct 開啟的資源，要在 @PreDestroy 裡釋放——數據庫連接、線程池、文件句柄，不釋放就泄漏。
+
+  ---
+  這個項目需要 onUnmounted 嗎？
+
+  // DashboardView 目前只有
+  onMounted(fetchUsers)  // 發一次請求，拿完數據就結束
+
+  發請求不是持續性資源，請求完成後自動結束，不需要清理，所以不用 onUnmounted。
+
+  如果未來加了定時刷新用戶列表，就需要成對加上：
+
+  let timer
+
+  onMounted(() => {
+    fetchUsers()
+    timer = setInterval(fetchUsers, 10000)  // 每 10 秒刷新
+  })
+
+  onUnmounted(() => {
+    clearInterval(timer)  // 離開頁面時停掉
+  })
+
+✻ Baked for 18s
+
+> `onMounted` 和 `onUnmounted` 有没有其他生命周期钩子？
+
+● 有，Vue 3 完整的生命週期鉤子如下：
+
+  ---
+  完整生命週期
+
+  組件創建
+      │
+      ▼
+  setup()              ← 不是鉤子，但是最早執行的地方，變量在這裡初始化
+      │
+      ▼
+  onBeforeMount        ← DOM 生成前，頁面還沒顯示
+      │
+      ▼
+  onMounted            ← DOM 掛載完，頁面可見，適合拉數據、初始化第三方庫
+      │
+      ▼
+  onBeforeUpdate       ← 數據變了，DOM 還沒重新渲染
+      │
+      ▼  （數據變化時反覆觸發）
+  onUpdated            ← DOM 已重新渲染完
+      │
+      ▼
+  onBeforeUnmount      ← 組件即將卸載，DOM 還在
+      │
+      ▼
+  onUnmounted          ← 組件已卸載，適合清理定時器、移除監聽
+
+  ---
+  各鉤子使用場景
+
+  ┌─────────────────┬──────────────────────────────────────────────────┐
+  │      鉤子       │                     使用場景                     │
+  ├─────────────────┼──────────────────────────────────────────────────┤
+  │ onBeforeMount   │ 極少用，DOM 還沒掛載能做的事 setup 裡都能做      │
+  ├─────────────────┼──────────────────────────────────────────────────┤
+  │ onMounted       │ 拉初始數據、初始化第三方庫、開定時器、加事件監聽 │
+  ├─────────────────┼──────────────────────────────────────────────────┤
+  │ onBeforeUpdate  │ 極少用，需要在 DOM 更新前保存某些狀態時          │
+  ├─────────────────┼──────────────────────────────────────────────────┤
+  │ onUpdated       │ 數據變化後需要操作 DOM 時（如滾動到底部）        │
+  ├─────────────────┼──────────────────────────────────────────────────┤
+  │ onBeforeUnmount │ 需要在 DOM 還存在時做清理（如動畫結束後再卸載）  │
+  ├─────────────────┼──────────────────────────────────────────────────┤
+  │ onUnmounted     │ 清理定時器、移除事件監聽、銷毀第三方庫實例       │
+  └─────────────────┴──────────────────────────────────────────────────┘
+
+  ---
+  實際開發中常用的只有三個
+
+  onMounted    ← 90% 的場景都用這個做初始化
+  onUnmounted  ← 配合 onMounted 做清理
+  onUpdated    ← 偶爾用，需要在數據更新後操作 DOM
+
+  其餘鉤子在日常業務開發中極少用到，遇到了再查即可。
+
+  ---
+  類比 Java Spring Bean 生命週期
+
+  ┌─────────────────┬─────────────────────────────────┐
+  │    Vue 鉤子     │        Java Spring 對應         │
+  ├─────────────────┼─────────────────────────────────┤
+  │ setup()         │ 構造函數                        │
+  ├─────────────────┼─────────────────────────────────┤
+  │ onMounted       │ @PostConstruct                  │
+  ├─────────────────┼─────────────────────────────────┤
+  │ onUnmounted     │ @PreDestroy                     │
+  ├─────────────────┼─────────────────────────────────┤
+  │ onBeforeUnmount │ DisposableBean.destroy() 執行前 │
+  └─────────────────┴─────────────────────────────────┘
