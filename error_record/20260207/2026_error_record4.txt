@@ -708,15 +708,13 @@ protected boolean shouldNotFilterAsyncDispatch() {
 还有个问题，就是Filter是有个http请求进出处理的逻辑吧，我好像看到绝大数的逻辑是入口逻辑，几乎没有出口的逻辑呢？
 当前的JwtAuthFilter类也是;
 
-
-
-
-
 ==============================================================================================================
-
-
+还有一个问题，就是下面的代码为什么只有身份传入，没有对应身份的凭证传入;
+UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 ==============================================================================================================
-
+再讲讲JwtAuthFilter类的doFilterInternal方法里的这个代码的作用是啥？
+auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
 ==============================================================================================================
 
