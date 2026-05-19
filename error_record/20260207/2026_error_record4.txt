@@ -868,89 +868,476 @@ Mark Ronan: Symmetry and the Monster
 ==============================================================================================================
 我把当前项目的前后端切换到了memory-2token分支，你再帮我做一个系统架构分析;
 
+==============================================================================================================
+我有个问题，就是memory-2token分支里面的可以控制的删除是逻辑删除还是物理删除?
+
+那我再讨论一下，这个地方可以不可以用逻辑删除来替代物理删除？
 
 ==============================================================================================================
+我重新把当前项目的前后端切换回到了session分支，然后创建了新分支saml2，并切换到了saml2分支；
+我现在想用saml2实现登录逻辑；你可以给我一个解决方案吗？先不改代码;
+你可以理解我的需求吗？你先复述一遍你的理解：
 
+==============================================================================================================
+先走Keycloak把，先跑通再说，后期可以考虑Azure AD/ Microsoft Entra;
+是要先部署一个Keycloak的IDP服务吗？
 
+==============================================================================================================
+我在我购买的主机上部署的可以吗？
+ docker ps
+CONTAINER ID   IMAGE                              COMMAND                  CREATED       STATUS       PORTS                                                          NAMES
+03ea8a5011ab   flowable/flowable-ui               "/flowable-entrypoin…"   5 weeks ago   Up 5 weeks   0.0.0.0:8080->8080/tcp, :::8080->8080/tc                       flowable
+2cf0a5cb09ee   quay.io/keycloak/keycloak:latest   "/opt/keycloak/bin/k…"   6 weeks ago   Up 6 weeks   8443/tcp, 9000/tcp, 0.0.0.0:8180->8080/tp, :::8180->8080/tcp   keycloak
+
+==============================================================================================================
+这个是之前创建的，有些配置我忘记了，我想重新创建keycloak?
+还是说只要用已有的就可以了？有些东西是可以修改的？
+
+==============================================================================================================
+可以用admin/admin登录进去;
+
+==============================================================================================================
+第一步:创建Realm我找到了，
+应该是Manage realms的左侧菜单栏，右侧有蓝色的Create realm 按钮;
+点击Create realm 按钮
+有三个选项：
+Resource file:  tips(Drag a file here or browse to upload)
+Realm name *
+Enabled    默认 On 开启
+
+下面是 Create 按钮和Cancel 按钮;
+
+==============================================================================================================
+左侧菜单 Clients → Create client
+有这些选项:
+左侧是 1 General settings，左侧下面是空白的；
+右侧是
+Client type：默认下拉是 OpenID Connect
+Client ID * ： 空白需要填写;
+Name: 空白需要填写;
+Description: 空白需要填写;
+Always display in UI : 开关，默认是OFF
+
+下面有Back，Next  还有Cancel按钮
+
+==============================================================================================================
+我点击了Next
+
+左侧是
+1 General settings，
+2 Login settings(显示蓝色)
+左侧下面是空白的；
+
+右侧是
+Root URL：空白需要填写;
+Home URL ： 空白需要填写;
+Valid redirect URIs: 空白需要填写;
+Valid post logout redirect URIs: 空白需要填写;
+IDP-Initiated SSO URL name: 空白需要填写;
+IDP-Initiated SSO Relay State: 空白需要填写;
+Master SAML Processing URL: 空白需要填写;
+
+==============================================================================================================
+提示：Client created successfully
+http://localhost:8888/saml2/service-provider-metadata/keycloak
+有个开关：Enabled  ，右侧有个下拉，默认是Action（有三个选项Download adapter config，Export，Delete）
+现在在：Clients > Client details页面：
+上面的Tabs有7个，分别是：
+Settings，Keys，Roles，Client scopes，Sessions，Advanced，Events
+现在默认是Settings:
+有很多选项，但是又分类：
+General settings，
+Access settings,
+SAML capabilities,
+Signature and Encryption,
+Login settings,
+Logout settings
+
+General settings的内容有：
+Client ID*: http://localhost:8888/saml2/service-provider-metadata/keycloak
+Name: 空白
+Description：空白
+Always display in UI :默认 off
+
+Access settings的内容有：
+Root URL: http://localhost:8888
+Home URL: 空白
+valid redirect URIs: http://localhost:8888/*
+Valid post logout redirect URIs: 空白
+IDP-Initiated SSO URL name: 空白
+IDP Initiated SSO Relay State: 空白
+Master SAML Processing URL: http://localhost:8888/login/saml2/sso/keycloak
+
+SAML capabilities的内容有：
+Name ID format: username
+Force name ID format: 默认Off
+Force POST binding： 默认On
+Force artifact binding： 默认Off
+Include AuthStatement： 默认On
+Include OneTimeUse Condition：默认Off
+Optimize REDIRECT signing key lookup：默认Off
+Allow ECP flow： 默认Off
+
+Signature and Encryption的内容有：
+Sign documents： 默认On
+Sign assertions： 默认Off
+Signature algorithm： 下拉默认:RSA_SHA256
+SAML signature key name : none
+Canonicalization method: exclusive
+Metadata descriptor: 空白
+Use metadata descriptor URL: 默认Off
+
+Login settings的内容有：
+Login theme： 下拉框base/keycloak/keycloak.v2
+Consent required: 默认Off
+Display client on screen：默认Off
+Consent screen text:
+
+Logout settings的内容有：
+Front channel logout: 默认On
+
+==============================================================================================================
+已修改，显示：Client successfully updated
+上面的Tabs有7个，分别是：
+Settings，Keys，Roles，Client scopes，Sessions，Advanced，Events
+现在的改动是SettingsTab页，其它的Tab还需要改吗？
+
+testuser/123456
+
+http://36.151.149.59:8180/realms/mylogin/protocol/saml/descriptor
+==============================================================================================================
+后端的依赖有问题：Unresolved dependency: 'org.opensaml:opensaml-saml-api:jar:4.3.2'
+是要额外设置一下maven？
+==============================================================================================================
+
+有问题：
+浏览器url:http://localhost:8888/saml2/authenticate/keycloak
+页面返回：{"error":"Unauthorized"}
+
+后端日志：
+2026-05-19T15:31:08.455+08:00 DEBUG 12560 --- [mylogin_back] [nio-8888-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/auth/me
+2026-05-19T15:31:08.456+08:00 DEBUG 12560 --- [mylogin_back] [nio-8888-exec-5] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-19T15:31:08.489+08:00 DEBUG 12560 --- [mylogin_back] [nio-8888-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/auth/me
+2026-05-19T15:31:08.491+08:00 DEBUG 12560 --- [mylogin_back] [nio-8888-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-19T15:31:17.371+08:00 DEBUG 12560 --- [mylogin_back] [nio-8888-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /saml2/authenticate/keycloak
+2026-05-19T15:31:17.372+08:00  WARN 12560 --- [mylogin_back] [nio-8888-exec-7] .BasicSignatureSigningParametersResolver : Validation failure: Unable to resolve signing credential
+2026-05-19T15:31:17.373+08:00 ERROR 12560 --- [mylogin_back] [nio-8888-exec-7] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception
+
+org.springframework.security.saml2.Saml2Exception: java.lang.IllegalArgumentException: Failed to resolve any signing credential
+	at org.springframework.security.saml2.provider.service.web.authentication.OpenSaml4Template$OpenSaml4SignatureConfigurer.resolveSigningParameters(OpenSaml4Template.java:293) ~[spring-security-saml2-service-provider-6.5.10.jar:6.5.10]
+	at org.springframework.security.saml2.provider.service.web.authentication.OpenSaml4Template$OpenSaml4SignatureConfigurer.sign(OpenSaml4Template.java:240) ~[spring-security-saml2-service-provider-6.5.10.jar:6.5.10]
+	at org.springframework.security.saml2.provider.service.web.authentication.BaseOpenSamlAuthenticationRequestResolver.resolve(BaseOpenSamlAuthenticationRequestResolver.java:180) ~[spring-security-saml2-service-provider-6.5.10.jar:6.5.10]
+	at org.springframework.security.saml2.provider.service.web.authentication.OpenSaml4AuthenticationRequestResolver.resolve(OpenSaml4AuthenticationRequestResolver.java:69) ~[spring-security-saml2-service-provider-6.5.10.jar:6.5.10]
+	at org.springframework.security.saml2.provider.service.web.Saml2WebSsoAuthenticationRequestFilter.doFilterInternal(Saml2WebSsoAuthenticationRequestFilter.java:98) ~[spring-security-saml2-service-provider-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:319) ~[spring-security-config-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$4(HandlerMappingIntrospector.java:267) ~[spring-webmvc-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:240) ~[spring-security-config-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:88) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:492) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:113) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:83) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:72) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:342) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:399) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1797) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:973) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:491) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at java.base/java.lang.Thread.run(Thread.java:842) ~[na:na]
+Caused by: java.lang.IllegalArgumentException: Failed to resolve any signing credential
+	at org.springframework.util.Assert.notNull(Assert.java:181) ~[spring-core-6.2.18.jar:6.2.18]
+	at org.springframework.security.saml2.provider.service.web.authentication.OpenSaml4Template$OpenSaml4SignatureConfigurer.resolveSigningParameters(OpenSaml4Template.java:289) ~[spring-security-saml2-service-provider-6.5.10.jar:6.5.10]
+	... 69 common frames omitted
+
+2026-05-19T15:31:17.375+08:00 DEBUG 12560 --- [mylogin_back] [nio-8888-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /error
+2026-05-19T15:31:17.375+08:00 DEBUG 12560 --- [mylogin_back] [nio-8888-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-19T15:31:17.377+08:00 DEBUG 12560 --- [mylogin_back] [nio-8888-exec-7] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8888/error?continue to session
+2026-05-19T15:31:17.408+08:00 DEBUG 12560 --- [mylogin_back] [nio-8888-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
+2026-05-19T15:31:17.409+08:00 DEBUG 12560 --- [mylogin_back] [nio-8888-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
 
 
 ==============================================================================================================
+还是一样的报错，后端日志：
+2026-05-19T15:38:32.816+08:00  INFO 16040 --- [mylogin_back] [nio-8888-exec-1] o.apache.tomcat.util.http.parser.Cookie  : A cookie header was received [Hm_lvt_a1ff8825baa73c3a78eb96aa40325abc=1777000137,1778227645,1778566776;] that contained an invalid cookie. That cookie will be ignored.
+ Note: further occurrences of this error will be logged at DEBUG level.
+2026-05-19T15:38:32.825+08:00  INFO 16040 --- [mylogin_back] [nio-8888-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-19T15:38:32.825+08:00  INFO 16040 --- [mylogin_back] [nio-8888-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-05-19T15:38:32.826+08:00  INFO 16040 --- [mylogin_back] [nio-8888-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-05-19T15:38:32.859+08:00 DEBUG 16040 --- [mylogin_back] [nio-8888-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/auth/me
+2026-05-19T15:38:32.894+08:00 DEBUG 16040 --- [mylogin_back] [nio-8888-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-19T15:38:32.906+08:00 DEBUG 16040 --- [mylogin_back] [nio-8888-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/auth/me
+2026-05-19T15:38:32.907+08:00 DEBUG 16040 --- [mylogin_back] [nio-8888-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-19T15:38:34.303+08:00 DEBUG 16040 --- [mylogin_back] [nio-8888-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /saml2/authenticate/keycloak
+2026-05-19T15:38:34.320+08:00  WARN 16040 --- [mylogin_back] [nio-8888-exec-3] .BasicSignatureSigningParametersResolver : Validation failure: Unable to resolve signing credential
+2026-05-19T15:38:34.320+08:00 ERROR 16040 --- [mylogin_back] [nio-8888-exec-3] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception
 
+org.springframework.security.saml2.Saml2Exception: java.lang.IllegalArgumentException: Failed to resolve any signing credential
+	at org.springframework.security.saml2.provider.service.web.authentication.OpenSaml4Template$OpenSaml4SignatureConfigurer.resolveSigningParameters(OpenSaml4Template.java:293) ~[spring-security-saml2-service-provider-6.5.10.jar:6.5.10]
+	at org.springframework.security.saml2.provider.service.web.authentication.OpenSaml4Template$OpenSaml4SignatureConfigurer.sign(OpenSaml4Template.java:240) ~[spring-security-saml2-service-provider-6.5.10.jar:6.5.10]
+	at org.springframework.security.saml2.provider.service.web.authentication.BaseOpenSamlAuthenticationRequestResolver.resolve(BaseOpenSamlAuthenticationRequestResolver.java:180) ~[spring-security-saml2-service-provider-6.5.10.jar:6.5.10]
+	at org.springframework.security.saml2.provider.service.web.authentication.OpenSaml4AuthenticationRequestResolver.resolve(OpenSaml4AuthenticationRequestResolver.java:69) ~[spring-security-saml2-service-provider-6.5.10.jar:6.5.10]
+	at org.springframework.security.saml2.provider.service.web.Saml2WebSsoAuthenticationRequestFilter.doFilterInternal(Saml2WebSsoAuthenticationRequestFilter.java:98) ~[spring-security-saml2-service-provider-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:379) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191) ~[spring-security-web-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:319) ~[spring-security-config-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$4(HandlerMappingIntrospector.java:267) ~[spring-webmvc-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:240) ~[spring-security-config-6.5.10.jar:6.5.10]
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.2.18.jar:6.2.18]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:162) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:138) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:88) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:492) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:113) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:83) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:72) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:342) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:399) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1797) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:973) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:491) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63) ~[tomcat-embed-core-10.1.54.jar:10.1.54]
+	at java.base/java.lang.Thread.run(Thread.java:842) ~[na:na]
+Caused by: java.lang.IllegalArgumentException: Failed to resolve any signing credential
+	at org.springframework.util.Assert.notNull(Assert.java:181) ~[spring-core-6.2.18.jar:6.2.18]
+	at org.springframework.security.saml2.provider.service.web.authentication.OpenSaml4Template$OpenSaml4SignatureConfigurer.resolveSigningParameters(OpenSaml4Template.java:289) ~[spring-security-saml2-service-provider-6.5.10.jar:6.5.10]
+	... 69 common frames omitted
 
-
+2026-05-19T15:38:34.333+08:00 DEBUG 16040 --- [mylogin_back] [nio-8888-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /error
+2026-05-19T15:38:34.333+08:00 DEBUG 16040 --- [mylogin_back] [nio-8888-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-19T15:38:34.366+08:00 DEBUG 16040 --- [mylogin_back] [nio-8888-exec-3] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8888/error?continue to session
+2026-05-19T15:38:34.394+08:00 DEBUG 16040 --- [mylogin_back] [nio-8888-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
+2026-05-19T15:38:34.394+08:00 DEBUG 16040 --- [mylogin_back] [nio-8888-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
-
+还是有问题：
+url：http://36.151.149.59:8180/realms/mylogin/protocol/saml
+前端：
+We are sorry...
+HTTPS required
+后端日志：
+2026-05-19T15:46:26.144+08:00 DEBUG 18468 --- [mylogin_back] [nio-8888-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/auth/me
+2026-05-19T15:46:26.145+08:00 DEBUG 18468 --- [mylogin_back] [nio-8888-exec-5] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-19T15:46:26.156+08:00 DEBUG 18468 --- [mylogin_back] [nio-8888-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/auth/me
+2026-05-19T15:46:26.157+08:00 DEBUG 18468 --- [mylogin_back] [nio-8888-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-19T15:46:38.347+08:00 DEBUG 18468 --- [mylogin_back] [nio-8888-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /saml2/authenticate/keycloak
+2026-05-19T15:46:38.414+08:00 DEBUG 18468 --- [mylogin_back] [io-8888-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
+2026-05-19T15:46:38.415+08:00 DEBUG 18468 --- [mylogin_back] [io-8888-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-19T15:46:38.432+08:00 DEBUG 18468 --- [mylogin_back] [nio-8888-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /.well-known/appspecific/com.chrome.devtools.json
+2026-05-19T15:46:38.432+08:00 DEBUG 18468 --- [mylogin_back] [nio-8888-exec-9] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-19T15:46:38.438+08:00 DEBUG 18468 --- [mylogin_back] [nio-8888-exec-9] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8888/.well-known/appspecific/com.chrome.devtools.json?continue to session
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
+还是有问题：
+url：http://36.151.149.59:8180/realms/mylogin/protocol/saml
+页面显示：
+We are sorry...
+Invalid requester
+后端日志：
+2026-05-19T15:51:09.932+08:00  INFO 12544 --- [mylogin_back] [nio-8888-exec-2] o.apache.tomcat.util.http.parser.Cookie  : A cookie header was received [Hm_lvt_a1ff8825baa73c3a78eb96aa40325abc=1777000137,1778227645,1778566776;] that contained an invalid cookie. That cookie will be ignored.
+ Note: further occurrences of this error will be logged at DEBUG level.
+2026-05-19T15:51:09.944+08:00  INFO 12544 --- [mylogin_back] [nio-8888-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-19T15:51:09.945+08:00  INFO 12544 --- [mylogin_back] [nio-8888-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-05-19T15:51:09.946+08:00  INFO 12544 --- [mylogin_back] [nio-8888-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-05-19T15:51:09.985+08:00 DEBUG 12544 --- [mylogin_back] [nio-8888-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/auth/me
+2026-05-19T15:51:10.046+08:00 DEBUG 12544 --- [mylogin_back] [nio-8888-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-19T15:51:10.066+08:00 DEBUG 12544 --- [mylogin_back] [nio-8888-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/auth/me
+2026-05-19T15:51:10.067+08:00 DEBUG 12544 --- [mylogin_back] [nio-8888-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-19T15:51:11.798+08:00 DEBUG 12544 --- [mylogin_back] [nio-8888-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /saml2/authenticate/keycloak
+2026-05-19T15:51:11.883+08:00 DEBUG 12544 --- [mylogin_back] [nio-8888-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
+2026-05-19T15:51:11.884+08:00 DEBUG 12544 --- [mylogin_back] [nio-8888-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
 
 ==============================================================================================================
+改为OFF，我登陆成功了，但是有其它报错；
+url:http://localhost:8888/login/saml2/sso/keycloak
+前端：Invalid CORS request
 
-
-==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+后端日志：
+2026-05-19T16:06:00.124+08:00 DEBUG 9604 --- [mylogin_back] [nio-8888-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /saml2/authenticate/keycloak
+2026-05-19T16:06:00.214+08:00 DEBUG 9604 --- [mylogin_back] [nio-8888-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
+2026-05-19T16:06:00.215+08:00 DEBUG 9604 --- [mylogin_back] [nio-8888-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-19T16:07:14.109+08:00 DEBUG 9604 --- [mylogin_back] [nio-8888-exec-9] o.s.security.web.FilterChainProxy        : Securing POST /login/saml2/sso/keycloak
+2026-05-19T16:07:14.153+08:00 DEBUG 9604 --- [mylogin_back] [nio-8888-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
+2026-05-19T16:07:14.154+08:00 DEBUG 9604 --- [mylogin_back] [nio-8888-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
 
 ==============================================================================================================
+还是一样的报错：
+url：http://localhost:8888/login/saml2/sso/keycloak
+页面：Invalid CORS request
 
-
-
+keycloak的日志：
+docker logs keycloak --tail 100 2>&1 | grep -A 5 -i "invalid\|error\|saml"
+2026-05-19 06:22:55,600 WARN  [org.keycloak.events] (executor-thread-138) type="LOGIN_ERROR", realmId="97bd22fd-01dc-42da-81cf-0a3f7a2dfe3e", realmName="master", clientId="security-admin-console", userId="null", ipAddress="67.230.160.60", error="user_not_found", auth_method="openid-connect", auth_type="code", redirect_uri="http://36.151.149.59:8180/admin/master/console/", code_id="ImSpsxSSGhR_DGzeDhz0vDv3", username="testuser"
+2026-05-19 06:23:09,290 WARN  [org.keycloak.cookie.DefaultCookieProvider] (executor-thread-138) Non-secure context detected; cookies are not secured, and will not be available in cross-origin POST requests. Please review whether this direct HTTP usage is expected.
+2026-05-19 06:28:40,625 WARN  [org.keycloak.cookie.DefaultCookieProvider] (executor-thread-145) Non-secure context detected; cookies are not secured, and will not be available in cross-origin POST requests. Please review whether this direct HTTP usage is expected.
+2026-05-19 06:28:53,086 WARN  [org.keycloak.cookie.DefaultCookieProvider] (executor-thread-145) Non-secure context detected; cookies are not secured, and will not be available in cross-origin POST requests. Please review whether this direct HTTP usage is expected.
+2026-05-19 06:30:54,203 WARN  [org.keycloak.cookie.DefaultCookieProvider] (executor-thread-147) Non-secure context detected; cookies are not secured, and will not be available in cross-origin POST requests. Please review whether this direct HTTP usage is expected.
+2026-05-19 07:45:59,550 WARN  [org.keycloak.events] (executor-thread-165) type="LOGIN_ERROR", realmId="1355798f-7f72-4e9e-b2c4-b84102112c55", realmName="mylogin", clientId="null", userId="null", ipAddress="67.230.160.60", error="ssl_required"
+2026-05-19 07:46:39,359 WARN  [org.keycloak.events] (executor-thread-166) type="LOGIN_ERROR", realmId="1355798f-7f72-4e9e-b2c4-b84102112c55", realmName="mylogin", clientId="null", userId="null", ipAddress="67.230.160.60", error="ssl_required"
+2026-05-19 07:49:39,717 ERROR [org.keycloak.protocol.saml.SamlService] (executor-thread-165) request validation failed: org.keycloak.common.VerificationException: Invalid signature on document
+        at org.keycloak.protocol.saml.SamlProtocolUtils.verifyDocumentSignature(SamlProtocolUtils.java:110)
+        at org.keycloak.protocol.saml.SamlProtocolUtils.verifyDocumentSignature(SamlProtocolUtils.java:95)
+        at org.keycloak.protocol.saml.SamlService$PostBindingProtocol.verifySignature(SamlService.java:794)
+        at org.keycloak.protocol.saml.SamlService$BindingProtocol.handleSamlRequest(SamlService.java:320)
+        at org.keycloak.protocol.saml.SamlService$BindingProtocol.execute(SamlService.java:725)
+        at org.keycloak.protocol.saml.SamlService.postBinding(SamlService.java:907)
+        at org.keycloak.protocol.saml.SamlService$quarkusrestinvoker$postBinding_ed9d1a96d654c6ef7a236d23262333ab78edb5a9.invoke(Unknown Source)
+        at org.jboss.resteasy.reactive.server.handlers.InvocationHandler.handle(InvocationHandler.java:29)
+        at io.quarkus.resteasy.reactive.server.runtime.QuarkusResteasyReactiveRequestContext.invokeHandler(QuarkusResteasyReactiveRequestContext.java:183)
+        at org.jboss.resteasy.reactive.common.core.AbstractResteasyReactiveContext.run(AbstractResteasyReactiveContext.java:147)
+        at io.quarkus.vertx.core.runtime.VertxCoreRecorder$15.runWith(VertxCoreRecorder.java:645)
+        at org.jboss.threads.EnhancedQueueExecutor$Task.doRunWith(EnhancedQueueExecutor.java:2651)
+--
+2026-05-19 07:49:39,717 WARN  [org.keycloak.events] (executor-thread-165) type="LOGIN_ERROR", realmId="1355798f-7f72-4e9e-b2c4-b84102112c55", realmName="mylogin", clientId="null", userId="null", ipAddress="67.230.160.60", error="invalid_signature"
+2026-05-19 07:51:13,575 ERROR [org.keycloak.protocol.saml.SamlService] (executor-thread-170) request validation failed: org.keycloak.common.VerificationException: Invalid signature on document
+        at org.keycloak.protocol.saml.SamlProtocolUtils.verifyDocumentSignature(SamlProtocolUtils.java:110)
+        at org.keycloak.protocol.saml.SamlProtocolUtils.verifyDocumentSignature(SamlProtocolUtils.java:95)
+        at org.keycloak.protocol.saml.SamlService$PostBindingProtocol.verifySignature(SamlService.java:794)
+        at org.keycloak.protocol.saml.SamlService$BindingProtocol.handleSamlRequest(SamlService.java:320)
+        at org.keycloak.protocol.saml.SamlService$BindingProtocol.execute(SamlService.java:725)
+        at org.keycloak.protocol.saml.SamlService.postBinding(SamlService.java:907)
+        at org.keycloak.protocol.saml.SamlService$quarkusrestinvoker$postBinding_ed9d1a96d654c6ef7a236d23262333ab78edb5a9.invoke(Unknown Source)
+        at org.jboss.resteasy.reactive.server.handlers.InvocationHandler.handle(InvocationHandler.java:29)
+        at io.quarkus.resteasy.reactive.server.runtime.QuarkusResteasyReactiveRequestContext.invokeHandler(QuarkusResteasyReactiveRequestContext.java:183)
+        at org.jboss.resteasy.reactive.common.core.AbstractResteasyReactiveContext.run(AbstractResteasyReactiveContext.java:147)
+        at io.quarkus.vertx.core.runtime.VertxCoreRecorder$15.runWith(VertxCoreRecorder.java:645)
+        at org.jboss.threads.EnhancedQueueExecutor$Task.doRunWith(EnhancedQueueExecutor.java:2651)
+--
+2026-05-19 07:51:13,578 WARN  [org.keycloak.events] (executor-thread-170) type="LOGIN_ERROR", realmId="1355798f-7f72-4e9e-b2c4-b84102112c55", realmName="mylogin", clientId="null", userId="null", ipAddress="67.230.160.60", error="invalid_signature"
+2026-05-19 07:57:59,861 ERROR [org.keycloak.protocol.saml.SamlService] (executor-thread-171) request validation failed: org.keycloak.common.VerificationException: Invalid signature on document
+        at org.keycloak.protocol.saml.SamlProtocolUtils.verifyDocumentSignature(SamlProtocolUtils.java:110)
+        at org.keycloak.protocol.saml.SamlProtocolUtils.verifyDocumentSignature(SamlProtocolUtils.java:95)
+        at org.keycloak.protocol.saml.SamlService$PostBindingProtocol.verifySignature(SamlService.java:794)
+        at org.keycloak.protocol.saml.SamlService$BindingProtocol.handleSamlRequest(SamlService.java:320)
+        at org.keycloak.protocol.saml.SamlService$BindingProtocol.execute(SamlService.java:725)
+        at org.keycloak.protocol.saml.SamlService.postBinding(SamlService.java:907)
+        at org.keycloak.protocol.saml.SamlService$quarkusrestinvoker$postBinding_ed9d1a96d654c6ef7a236d23262333ab78edb5a9.invoke(Unknown Source)
+        at org.jboss.resteasy.reactive.server.handlers.InvocationHandler.handle(InvocationHandler.java:29)
+        at io.quarkus.resteasy.reactive.server.runtime.QuarkusResteasyReactiveRequestContext.invokeHandler(QuarkusResteasyReactiveRequestContext.java:183)
+        at org.jboss.resteasy.reactive.common.core.AbstractResteasyReactiveContext.run(AbstractResteasyReactiveContext.java:147)
+        at io.quarkus.vertx.core.runtime.VertxCoreRecorder$15.runWith(VertxCoreRecorder.java:645)
+        at org.jboss.threads.EnhancedQueueExecutor$Task.doRunWith(EnhancedQueueExecutor.java:2651)
+--
+2026-05-19 07:57:59,862 WARN  [org.keycloak.events] (executor-thread-171) type="LOGIN_ERROR", realmId="1355798f-7f72-4e9e-b2c4-b84102112c55", realmName="mylogin", clientId="null", userId="null", ipAddress="67.230.160.60", error="invalid_signature"
+2026-05-19 08:00:37,818 ERROR [org.keycloak.protocol.saml.SamlService] (executor-thread-171) request validation failed: org.keycloak.common.VerificationException: Invalid signature on document
+        at org.keycloak.protocol.saml.SamlProtocolUtils.verifyDocumentSignature(SamlProtocolUtils.java:110)
+        at org.keycloak.protocol.saml.SamlProtocolUtils.verifyDocumentSignature(SamlProtocolUtils.java:95)
+        at org.keycloak.protocol.saml.SamlService$PostBindingProtocol.verifySignature(SamlService.java:794)
+        at org.keycloak.protocol.saml.SamlService$BindingProtocol.handleSamlRequest(SamlService.java:320)
+        at org.keycloak.protocol.saml.SamlService$BindingProtocol.execute(SamlService.java:725)
+        at org.keycloak.protocol.saml.SamlService.postBinding(SamlService.java:907)
+        at org.keycloak.protocol.saml.SamlService$quarkusrestinvoker$postBinding_ed9d1a96d654c6ef7a236d23262333ab78edb5a9.invoke(Unknown Source)
+        at org.jboss.resteasy.reactive.server.handlers.InvocationHandler.handle(InvocationHandler.java:29)
+        at io.quarkus.resteasy.reactive.server.runtime.QuarkusResteasyReactiveRequestContext.invokeHandler(QuarkusResteasyReactiveRequestContext.java:183)
+        at org.jboss.resteasy.reactive.common.core.AbstractResteasyReactiveContext.run(AbstractResteasyReactiveContext.java:147)
+        at io.quarkus.vertx.core.runtime.VertxCoreRecorder$15.runWith(VertxCoreRecorder.java:645)
+        at org.jboss.threads.EnhancedQueueExecutor$Task.doRunWith(EnhancedQueueExecutor.java:2651)
+--
+2026-05-19 08:00:37,818 WARN  [org.keycloak.events] (executor-thread-171) type="LOGIN_ERROR", realmId="1355798f-7f72-4e9e-b2c4-b84102112c55", realmName="mylogin", clientId="null", userId="null", ipAddress="67.230.160.60", error="invalid_signature"
+2026-05-19 08:06:01,255 WARN  [org.keycloak.cookie.DefaultCookieProvider] (executor-thread-177) Non-secure context detected; cookies are not secured, and will not be available in cross-origin POST requests. Please review whether this direct HTTP usage is expected.
+2026-05-19 08:07:06,412 WARN  [org.keycloak.cookie.DefaultCookieProvider] (executor-thread-177) Non-secure context detected; cookies are not secured, and will not be available in cross-origin POST requests. Please review whether this direct HTTP usage is expected.
+2026-05-19 08:10:59,694 WARN  [org.keycloak.cookie.DefaultCookieProvider] (executor-thread-181) Non-secure context detected; cookies are not secured, and will not be available in cross-origin POST requests. Please review whether this direct HTTP usage is expected.
+2026-05-19 08:11:00,719 WARN  [org.keycloak.cookie.DefaultCookieProvider] (executor-thread-181) Non-secure context detected; cookies are not secured, and will not be available in cross-origin POST requests. Please review whether this direct HTTP usage is expected.
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
+你把我当前会话的今天搭建saml2的所有错误记录下来，生成一个文档，放在当前目录下：
+文档名：saml2_error_record.md
+顺便帮我排版一下问题;
+你可以理解我的需求吗？你先复述一遍你的理解:
 
 ==============================================================================================================
 
