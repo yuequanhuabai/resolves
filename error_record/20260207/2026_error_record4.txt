@@ -1402,49 +1402,75 @@ NDA（保密協議）的內容；
 強化學習：
 algorithm:  Policy Gradient(策略梯度)
 
-後訓練如何 scale up:
-找到合適的環境，它的反饋信號足夠的清晰，這個環境本身也是一個很強的數據源; 能讓這個訓練非常穩定; 這事就能做成;
+强化训练，预训练;
 
-openai的保密項目： Strawberry ，帶來一個新的範式(後訓練強化學習)
+ML coding 和long horizon
 
-找一些回歸數據特別清楚，特別客觀；然後數據本身又比較乾淨;對模型來說是可學習的; 然後在上面做穩定的強化學習訓練;
+continue learning （世界模型）
 
-預訓練-->後訓練和強化學習;
-Scaling Law 繼續對
+IMO
+Reasoning 打完 AIME打IMO，  RKGI
 
-預訓練不需要擴大，還有進展的空間，可以證明做什麼事情是有效的;
+Sergey Brin
+Koray Kavukcuoglu
+Demis
 
-預訓練和後訓練 還都有提升空間;
+Isomorphic Labs
 
-平臺期;
+new lab:
+thinking machine
 
-Agentic coding:  怎麼把它scale up,構造各種各種的環境和data，算法上會遇到什麼問題？
+Haldane , Haldane model
 
-tips: 異步架構，算法，控制機器; 穩定;
+Geoffrey Hinton
 
-3.7-->4.5
-預訓練和後訓練  都有：
-scale up 做的更多； data還是訓練的算力和尺度更大;
+Transformer  Noam(Noam Shazeer), Ashish(Ashish Vaswani) , Niki(Niki Parmar)
 
-多模態生成;
+AI论文:
+sequence to sequence
+Scaling Law : Jared Kaplan
 
-Google Brain：   Transform
+语言即世界工作室;
 
-6-12個月內，AI自訓練;
+汤川秀树的自传
 
-寫code --> 跑實現（測試code）-->看到結果-->分析結果（知道哪裏做的不對）-->提出新的假設-->設計新的代碼-->跑新的實驗;
+<来自新世界> 日本小说;
+==============================================================================================================
+帮我看看当前目录下的pap-back和pap-front，做一个系统架构分析;
 
-Claude Code
---Boris Cherny
+==============================================================================================================
+You are not the assignee for this task
 
+==============================================================================================================
+可以帮忙梳理一下当前目录下后端项目pap-back里的cn.bochk.pap.server.business.controller.BuyListController
+里的updateNewList方法吗？你帮我梳理一下这个接口的逻辑:
+你可以理解我的需求吗？你先复述一遍你的理解:
 
-train with finite but use as infinite
+==============================================================================================================
+可以把saml2的配置写在配置文件吗？别硬编码到程序里面;
+你可以理解我的需求吗？你先复述一遍你的理解:
 
-long horizon(長時序任務)
+==============================================================================================================
+assetTypes.forEach(assetTypeDo -> {
+                    if (!assetType.equals(assetTypeDo.getAssetType())) {
+                        return;
+                    }
+                    Map<String, List<String>> assetTypeDataMap = getDataMap(ctx, assetTypeDo);
+                    if (!assetTypeDataMap.containsKey(productCode)) {
+                        errors.add(new ImportErrorVO(rowNum, "productCode",
+                                "No matching record found for product code '"
+                                        + productCode + "' in asset type '" + assetType + "'."));
+                    }
+                });
+ 你帮我看看上面的代码，
+ if (!assetType.equals(assetTypeDo.getAssetType())) {
+                         return;
+                     }
+ 这个逻辑是啥意思？不匹配就直接退出吗？还是继续循环的下个元素？
+==============================================================================================================
 
-Nano Banana
+==============================================================================================================
 
-SFT, RL 的本質區別是什麼？
 ==============================================================================================================
 
 
