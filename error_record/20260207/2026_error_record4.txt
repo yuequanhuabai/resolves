@@ -1353,12 +1353,41 @@ You are not the assignee for this task
 可以把saml2的配置写在配置文件吗？别硬编码到程序里面;
 你可以理解我的需求吗？你先复述一遍你的理解:
 
-
 ==============================================================================================================
-
+assetTypes.forEach(assetTypeDo -> {
+                    if (!assetType.equals(assetTypeDo.getAssetType())) {
+                        return;
+                    }
+                    Map<String, List<String>> assetTypeDataMap = getDataMap(ctx, assetTypeDo);
+                    if (!assetTypeDataMap.containsKey(productCode)) {
+                        errors.add(new ImportErrorVO(rowNum, "productCode",
+                                "No matching record found for product code '"
+                                        + productCode + "' in asset type '" + assetType + "'."));
+                    }
+                });
+ 你帮我看看上面的代码，
+ if (!assetType.equals(assetTypeDo.getAssetType())) {
+                         return;
+                     }
+ 这个逻辑是啥意思？不匹配就直接退出吗？还是继续循环的下个元素？
 ==============================================================================================================
+强化训练，预训练;
 
+ML coding 和long horizon
 
+continue learning （世界模型）
+
+IMO
+Reasoning 打完 AIME打IMO，  RKGI
+
+Sergey Brin
+Koray Kavukcuoglu
+Demis
+
+Isomorphic Labs
+
+new lab:
+thinking machine
 ==============================================================================================================
 
 
