@@ -17,6 +17,22 @@ ffmpeg -i input.webm -c:a pcm_s16le output.wav
 
 https://www.youtube.com/watch?v=yrlNXCzQvoA
 
+yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=RxVOG9wn31w"
+
+yt-dlp -f bestvideo+bestaudio https://www.youtube.com/watch?v=RxVOG9wn31w
+
+
+yt-dlp -f best --cookies-from-browser chrome https://www.youtube.com/watch?v=RxVOG9wn31w
+
+yt-dlp --cookies-from-browser edge https://www.youtube.com/watch?v=RxVOG9wn31w
+
+yt-dlp https://www.youtube.com/watch?v=RxVOG9wn31w
+
+yt-dlp -f "bv*+ba/b" https://www.youtube.com/watch?v=RxVOG9wn31w
+
+yt-dlp --write-subs https://www.youtube.com/watch?v=RxVOG9wn31w
+
+yt-dlp --write-auto-subs https://www.youtube.com/watch?v=RxVOG9wn31w
 
 视频：
 yt-dlp -f bestvideo -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www
