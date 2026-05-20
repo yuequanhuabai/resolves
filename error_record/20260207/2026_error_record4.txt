@@ -1388,10 +1388,22 @@ Isomorphic Labs
 
 new lab:
 thinking machine
+
+Haldane , Haldane model
+
+Geoffrey Hinton
+
+Transformer  Noam(Noam Shazeer), Ashish(Ashish Vaswani) , Niki(Niki Parmar)
+
+AI论文:
+sequence to sequence
+Scaling Law : Jared Kaplan
+
+语言即世界工作室;
 ==============================================================================================================
+汤川秀树的自传
 
-
-
+<来自新世界> 日本小说;
 ==============================================================================================================
 
 
