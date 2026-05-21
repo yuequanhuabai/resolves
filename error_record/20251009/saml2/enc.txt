@@ -1,0 +1,123 @@
+● 配置步骤总览
+
+  整个过程分两个阶段：
+
+  Phase 1：Keycloak 侧（让 metadata 出现 use="encryption"）
+    Step 1 → Keycloak 添加加密密钥
+    Step 2 → 重新导出 metadata，替换项目 XML
+
+  Phase 2：Spring Boot 侧（让加密真正生效）
+    Step 3 → 生成 SP 密钥对（Spring Boot 自己的）
+    Step 4 → 在 Keycloak 客户端注册 SP 公钥，开启断言加密
+    Step 5 → Spring Security 配置解密凭据
+
+  Phase 1 完成后 metadata 结构就对齐了，但 Keycloak 发给 Spring Boot 的 Assertion 还是明文的。Phase 2 完成后才是真正的端到端加密。
+
+  ---
+  Phase 1 — Keycloak 侧
+
+  Step 1：Keycloak 添加加密密钥
+
+  登录 Keycloak Admin Console，进入 mylogin realm：
+
+  Realm Settings → Keys → Providers → Add provider → rsa-generated
+
+  配置：
+    Name        : rsa-enc（随意）
+    Key Use     : ENC          ← 关键，选加密用途
+    Key Size    : 2048
+    Algorithm   : RSA-OAEP    （或 RSA1_5，推荐 RSA-OAEP）
+    Active      : ON
+    Enabled     : ON
+
+  Save
+
+  Step 2：重新导出 metadata，替换 XML
+
+  浏览器访问：
+
+  http://36.151.149.59:8180/realms/mylogin/protocol/saml/descriptor
+
+  导出的 XML 里会自动多出 use="encryption" 块，用它完整替换：
+
+  mylogin-back/src/main/resources/keycloak-metadata.xml
+
+  替换后结构应该是：
+
+  <md:KeyDescriptor use="signing">
+    <ds:KeyInfo>...</ds:KeyInfo>
+  </md:KeyDescriptor>
+
+  <md:KeyDescriptor use="encryption">   ← 新增的
+    <ds:KeyInfo>...</ds:KeyInfo>
+  </md:KeyDescriptor>
+
+  Phase 1 到这里就完成了，项目启动可以验证 SSO 登录仍然正常。
+
+  ---
+  Phase 2 — Spring Boot 侧（让断言真正加密）
+
+  Step 3：生成 SP 密钥对
+
+  在终端执行（用 JDK 自带的 keytool）：
+
+  keytool -genkeypair `
+    -alias mylogin-sp `
+    -keyalg RSA `
+    -keysize 2048 `
+    -storetype PKCS12 `
+    -keystore mylogin-sp.p12 `
+    -storepass changeit `
+    -validity 3650 `
+    -dname "CN=mylogin-sp"
+
+  把生成的 mylogin-sp.p12 放到：
+
+  mylogin-back/src/main/resources/mylogin-sp.p12
+
+  Step 4：Keycloak 客户端开启断言加密
+
+  Keycloak Admin → Clients → 找到 mylogin SP 客户端
+  → Keys 标签页
+
+    Encrypt Assertions    : ON   ← 开启
+    Client Signature Required : 按需
+
+  → Import Key → 格式选 Certificate PEM
+    （需要先从 p12 导出公钥证书，见下方命令）
+
+  → Save
+
+  从 p12 导出公钥证书的命令：
+
+  keytool -exportcert `
+    -alias mylogin-sp `
+    -keystore mylogin-sp.p12 `
+    -storepass changeit `
+    -rfc `
+    -file mylogin-sp.crt
+
+  把 mylogin-sp.crt 的内容粘贴到 Keycloak 的 Import Key 里。
+
+  Step 5：Spring Security 配置解密凭据
+
+  修改 application.yml，添加密钥配置：
+
+  spring:
+    security:
+      saml2:
+        relyingparty:
+          registration:
+            keycloak:
+              assertingparty:
+                metadata-uri: classpath:keycloak-metadata.xml
+              entity-id: http://localhost:8888/saml2/service-provider-metadata/keycloak
+              decryption-x509-credentials:        # 新增
+                - private-key-location: classpath:mylogin-sp.p12
+                  certificate-location: classpath:mylogin-sp.crt
+                  private-key-password: changeit
+
+  ---
+  执行建议
+
+  先做 Phase 1 验证 SSO 登录不受影响，再做 Phase 2 开启真正的断言加密。你想从哪一步开始？
