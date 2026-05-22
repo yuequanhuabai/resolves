@@ -1721,6 +1721,37 @@ SAMLResponse: PHNhbWxwOlJlc3BvbnNlIHhtbG5zOnNhbWxwPSJ1cm46b2FzaXM6bmFtZXM6dGM6U0
 自监督学习和强化学习;
 
 ==============================================================================================================
+netstat -ano | findstr “8888”
+taskkill -PID 进程号 -F
+==============================================================================================================
+端口佔用，但是沒有搜索是什麼原因？
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-05-21T22:42:09.220+08:00 ERROR 18696 --- [mylogin_back] [           main] o.s.b.d.LoggingFailureAnalysisReporter   :
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8888 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8888 or configure this application to listen on another port.
+
+Disconnected from the target VM, address: '127.0.0.1:11138', transport: 'socket'
+
+Process finished with exit code 1
+
+window 端口佔用查找：
+C:\Users\yuequanhuabai>netstat -ano | findstr “8888”
+
+C:\Users\yuequanhuabai>netstat -ano | findstr 8888
+
+C:\Users\yuequanhuabai>
+
+==============================================================================================================
 
 
 
