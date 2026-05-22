@@ -97,6 +97,9 @@
     -rfc `
     -file mylogin-sp.crt
 
+Git bash：
+keytool -exportcert -alias mylogin-sp -keystore mylogin-sp.p12 -storepass changeit -rfc -file mylogin-sp.crt
+
   把 mylogin-sp.crt 的内容粘贴到 Keycloak 的 Import Key 里。
 
   Step 5：Spring Security 配置解密凭据

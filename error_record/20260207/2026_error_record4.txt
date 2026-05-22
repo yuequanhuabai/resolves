@@ -1558,80 +1558,164 @@ Java ME(85 JSRs)
 ==============================================================================================================
 use="encryption"，怎么验证加密生效了？怎么和之前对比？
 
+==============================================================================================================
+keytool -exportcert `
+    -alias mylogin-sp `
+    -keystore mylogin-sp.p12 `
+    -storepass changeit `
+    -rfc `
+    -file mylogin-sp.crt
+这个命令是啥意思？和刚才的这个命令有啥区别？为啥要两个？
+  keytool -genkeypair `
+    -alias mylogin-sp `
+    -keyalg RSA `
+    -keysize 2048 `
+    -storetype PKCS12 `
+    -keystore mylogin-sp.p12 `
+    -storepass changeit `
+    -validity 3650 `
+    -dname "CN=mylogin-sp"
 
+==============================================================================================================
+我在resource目录下单独打开一个git bash执行命令报错了：
+ck/src/main/resources (saml2)
+$ keytool -exportcert `
+    -alias mylogin-sp `
+    -keystore mylogin-sp.p12 `
+    -storepass changeit `
+    -rfc `
+    -file mylogin-sp.crt
+bash: -alias: command not found
+keytool 错误: java.lang.Exception: 密钥库文件不存在: C:\Users\baiyingwaming\.keystore
+bash: -storepass: command not found
+bash: -keystore: command not found
+
+==============================================================================================================
+这句话是什么意思：无人相，无我相，无众生相，无寿者相
+
+==============================================================================================================
+这个是执行成功了吗？
+$ keytool -exportcert -alias mylogin-sp -keystore mylogin-sp.p12 -storepass changeit -rfc -file mylogin-sp.crt
+存储在文件 <mylogin-sp.crt> 中的证书
+另外这个命令可以重复执行吗？ 我删除想重新执行试试;
+
+==============================================================================================================
+另外我再问问：
+  keytool -genkeypair `
+    -alias mylogin-sp `
+    -keyalg RSA `
+    -keysize 2048 `
+    -storetype PKCS12 `
+    -keystore mylogin-sp.p12 `
+    -storepass changeit `
+    -validity 3650 `
+    -dname "CN=mylogin-sp"
+刚才这个命令是执行获取公钥和私钥对吗？
+每次执行后生成的是一样的密钥对吗？ 还是每次执行都产生不一样的密钥对？
 
 ==============================================================================================================
 
+  Keycloak Admin → Clients → 找到 mylogin SP 客户端
+  → Keys 标签页
 
+    Encrypt Assertions    : ON   ← 开启
+    Client Signature Required : 按需
 
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
+我把Encrypt Assertions和Client Signature Required都打开了，传了resource下的mylogin-sp.crt公钥文件上去了
 
 ==============================================================================================================
-
-
-==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+报错了，后端日志：
+2026-05-22T15:02:29.534+08:00  INFO 18908 --- [mylogin_back] [nio-8888-exec-1] o.apache.tomcat.util.http.parser.Cookie  : A cookie header was received [Hm_lvt_a1ff8825baa73c3a78eb96aa40325abc=1777000137,1778227645,1778566776;] that contained an invalid cookie. That cookie will be ignored.
+ Note: further occurrences of this error will be logged at DEBUG level.
+2026-05-22T15:02:29.551+08:00  INFO 18908 --- [mylogin_back] [nio-8888-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-22T15:02:29.552+08:00  INFO 18908 --- [mylogin_back] [nio-8888-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-05-22T15:02:29.554+08:00  INFO 18908 --- [mylogin_back] [nio-8888-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-05-22T15:02:29.588+08:00 DEBUG 18908 --- [mylogin_back] [nio-8888-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/auth/me
+2026-05-22T15:02:29.635+08:00 DEBUG 18908 --- [mylogin_back] [nio-8888-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-22T15:02:29.656+08:00 DEBUG 18908 --- [mylogin_back] [nio-8888-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/auth/me
+2026-05-22T15:02:29.657+08:00 DEBUG 18908 --- [mylogin_back] [nio-8888-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-05-22T15:02:33.824+08:00 DEBUG 18908 --- [mylogin_back] [nio-8888-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /saml2/authenticate/keycloak
+2026-05-22T15:02:33.908+08:00 DEBUG 18908 --- [mylogin_back] [nio-8888-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
+2026-05-22T15:02:33.909+08:00 DEBUG 18908 --- [mylogin_back] [nio-8888-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+chrom浏览器的报错信息：
+url：http://36.151.149.59:8180/realms/mylogin/protocol/saml
+页面：We are sorry...
+   Invalid requester
 
 ==============================================================================================================
+Keys页签的所有内容：
 
+Signing keys config
+If you enable the "Client signature required" below, the client should sign their SAML requests and responses and the signature will be validated by the server. If the client provides a SP Metadata Descriptor URL with signing and encryption keys, you can enable automatic management of keys with the option "Use metadata descriptor URL" in the "Signature and Encryption" section of the "Settings" tab. You can also configure manually the signing key by generating or importing it on activation.
 
+Client signature required: On
+这个证书内容就是resource下的mylogin-sp.crt
+Certificate: MIICzTCCAbWgAwIBAgIIU5KAmoKzS44wDQYJKoZIhvcNAQELBQAwFTETMBEGA1UEAxMKbXlsb2dpbi1zcDAeFw0yNjA1MjIwMzQ2NDZaFw0zNjA1MTkwMzQ2NDZaMBUxEzARBgNVBAMTCm15bG9naW4tc3AwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9mByXa8jARHzLONucgCXFZCF9wciqNKeYP+MKBOwp4tlESvVKV1JqSb34yB6szo0REU8FveDWVec93bwl9/qzhpgiZ2n+qrMuna3dnRN594GiB8PG7JIRUVxs8Md5L4gdtJMItu+bbGASMAO4v5JPio9n5uQj2OmTKRiYlWeQvqRcy6Y5xDbWkCxjhIjoeMupgGLnOp/+BfUS+YBAIMERU9YBKeICnIoAfkgvGRr4qQRGaxhk95/ACu0nuzllvbsFXGFaquR8NbdZnOgRkCU2hv+iCtkKEskisUqkCHKNdJyQW45EIGo/33jFeeKoXRwGlsL194ZeZFt/Jt8J2vMNAgMBAAGjITAfMB0GA1UdDgQWBBTBtYnvUevM1p41gwwadOLfmnGqTzANBgkqhkiG9w0BAQsFAAOCAQEAJmNDBGt6UrKIgR4GlgAm63X5eJjPRWUzwVQ5GuYdpZT0B8filsMioGVvIV0rs+aSjrBjH+ieTKEWo3BgUp634N2FCaQsBmP0G9GwY2APsQygnOM7+cJD7/vGk4at1GVbHrwfqPvVqaVXPnWS6YL27AQJ4QfOt8makklYphDk6IY/IIEFeY0h+2iatViVE3vbIYtp5cnYYpRwXWyFy6RJbzHsVZwdm2QQZcQhFm4RN+7WzM0rKc4hiyFmeugkrwZ1mXxozT7q+g3x0dErCXv/OK22t9Sav1Oh1AqeAaq5CP2TRKNvREeagCnlzxP038kT881hW40pAixy3zcRh6e+4A==
+下面有三个按钮： Regenerate，   Import Key， Export
+---------------------------------------------------
 
+Encryption keys config
+If you enable the "Encrypt assertions" below, the SAML assertions will be encrypted with the client's public key. If the client provides a SP Metadata Descriptor URL with signing and encryption keys, you can enable automatic management of keys with the option "Use metadata descriptor URL" in the "Signature and Encryption" section of the "Settings" tab. You can also configure manually the encryption key by generating or importing it on activation. When this option is enabled, the encryption details can be modified in the "Settings" tab, section "Signature and Encryption".
+Encrypt assertions: On
+这个证书内容就是resource下的mylogin-sp.crt
+Certifacate: MIICzTCCAbWgAwIBAgIIU5KAmoKzS44wDQYJKoZIhvcNAQELBQAwFTETMBEGA1UEAxMKbXlsb2dpbi1zcDAeFw0yNjA1MjIwMzQ2NDZaFw0zNjA1MTkwMzQ2NDZaMBUxEzARBgNVBAMTCm15bG9naW4tc3AwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9mByXa8jARHzLONucgCXFZCF9wciqNKeYP+MKBOwp4tlESvVKV1JqSb34yB6szo0REU8FveDWVec93bwl9/qzhpgiZ2n+qrMuna3dnRN594GiB8PG7JIRUVxs8Md5L4gdtJMItu+bbGASMAO4v5JPio9n5uQj2OmTKRiYlWeQvqRcy6Y5xDbWkCxjhIjoeMupgGLnOp/+BfUS+YBAIMERU9YBKeICnIoAfkgvGRr4qQRGaxhk95/ACu0nuzllvbsFXGFaquR8NbdZnOgRkCU2hv+iCtkKEskisUqkCHKNdJyQW45EIGo/33jFeeKoXRwGlsL194ZeZFt/Jt8J2vMNAgMBAAGjITAfMB0GA1UdDgQWBBTBtYnvUevM1p41gwwadOLfmnGqTzANBgkqhkiG9w0BAQsFAAOCAQEAJmNDBGt6UrKIgR4GlgAm63X5eJjPRWUzwVQ5GuYdpZT0B8filsMioGVvIV0rs+aSjrBjH+ieTKEWo3BgUp634N2FCaQsBmP0G9GwY2APsQygnOM7+cJD7/vGk4at1GVbHrwfqPvVqaVXPnWS6YL27AQJ4QfOt8makklYphDk6IY/IIEFeY0h+2iatViVE3vbIYtp5cnYYpRwXWyFy6RJbzHsVZwdm2QQZcQhFm4RN+7WzM0rKc4hiyFmeugkrwZ1mXxozT7q+g3x0dErCXv/OK22t9Sav1Oh1AqeAaq5CP2TRKNvREeagCnlzxP038kT881hW40pAixy3zcRh6e+4A==
+下面有三个按钮： Regenerate，   Import Key， Export
+==============================================================================================================
+成功了，怎么和之前的来做比较？怎么知道它有没有加密签名？
 
 ==============================================================================================================
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
+很奇怪，为什么我打开F12，Network没有看到这个请求呢？
+http://localhost:8888/login/saml2/sso/keycloak
+就只有登录成功后的
+http://localhost:8888/api/auth/me
+和
+http://localhost:8888/api/users
+这两个请求，saml2的请求哪去了？
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+是这两个请求吗？
+POST http://36.151.149.59:8180/realms/mylogin/protocol/saml HTTP/1.1
+POST http://localhost:8888/login/saml2/sso/keycloak HTTP/1.1
 
 ==============================================================================================================
-
-
-
+我再Chrome浏览器上安装了SAML-tracer看到了，
+但是我有个疑问，为什么Network上没有这两个请求？
 
 ==============================================================================================================
+POST http://36.151.149.59:8180/realms/mylogin/protocol/saml HTTP/1.1
+的请求参数：
+RelayState: 89c57d4e-8b01-4f81-a100-96f074c17072
+SAMLRequest: PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c2FtbDJwOkF1dGhuUmVxdWVzdCB4bWxuczpzYW1sMnA9InVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDpwcm90b2NvbCIgQXNzZXJ0aW9uQ29uc3VtZXJTZXJ2aWNlVVJMPSJodHRwOi8vbG9jYWxob3N0Ojg4ODgvbG9naW4vc2FtbDIvc3NvL2tleWNsb2FrIiBEZXN0aW5hdGlvbj0iaHR0cDovLzM2LjE1MS4xNDkuNTk6ODE4MC9yZWFsbXMvbXlsb2dpbi9wcm90b2NvbC9zYW1sIiBGb3JjZUF1dGhuPSJmYWxzZSIgSUQ9IkFSUWU0ZWZkNDQtYWFkOC00NGM3LWEwMDItZGU0YzRjN2M3YjE2IiBJc1Bhc3NpdmU9ImZhbHNlIiBJc3N1ZUluc3RhbnQ9IjIwMjYtMDUtMjJUMDc6Mzc6NTEuNDUxWiIgUHJvdG9jb2xCaW5kaW5nPSJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6YmluZGluZ3M6SFRUUC1QT1NUIiBWZXJzaW9uPSIyLjAiPjxzYW1sMjpJc3N1ZXIgeG1sbnM6c2FtbDI9InVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDphc3NlcnRpb24iPmh0dHA6Ly9sb2NhbGhvc3Q6ODg4OC9zYW1sMi9zZXJ2aWNlLXByb3ZpZGVyLW1ldGFkYXRhL2tleWNsb2FrPC9zYW1sMjpJc3N1ZXI+PGRzOlNpZ25hdHVyZSB4bWxuczpkcz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC8wOS94bWxkc2lnIyI+CjxkczpTaWduZWRJbmZvPgo8ZHM6Q2Fub25pY2FsaXphdGlvbk1ldGhvZCBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvMTAveG1sLWV4Yy1jMTRuIyIvPgo8ZHM6U2lnbmF0dXJlTWV0aG9kIEFsZ29yaXRobT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS8wNC94bWxkc2lnLW1vcmUjcnNhLXNoYTI1NiIvPgo8ZHM6UmVmZXJlbmNlIFVSST0iI0FSUWU0ZWZkNDQtYWFkOC00NGM3LWEwMDItZGU0YzRjN2M3YjE2Ij4KPGRzOlRyYW5zZm9ybXM+CjxkczpUcmFuc2Zvcm0gQWxnb3JpdGhtPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwLzA5L3htbGRzaWcjZW52ZWxvcGVkLXNpZ25hdHVyZSIvPgo8ZHM6VHJhbnNmb3JtIEFsZ29yaXRobT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS8xMC94bWwtZXhjLWMxNG4jIi8+CjwvZHM6VHJhbnNmb3Jtcz4KPGRzOkRpZ2VzdE1ldGhvZCBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvMDQveG1sZW5jI3NoYTI1NiIvPgo8ZHM6RGlnZXN0VmFsdWU+ZjJ3ZHZlSmZNWk03Z1drK1FsdmFJVGZJQzRqNUNNUlFNYVdjdWpOTXFYdz08L2RzOkRpZ2VzdFZhbHVlPgo8L2RzOlJlZmVyZW5jZT4KPC9kczpTaWduZWRJbmZvPgo8ZHM6U2lnbmF0dXJlVmFsdWU+CmJvLzZmV291ZFBkT05WR3FhMGNLTHFtaW9pMFVneGx1VGZCVmZ1ZlFvVUNwY2tRekY5OEcwMkcvaHFHdDI4RmVqV3JMN0d2NE1YeHQmIzEzOwpNcStscUphaE80Q3pJOW1DVTJOVm0rb2YvQkgva0FVSDlyR1N5bnhMdFVNQXJod3lGNktRWDFKNG4yT1VkUUJMNlVoajIwcDB5QitQJiMxMzsKWGtRanJScGR6Y2NzQnRSTmhnL3ZjNGRIaDgzeURCZkU4aHZ2QnRpYndqVDJ1SWxJc0JXMm1rRU5PNHRmWGdTOUVjbDc3elNtUEMyUiYjMTM7ClBheFo0N0Z0Q0VvUktPSXMvMWtQbWw3Ui83dmJJU0JQN1ZPR1BoQlh2K3M4MzE2TWdvSjlTQmNsR204VFVPRitqQlNZZWREM2RBMGQmIzEzOwpGVHd1VkQwQXZzK2VUWUJIc3JQRkFlL0xDK0lRMDJwVHdvMEd0QT09CjwvZHM6U2lnbmF0dXJlVmFsdWU+CjxkczpLZXlJbmZvPjxkczpYNTA5RGF0YT48ZHM6WDUwOUNlcnRpZmljYXRlPk1JSUN6VENDQWJXZ0F3SUJBZ0lJVTVLQW1vS3pTNDR3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUVBeE1LYlhsc2IyZHAKYmkxemNEQWVGdzB5TmpBMU1qSXdNelEyTkRaYUZ3MHpOakExTVRrd016UTJORFphTUJVeEV6QVJCZ05WQkFNVENtMTViRzluYVc0dApjM0F3Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLQW9JQkFRQzltQnlYYThqQVJIekxPTnVjZ0NYRlpDRjl3Y2lxCk5LZVlQK01LQk93cDR0bEVTdlZLVjFKcVNiMzR5QjZzem8wUkVVOEZ2ZURXVmVjOTNid2w5L3F6aHBnaVoybitxck11bmEzZG5STjUKOTRHaUI4UEc3SklSVVZ4czhNZDVMNGdkdEpNSXR1K2JiR0FTTUFPNHY1SlBpbzluNXVRajJPbVRLUmlZbFdlUXZxUmN5Nlk1eERiVwprQ3hqaElqb2VNdXBnR0xuT3AvK0JmVVMrWUJBSU1FUlU5WUJLZUlDbklvQWZrZ3ZHUnI0cVFSR2F4aGs5NS9BQ3UwbnV6bGx2YnNGClhHRmFxdVI4TmJkWm5PZ1JrQ1UyaHYraUN0a0tFc2tpc1Vxa0NIS05kSnlRVzQ1RUlHby8zM2pGZWVLb1hSd0dsc0wxOTRaZVpGdC8KSnQ4SjJ2TU5BZ01CQUFHaklUQWZNQjBHQTFVZERnUVdCQlRCdFludlVldk0xcDQxZ3d3YWRPTGZtbkdxVHpBTkJna3Foa2lHOXcwQgpBUXNGQUFPQ0FRRUFKbU5EQkd0NlVyS0lnUjRHbGdBbTYzWDVlSmpQUldVendWUTVHdVlkcFpUMEI4Zmlsc01pb0dWdklWMHJzK2FTCmpyQmpIK2llVEtFV28zQmdVcDYzNE4yRkNhUXNCbVAwRzlHd1kyQVBzUXlnbk9NNytjSkQ3L3ZHazRhdDFHVmJIcndmcVB2VnFhVlgKUG5XUzZZTDI3QVFKNFFmT3Q4bWFra2xZcGhEazZJWS9JSUVGZVkwaCsyaWF0VmlWRTN2YklZdHA1Y25ZWXBSd1hXeUZ5NlJKYnpIcwpWWndkbTJRUVpjUWhGbTRSTis3V3pNMHJLYzRoaXlGbWV1Z2tyd1oxbVh4b3pUN3ErZzN4MGRFckNYdi9PSzIydDlTYXYxT2gxQXFlCkFhcTVDUDJUUktOdlJFZWFnQ25senhQMDM4a1Q4ODFoVzQwcEFpeHkzemNSaDZlKzRBPT08L2RzOlg1MDlDZXJ0aWZpY2F0ZT48L2RzOlg1MDlEYXRhPjwvZHM6S2V5SW5mbz48L2RzOlNpZ25hdHVyZT48L3NhbWwycDpBdXRoblJlcXVlc3Q+
+有没有签名或加密？
 
+==============================================================================================================
+POST http://localhost:8888/login/saml2/sso/keycloak HTTP/1.1
+的请求参数如下，在SAML-tracer里的：
+POST
+RelayState: 89c57d4e-8b01-4f81-a100-96f074c17072
+SAMLResponse: PHNhbWxwOlJlc3BvbnNlIHhtbG5zOnNhbWxwPSJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6cHJvdG9jb2wiIHhtbG5zOnNhbWw9InVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDphc3NlcnRpb24iIERlc3RpbmF0aW9uPSJodHRwOi8vbG9jYWxob3N0Ojg4ODgvbG9naW4vc2FtbDIvc3NvL2tleWNsb2FrIiBJRD0iSURfMDAyYWIyNTAtYzY3Mi00NzM0LWE1ODMtNTJiOTc4YzJiYzI1IiBJblJlc3BvbnNlVG89IkFSUWU0ZWZkNDQtYWFkOC00NGM3LWEwMDItZGU0YzRjN2M3YjE2IiBJc3N1ZUluc3RhbnQ9IjIwMjYtMDUtMjJUMDc6Mzc6NTMuNTU0WiIgVmVyc2lvbj0iMi4wIj48c2FtbDpJc3N1ZXI+aHR0cDovLzM2LjE1MS4xNDkuNTk6ODE4MC9yZWFsbXMvbXlsb2dpbjwvc2FtbDpJc3N1ZXI+PGRzaWc6U2lnbmF0dXJlIHhtbG5zOmRzaWc9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvMDkveG1sZHNpZyMiPjxkc2lnOlNpZ25lZEluZm8+PGRzaWc6Q2Fub25pY2FsaXphdGlvbk1ldGhvZCBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvMTAveG1sLWV4Yy1jMTRuIyIvPjxkc2lnOlNpZ25hdHVyZU1ldGhvZCBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvMDQveG1sZHNpZy1tb3JlI3JzYS1zaGEyNTYiLz48ZHNpZzpSZWZlcmVuY2UgVVJJPSIjSURfMDAyYWIyNTAtYzY3Mi00NzM0LWE1ODMtNTJiOTc4YzJiYzI1Ij48ZHNpZzpUcmFuc2Zvcm1zPjxkc2lnOlRyYW5zZm9ybSBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvMDkveG1sZHNpZyNlbnZlbG9wZWQtc2lnbmF0dXJlIi8+PGRzaWc6VHJhbnNmb3JtIEFsZ29yaXRobT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS8xMC94bWwtZXhjLWMxNG4jIi8+PC9kc2lnOlRyYW5zZm9ybXM+PGRzaWc6RGlnZXN0TWV0aG9kIEFsZ29yaXRobT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS8wNC94bWxlbmMjc2hhMjU2Ii8+PGRzaWc6RGlnZXN0VmFsdWU+eHg4b3BUOG1VVG9yL1pkTWZoYUZxRm9mVnh2bi9yOFVjTkZ3WWRWL2lWST08L2RzaWc6RGlnZXN0VmFsdWU+PC9kc2lnOlJlZmVyZW5jZT48L2RzaWc6U2lnbmVkSW5mbz48ZHNpZzpTaWduYXR1cmVWYWx1ZT5iL085N25tNTNvdlpDWW9wTjFqTTUvTXpUb2plMm1IWk52ZVNmSzBBVVE2OSs1Z1ZjbnorNHloY09BQW5RWFc0YWpJaGZWUVNVMlVYSHZvbER0REZXZCtBcG41VUVBeDRXY213dzRSRFArRnh6OUszNWFRSisxeUwxZkZuQ0dTODB4cUkwZ1B1MFErWGljZUNEbWM2cWF4ZzF1V2V1b0hQRjVSWGtJenlDWnp2OVRkMFJTTmh1RkdzdDd0UnM1OE56ekY4bEZxOXJWbVN0SHFibmE2WDNTUjNUelIra0xZaVl2Q2M2QWdVVXM5YkkwZCt5Q1FuZW9ObU1vVE1WSTlueXpvaUdwY2RrSERYRVUwR1lKeXMvQWVhZ3ZjcWhvaCs2dWx6VUx6dlNhcldkemhEM2k3eEhpMUxCZ0MxdnJocjAvQ3ZCWTFVd2EybTJPM3NHeUtlY0E9PTwvZHNpZzpTaWduYXR1cmVWYWx1ZT48ZHNpZzpLZXlJbmZvPjxkc2lnOktleU5hbWU+Q049bXlsb2dpbjwvZHNpZzpLZXlOYW1lPjxkc2lnOlg1MDlEYXRhPjxkc2lnOlg1MDlDZXJ0aWZpY2F0ZT5NSUlDblRDQ0FZVUNCZ0dlUHZYWWV6QU5CZ2txaGtpRzl3MEJBUXNGQURBU01SQXdEZ1lEVlFRRERBZHRlV3h2WjJsdU1CNFhEVEkyTURVeE9UQTJNemN6T1ZvWERUTTJNRFV4T1RBMk16a3hPVm93RWpFUU1BNEdBMVVFQXd3SGJYbHNiMmRwYmpDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTVN3bVVoU0IzNW5FZ091TExnU21TUjY5UzIxR3ZGYU9Bckc4aThhMlM3TS9zSExYNmhUNnY0VXpwb1BkaS9wZWNSRmphbHlBb0xlaVJyNGtpNGdJQWw3RTJJYjA3MEpMVFIxcWxXN3JmbS9FUGlSTzlCL0ZxalV0Y0p5L2JHSVhxcW5WYkNnbkVWYVBNcHM0QVJOeVNzcThPWlFncjVVOE5NQ1p5dEFwZXp2dS9mWmhZMlY3a1NIeVcvUjNobWloUlB4VzBMMWNuTGkxUHZWVjVMQkFtOGFFdWxEMEZrZ1RWbFlhcEZBNlZxek5WRXc5SkdhWWFreXhDTW9UdHBPcHYwQng1bnM2YmMxZm5HeHpnY0JRbWoyNU1ZS1ErUVhBM1gxVDI5OE9rZ1dNZFAxUkdGTnZjUmtqQWU1OGROR2t2L3NTelhaTTU1aDI0dDI0Z0R5NDIwQ0F3RUFBVEFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBYktrcHRSeldQRHpTa2tvZ0kvbUgyVWpYRjdKd3dLWjJ4cVhKd3lSdjJwREQwKzMvSTA3b2R4R2F4bVQ5d3hIZHRsbjVYL1puNlhQYTVvU2s2TDY2YXZhcHJncjBnL2NaVlplc3RVMloxVm9DSjJrSFlOazIyQXJ4QXBva3BlU01jSWlvUDBoZWpranhzdUM0Skw0aG1KZ2I0dHd6RTAxTjJrMjZOUFJGeVllZkNqcTZmRGRyZTBGU2VsdlpLWTltc2ZvZkNjSGJSSldzNk15eE9HYUlBT2tMRW0zNW4veThBK2lBclFtNjhCdkxkZDZwTXB5alU1WVQxemRRamxNL0REMkFkU0dnaTQ0RmtBb0w4OE1ocHdGSlVDMXR6bnNIT2VVQmZoMkJiSTgxUkpZSWo5MDVkZi9iOVJSNDlURW9uVlcxNEYzVzQrS1hpNWFRU2VBU3BnPT08L2RzaWc6WDUwOUNlcnRpZmljYXRlPjwvZHNpZzpYNTA5RGF0YT48L2RzaWc6S2V5SW5mbz48L2RzaWc6U2lnbmF0dXJlPjxzYW1scDpTdGF0dXM+PHNhbWxwOlN0YXR1c0NvZGUgVmFsdWU9InVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDpzdGF0dXM6U3VjY2VzcyIvPjwvc2FtbHA6U3RhdHVzPjxzYW1sOkVuY3J5cHRlZEFzc2VydGlvbj48eGVuYzpFbmNyeXB0ZWREYXRhIHhtbG5zOnhlbmM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvMDQveG1sZW5jIyIgVHlwZT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS8wNC94bWxlbmMjRWxlbWVudCI+PHhlbmM6RW5jcnlwdGlvbk1ldGhvZCBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDkveG1sZW5jMTEjYWVzMjU2LWdjbSIvPjxkczpLZXlJbmZvIHhtbG5zOmRzPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwLzA5L3htbGRzaWcjIj48eGVuYzpFbmNyeXB0ZWRLZXk+PHhlbmM6RW5jcnlwdGlvbk1ldGhvZCBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDkveG1sZW5jMTEjcnNhLW9hZXAiPjxkczpEaWdlc3RNZXRob2QgQWxnb3JpdGhtPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGVuYyNzaGEyNTYiLz48eGVuYzExOk1HRiB4bWxuczp4ZW5jMTE9Imh0dHA6Ly93d3cudzMub3JnLzIwMDkveG1sZW5jMTEjIiBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDkveG1sZW5jMTEjbWdmMXNoYTI1NiIvPjwveGVuYzpFbmNyeXB0aW9uTWV0aG9kPjx4ZW5jOkNpcGhlckRhdGE+PHhlbmM6Q2lwaGVyVmFsdWU+bkxERmNCSjgrZ3dETDhHYW5RRDZFMnJWeXcyekZEK2dpaTIwNXVyTmlJbW1La01heUFwKzViMWkwWTBXblB4czBtTk5mcnFQNVlaeDRTQ0IreTJOTTBmV2Y5THUvOENaelhQMGZWZkZoVWREanlpVFYzK09FT2lCU1M0di95K2ZjdUowaHhVOFQvazRDYjBqdGx5cnJSRGNHckE1M29QUFlOOGxtSC9qb0ZKQ2s1bmcvWUF1M1llNHVrekxiRmluUmJmK09VazI4dU5vOWpCKytBRnRYZnhLL1h2cFpEbENUREZsQnVkY1cweWg4ZGNCelNYMWRnUndDekFWdVprWlBPVm1BN2txc3E3Tm1XWFVYVDBhNmptMHZ0SFBCMU5Jcndzc2dnUEU4eHpLdEVFWkxMa09jaVNva01EQmdySFBNK1lIVzB6Q1NVZERGY0JNSjJubVVRPT08L3hlbmM6Q2lwaGVyVmFsdWU+PC94ZW5jOkNpcGhlckRhdGE+PC94ZW5jOkVuY3J5cHRlZEtleT48L2RzOktleUluZm8+PHhlbmM6Q2lwaGVyRGF0YT48eGVuYzpDaXBoZXJWYWx1ZT51QUo3TlpsR2pRa3loc2JFZnVvK296YVhBTGlEVFVyVVlzc0ZIeHpib3llbkc4UEk1TEozQzR5NFh6NXJXYk5rcGxodGN2bmllaFkwVDJQQUpoZkh6dGlHUXZXY3poR0xna2xNZXZxY0ZRaXRJemMyT3d3d1pFZjVJaHNicHdocTRYSDVHa3krdDZtcEQ3S29lUXgrU0NqTXJCSGI0b0lVS1ovclp3aG9INmYrSjZKcWdaRExZWGcrWEdNYWFtN1c4MVFCdTMzdmRuSW1aYTFCV28vMzBpVS8zUUNGaUpTMmdQTFhJQy9jcFk5QVBiUnhPeWYrQ1NTS0swaUdEaEVnVTFuT3ViWkd0T1J2NzZIZXUxK0pnWndGZ2oya1RVSCtHcnUwYUdFb09IdmhtZllyWmJPRFFFdmlnMk5POEh4Z0RGNEh6bkRudzNCSjBUWmpFMlJXelJtdWE3Qkw4SjZneDlZVWNaOERrMlpMRVJLNWZ0bC9lSTgrUVlmZVVUWVFnN0Y4OXRXN2Vweno3K25uS3VtOE5xcUJTUGRpRUZKSXRmWGpiUW9xV3NteDh1c3BPbjQ3TzFrVlVDV2NkeUM2VEk3ZmE3OFpGQjgzWjdSRzR0b3lVanZsOXBNRDJQdmNHRHBNc2RsL21oTENyRUdsYVU2U1RLVUlQc3dRaTB3TjFkTXFFK3UrcXFUd3BBODUxV2xaUUVwY1V5OWV2ZU5xU3pUeERSYTAwVGZ4N2M2UWlDYUc0ZE5pNGZvTDh2cFlrRkZvS0hranpZMkxYTHVaK1hhVXBodE5TWlA2VHBhM0liUFpJdGdXSm5wVVVtclpCU2V2bmdjYnlEZmtBV1BpeS83TUhyR0Z0cE1MTzdGZFZudi9TL1dDKzBQYUVTTFpHWXJ3NTRCM2s3ZTc0bk1aUk1BblBlaHRUd3FzMFlNRlc5b1EvWkNLWm9NYWdBdVZsS0lEK2t3dnNGYlV0S1Ftc29SeVU2cmorNGlJeVBSSzI0UFIzN21NSGoyMHZ3ejRyTVI3SHVDUnVJQkliajAyRDNyMXgxMEpyQ3VhR3M4aHAvL0xoYkErZjg2TUtieUhtRDNqSnJhMytqazRSakJ2bzF2L3dvbHpjbGtOSGF4MXlOZVE5MHYyQlNaNzE0ZVpwdm8zNmN0N2JFNUlkVCt2VnBPT0dMTVF0SmRSdks1RTErM3o0NkxLME44L1I4STkxSnExOWRnaEJhWmFZYllxMjhTWkxyeDF0K1ZyamdTcFNpWFVKQktnQnZIZ0loSDF2cHc2bFJ0bEdoUTRqMTFUeVh0SUJ6S1lvWTgxS0N5eFF3RXpDQmU5aTVGL2pNaUNVNVgvbnVXbnplaHhvaVBINEtROUpiVEp0QUJoOEFNRE9kRHJNZk4rRVVNa3NDWUpBRTV1Zk16TkdjSEJmU0ZpWlRYeDRqU0tvbkkrMS8xaHhuVnMza3FJM0M4L3BDYTcyaHhzV0VvYkt6V3pFdHFNWDJvLzB2ZlVhS2dOU21JUUdLWGkxbEs0dyt2U1NzcTNmclNwbU01aG5qdmNsdjhwbXdGdFRRYmVQUTJVWFVLNnBpb3NTNFcxMi8zTEorWUdtaGxyUmNCMmhGT3VIWUZqRUkyM3VhNHV2TXBVMUZmRFB2VWZPY1hkR25jZ2liMFgwaitRN1d5UlJUb3ZHZkZIenk2TzdxYVNGTXU4SDliTmxEbWNKaVdVc3pBcUdrdkpFMWdERTlid3V3QURJSWRUWmdOMXkxMzNYRk15NnNZTDhGN080Q2t2a0tyenFJZGpodGM4dXRHUmZBa1ZJb1dTQXh0U20rM1ljZFJnbWJ4K0hXdVhTMzJXMmgzbnQwSUFrc3VMM2tLYUZ2c24vaGdFVVp0ckU4TFNsNis3STVKemIxZm1lRVprMFNWVTI0dW04T3hRN1VWeTZoL2s3bmMxVnEyenFTSmRCTE1keDMyN0QvNXh0b2Uvb3RlTlQ2OU1xM0ZOaXE3Y3hZckdMaFBvY1dQcHpoM3FuNjNYN2R5U1pkNEJlRkZlVDR3OXhIV0YrdGRQMzBWRGJUaEdFY2pBWjdTUUIzaldvYkI4SE0rb0lSUk1ZUUZ0YmhBS2ZwUVhSR0J3VngwWE5BQStEaVVqTFdwWndSaTJUaHhrZ3VLNWszbktHK2FFRE9MZ3B4dGxJbTB6MHJDNEhmc3FZbDArd2NGdXJjNFRuL3pJQTcxN2JTMUtMRXNGQW13NmtaZlZFQUlTVndZdGxFVzFsM2EzWkd6Y29tMVVYcDQ4dGNDSHVJZnUvWFgzdGMyZDRtMWFIUWk3QkFVclRCK0hLM2tVcFA3NUhBYlFJSmhTZ01DaW9hQjZIUGlwYldOaGpTQ1BBVWFJTnNQcy9POWlPRVV2UWJjVmh0cUhJQStwMURycFhtc0lac3NhTnFneEp1NE91NXJKUFF3NmtCc1NoNGF5VWhNazlOaTRRMEt5dTJMTFN5dkpwT2dsOEIzWG1DZllQZXBWWnFBZTFmQUZkbENIM1ZuNUFUMDVCdmJHT0tyclBFMjV3alpiaTFzQm1qeXB5bmRYR3lWdUtFSEtZeWJOQS9EcW9lQkFCRG0zTTVQcjBQdnJaSU5nTHl6eitsN2lDRjl4aVc1cHhZbk1iMFdzMGE1b3pneWRXNzVuU21iMC9MSWJJRVJlNGtVVHUrUXQvR0V0eC9VeVEwdGNmcXM1WGJTTnlzTEVsRkFwUjBzemQ0a1F4TXVMY0NlYjFlNVdGdG5JaEludEYwVDQ0NDBta2pQaVNkWW52RWFPdkhUR3RSVDE1WDJ2VlR6K0Rmd0I2RjF6Q2xuZWpFUWdhZVBTd2JCQThBYzJIZmUrOGY1S3F4QUluVE5SK1VucE9VYk1pYVptWEJabVd6cHAzZXhQZUhpbUtCci9ucHdrTWJuTE9KRUxoaFh3VmJQOFFGQ3ZjVUVvWHE3K1Riczg5WS9VYkFuMVBzRVhUTmdUZFVIemFsQVZWSUt1dXNFTmRkYkhoNHNVOFdtZ1JuZjZYRllweERreWh6bVFoMS9kVXFQNGYzYkxaY1BXWlVaT1hhZ3h5VEwyeGlhZmo2alh2S1dXZ1h2RFgyNS8vK1lSVVVtZTVsdmVOVERPUHNlRTl5YXhFL1FkZTcyMzZvTVR4VkpCc0JHMVRyRG43b2oxNHROME9pTHJDSXZNY2tIbWN5THhSczN2dkE5RUpzV0xKeUdLWHhCQ3czU0wreUpSWkZIWm5IcFI1UnpQWnhwZDdQMFY4U1BCSjlvZUZFQ3R5c0xUNGVLbTJ5bFJFR25uQ2lJUndZdUtES3J4cTB5L1FtNHVTd2N0SzB2dWE4NFlwRjJkdDlJY2tXNUlrRE9WS3hZSDNBbDJ2cTh1ditpQyt6bHp3UlhRZnl2Z2pRbkdmLzJYTXhTbFpHYXYxeVBVZ2FWNWYveHBrcHRuRVJqSVFJRFB6TFVaSStRSTZ5VG03ZUlnYkVwOHUrTUhWaHJpUW9BVHZtNktJY3pVSC91TE5KTVRHcVEzYWhZRXd0eU5LSk9SMjlQSy9JRHhaY3YxejZOK0xMM1hxdXRGUTlvRUhpVUxSUU8yRURsb0JhdFdHVjkzbmlsWDJhVENTdVUxcDlIWUJ0L3ZoVXhDa0QvUEJwQzA2ODd0ZHI3a0o0bGFRTXBuUndaM0Q2Szd0NytGOEU3TUNiWmRRR3lxVDJ6UE8vZWxkUWJvcitOK0Q1aUZmVlVPeUtmYmc3bU5ZUWhTaVF0a2cyZ2VOTlQxMm8wMGNRZE1lT1FCRHdGUFJvY2piY05pRk9PQlZocjZBVVZpZlRQemJncitkODZ3N252YVllc1NONmE5a09BU2RZRThlRFkwaGJQMVBVUVZTWVVaVHpXKzV5SW1MT2hnV29vQ2laRDF0ZGlsYkRBS0RKd2lERHhGeEp1eDVCWjExRmRvQlBzSVZES2FiRWpJazdNS1lZTlVSbXVrSUlzb292dnhGOXVPMHU4Ni8xNWNOQ01Wdm5BeW1wbFM4a2p1UERxTmF1d3pYdjNpL1V3Q1NYSlhOVjlKbVdsQjIySm1Qd1A2cW5oYURxUjcreGtUTGhIajAxYkwvdnZ1czJsZldMZ1pyR1J1Z3VMRnUvcGZwRTlyQzQvNUlsVWNmQU9xd21ZZVZHcHBZZUE1N0pndi84Z3lvQ1lJTFFmZVM5MnZiTEorY1dCSW5aM0U1L2hEQ1JxTENLUHVtMWdNSStmdEd2aHhzOGVmUlpHV3d6d2FHY09JSkRjWWFmdjVBMWc1TWZQUzFpRGtBVnZwVDJPRDFKQmRuTUliNi8rQVg1WXdiRGF4a1krd0tiK2VoVHBPcTQ5bTNUdWsrTmpzdFo3YThjU1JSNXRoTjRPQlpCNUIzd0M0ZDJSS05aTU5yUDA1OXJRZCtXNGt2S3pFM2N2MUdGNTZOcHJOdUtEUTRhY1V4bDNCYUFVNjcyTE5RL0V0a1NOUE5tTXZpR0lMR2JDR3VpWFVGK2lMWmRDUjRUcGtWRzRJRFAyby9QVFN3aWZKc3NCaTZCYUU4QnJ0aGlrY1J1U1lYMmRZWThsT0JNVkg5cS9NTkRhYUFHR0g2blZqbUI5OUFzQVBWU0lnWHdrcjRYdGxWS3RsUnVLVkVYeStrTlhTcXcvQ042emxDRFMraDlXMi9TM0pzSHQ3OU5QanhIY1dRNkF1Qld3UmM1bVUyOHJJK2h1VkkzLzAxVTdtVXBmbncyWGIvNHVSRnR1RDBESXFQdGhOOFlWNDlxS2FTb29Ga0VMQktQQnBxemJuWkQrSkpBcXROM1JiRGR6T2lJMFc1TGNvakVsQXVtcDZJbWtoZWQ2TjBNalBVbVZyVzRiQkM3aG42RFR2eXlRZnFuRzFaZzJ6WXhDdjJKWUNqWnN5Wk1uRHNSWnJQZ0tSLytBd3pQVVFOSm1WVEM3SHVqMlhsSUVTQmdwQUJIQVkraXQrMFpCSjl4eGluK25nOXVWS0dqSjhTTDE2d08zenVUMElxR3Y1bmk3bU5JdDl2ZWVIaVhVVnlFL0ltQ2ErcTUwcTZpVWFLN2JHSlFjRXJhSklHQUs4ZzJ5UWxGcEdGb2NtenNIM0VZT3h4WFJWc1pPczZuSFZsMjFHR0wwKzY1K1EycGJuSDZsOHRTYTd4UjVpZUh1NUZpdk5mNVRlUmx5Z05RT2R3bzBmSnBVWmVVck5jNi9GSzVzY2habEFPUlExbEZwelprZlp5c3pSeklYVmFOUmROQTl4WWMzNnlUck13ZVJObEpQSExNcFdpNW5EM2F2YXo3cmYzOG9BSjNOQUFNT0dCOVpyQ3Jxa2pyempLaHRpdVJsYytKeUhxVDVta05kVURNOE1zaEJPUU15WmNiYVpxQmp6WmlCNUROZXFYcnJWOFhoMnFhdHZweitsZW45MUNoaHRpUE5kRUVmdm1LQmhCMHhKT1c4L3l2d21nUENNU29yTEZteXYyZGxvbVNaQTEwZHVHQ29IYzVlRXc0QUhxYWViZHNEZGR1bEkxd1FWYXVPSy8xS0xVMVhpM3FhS0c2U3VkSE85SlJ4U2xLcG1VZ1dOT0QzRnNMMEtsT0kzMCtTMG9pLzRPZ1dzKzVpT1RTc0xCNmUrMCtVWnZJR21QdkJENFM3WlJIRnUzQ3hjUG1Vc0wrWTZuVzh0WXZtdDhES1JCSnZoU3FiT280aWx4SzFJMU0wVW9PNFBFVkJ0a0p2eGNOdW1YMnFhYmV5Zk9PWUY1WWJ5MWk0c2pVL3Brc1EydHlhTlhHUTVKZUVqR3BxVE0zY2k0QzdYbytEVzlhZEhYR2lRNDhpTjlGOGZFQ3lncWxPczRBcmRaZkZ4TGtLQURBRG9pZ0I4RzNyWHR1cFhKZExnU1lFWnpNd09MWkUrQU11bFdDeGRTSkcwaUxicUFHNXl2UnJWd296Q3J6VVMxbHJMNDJndFBSVzRXSmt6UDJXSGZBK2JuM3p6M0VCcDNQSURyNFNWbHNJeFNOOCs2OHRPTXN2dFhtRFFWZWxwb01VVmx3Zy9CZWZYUkd0VWtwRVAvckdIS2k2MDhKdWhJalEwcUxYREtBNFpVTnlkM1doV2lDMmVpcVJ6M1VMdjZnMkt0bkc0a2NrdHFFR1NwUnlLTjBCL2xld0FjaWNlcjd4c0dYU0g2R0hwZTBHeUJOazJlL0xDQ3NENURmbzRYakV0T3JQSktwOTZyY0FGZWpsbzJWRTlEekJpU1lCcGlhaWdoQndpenArcnA5bFB0TXhNUjNDK2doNCtwVE5Id0E0dC9PUGFKVFI2NmRIZ2tSRG95RmFsZjNMc0pXeWVZa09pRUxpdUlUNUdTT1NzUkpaa0VkYWw3S0JmaXlndHAxcThWSGpnSnZ0enZsUk4rQ1hLcXNaN0toWmZFbzNLSDJEek9KM2dJd3ZNWFNENm5MdnBkRUkwTFdoa21FckhyZ1ZvSi9qNWJDaWZLcnlOd1l1M2RLMjFiNjcrdGhXSGpGcWtWZ2FMOCs3ekt4S1Bva09OTTJ4SHZvdU1EV2FvaE9jL3lhRGdhOXAvNnc0TG5GeWEyTmVLWHFNT1hUZzQxOWVFaExtK3pWNlJ4WndLelJZUTYza3F0UVg1VVpmVXN1NFlQOU9ha3p6MURwZ3d5Y1pVbng5VkVZa3RMMWRSN1dLK1B4WXhZL29JdEt4UTE2TlRjU0J6ZzI4blArU3QreC9mRFVFS1NOeWprUlc3ZEplZmFCU3h1aTRIYXlkenVna2hvVmVIZlNwaVNleFQ3TVZ2TUN5OXZLR0JHRXdHMjRiTi9VczZuVHlyYzFmdkwzS21HZUZveHZCclEyUHNEMjdrVHBlY2Qrci81WFVQR0x5TDd0K0J3VjlmZUFjV21yL0xncWlXOGxtZFE1TnluQnowaHFueStrb0JEVlpXUXRvQXRnS25Xa3dBbGhHazVsYm9DWWZSUkRLcklYb1lRbEVMeVF6cW4xQ0w2MmQyM1kzc0xScG40cC9JMjdjVkhOK0s2OERxR25seVhtc3dvM25DckRSN0tGWW5jSmlLRlM3V29JR2tBcG02cWh6YTUvaSs2cXB1QWtROVpGakUrZHNUN2dVTU5YMFBMV1o3WWdQM3FyMzM4bWRidFRqbHdvKzB6dmQ3WCtuOXBLNnFOQ2RmSXdETnZQeEQ2Vnh3cDMvbk9LRElkcjFwUVRwUU9VVTJjdWlTaHFvT3h2bDVDOWlhakRCU09DaDN0V3hXYjRRcDdtUDNMWFl2bnJpZWc1dVlXbElLNVNSaE1BWlorSHRPdHNiRTBmOFFEQWlkV0gvcWJJRXVFU05WejdWbzBOdll0YVNPaGx1UVRvWkE0VWgwMEZkem8rVUJiUHlrU2VDSmh4a1FQWDBhVEQvWnFXazl6SVBsVG5Zck5SQ0xkK0YycjhIYnh1cHkxM1NWVEpwTVp3VDhsMmdSWlY5S1BNYkRVSWZDSjlmQlFMSWxDcXBjTkUvWFlZY2JYbVV5Qk5sUldVOHo2TWhiUnhVT2FBSDRxTXc1TmJ6YnpwWkRYaHdPaWp1NkVLNC8rMlZ1dWZHK1c1cXAyZ2dWZ3dveUJCdWE2U0ZDYVhkZ3J5TGxZMjJIZy96SkxDWnE1bVBVbXBmRnFMMTVqLzBNZkxOcU13aDVwMmlqNTJJazZPWjVuRUVMcDJ1M1VGRjNrVFVJVTRnY0pwVk5ZUjhDMk9wM0tFL0c2dHN5L2NtZHBTRTdKL2VrMmJhMEhFb2Y3OFRMVndYTklWbmR1NEhpTGp4RCtmWFEyckJBTXZycVJMZUNtVGhpbnFEUG9tNEtlSklDTHNZNkNYeHlkM3dsZHJVK2NYWS8yaCtkR1dqNlM5aEM1VlhSR292OHpIMlVFYkdON2JGeW4vZys5WnBXOXpJWjhxWG9HVGFYVmFmUXorcTVxUy96VVV2U1k4T1F4TTIrWThYQ3BUSFY2TXlNWExtektvdUNDQUpwMnhncHlqSUVBaG1oRlJWSnd0ZGxGaktkcnJvS095bnMvZDdGNlBWQXpzOXJaanBVbTNyYlcxazN3SUJ4Q3VENHlwU3JIUzNmc2FMYTZTR09RMGZTRDgyMGV5QitnL2QzOU5FOHZoT1FWYnh1SDIyc1YzS09jT2xZcXVNbUlXcEVQdi95VjFqYzZIWm9JVUlDQTk4UmNrNUpNWnFhcTlwUWRXWXZRNCs1ZlBBRXBBRVBrbzJDOXhtV25oZThFQmQyWnNPTVNjbDlsWTR0K2hwa1Q2WVpuc1ByK20yR3Myd1YwdXY2R3Q1RmErcHA2cTA3dThiY3U2R3FqcGNMcjBPMVQ2QVZvUmJIeFdpZm05MTBrQjNDRkVYampheGZFTnpsdk5ORi9zSWx2ZU1DTndUckdZNXAyRXMyQ2hINmVicWZBajFjaHBEVlk5b002Q1UyanVvbXN0emJXZTFLT0VVMEFOc1ppWlpsV2UyZUNRQ1JlTjJGU3kxeGEzWWJEL3BNMk1RbkRKRjFPL3BSVmNnS1owK21pU2JRWHZzTm5zSXhEbGxlZnVkMXl1VDNkSXRQQmJMV1JjVHdpOVMvSTF2S3dNZ3B5SjRqK21pbDYwUUsxUHdaOXhBYzhrdkpHRndTZ0UzR1ZFMXJBTTNqUEhwVmx6cFZCZWhUUWlDOHlJdmNwQmw1cXVKZ3lSL09FdGk2N0lVcnFNakJuVU00cnRSZExGbDRyOTVtbkY1Wm5XVlZJNEY4RFZKbXkrK05pRnN5S1ZtV1h4V0MvM3ZIcDE0UW1NKzJXczRwWk5Dc21HNUFIc2pFcElITDY1QmtJT0w2dFQ1Q244emczbmd3eFBHWDZwYU1hUG4rSWxhcWdYaGljbUZoMXB1U1FwQTVtanV2ZVlFTmc3ZHJwb1RZZnI0b1crYmpDTEl5WlVFWlVEV1J4ZUIvd3IzZGp5aXdNMGtkekZlblA0TDNWTXhRajdFYU12WkRCTXhOajJzd1ZpbFVlak1KeXVVRG5JaG5aOTZYMmx6TjNPaVlHWlVqdjJWbmdjQTl3aTBLVkJLK0NtbmoyNVZqd0c5MDVqcDRmS3l3L254UjFpSktVY0t6QzRWZkFPNkh1T2Fkc24wV3h3NHVDajJmb2JBZDdyM1RzRDhVMzJMVnVMSG1yblc0YlI4R3VVdUMxRHBGRTR4VmdhVGZTQktDRUZlNklmeWFndXN0clB2UmUxK0dEd0lWTSs0RmRFVlJCUVQ3M3JONWthTVRzZFpJQjJWdUhIVG5MNFJ6cUU2Y0tUUWMzZG9wTlJ6eUMySG5lVUR4dmg1Y3krNm1rRWVUUU1Va3poWDhIdDY3ZTdhQWlpTzBnU2YxZ25ybGhxZmdNRENYZk81Q29wRnhNTE5mUEp4ZUN5VW5wRHpKMlBDOVZaQnRMNm1vcFhKT0g3SkhqZmJxRms4cHM3Y3VjYytkRy9pcWV4eWE3a1RzMGVNVGYzK2crWkdMUGdIcGJUaFdKaVR3YVI3ZGxwcG5hSzFjaWhmZ2s3ekU4Yi8yQ2dHbk4wbHJRTm5rNDRXOHJ5bHVYbkh0dW9ZRUxEWDljbTZxWnBieU5nPT08L3hlbmM6Q2lwaGVyVmFsdWU+PC94ZW5jOkNpcGhlckRhdGE+PC94ZW5jOkVuY3J5cHRlZERhdGE+PC9zYW1sOkVuY3J5cHRlZEFzc2VydGlvbj48L3NhbWxwOlJlc3BvbnNlPg==
+
+==============================================================================================================
+  Keycloak 加密流程：
+    1. 随机生成一个 AES-256 会话密钥
+    2. 用 AES-256-GCM 加密 Assertion 明文内容
+    3. 用 mylogin-sp.crt（SP 公钥）+ RSA-OAEP 加密这个 AES 密钥
+    4. 把加密后的 AES 密钥和密文一起发给 Spring Boot
+
+  Spring Boot 解密流程：
+    1. 用 mylogin-sp-private.pem（SP 私钥）解密出 AES 密钥
+    2. 用 AES 密钥解密出明文 Assertion
+
+==============================================================================================================
+还有一个问题，我的springboot和keycloak的交互感觉应该是两个密钥对才对;
+一个是sp的密钥对，一个是idp的密钥对，即keycloak的密钥对
+我只生成了sp的密钥对，上传到了keycloak;告诉idp即keycloak用这个公钥加密发送给我;
+没有idp端的密钥对啊；
+你可以理解我的需求吗？你先复述一遍你的理解:
+
+==============================================================================================================
+谢谢，我想起来了;
+我之前只是执行步骤而已，没有理解每个步骤的本质意义;
 
 ==============================================================================================================
 
