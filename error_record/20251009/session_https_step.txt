@@ -1,0 +1,105 @@
+好的，以下是完整步骤，你来逐步执行。
+
+  ---
+  第一步：生成证书文件
+
+  在终端执行（注意替换 keytool 路径）：
+
+  # 1. 创建目录
+  mkdir D:\software\developmentTools\Git\gitee\newpap\login\mylogin-back\src\main\resources\ssl
+  mkdir D:\software\developmentTools\Git\gitee\newpap\login\mylogin-front\ssl
+
+  # 2. 用 keytool 生成 .p12（后端用）
+  "D:\software\developmentTools\jdk\jdk-17.0.12_windows-x64_bin\jdk-17.0.12\bin\keytool.exe" ^
+    -genkeypair ^
+    -alias mylogin ^
+    -keyalg RSA ^
+    -keysize 2048 ^
+    -storetype PKCS12 ^
+    -keystore D:\software\developmentTools\Git\gitee\newpap\login\mylogin-back\src\main\resources\ssl\mylogin.p12 ^
+    -validity 3650 ^
+    -storepass mylogin123 ^
+    -dname "CN=localhost, OU=Dev, O=MyLogin, L=Beijing, ST=Beijing, C=CN" ^
+    -ext "SAN=dns:localhost,ip:127.0.0.1"
+
+  # 3. 用 openssl 从 .p12 导出证书（前端用）
+  openssl pkcs12 -in D:\software\developmentTools\Git\gitee\newpap\login\mylogin-back\src\main\resources\ssl\mylogin.p12 ^
+    -nokeys -out D:\software\developmentTools\Git\gitee\newpap\login\mylogin-front\ssl\mylogin.crt.pem ^
+    -passin pass:mylogin123
+
+  # 4. 用 openssl 从 .p12 导出私钥（前端用）
+  openssl pkcs12 -in D:\software\developmentTools\Git\gitee\newpap\login\mylogin-back\src\main\resources\ssl\mylogin.p12 ^
+    -nocerts -nodes -out D:\software\developmentTools\Git\gitee\newpap\login\mylogin-front\ssl\mylogin.key.pem ^
+    -passin pass:mylogin123
+
+  ---
+  第二步：修改后端 application.yml
+
+  在 server: 下新增 ssl 配置，同时把 CORS origin 改为 https：
+
+  mylogin-back/src/main/resources/application.yml，server: 块改为：
+  server:
+    port: 8888
+    ssl:
+      key-store: classpath:ssl/mylogin.p12
+      key-store-password: mylogin123
+      key-store-type: PKCS12
+      key-alias: mylogin
+
+  ---
+  第三步：修改后端 SecurityConfig.java
+
+  SecurityConfig.java 第 73 行，改一处：
+  // 改前
+  config.setAllowedOrigins(List.of("http://localhost:5173"));
+  // 改后
+  config.setAllowedOrigins(List.of("https://localhost:5173"));
+
+  ---
+  第四步：修改前端 vite.config.js
+
+  import { defineConfig } from 'vite'
+  import vue from '@vitejs/plugin-vue'
+  import { fileURLToPath, URL } from 'node:url'
+  import fs from 'node:fs'
+
+  export default defineConfig({
+    plugins: [vue()],
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+      },
+    },
+    server: {
+      port: 5173,
+      https: {
+        key: fs.readFileSync('./ssl/mylogin.key.pem'),
+        cert: fs.readFileSync('./ssl/mylogin.crt.pem'),
+      },
+    },
+  })
+
+  ---
+  第五步：修改前端 api/index.js
+
+  // 改前
+  baseURL: 'http://localhost:8888'
+  // 改后
+  baseURL: 'https://localhost:8888'
+
+  ---
+  第六步：处理浏览器证书信任（keytool 自签名的代价）
+
+  启动后，第一次需要手动信任证书：
+
+  1. 浏览器打开 https://localhost:8888 → 点击"高级" → "继续访问"
+  2. 浏览器打开 https://localhost:5173 → 同样操作一次
+
+  这样 Axios 请求才不会被浏览器拦截。每个浏览器只需做一次。
+
+  ---
+  执行顺序
+
+  第一步（终端命令）→ 第二步（改 yml）→ 第三步（改 java）→ 第四步（改 vite.config）→ 第五步（改 api）→ 重启前后端 → 第六步（浏览器信任）
+
+  你可以从第一步开始，遇到问题随时告诉我。
