@@ -1,0 +1,121 @@
+可以講講ref不走代理，是怎麼實現 getter/setter 數據變化到頁面更新的監控嗎？脫離了Proxy怎麼實現？
+● 好问题,这正好揭示了响应式的核心其实不在 Proxy,Proxy 和 getter/setter 只是两个不同的"拦截入口",背后那套"记账 + 通知"的大脑是同一个。
+
+  关键认知:拦截 get/set,JS 有两种办法
+
+  Proxy 不是唯一能拦截读写的机制。JS 从很早就有另一种更基础的——访问器属性(getter/setter):
+
+  const obj = {
+    _x: 0,
+    get x() { console.log('有人读了 x'); return this._x },
+    set x(v) { console.log('有人改了 x'); this._x = v }
+  }
+  obj.x       // 触发 getter
+  obj.x = 5   // 触发 setter
+
+  你读 obj.x,实际执行的是那个 get x() 函数;你写 obj.x = 5,执行的是 set x() 函数。这就是不靠 Proxy 的拦截。 ref 用的就是这个。
+
+  ref 的真实实现(简化版)
+
+  ref(0) 创建的大致是这么个对象:
+
+  class RefImpl {
+    constructor(value) {
+      this._value = value
+      this.dep = new Set()   // 这个 ref 的订阅者集合(账本里属于它的那一格)
+    }
+
+    get value() {
+      track(this)            // 读的时候:记录"当前界面订阅了我"
+      return this._value
+    }
+
+    set value(newVal) {
+      if (newVal !== this._value) {
+        this._value = newVal
+        trigger(this)        // 写的时候:通知所有订阅者重新渲染
+      }
+    }
+  }
+
+  看 get value() 里调 track、set value() 里调 trigger——和 Proxy 的 get/set 拦截里调的是同一对函数。区别只在"入口"长得不一样,大脑完全共用。
+
+  这就解释了为什么 ref 必须写 .value
+
+  你之前可能觉得 .value 很烦,现在原因清楚了:
+
+  ▎ getter/setter 必须挂在一个确定的属性名上。基本类型(数字、字符串)自己没有属性可以挂,所以 Vue 把它装进一个对象的 value 属性里,再在 value 上定义 getter/setter。
+
+  数字 0 没法拦截
+     ↓ 装箱
+  { value: 0 } + 给 value 装 getter/setter   ← 现在能拦截了
+     ↓
+  访问必须走 .value
+
+  .value 不是设计者故意找麻烦,是"基本类型没法直接拦截"逼出来的必然结果。
+
+  那 getter 怎么知道"是谁在读它"?——共用的大脑:activeEffect
+
+  这是你真正问的核心:脱离 Proxy,getter 凭什么知道该把哪个界面登记进账本?
+
+  靠一个全局变量 activeEffect。ref 和 Proxy 共用这套机制:
+
+  1. 某个界面要渲染了
+     → Vue 先把全局变量设为:activeEffect = 这个界面的渲染函数
+
+  2. 渲染过程中读到 count.value
+     → 触发 getter → track() 执行
+     → track 一看全局 activeEffect 是谁,就把它登记进 count.dep
+     → "哦,这个界面用到了我"
+
+  3. 渲染结束
+     → activeEffect = null(清空)
+
+  4. 之后某处 count.value = 5
+     → 触发 setter → trigger() 执行
+     → 翻出 count.dep 里登记的所有界面,挨个重新渲染
+
+  所以"读的时候建立订阅"靠的是:渲染时先在全局插个旗子(我是谁),getter 触发时偷看这个旗子。Proxy 的 get 拦截也是偷看同一面旗子——这就是为什么我说大脑共用。
+
+  对应回 Java:这就是带逻辑的 JavaBean getter/setter
+
+  回到你熟的世界。ref 的 .value 访问器,等价于一个在 getter/setter 里塞了通知逻辑的 JavaBean 属性:
+
+  public class Ref {
+      private Object value;
+      private Set<Listener> dep = new HashSet<>();
+
+      public Object getValue() {
+          track();          // 读时登记订阅
+          return value;
+      }
+      public void setValue(Object v) {
+          if (!Objects.equals(v, value)) {
+              this.value = v;
+              trigger();    // 写时通知 → 等于 firePropertyChange
+          }
+      }
+  }
+
+  这就是我们前面聊的 PropertyChangeSupport 的手写版——把 firePropertyChange 直接塞进 setter。JS 的 get value()/set value() 语法,就是 Java 这种"在 getter/setter 方法里加逻辑"的语言级写法。
+
+  最后:两种入口的分工
+
+  ┌──────────┬───────────────────────────────────────────┬───────────────────────────────┐
+  │          │            ref(getter/setter)             │        reactive(Proxy)        │
+  ├──────────┼───────────────────────────────────────────┼───────────────────────────────┤
+  │ 拦截什么 │ 一个固定属性 .value                       │ 对象的任意属性,含新增/删除    │
+  ├──────────┼───────────────────────────────────────────┼───────────────────────────────┤
+  │ 适合     │ 基本类型(只有一个值要盯)                  │ 对象/数组(属性不固定、会增删) │
+  ├──────────┼───────────────────────────────────────────┼───────────────────────────────┤
+  │ 历史     │ 老机制,JS 一直都有                        │ ES6 才有                      │
+  ├──────────┼───────────────────────────────────────────┼───────────────────────────────┤
+  │ 共用     │ track / trigger / activeEffect ← 完全一样 │                               │
+  └──────────┴───────────────────────────────────────────┴───────────────────────────────┘
+
+  为什么对象不用 getter/setter 而用 Proxy?因为对象的属性你事先不知道有哪些、还会动态增删,getter/setter 得"一个属性一个属性手动挂"(这正是 Vue 2 的老毛病),而 Proxy
+  一层就能拦截全部属性的任意操作。基本类型只有"一个值"要盯,getter/setter 足够且更轻。
+
+  ---
+  收尾一句:响应式的本质是 track(读时记账)+ trigger(写时通知)+ activeEffect(知道是谁在读),这套大脑与 Proxy 无关。 Proxy 和 getter/setter 只是把这套大脑接到数据上的两种插头——对象用
+  Proxy(能拦截任意属性),基本类型用 getter/setter 包一层 .value(够用且轻)。
