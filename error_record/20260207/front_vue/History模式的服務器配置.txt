@@ -1,0 +1,121 @@
+History 模式的服务器配置
+
+  ---
+  问题的根源：两套路由系统并存
+  用了前端路由之后，系统里同时存在两套路由：
+
+  服务器路由：收到 HTTP 请求，决定返回什么文件
+  前端路由：  JS 读取 URL，决定渲染什么组件
+
+  它们各自独立，互不知情。平时相安无事，但有一种情况会正面冲突：用户直接访问一个前端路由的 URL。
+
+  用户在地址栏输入 http://example.com/dashboard
+  或者刷新页面
+  或者把链接发给别人直接打开
+
+  → 浏览器向服务器发起请求：GET /dashboard
+  → 服务器路由接管：我来处理 /dashboard
+  → 磁盘上没有这个文件
+  → 服务器返回 404
+  → 前端 JS 根本没有机会运行
+
+  前端路由从来没有机会介入，因为页面都没加载起来。
+
+  ---
+  为什么 Hash 模式没有这个问题
+
+  Hash 模式的 URL 长这样：
+
+  http://example.com/#/dashboard
+
+  # 后面的内容，浏览器不会发送给服务器。
+
+  浏览器请求：GET /        ← 服务器只看到这个
+  服务器返回：index.html   ← 正常返回
+  JS 加载后读取：/#/dashboard  ← 前端路由接管
+
+  服务器永远只收到 /，它不知道也不需要知道 # 后面是什么。所以 Hash 模式不需要任何服务器配置。
+
+  Hash 模式是一个绕过问题的方案，History 模式是一个正面解决问题的方案，代价是服务器需要配合。
+
+  ---
+  服务器配置的本质
+
+  服务器配置要做的事只有一件：
+
+  ▎ 对于所有找不到对应文件的路径，都返回 index.html。
+
+  让 HTML 和 JS 先加载起来，前端路由再接管 URL 的解析。
+
+  不同服务器，写法不同，但逻辑一样：
+
+  Nginx：
+  location / {
+      try_files $uri /index.html;
+  }
+
+  Apache：
+  <IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.html [L]
+  </IfModule>
+
+  Node.js / Express：
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist/index.html'))
+  })
+
+  形式不同，意思相同：找不到文件就给 index.html。
+
+  ---
+  但这里有一个真实的复杂问题
+
+  前后端分离项目里，服务器上通常同时存在两种路由：
+
+  /api/users        → 后端接口，要转发给后端服务
+  /dashboard        → 前端路由，要返回 index.html
+  /assets/main.js   → 静态文件，直接返回
+
+  如果把"找不到就返回 index.html"配成全局规则，/api/users 找不到文件时也会返回 index.html，后端接口就废了。
+
+  所以实际配置需要分层：
+
+  server {
+      root /var/www/html;
+
+      # 静态资源：直接返回文件
+      location /assets/ {
+          try_files $uri =404;   # 找不到就真的 404，不 fallback
+      }
+
+      # 后端接口：转发给后端服务
+      location /api/ {
+          proxy_pass http://localhost:8888;
+      }
+
+      # 其他所有路径：前端路由，返回 index.html
+      location / {
+          try_files $uri /index.html;
+      }
+  }
+
+  这三段顺序和逻辑必须正确，否则要么接口被 index.html 覆盖，要么前端路由 404。
+
+  ---
+  这个问题为什么以前不存在
+
+  服务端路由时代，服务器是唯一的路由中心，所有 URL 它都认识，都能处理。不存在"URL 找不到对应文件"这种情况，因为 URL 对应的是程序逻辑，不是文件。
+
+  前端路由把一部分 URL 的控制权拿走了，但服务器不知道这件事。服务器配置就是在告诉服务器：
+
+  ▎ 这些 URL 你不用管，交给前端处理。
+
+  这是两套路由系统握手的地方，也是前端路由引入的最隐蔽的复杂度——它不出问题时完全感知不到，一出问题（刷新 404、部署后路由失效）往往让人摸不着头脑。
+
+  ---
+  一句话总结
+
+  History 模式的服务器配置，本质是在解决两套路由系统的管辖权划分：静态文件归服务器，后端接口归后端，其余所有 URL 归前端。配错了哪一段，对应的那类请求就会失效。
