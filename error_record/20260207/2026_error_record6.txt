@@ -745,14 +745,102 @@ echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMj5un542e2x1TG4BlKrnU3nNWWRsIalovz3hl
 
 echo 'deploy ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart mylogin-back, /usr/bin/systemctl status mylogin-back' | tee /etc/sudoers.d/deploy
 ==============================================================================================================
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+  -keyout /etc/nginx/certs/mylogin.key \
+  -out    /etc/nginx/certs/mylogin.crt \
+  -subj "/CN=115.190.204.179"
+这个命令是在服务器A上执行吗？
+==============================================================================================================
+tee /etc/nginx/conf.d/mylogin.conf >/dev/null <<'EOF'
+  server {
+      listen 80;
+      server_name 115.190.204.179;
+      return 301 https://$host$request_uri;
+  }
 
+  server {
+      listen 443 ssl;
+      server_name 115.190.204.179;
+
+      ssl_certificate     /etc/nginx/certs/mylogin.crt;
+      ssl_certificate_key /etc/nginx/certs/mylogin.key;
+
+      root  /var/www/mylogin;
+      index index.html;
+
+      # SPA history 模式:找不到的路径回退 index.html
+      location / {
+          try_files $uri $uri/ /index.html;
+      }
+
+      # 后端反代:/api/* → 主机B 8888(自签 HTTPS,故 verify off)
+      location /api/ {
+          proxy_pass https://36.151.149.59:8888;
+          proxy_ssl_verify off;
+          proxy_set_header Host              $host;
+          proxy_set_header X-Real-IP         $remote_addr;
+          proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+      }
+  }
+  EOF
 
 ==============================================================================================================
+[root@upaphklapp01 conf.d]# getenforce
+  Disabled
 
+● Disabled —— SELinux 没开,(5) 整步跳过,不用做任何 setsebool/semanage。省事了。
 
-==============================================================================================================
+  直接进到建目录 + reload + 开放 443。依次执行:
 
+  1. 确保站点目录存在
 
+  mkdir -p /var/www/mylogin
+
+  2. 重载 nginx 让 443 配置生效
+
+  nginx -t && systemctl reload nginx
+
+  ▎ 用 reload 不用 restart:它平滑重载,不中断现有连接。&& 保证只有语法通过才重载。
+
+  3. 确认 443 起来了
+
+  ss -tlnp | grep ':443'
+
+  应该能看到 nginx 在监听 443(之前只有 80,现在多出 443)。
+
+  4. 开放防火墙 443
+
+  先看 firewalld 开没开:
+
+  firewall-cmd --state
+
+  - 返回 running → 执行:
+  firewall-cmd --permanent --add-service=https
+  firewall-cmd --permanent --add-service=http
+  firewall-cmd --reload
+  - 返回 not running → 系统防火墙没开,这步跳过(但云安全组仍要配,见下)。
+
+  5. ⚠️ 云安全组别忘了(最容易漏)
+
+  防火墙是机器内部的;云厂商控制台还有一层安全组。去主机 A 的安全组放行:
+  - 443(给浏览器访问)
+  - 80(HTTP 跳转用,通常已开)
+
+  不放行的话,外面访问会直接连不上(超时),而机器内 curl 却正常 —— 这是最典型的"安全组没开"症状。
+
+  6. 本机自测 TLS 通不通
+
+  curl -k https://localhost/
+
+  - -k = 忽略自签证书警告;
+  - 现在 /var/www/mylogin 是空的,返回 403 或 404 是正常的 —— 关键是能完成 HTTPS 握手、有响应,说明证书和 443 配置生效了。
+  - 如果这里报"connection refused"才是有问题,贴我看。
+
+  ---
+  把第 3 步(ss 看 443)和第 6 步(curl)的输出发我,确认 nginx 这侧 OK,主机 A 的准备就基本完成了。然后就剩 GitHub 配置(阶段三),那时我帮你建 deploy.yml。
+
+✻ Brewed for 28s
 
 ==============================================================================================================
 
