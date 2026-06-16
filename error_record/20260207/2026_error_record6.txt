@@ -843,52 +843,177 @@ tee /etc/nginx/conf.d/mylogin.conf >/dev/null <<'EOF'
 ✻ Brewed for 28s
 
 ==============================================================================================================
+ mkdir -p /etc/systemd/system/nginx.service.d
 
+  cat > /etc/systemd/system/nginx.service.d/override.conf <<'EOF'
+  [Service]
+  PrivateTmp=false
+  EOF
 
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+  systemctl daemon-reload
+  systemctl reload nginx
+EOF
+这个命令是什么意思？
 
 ==============================================================================================================
-
-
-
+echo "ssh-ed25519 + github-deploy" | tee /home/deploy/.ssh/authorized_keys
 
 ==============================================================================================================
+ # ① 主机 A:能登 + 能写前端目录
+  ssh -i D:/secrets/mylogin_deploy deploy@115.190.204.179 \
+    "whoami && touch /var/www/mylogin/_t && rm /var/www/mylogin/_t && echo A-OK"
 
+ssh -i D:/secrets/mylogin_deploy deploy@36.151.149.59 "whoami && touch /opt/mylogin/incoming/_t && rm /opt/mylogin/incoming/_t && sudo -n systemctl status
+  mylogin-back >/dev/null && echo B-OK"
 
-==============================================================================================================
+ssh -i D:/secrets/mylogin_deploy deploy@36.151.149.59 \
+    "whoami && touch /opt/mylogin/incoming/_t && rm /opt/mylogin/incoming/_t && sudo -n systemctl status mylogin-back >/dev/null && echo B-OK"
 
+ssh -i D:/secrets/mylogin_deploy deploy@36.151.149.59 'whoami; touch /opt/mylogin/incoming/_t && echo WRITE-OK && rm /opt/mylogin/incoming/_t; sudo -n
+  systemctl status mylogin-back; echo "sudo-exit=$?"'
 
-==============================================================================================================
+  ssh -i D:/secrets/mylogin_deploy deploy@36.151.149.59 "sudo -n firewall-cmd --list-all 2>/dev/null || echo no-sudo-firewall"
 
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+  ssh -i D:/secrets/mylogin_deploy deploy@36.151.149.59 "echo still-reachable"
 
 ==============================================================================================================
+对于其它参数位置的确定我有疑问：
+要配置四个，其它的不是环境变量吗？也要配置在Secret里面吗？
+ 仓库 → Settings → Secrets and variables → Actions → New repository secret
 
+  ┌────────────────┬────────────────────┐
+  │   Secret 名    │         值         │
+  ├────────────────┼────────────────────┤
+  │ HOST_A_IP      │ 115.190.204.179    │
+  ├────────────────┼────────────────────┤
+  │ HOST_B_IP      │ 36.151.149.59      │
+  ├────────────────┼────────────────────┤
+  │ DEPLOY_USER    │ deploy             │
+  ├────────────────┼────────────────────┤
+  │ DEPLOY_SSH_KEY │ 部署私钥全文(见下) │
+  └────────────────┴────────────────────┘
 
-
+需要用Repository secrets里面的New repository secret 吗？
+设置在这里面吗？
+我看到上面还有Environment secrets里面有Manage environment secrets
+这个是一样的吗？
+Secrets页签旁还有一个Variables页签，还是这里添加其它变量？
 
 ==============================================================================================================
+还有一个问题确认一下：不是全部填写吧，应该是一个项目填写三个就可以了吧？
+后端的只需要填写HOST_B_IP,前端的只需要填写HOST_A_IP吧
 
+==============================================================================================================
+两个仓库我都填写好了，deploy.yml文件我先不详细看了，我想先体验一下效果吧;
+我现在已经创建了main分支，并且在main分支上提交了代码;怎么查看后端有没有跑测试，怎么检查后端有没有自动部署？
+
+==============================================================================================================
+Github后端仓库的Actions下有三个子菜单，General，Runners，OIDC，三个；是哪个？
+
+==============================================================================================================
+我看到了，目前是在build-and-deploy
+一共有10个步骤：
+Set up job
+Build appleboy/scp-action@v0.1.7
+Build appleboy/ssh-action@v1.0.3
+Run actions/checkout@v4
+Set up JDK 17
+Build & Test
+Upload jar to Host B
+Active & Restart
+Post Set up JDK 17
+Post Run actions/checkout@v4
+
+目前在Upload jar to Host B
+
+==============================================================================================================
+但是在这个Upload jar to Host B步骤卡了很久了，已经超过了16分钟了；
+哪里有问题吧
+
+==============================================================================================================
+好像不是防火墙的问题，这个是我的云主机的防火墙：
+
+自定义TCP
+TCP
+8080
+0.0.0.0/0
+flowable-ui
+
+自定义TCP
+TCP
+8180
+0.0.0.0/0
+keycloak
+
+自定义TCP
+TCP
+3389
+0.0.0.0/0
+
+ssh
+TCP
+22
+0.0.0.0/0
+
+http（TCP）
+TCP
+80
+0.0.0.0/0
+
+https
+TCP
+443
+0.0.0.0/0
+
+==============================================================================================================
+回复疑点1：确认是36.151.149.59这个节点
+
+回复疑点2：没看到打印，只有下面这些：
+Run appleboy/scp-action@v0.1.7
+  with:
+    host: ***
+    username: ***
+    key: ***
+    source: target/*.jar
+    target: /opt/mylogin/incoming
+    strip_components: 1
+    port: 22
+    timeout: 30s
+    command_timeout: 10m
+    use_insecure_cipher: false
+    rm: false
+    debug: false
+    overwrite: false
+    tar_dereference: false
+    tar_exec: tar
+    proxy_port: 22
+    proxy_timeout: 30s
+    proxy_use_insecure_cipher: false
+  env:
+    JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.19-10/x64
+    JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.19-10/x64
+/usr/bin/docker run --name e567211da8d3d0be4f49aea1aca4b787018a7c_a9a650 --label e56721 --workdir /github/workspace --rm -e "JAVA_HOME" -e "JAVA_HOME_17_X64" -e "INPUT_HOST" -e "INPUT_USERNAME" -e "INPUT_KEY" -e "INPUT_SOURCE" -e "INPUT_TARGET" -e "INPUT_STRIP_COMPONENTS" -e "INPUT_PORT" -e "INPUT_PASSWORD" -e "INPUT_TIMEOUT" -e "INPUT_COMMAND_TIMEOUT" -e "INPUT_KEY_PATH" -e "INPUT_PASSPHRASE" -e "INPUT_FINGERPRINT" -e "INPUT_USE_INSECURE_CIPHER" -e "INPUT_RM" -e "INPUT_DEBUG" -e "INPUT_OVERWRITE" -e "INPUT_TAR_DEREFERENCE" -e "INPUT_TAR_TMP_PATH" -e "INPUT_TAR_EXEC" -e "INPUT_PROXY_HOST" -e "INPUT_PROXY_PORT" -e "INPUT_PROXY_USERNAME" -e "INPUT_PROXY_PASSWORD" -e "INPUT_PROXY_PASSPHRASE" -e "INPUT_PROXY_TIMEOUT" -e "INPUT_PROXY_KEY" -e "INPUT_PROXY_KEY_PATH" -e "INPUT_PROXY_FINGERPRINT" -e "INPUT_PROXY_USE_INSECURE_CIPHER" -e "HOME" -e "GITHUB_JOB" -e "GITHUB_REF" -e "GITHUB_SHA" -e "GITHUB_REPOSITORY" -e "GITHUB_REPOSITORY_OWNER" -e "GITHUB_REPOSITORY_OWNER_ID" -e "GITHUB_RUN_ID" -e "GITHUB_RUN_N
+drone-scp version: v1.6.14
+tar all files into /tmp/AFZHkdfIzg.tar.gz
+remote server os type is unix
+scp file to server.
+
+3.本地测试22端口确认：
+baiyingwaming@DESKTOP-4TUO5OC MINGW64 /d/secrets
+$ ssh -i D:/secrets/mylogin_deploy deploy@36.151.149.59 "sudo -n firewall-cmd --list-all 2>/dev/null || echo no-sudo-firewall"
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+no-sudo-firewall
+
+baiyingwaming@DESKTOP-4TUO5OC MINGW64 /d/secrets
+$ ssh -i D:/secrets/mylogin_deploy deploy@36.151.149.59 "echo still-reachable"
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+still-reachable
+
+baiyingwaming@DESKTOP-4TUO5OC MINGW64 /d/secrets
 
 
 
