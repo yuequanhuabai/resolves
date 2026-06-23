@@ -1178,32 +1178,56 @@ eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ1X2VtcGxveWVlIiwidXNlcm5hbWUiOiJlbXBsb3llZSIsInJ
 
 curl http://localhost:9090/workflow/api/process/list -H "Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ1X2VtcGxveWVlIiwidXNlcm5hbWUiOiJlbXBsb3llZSIsInJvbGUiOiJlbXBsb3llZSIsImlhdCI6MTc4MjEzNTg1NiwiZXhwIjoxNzgyMTY0NjU2fQ.GEXOTz8z7-g8p_nwg3PLDGkFGXCMvStSjqe4NHz_mv77OP8vWhWZLdsE9Mq82_AY"
 ==============================================================================================================
+帮我梳理一下当前目录下后端的cn.bochk.pap.server.business.controller.BuyListController类的getClientCount方法
 
-
-
-
-==============================================================================================================
-
-
-
+你再帮我看看这个方法：cn.bochk.pap.server.business.service.Impl.SecurityMasterImplService#getAssetTypeNewDataMap
 
 ==============================================================================================================
-
+我有一个问题，这里是针对security_master的表的数据的一个过滤：
+Map<String, List<String>> result = tempDataList.stream()
+                    .filter(queryVo -> getMatchFieldValue(queryVo,vo) != null
+                            && queryVo.getClientId() != null) // 过滤空值
+                    .collect(Collectors.groupingBy(queryVo->
+                            getMatchFieldValue(queryVo,vo),  // key: ISIN
+                            Collectors.mapping(
+                                    SecurityMasterSaveReqVO::getClientId,  // value: clientId
+                                    Collectors.toList()  // 收集为 List
+                            )
+                    ));
+获取的是当前某个Asset Type对应的Security Master的表的所有符合条件的值，做一个以mathch_field为key，相同key对应的clientId全部放到了List集合里面吧
+我的理解对吧
 
 ==============================================================================================================
-
+还有一个问题，getAssetTypeNewDataMap这个方法查询数据库的结果会缓存redis吧，如果是旧数据非实时查询的，在这里会是空吧 if (!checkMap.containsKey(productCode)) {
+ @Cacheable(value = "brSecurityMasterData", key = "#vo.tableName", unless = "#result == null || #result.isEmpty()")
+ 一般来说，一个Asset Type只有一个对应的securityMaster的表，如果一次查询没有找到，就会返回Set<String> clientIdSet = new HashSet<>();没有元素的空Set吧
+对于这个返回，前端是什么提示？
+还有个问题，怎么判断它是查了数据库，还是用了缓存的数据？
+共两个问题，一个一个回答
+==============================================================================================================
+我还有个问题想确认一下，目前的缓存复用，是不是只能复用一个Asset Type的数据，对于一个新的Asset Type还是会用旧的Asset Type的值去做判断？
 
 ==============================================================================================================
+我现在是情况B的第二种情况：
+ 情况 B:两个 AssetType 的 systemCode 相同(指向同一张 BR_SECURITY_MASTER_<systemCode> 表),但 field 或 conditionSql 不同 → tableName 相同 → 缓存 key 撞了 → 这时你说的就完全正确:
 
+  - 第一个 AssetType 先调用,用它自己的 matchField 分组、conditionSql 过滤,把结果缓存到 brSecurityMasterData:<tableName>。
+  - 第二个 AssetType 即使构造了自己的 vo(带不同的 field/conditionSql),但 Spring 只拿 vo.tableName 当 key 去查缓存 → 直接返回第一个 AssetType 的那份 map,第二个的
+  matchField/conditionSql 被完全忽略。
+  - 结果:新 AssetType 拿旧 AssetType 的数据做 clientId 判断 → 错。
 
+同一个表，但是conditionSql不一样，导致其中一个可以，另一个AssetType直接走前一个AssetType的缓存数据了，
+这个怎么改？ 可以改缓存key实现吗？后缀再加一个Asset Type
 
 ==============================================================================================================
+可以改为表名+Asset Type吗？field/conditionSql是基于Asset Type变化的
 
-
-
+目前是会出现不同的Asset Type是同一个表的情况，我现在遇到的问题，也有同一个Asset Type对应不同的表，
+目前就这两种情况，没有发现其它的，我想应该可以用 tableName + assetType这个，
+tableName + matchField + conditionSql这个的key太乱了，conditionSql有时候很长
 
 ==============================================================================================================
-
+我还有一个问题，你是如何一下子帮我定位到的，讲讲你的思考过程;
 
 
 
