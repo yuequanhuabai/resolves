@@ -2458,105 +2458,384 @@ instance/{instanceId}/activities
 https://mit6875.github.io/
 https://mit6875.github.io/
 
+==============================================================================================================
+  1. Day 12 — knife4j 实测发起实例（清单 process_instance/04 未勾）；terminate + Day 11 cascade=false 冲突分支「已写未测」
+  2. Day 13 — knife4j 切 manager token 验待办流转 + 权限隔离（process_task/04 未勾）
+  3. Day 14 — 代码已写，但整体冒烟（双 token 走完整生命周期）+ 打卡回写都还没做，P3 未正式关闭
+
+==============================================================================================================
+我重新从定义开始测试吧，把整个流程在走一遍；
+你可以给我弄个重置脚本吗？把表全部删了的脚本，以下是我的手动删除操作：
+
+所有表：
+ACT_EVT_LOG
+ACT_GE_BYTEARRAY
+ACT_GE_PROPERTY
+ACT_HI_ACTINST
+ACT_HI_ATTACHMENT
+ACT_HI_COMMENT
+ACT_HI_DETAIL
+ACT_HI_ENTITYLINK
+ACT_HI_IDENTITYLINK
+ACT_HI_PROCINST
+ACT_HI_TASKINST
+ACT_HI_TSK_LOG
+ACT_HI_VARINST
+ACT_PROCDEF_INFO
+ACT_RE_DEPLOYMENT
+ACT_RE_MODEL
+ACT_RE_PROCDEF
+ACT_RU_ACTINST
+ACT_RU_DEADLETTER_JOB
+ACT_RU_ENTITYLINK
+ACT_RU_EVENT_SUBSCR
+ACT_RU_EXECUTION
+ACT_RU_EXTERNAL_JOB
+ACT_RU_HISTORY_JOB
+ACT_RU_IDENTITYLINK
+ACT_RU_JOB
+ACT_RU_SUSPENDED_JOB
+ACT_RU_TASK
+ACT_RU_TIMER_JOB
+ACT_RU_VARIABLE
+FLW_RU_BATCH
+FLW_RU_BATCH_PART
+
+第一次删剩余表：
+ACT_GE_BYTEARRAY,
+ACT_RE_DEPLOYMENT,
+ACT_RE_PROCDEF,
+ACT_RU_EXECUTION,
+FLW_RU_BATCH
+
+第二次删剩余表：
+ACT_RE_PROCDEF,
+
+第三次无剩余，全部删除干净;
+
+==============================================================================================================
+我还有一个问题，就是swagger的那个认证，需要我每次登录拿token填写进去，可以不可以一步到位，登录之后自动填进去？
+
+==============================================================================================================
+算了，我的场景是换账号测试的时候，每次登录要辅助token，感觉麻烦
+
+==============================================================================================================
+部署流程返回：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "id": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+    "key": "leaveProcess",
+    "name": "请假流程",
+    "version": 1,
+    "deploymentId": "25f2a9bf-83e7-11f1-86fb-5eea1d7fcc1d",
+    "suspended": false,
+    "resourceName": "leave.bpmn20.xml",
+    "diagramResourceName": "leave.leaveProcess.png"
+  }
+}
+==============================================================================================================
+我发现一个问题，我在部署完流程定义接口后发现：
+返回正常：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "id": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+    "key": "leaveProcess",
+    "name": "请假流程",
+    "version": 1,
+    "deploymentId": "25f2a9bf-83e7-11f1-86fb-5eea1d7fcc1d",
+    "suspended": false,
+    "resourceName": "leave.bpmn20.xml",
+    "diagramResourceName": "leave.leaveProcess.png"
+  }
+}
+但是ACT_RE_DEPLOYMENT表的ID_字段和PARENT_DEPLOYMENT_ID_字段的值相同
 
 
 ==============================================================================================================
+-- ① 部署批次：预期 1 行，NAME_ = leave.bpmn20.xml
+SELECT ID_, NAME_, DEPLOY_TIME_ FROM ACT_RE_DEPLOYMENT;
+25f2a9bf-83e7-11f1-86fb-5eea1d7fcc1d	leave.bpmn20.xml	2026-07-20 11:00:22.253
 
+-- ② 资源：预期 2 行 —— 一个 .bpmn20.xml，一个 .png（GENERATED_=1 表示引擎自动生成的流程图）
+SELECT ID_, NAME_, GENERATED_, DEPLOYMENT_ID_ FROM ACT_GE_BYTEARRAY;
+25f2a9c0-83e7-11f1-86fb-5eea1d7fcc1d	leave.bpmn20.xml	0	25f2a9bf-83e7-11f1-86fb-5eea1d7fcc1d
+2683c631-83e7-11f1-86fb-5eea1d7fcc1d	leave.leaveProcess.png	1	25f2a9bf-83e7-11f1-86fb-5eea1d7fcc1d
 
+-- ③ 流程定义：预期 1 行，VERSION_=1，SUSPENSION_STATE_=1（1=激活，2=挂起）
+SELECT ID_, KEY_, NAME_, VERSION_, SUSPENSION_STATE_, DEPLOYMENT_ID_ FROM ACT_RE_PROCDEF;
+leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d	leaveProcess	请假流程	1	1	25f2a9bf-83e7-11f1-86fb-5eea1d7fcc1d
 
+==============================================================================================================
+我用admin账号的token，查询的结果如下：lastestOnly=false
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [
+      {
+        "id": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "key": "leaveProcess",
+        "name": "请假流程",
+        "version": 1,
+        "deploymentId": "25f2a9bf-83e7-11f1-86fb-5eea1d7fcc1d",
+        "suspended": false,
+        "resourceName": "leave.bpmn20.xml",
+        "diagramResourceName": "leave.leaveProcess.png"
+      }
+    ],
+    "total": 1,
+    "size": 10,
+    "current": 1,
+    "pages": 1
+  }
+}
+
+==============================================================================================================
+我调用了部署接口，还是原来的xml文件；
+接口返回结果如下：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "id": "leaveProcess:2:4c403cc6-83ea-11f1-86fb-5eea1d7fcc1d",
+    "key": "leaveProcess",
+    "name": "请假流程",
+    "version": 2,
+    "deploymentId": "4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d",
+    "suspended": false,
+    "resourceName": "leave.bpmn20.xml",
+    "diagramResourceName": "leave.leaveProcess.png"
+  }
+}
+SQL的查询结果如下：
+ SELECT ID_, NAME_, DEPLOY_TIME_ FROM ACT_RE_DEPLOYMENT;           -- 预期 2 行
+ 25f2a9bf-83e7-11f1-86fb-5eea1d7fcc1d	leave.bpmn20.xml	2026-07-20 11:00:22.253
+ 4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d	leave.bpmn20.xml	2026-07-20 11:22:54.780
+
+  SELECT ID_, KEY_, VERSION_, SUSPENSION_STATE_ FROM ACT_RE_PROCDEF; -- 预期 2 行，VERSION_ 分别 1、2
+leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d	leaveProcess	1	1
+leaveProcess:2:4c403cc6-83ea-11f1-86fb-5eea1d7fcc1d	leaveProcess	2	1
+
+==============================================================================================================
+latestOnly=false：
+
+Response body
+Download
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [
+      {
+        "id": "leaveProcess:2:4c403cc6-83ea-11f1-86fb-5eea1d7fcc1d",
+        "key": "leaveProcess",
+        "name": "请假流程",
+        "version": 2,
+        "deploymentId": "4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d",
+        "suspended": false,
+        "resourceName": "leave.bpmn20.xml",
+        "diagramResourceName": "leave.leaveProcess.png"
+      },
+      {
+        "id": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "key": "leaveProcess",
+        "name": "请假流程",
+        "version": 1,
+        "deploymentId": "25f2a9bf-83e7-11f1-86fb-5eea1d7fcc1d",
+        "suspended": false,
+        "resourceName": "leave.bpmn20.xml",
+        "diagramResourceName": "leave.leaveProcess.png"
+      }
+    ],
+    "total": 2,
+    "size": 10,
+    "current": 1,
+    "pages": 1
+  }
+}
+
+latestOnly=true：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [
+      {
+        "id": "leaveProcess:2:4c403cc6-83ea-11f1-86fb-5eea1d7fcc1d",
+        "key": "leaveProcess",
+        "name": "请假流程",
+        "version": 2,
+        "deploymentId": "4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d",
+        "suspended": false,
+        "resourceName": "leave.bpmn20.xml",
+        "diagramResourceName": "leave.leaveProcess.png"
+      }
+    ],
+    "total": 1,
+    "size": 10,
+    "current": 1,
+    "pages": 1
+  }
+}
+
+==============================================================================================================
+sql查询语句：
+SELECT KEY_, VERSION_, SUSPENSION_STATE_ FROM ACT_RE_PROCDEF WHERE VERSION_ = 2;
+调用挂起接口前查询结果：
+leaveProcess	2	1
+调用挂起接口后查询结果：
+leaveProcessleaveProcess	2	2
+重复调用返回结果：
+{
+  "code": 500,
+  "msg": "流程定义已处于挂起状态",
+  "data": null
+}
+==============================================================================================================
+sql查询语句：
+SELECT KEY_, VERSION_, SUSPENSION_STATE_ FROM ACT_RE_PROCDEF WHERE VERSION_ = 2;
+激活前：
+leaveProcess	2	2
+激活后：
+leaveProcess	2	1
+重复调用返回：
+{
+  "code": 500,
+  "msg": "流程定义已处于激活状态",
+  "data": null
+}
+==============================================================================================================
+我拿部署idDEPLOYMENT_ID_去测试吧，调用一下挂起：4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d
+返回结果：
+{
+  "code": 500,
+  "msg": "流程定义不存在：4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d",
+  "data": null
+}
+我查询了ACT_RE_PROCDEF表，找到version_字段=2的DEPLOYMENT_ID_
+4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d
+再去ACT_RE_DEPLOYMENT根据id查询确认一下：
+SELECT * FROM ACT_RE_DEPLOYMENT WHERE ID_ ='4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d';
+返回结果如下，确认有数据，可以执行删除流程定义接口：
+4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d	leave.bpmn20.xml				2026-07-20 11:22:54.780			4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d
+
+删除前：
+SELECT * FROM ACT_RE_PROCDEF WHERE VERSION_ = 2;
+leaveProcess:2:4c403cc6-83ea-11f1-86fb-5eea1d7fcc1d	3	http://ha.com/pr/flowwork	请假流程	leaveProcess	2	4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d	leave.bpmn20.xml	leave.leaveProcess.png		0	1	1				0
+SELECT * FROM ACT_RE_DEPLOYMENT WHERE ID_ = '4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d';          -- 应 0 行
+4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d	leave.bpmn20.xml				2026-07-20 11:22:54.780			4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d
+SELECT * FROM ACT_GE_BYTEARRAY WHERE DEPLOYMENT_ID_ = '4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d'; -- 应 0 行
+4c1dc0a4-83ea-11f1-86fb-5eea1d7fcc1d	1	leave.bpmn20.xml	4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d	<?xml version="1.0" encoding="UTF-8"?> <!--   è¯·å  æµ ç¨ ï¼ å ºå® æ¨¡æ ¿ï¼ Day 10 ç ¨äº éª è¯ å¼ æ  é ¾è·¯ï¼ ï¼      å¼ å§ ï¼ å  å·¥å  èµ·ï¼ â   ç» ç  å®¡æ ¹ â   ç» æ     - startEvent ç   flowable:initiator ä¼ æ  "å  èµ·äºº"å­ è¿ æµ ç¨ å  é   initiatorï¼ å  èµ·æ ¥å £é  è¦  setAuthenticatedUserIdï¼    - å®¡æ ¹è  ç ¹ç ¨ candidateGroups="manager"ï¼ æ  è§ è ²è®¤é¢ ï¼ ä»»ä½  manager é ½è ½å ¨å¾ å  é  ç  å °å¹¶å  ç       ï¼ è ¥æ ³å ºå® æ  æ´¾æ  ä¸ªäººï¼ å ¯æ ¹ä¸º flowable:assignee="å ·ä½ ç ¨æ ·å  "ï¼  --> <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"              xmlns:flowable="http://flowable.org/bpmn"              xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"              xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"              xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"              targetNamespace="http://ha.com/pr/flowwork"              xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">    <process id="leaveProcess" name="è¯·å  æµ ç¨ " isExecutable="true">      <startEvent id="startEvent" name="å  å·¥å  èµ·" flowable:initiator="initiator"/>      <sequenceFlow id="flow1" sourceRef="startEvent" targetRef="managerApprove"/>      <userTask id="managerApprove" name="ç» ç  å®¡æ ¹" flowable:candidateGroups="manager"/>      <sequenceFlow id="flow2" sourceRef="managerApprove" targetRef="endEvent"/>      <endEvent id="endEvent" name="ç» æ  "/>    </process>    <!-- å ¾å½¢å  æ  ï¼ DIï¼ ï¼ å¼ æ  æ §è¡ ä¸ é  è¦ ï¼ ä½ å  ç«¯ bpmn-js æ¸²æ  æµ ç¨ å ¾é  è¦  -->   <bpmndi:BPMNDiagram id="BPMNDiagram_leaveProcess">     <bpmndi:BPMNPlane id="BPMNPlane_leaveProcess" bpmnElement="leaveProcess">       <bpmndi:BPMNShape id="shape_startEvent" bpmnElement="startEvent">         <omgdc:Bounds x="120" y="122" width="36" height="36"/>       </bpmndi:BPMNShape>       <bpmndi:BPMNShape id="shape_managerApprove" bpmnElement="managerApprove">         <omgdc:Bounds x="220" y="100" width="120" height="80"/>       </bpmndi:BPMNShape>       <bpmndi:BPMNShape id="shape_endEvent" bpmnElement="endEvent">         <omgdc:Bounds x="404" y="122" width="36" height="36"/>       </bpmndi:BPMNShape>       <bpmndi:BPMNEdge id="edge_flow1" bpmnElement="flow1">         <omgdi:waypoint x="156" y="140"/>         <omgdi:waypoint x="220" y="140"/>       </bpmndi:BPMNEdge>       <bpmndi:BPMNEdge id="edge_flow2" bpmnElement="flow2">         <omgdi:waypoint x="340" y="140"/>         <omgdi:waypoint x="404" y="140"/>       </bpmndi:BPMNEdge>     </bpmndi:BPMNPlane>   </bpmndi:BPMNDiagram>  </definitions> 	0
+4c28bd25-83ea-11f1-86fb-5eea1d7fcc1d	1	leave.leaveProcess.png	4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d	 PNG        IHDR   Â   ¾     ¦  K   âIDATx^íÝÝoTg~ ðlWªö2Ûî^æ¦Wû/ìö¦ ]µj¤ì^ 6`  $8J¤   µP- Hmî²   UjBÂªM .L 5%&ÔR 7"6lHÅ¦     1/[ aÃôù  3<cû /¶Çç|>ÒOÆsÎ çAç óõ33ç ûî                                                                                                                                                                               `ÖÔjµ?>vìØ«ï½÷Þ×}}}µ½{÷ª9^i?Þèïï?½oß¾ åû  L Á×ÒA³væÌ ÚÈÈHíÚµkj WìÇØ û÷ï¿  ñÁ|  Ð f qÐÌ ¦jî×ààà¹   æû   ñv¨ `9+ök Â«ù>  A|¦  @Uy*öo¾Ï hÐj þþÂ`íØGÿ\;üöæÑ  Çcùzª½J   h% /  ª}úÖß×>ù·5·T< ËòõUû   (ÐJ  <ÜÛ  õ 8¼§i}Õ>%   ´  ÿýÎ³M X¯X ¯¯Ú§ !@ V ðÓ½   °^±,__µO B   °Ü%   ´  ñ-Ñ< ë ËòõUû   (ÐJ ~þîóM X¯X ¯¯Ú§ !@ V ðü©CµOÿã M!  Å²|}Õ>%   ´  Q_ ØÙ  ñX¾ j¯    Z Â«Wk ÿ×¶¦  ÇbYÓúªmJ   ( Â¸rÌïÞÝÚ  õ e®.Ó¾%   L  i¦7øù¾Úoÿýï Â/¯X'Ö5;l¿    & Â¢YàdevØ~%   L  ­Ì '«xn¾=5{%   L  y¸ÝnåÛS³W   ÀDA¨ÊS ðötwwßßÙÙ9¯££cKúÙ ê TWRÕÆ~Æï}cËçÅúù6à »xñâ ôöön~þùç?Ù´iÓ¹uëÖ <úè£7b`öôô\_½zõ¥õë× Ø¼yó 5kÖüuzÊwòm09AXî  ­Y¸páOÓ1ewªkc¡×jÅú»ãùù6á®}ðÁ =Ï=÷Ü© +WÖRøÕ^{íµÚÇ  \;zôhíüùóµ ?ã÷x< ¯]»öÆòåË¯¥@|kÑ¢E  o f °Ü% §  ìÇ)ÈÞ  àî¤Þ íåmÀm;tèÐß¼ðÂ § yä Úë¯¿^;{öìhèµ*Ö ç¥@üzÕªU¯¦ ù ¼ ¾% Ë] pbÝÝÝßëèèøU ¯Ñw  ëÉ' ¬íÚµkÊ?¼cy¬ ?7¶ Û íçmB¡4Î¾ûæ oöF ¾ôÒKµË /ß p·)  ÛI òJWW×Ïóö¸I  » a³ V ¤? ?i °E  ÕvìØQ   È %S õãyñü,   íämÃ¤Òxºÿå _þÝc =V;vìX>ÖîJl/ ëH !nÊÛE  ½ á­R þ(Õ©ÆÐzöÙgk'O Ì  ·%  ÛÉÂðd´ ÷  ¤1tÿ -[ 7lØP   ÎÇ×= Û]·nÝ ¥K îÌÛ¯:AXî  ß     `Ìâz{{óÃÅ] íe³Ã f L)  ï¦ àç  ñ¢ N±ýÕ«W_X¼xñú¼ U& Ë] ð¦øÌ®ñíÐeË Õ  <  &î Ønl¿!  ã3C&   >þøãÓ6 ÌE;+V¬¸  æCy_ªJ  » áMc_    NW ÖÅö g Ñ~Þ'¸/   ã 1÷ú3Á"Ñ^WW×ðüùó  ÷©  a¹K   "ñM= öìÙ   ¦E´Ó0+üÆ© 4 S$â[ ³aÛ¶m§ÓÀüeÞ§*  å.A8úÙàøy ñ    } æý¼oTX , ³ÁK .åãfFD»K ,¹è¤{AXöªz .X°à/ëA oUÞí·CoW´×ø iô'ï#  W Ù½{w>ffÔÎ ; ¦ ¹#ï[Õ ÂrWÕ °óæeÓFC(Î÷  ÑnÃ¬pwÞG*(ÍÆþ´§§§644     ÚÿCúKíÌÆ  ÿ(ïc  ÂrW  0½¾¿ßÙpíÐ   ÖE» Ax-ú ÷  yã 76ÅµCÛÁ  +¾L ó'y Ë ý¿ÞIõ ùã9AXî*k ¶2¾Óòyõ  Ë¡Í¦ìrlóò¾R1[·ným\ » lß¾=. ô y Ë áE7å C  »J   ã;=¾µ¾Þ+¯¼ ¿ügT´ßÐç­y_© ¸ R\´¶ ô÷÷ êèèèÍûX  /º)   °ÜU   t|/\¸p_}ù   ò ÿ  öë} ~5ö  Z»víÈL ;8 #G Ä[£ å},      0 a¹«BAØ4¾ÓÏ õÇgû  í7ôñDöß¡jzzzn|õÕWù8  çÏ ¿  å©¼ e0Á "¯Ñ   ,wU0  Ç÷ÿÕ  ícN´_ïK  ^Êÿ?TÌ %Kj×¯_ÏÇÉ¬Hý Ë­å/ J  ,wåû»ª5ÛÇ h¿¡? È  TÌÊ +¯Ïö_gugÏ ý ÎêÍ ßéôÖheª 3Âññ 3¯úã³}Ì1#ä O=õÔ¥Ù~¿¾î³Ï>;ÐY Ï o Àº¹  ©ë ÖL- +U¡ l ß >#¤]mØ°ád»|kôí·ßî«À·F    ær NõØt/ +U   t|ûÖ(mkãÆ {Úå<Âg y&.¿TÖó '=@4  w¶|®T  °p|w:  vµnÝº¿Z»ví | Ì ë  -:ÔYÒ+Ë´J ÞÙò¹Re ÂVt¶Ñ e xâ   AèÊ2U ×ö\±bÅµÙ¾ÖèÀÀÀ»i@ ºÖ¨  è±¢ås¥ª  ®5J[[³fÍ[³}÷ § ~ú× î>! ïpù\©* aèt÷ ÚUÜ pùòå_ÏÖý    ?L rÈý  á . +Uõ l û .\¸pümQ÷#ä «V­zu¶îP Úþ×Nw¨ 5  p¢ ©ås¥ª  ¡Ó êiWóçÏÿaww÷  >¿çÀ  ñ èP´ ÷© æj ªÖJ   Fñãô ÿ¦ H{öìÉ  Ó"Úi Áo¢ yßà¾®®® ¯\¹rdxx8 CÓbhhè?Ó < ê¡¼/U% Ë] ð¦   _ÕC)Þ"=xð`~x¸§bû o Fûy `ÜòåËãF½WâE; ®^½úYz |  çßæ}¨2AXî  7uww / RÜ t4  -[6ma ÛMí Ï@£Ýh?ï ÜbéÒ¥;W¯^}aºf i&¸?B0 È ÊÛ®:AXî  ßJ¯ÿ R l  öööæ  » Ûk   µ÷@Þ  ÐâÅ ×§Ùá=¿ éØg 'Ì '& Ë] ðVé8ð£Æ0  /´Üí·IãùÙ cFC0ÚËû SJ ç¡®®®ámÛ¶ ¾|ùr>ÖnË   > ûvèPl7o   a¹K 6  ZgÃÛ¤Q1; óý   òCÉ býx^6  };4ÚÉÛ  ¤ õ 4 ~¹dÉ  /¾øâÑ³gÏÞÎ Ä® :uêÝM 6 ~34¶ ÛËÛà[ °Ü% '  Ù } & °ÑË±íÚµ« 7 8zôhÜÀ{ôà ?ã÷x< g M«× Ø®Ï ¹'âd÷4¨v¤  zøá  oß¾ý`  ÿ¡#G  8wîÜïÓ¸¼<44tìðáÃ Ò }o\@{ìÚ¡ÿ Ïs²|k a¹K NmìÔ ñó ï²Þw  Óå;  ,øó4Àþ!n   [\ ¦þ  üü0  å±^¬ o É Âr  lM:~ü´óæåØÆ¯MÚbÅú»ãùù6 9B  » áíéîî¾? Û¼ôÇõ ô³/Õ ©®  ^ü ßã>¦±|^¬ o  c a¹K     å.A P@  » !@ AXî     a¹K     å.A P@  » !@ AXî     a¹K     å.A P@  » !@ AXî     a¹K     å.A P@  » !@ AXî     a¹K   èëë»122Òt Us¿Ò~=  ðj¾Ï hÐßß úÌ 3M Q5÷ëøñãÿ  ðÃ|  Ð`ß¾}?Û¿ ÿÅÁÁÁsf å¨´  ¿üòË_§ < êÁ|     eÌ R] Ï Ô ¯Ø ±?                 Ð>þ     ¯Y`Í    IEND®B` 	1
+
+删除接口调用后：
+SELECT * FROM ACT_RE_PROCDEF WHERE VERSION_ = 2;                          -- 应 0 行
+SELECT * FROM ACT_RE_DEPLOYMENT WHERE ID_ = '4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d';        -- 应 0 行
+SELECT * FROM ACT_GE_BYTEARRAY WHERE DEPLOYMENT_ID_ = '4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d';-- 应 0 行
+三个查询结果全部是空
+
+传一个错误的id
+4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1d改为：4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1e
+接口返回：
+{
+  "code": 500,
+  "msg": "部署不存在：4c1dc0a3-83ea-11f1-86fb-5eea1d7fcc1e",
+  "data": null
+}
+==============================================================================================================
+sql查询结果：
+SELECT ID_, KEY_, VERSION_, SUSPENSION_STATE_ FROM ACT_RE_PROCDEF;
+
+leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d	leaveProcess	1	1
+
+==============================================================================================================
+可以把这个也和刚才的流程定义一样弄一个文档吗？ 类似这个：“06-重置后knife4j重测步骤.md”
 
 ==============================================================================================================
 
+发起流程实例接口返回结果如下：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "id": "70767438-8405-11f1-8e12-5eea1d7fcc1d",
+    "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+    "processDefinitionKey": "leaveProcess",
+    "processDefinitionName": "请假流程",
+    "businessKey": "test-0001",
+    "startUserId": "3",
+    "startTime": "2026-07-20 14:37:12",
+    "suspended": false
+  }
+}
 
+发起实例前：
+SELECT COUNT(*) FROM ACT_RU_EXECUTION;
+SELECT COUNT(*) FROM ACT_RU_TASK;
+SELECT COUNT(*) FROM ACT_RU_VARIABLE;
+全部是0
 
+发起实例后：
+SELECT * FROM ACT_RU_EXECUTION ;
+70767438-8405-11f1-8e12-5eea1d7fcc1d	1	70767438-8405-11f1-8e12-5eea1d7fcc1d	test-0001		leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d		70767438-8405-11f1-8e12-5eea1d7fcc1d		1	0	1	0	0	1				startEvent	2026-07-20 14:37:12.170	3			1	0	0	0	0	0	0	0	0	0
+7076e96d-8405-11f1-8e12-5eea1d7fcc1d	1	70767438-8405-11f1-8e12-5eea1d7fcc1d		70767438-8405-11f1-8e12-5eea1d7fcc1d	leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d		70767438-8405-11f1-8e12-5eea1d7fcc1d	managerApprove	1	0	0	0	0	1					2026-07-20 14:37:12.173				1	0	1	0	0	0	0	0	0	0
 
-==============================================================================================================
+SELECT * FROM ACT_RU_TASK ;
+707a92f1-8405-11f1-8e12-5eea1d7fcc1d	1	7076e96d-8405-11f1-8e12-5eea1d7fcc1d	70767438-8405-11f1-8e12-5eea1d7fcc1d	leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d							created	经理审批			managerApprove				50	2026-07-20 14:37:12.180										1			1	0	1	0
 
-
-==============================================================================================================
-
-
-==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
+SELECT * FROM ACT_RU_VARIABLE ;
+70767439-8405-11f1-8e12-5eea1d7fcc1d	1	string	initiator	70767438-8405-11f1-8e12-5eea1d7fcc1d	70767438-8405-11f1-8e12-5eea1d7fcc1d								3
+7076e96b-8405-11f1-8e12-5eea1d7fcc1d	1	integer	days	70767438-8405-11f1-8e12-5eea1d7fcc1d	70767438-8405-11f1-8e12-5eea1d7fcc1d							3	3
+7076e96c-8405-11f1-8e12-5eea1d7fcc1d	1	string	reason	70767438-8405-11f1-8e12-5eea1d7fcc1d	70767438-8405-11f1-8e12-5eea1d7fcc1d								年假
 
 ==============================================================================================================
+ACT_RU_IDENTITYLINK表的数据如下：
+SELECT * FROM  ACT_RU_IDENTITYLINK;
 
-
-
-
-==============================================================================================================
-
-
-
+7076c25a-8405-11f1-8e12-5eea1d7fcc1d	1		starter	3		70767438-8405-11f1-8e12-5eea1d7fcc1d
+707aba02-8405-11f1-8e12-5eea1d7fcc1d	1	manager	candidate		707a92f1-8405-11f1-8e12-5eea1d7fcc1d
 
 ==============================================================================================================
+先别走这么快，帮我解析一下这些数据：
+例如ACT_RU_EXECUTION表的数据：
+ID_	REV_	PROC_INST_ID_	BUSINESS_KEY_	PARENT_ID_	PROC_DEF_ID_	SUPER_EXEC_	ROOT_PROC_INST_ID_	ACT_ID_	IS_ACTIVE_	IS_CONCURRENT_	IS_SCOPE_	IS_EVENT_SCOPE_	IS_MI_ROOT_	SUSPENSION_STATE_	CACHED_ENT_STATE_	TENANT_ID_	NAME_	START_ACT_ID_	START_TIME_	START_USER_ID_	LOCK_TIME_	LOCK_OWNER_	IS_COUNT_ENABLED_	EVT_SUBSCR_COUNT_	TASK_COUNT_	JOB_COUNT_	TIMER_JOB_COUNT_	SUSP_JOB_COUNT_	DEADLETTER_JOB_COUNT_	EXTERNAL_WORKER_JOB_COUNT_	VAR_COUNT_	ID_LINK_COUNT_	CALLBACK_ID_	CALLBACK_TYPE_	REFERENCE_ID_	REFERENCE_TYPE_	PROPAGATED_STAGE_INST_ID_	BUSINESS_STATUS_
+70767438-8405-11f1-8e12-5eea1d7fcc1d	1	70767438-8405-11f1-8e12-5eea1d7fcc1d	test-0001		leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d		70767438-8405-11f1-8e12-5eea1d7fcc1d		1	0	1	0	0	1				startEvent	2026-07-20 14:37:12.170	3			1	0	0	0	0	0	0	0	0	0
+7076e96d-8405-11f1-8e12-5eea1d7fcc1d	1	70767438-8405-11f1-8e12-5eea1d7fcc1d		70767438-8405-11f1-8e12-5eea1d7fcc1d	leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d		70767438-8405-11f1-8e12-5eea1d7fcc1d	managerApprove	1	0	0	0	0	1					2026-07-20 14:37:12.173				1	0	1	0	0	0	0	0	0	0
 
-
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
+这些字段都是什么意思？ 有什么意义？
 
 ==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
+也拆解一下，从act_ru_task开始：
+select * from act_ru_task;
+ID_	REV_	EXECUTION_ID_	PROC_INST_ID_	PROC_DEF_ID_	TASK_DEF_ID_	SCOPE_ID_	SUB_SCOPE_ID_	SCOPE_TYPE_	SCOPE_DEFINITION_ID_	PROPAGATED_STAGE_INST_ID_	STATE_	NAME_	PARENT_TASK_ID_	DESCRIPTION_	TASK_DEF_KEY_	OWNER_	ASSIGNEE_	DELEGATION_	PRIORITY_	CREATE_TIME_	IN_PROGRESS_TIME_	IN_PROGRESS_STARTED_BY_	CLAIM_TIME_	CLAIMED_BY_	SUSPENDED_TIME_	SUSPENDED_BY_	IN_PROGRESS_DUE_DATE_	DUE_DATE_	CATEGORY_	SUSPENSION_STATE_	TENANT_ID_	FORM_KEY_	IS_COUNT_ENABLED_	VAR_COUNT_	ID_LINK_COUNT_	SUB_TASK_COUNT_
+查询结果：
+707a92f1-8405-11f1-8e12-5eea1d7fcc1d	1	7076e96d-8405-11f1-8e12-5eea1d7fcc1d	70767438-8405-11f1-8e12-5eea1d7fcc1d	leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d							created	经理审批			managerApprove				50	2026-07-20 14:37:12.180										1			1	0	1	0
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
+先不接下去看了，停留一下，返回ACT_RU_EXECUTION表，
+讲讲PROC_INST_ID_，PARENT_ID_，ROOT_PROC_INST_ID_，ACT_ID_，START_ACT_ID_
+这几个字段的意思，你上面讲的我还是不很明白。
+你可以从表本省的诞生背景，结构功能，再到这几个字段的具体应用场景；先宏观，再微观；
+先开始宏观吧；
 
 ==============================================================================================================
-
-
-
-
-
-==============================================================================================================
-
+再看看这个表ACT_RU_VARIABLE,
+ID_	REV_	TYPE_	NAME_	EXECUTION_ID_	PROC_INST_ID_	TASK_ID_	SCOPE_ID_	SUB_SCOPE_ID_	SCOPE_TYPE_	BYTEARRAY_ID_	DOUBLE_	LONG_	TEXT_	TEXT2_	META_INFO_
+也是先宏观，再微观，从诞生背景，设计目的，功能结构和实际应用场景;
+先开始宏观吧
 
 ==============================================================================================================
+再看看这个表：ACT_RU_IDENTITYLINK
+ID_	REV_	GROUP_ID_	TYPE_	USER_ID_	TASK_ID_	PROC_INST_ID_	PROC_DEF_ID_	SCOPE_ID_	SUB_SCOPE_ID_	SCOPE_TYPE_	SCOPE_DEFINITION_ID_
+也是先宏观，再微观，从诞生背景，设计目的，功能结构和实际应用场景;
+先开始宏观吧
 
+==============================================================================================================
+你可以再讲讲身份端+对象端，这个概念吗？这里我有点懵；
 
 ==============================================================================================================
 
