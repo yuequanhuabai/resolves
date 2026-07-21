@@ -2855,29 +2855,335 @@ ID_	REV_	GROUP_ID_	TYPE_	USER_ID_	TASK_ID_	PROC_INST_ID_	PROC_DEF_ID_	SCOPE_ID_	
 
 ==============================================================================================================
 基于当前目录下的process-back的docs下的“05-重写排期计划.md”文档以及对应的实际前后端代码，定位一下当前项目的进度;
-
-
+==============================================================================================================
+测试进度是再process_instance/06-重置后knife4j重测步骤.md 文档的 “## 五、步骤 3 · 查询两连 + 隔离”
+上面的异常3种情况昨晚已经测试好了吧;
 
 ==============================================================================================================
+  Authorize 确认是 employee token，然后 POST /process-instance/start 连发两条：
 
+  { "processDefinitionKey": "leaveProcess", "businessKey": "test-0002",
+    "variables": { "days": 5, "reason": "事假" } }
 
+  { "processDefinitionKey": "leaveProcess", "businessKey": "test-0003",
+    "variables": { "days": 1, "reason": "调休" } }
+已经成功了；
 
+另外数据库查询：
+SELECT * FROM act_ru_execution;
+ID_	REV_	PROC_INST_ID_	BUSINESS_KEY_	PARENT_ID_	PROC_DEF_ID_	SUPER_EXEC_	ROOT_PROC_INST_ID_	ACT_ID_	IS_ACTIVE_	IS_CONCURRENT_	IS_SCOPE_	IS_EVENT_SCOPE_	IS_MI_ROOT_	SUSPENSION_STATE_	CACHED_ENT_STATE_	TENANT_ID_	NAME_	START_ACT_ID_	START_TIME_	START_USER_ID_	LOCK_TIME_	LOCK_OWNER_	IS_COUNT_ENABLED_	EVT_SUBSCR_COUNT_	TASK_COUNT_	JOB_COUNT_	TIMER_JOB_COUNT_	SUSP_JOB_COUNT_	DEADLETTER_JOB_COUNT_	EXTERNAL_WORKER_JOB_COUNT_	VAR_COUNT_	ID_LINK_COUNT_	CALLBACK_ID_	CALLBACK_TYPE_	REFERENCE_ID_	REFERENCE_TYPE_	PROPAGATED_STAGE_INST_ID_	BUSINESS_STATUS_
+结果如下：
+4a9abb76-84a9-11f1-b773-5eea1d7fcc1d	1	4a9abb76-84a9-11f1-b773-5eea1d7fcc1d	test-0002		leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d		4a9abb76-84a9-11f1-b773-5eea1d7fcc1d		1	0	1	0	0	1				startEvent	2026-07-21 10:10:06.120	3			1	0	0	0	0	0	0	0	0	0
+4a9b30ab-84a9-11f1-b773-5eea1d7fcc1d	1	4a9abb76-84a9-11f1-b773-5eea1d7fcc1d		4a9abb76-84a9-11f1-b773-5eea1d7fcc1d	leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d		4a9abb76-84a9-11f1-b773-5eea1d7fcc1d	managerApprove	1	0	0	0	0	1					2026-07-21 10:10:06.123				1	0	1	0	0	0	0	0	0	0
+5a502fb1-84a9-11f1-b773-5eea1d7fcc1d	1	5a502fb1-84a9-11f1-b773-5eea1d7fcc1d	test-0003		leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d		5a502fb1-84a9-11f1-b773-5eea1d7fcc1d		1	0	1	0	0	1				startEvent	2026-07-21 10:10:32.473	3			1	0	0	0	0	0	0	0	0	0
+5a502fb6-84a9-11f1-b773-5eea1d7fcc1d	1	5a502fb1-84a9-11f1-b773-5eea1d7fcc1d		5a502fb1-84a9-11f1-b773-5eea1d7fcc1d	leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d		5a502fb1-84a9-11f1-b773-5eea1d7fcc1d	managerApprove	1	0	0	0	0	1					2026-07-21 10:10:32.473				1	0	1	0	0	0	0	0	0	0
+70767438-8405-11f1-8e12-5eea1d7fcc1d	1	70767438-8405-11f1-8e12-5eea1d7fcc1d	test-0001		leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d		70767438-8405-11f1-8e12-5eea1d7fcc1d		1	0	1	0	0	1				startEvent	2026-07-20 14:37:12.170	3			1	0	0	0	0	0	0	0	0	0
+7076e96d-8405-11f1-8e12-5eea1d7fcc1d	1	70767438-8405-11f1-8e12-5eea1d7fcc1d		70767438-8405-11f1-8e12-5eea1d7fcc1d	leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d		70767438-8405-11f1-8e12-5eea1d7fcc1d	managerApprove	1	0	0	0	0	1					2026-07-20 14:37:12.173				1	0	1	0	0	0	0	0	0	0
+
+接口查询，无definitionKey参数的查询结果如下：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [
+      {
+        "id": "5a502fb1-84a9-11f1-b773-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0003",
+        "startUserId": "3",
+        "startTime": "2026-07-21 10:10:32",
+        "suspended": false
+      },
+      {
+        "id": "4a9abb76-84a9-11f1-b773-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0002",
+        "startUserId": "3",
+        "startTime": "2026-07-21 10:10:06",
+        "suspended": false
+      },
+      {
+        "id": "70767438-8405-11f1-8e12-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0001",
+        "startUserId": "3",
+        "startTime": "2026-07-20 14:37:12",
+        "suspended": false
+      }
+    ],
+    "total": 3,
+    "size": 10,
+    "current": 1,
+    "pages": 1
+  }
+}
 
 ==============================================================================================================
+current=1，size=2，definitionKey=null
+返回查询结果：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [
+      {
+        "id": "5a502fb1-84a9-11f1-b773-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0003",
+        "startUserId": "3",
+        "startTime": "2026-07-21 10:10:32",
+        "suspended": false
+      },
+      {
+        "id": "4a9abb76-84a9-11f1-b773-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0002",
+        "startUserId": "3",
+        "startTime": "2026-07-21 10:10:06",
+        "suspended": false
+      }
+    ],
+    "total": 3,
+    "size": 2,
+    "current": 1,
+    "pages": 2
+  }
+}
 
+current=2，size=2，definitionKey=null
+返回查询结果如下：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [
+      {
+        "id": "70767438-8405-11f1-8e12-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0001",
+        "startUserId": "3",
+        "startTime": "2026-07-20 14:37:12",
+        "suspended": false
+      }
+    ],
+    "total": 3,
+    "size": 2,
+    "current": 2,
+    "pages": 2
+  }
+}
 
+当前用户employee再调用my-started接口返回：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [
+      {
+        "id": "5a502fb1-84a9-11f1-b773-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0003",
+        "startUserId": "3",
+        "startTime": "2026-07-21 10:10:32",
+        "suspended": false
+      },
+      {
+        "id": "4a9abb76-84a9-11f1-b773-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0002",
+        "startUserId": "3",
+        "startTime": "2026-07-21 10:10:06",
+        "suspended": false
+      },
+      {
+        "id": "70767438-8405-11f1-8e12-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0001",
+        "startUserId": "3",
+        "startTime": "2026-07-20 14:37:12",
+        "suspended": false
+      }
+    ],
+    "total": 3,
+    "size": 10,
+    "current": 1,
+    "pages": 1
+  }
+}
 
+切换admin用户再调用my-started接口返回：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [],
+    "total": 0,
+    "size": 10,
+    "current": 1,
+    "pages": 0
+  }
+}
+==============================================================================================================
+切换回employee用户，
+调用查询接口返回：
+参数current=1，size=10，definitionKey=leaveProcess
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [
+      {
+        "id": "5a502fb1-84a9-11f1-b773-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0003",
+        "startUserId": "3",
+        "startTime": "2026-07-21 10:10:32",
+        "suspended": false
+      },
+      {
+        "id": "4a9abb76-84a9-11f1-b773-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0002",
+        "startUserId": "3",
+        "startTime": "2026-07-21 10:10:06",
+        "suspended": false
+      },
+      {
+        "id": "70767438-8405-11f1-8e12-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0001",
+        "startUserId": "3",
+        "startTime": "2026-07-20 14:37:12",
+        "suspended": false
+      }
+    ],
+    "total": 3,
+    "size": 10,
+    "current": 1,
+    "pages": 1
+  }
+}
+
+调用修改后查询接口返回：
+参数current=1，size=10，definitionKey=leaveProcess1
+
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [],
+    "total": 0,
+    "size": 10,
+    "current": 1,
+    "pages": 0
+  }
+}
+
+切换回admin用户
+参数current=1，size=10，definitionKey=leaveProcess
+查询结果如下：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [
+      {
+        "id": "5a502fb1-84a9-11f1-b773-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0003",
+        "startUserId": "3",
+        "startTime": "2026-07-21 10:10:32",
+        "suspended": false
+      },
+      {
+        "id": "4a9abb76-84a9-11f1-b773-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0002",
+        "startUserId": "3",
+        "startTime": "2026-07-21 10:10:06",
+        "suspended": false
+      },
+      {
+        "id": "70767438-8405-11f1-8e12-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d",
+        "processDefinitionKey": "leaveProcess",
+        "processDefinitionName": "请假流程",
+        "businessKey": "test-0001",
+        "startUserId": "3",
+        "startTime": "2026-07-20 14:37:12",
+        "suspended": false
+      }
+    ],
+    "total": 3,
+    "size": 10,
+    "current": 1,
+    "pages": 1
+  }
+}
 
 ==============================================================================================================
+终止前查询：
+SELECT * FROM act_ru_execution WHERE PROC_INST_ID_  ='4a9abb76-84a9-11f1-b773-5eea1d7fcc1d';
+ID_	REV_	PROC_INST_ID_	BUSINESS_KEY_	PARENT_ID_	PROC_DEF_ID_	SUPER_EXEC_	ROOT_PROC_INST_ID_	ACT_ID_	IS_ACTIVE_	IS_CONCURRENT_	IS_SCOPE_	IS_EVENT_SCOPE_	IS_MI_ROOT_	SUSPENSION_STATE_	CACHED_ENT_STATE_	TENANT_ID_	NAME_	START_ACT_ID_	START_TIME_	START_USER_ID_	LOCK_TIME_	LOCK_OWNER_	IS_COUNT_ENABLED_	EVT_SUBSCR_COUNT_	TASK_COUNT_	JOB_COUNT_	TIMER_JOB_COUNT_	SUSP_JOB_COUNT_	DEADLETTER_JOB_COUNT_	EXTERNAL_WORKER_JOB_COUNT_	VAR_COUNT_	ID_LINK_COUNT_	CALLBACK_ID_	CALLBACK_TYPE_	REFERENCE_ID_	REFERENCE_TYPE_	PROPAGATED_STAGE_INST_ID_	BUSINESS_STATUS_
+4a9abb76-84a9-11f1-b773-5eea1d7fcc1d	1	4a9abb76-84a9-11f1-b773-5eea1d7fcc1d	test-0002		leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d		4a9abb76-84a9-11f1-b773-5eea1d7fcc1d		1	0	1	0	0	1				startEvent	2026-07-21 10:10:06.120	3			1	0	0	0	0	0	0	0	0	0
+4a9b30ab-84a9-11f1-b773-5eea1d7fcc1d	1	4a9abb76-84a9-11f1-b773-5eea1d7fcc1d		4a9abb76-84a9-11f1-b773-5eea1d7fcc1d	leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d		4a9abb76-84a9-11f1-b773-5eea1d7fcc1d	managerApprove	1	0	0	0	0	1					2026-07-21 10:10:06.123				1	0	1	0	0	0	0	0	0	0
+
+SELECT * FROM ACT_RU_TASK WHERE PROC_INST_ID_  ='4a9abb76-84a9-11f1-b773-5eea1d7fcc1d';
+ID_	REV_	EXECUTION_ID_	PROC_INST_ID_	PROC_DEF_ID_	TASK_DEF_ID_	SCOPE_ID_	SUB_SCOPE_ID_	SCOPE_TYPE_	SCOPE_DEFINITION_ID_	PROPAGATED_STAGE_INST_ID_	STATE_	NAME_	PARENT_TASK_ID_	DESCRIPTION_	TASK_DEF_KEY_	OWNER_	ASSIGNEE_	DELEGATION_	PRIORITY_	CREATE_TIME_	IN_PROGRESS_TIME_	IN_PROGRESS_STARTED_BY_	CLAIM_TIME_	CLAIMED_BY_	SUSPENDED_TIME_	SUSPENDED_BY_	IN_PROGRESS_DUE_DATE_	DUE_DATE_	CATEGORY_	SUSPENSION_STATE_	TENANT_ID_	FORM_KEY_	IS_COUNT_ENABLED_	VAR_COUNT_	ID_LINK_COUNT_	SUB_TASK_COUNT_
+4a9f4f5f-84a9-11f1-b773-5eea1d7fcc1d	1	4a9b30ab-84a9-11f1-b773-5eea1d7fcc1d	4a9abb76-84a9-11f1-b773-5eea1d7fcc1d	leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d							created	经理审批			managerApprove				50	2026-07-21 10:10:06.127										1			1	0	1	0
+
+SELECT * FROM ACT_HI_PROCINST WHERE PROC_INST_ID_= '4a9abb76-84a9-11f1-b773-5eea1d7fcc1d';
+ID_	REV_	PROC_INST_ID_	BUSINESS_KEY_	PROC_DEF_ID_	START_TIME_	END_TIME_	DURATION_	START_USER_ID_	START_ACT_ID_	END_ACT_ID_	SUPER_PROCESS_INSTANCE_ID_	DELETE_REASON_	TENANT_ID_	NAME_	CALLBACK_ID_	CALLBACK_TYPE_	REFERENCE_ID_	REFERENCE_TYPE_	PROPAGATED_STAGE_INST_ID_	BUSINESS_STATUS_
+4a9abb76-84a9-11f1-b773-5eea1d7fcc1d	1	4a9abb76-84a9-11f1-b773-5eea1d7fcc1d	test-0002	leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d	2026-07-21 10:10:06.120			3	startEvent
+
+终止接口调用后查询：
+SELECT * FROM act_ru_execution WHERE PROC_INST_ID_  ='4a9abb76-84a9-11f1-b773-5eea1d7fcc1d';
+ID_	REV_	PROC_INST_ID_	BUSINESS_KEY_	PARENT_ID_	PROC_DEF_ID_	SUPER_EXEC_	ROOT_PROC_INST_ID_	ACT_ID_	IS_ACTIVE_	IS_CONCURRENT_	IS_SCOPE_	IS_EVENT_SCOPE_	IS_MI_ROOT_	SUSPENSION_STATE_	CACHED_ENT_STATE_	TENANT_ID_	NAME_	START_ACT_ID_	START_TIME_	START_USER_ID_	LOCK_TIME_	LOCK_OWNER_	IS_COUNT_ENABLED_	EVT_SUBSCR_COUNT_	TASK_COUNT_	JOB_COUNT_	TIMER_JOB_COUNT_	SUSP_JOB_COUNT_	DEADLETTER_JOB_COUNT_	EXTERNAL_WORKER_JOB_COUNT_	VAR_COUNT_	ID_LINK_COUNT_	CALLBACK_ID_	CALLBACK_TYPE_	REFERENCE_ID_	REFERENCE_TYPE_	PROPAGATED_STAGE_INST_ID_	BUSINESS_STATUS_
+返回为空，没数据
 
 
-==============================================================================================================
+SELECT * FROM ACT_RU_TASK WHERE PROC_INST_ID_  ='4a9abb76-84a9-11f1-b773-5eea1d7fcc1d';
+ID_	REV_	EXECUTION_ID_	PROC_INST_ID_	PROC_DEF_ID_	TASK_DEF_ID_	SCOPE_ID_	SUB_SCOPE_ID_	SCOPE_TYPE_	SCOPE_DEFINITION_ID_	PROPAGATED_STAGE_INST_ID_	STATE_	NAME_	PARENT_TASK_ID_	DESCRIPTION_	TASK_DEF_KEY_	OWNER_	ASSIGNEE_	DELEGATION_	PRIORITY_	CREATE_TIME_	IN_PROGRESS_TIME_	IN_PROGRESS_STARTED_BY_	CLAIM_TIME_	CLAIMED_BY_	SUSPENDED_TIME_	SUSPENDED_BY_	IN_PROGRESS_DUE_DATE_	DUE_DATE_	CATEGORY_	SUSPENSION_STATE_	TENANT_ID_	FORM_KEY_	IS_COUNT_ENABLED_	VAR_COUNT_	ID_LINK_COUNT_	SUB_TASK_COUNT_
+返回为空，没数据
 
+SELECT * FROM ACT_HI_PROCINST WHERE PROC_INST_ID_= '4a9abb76-84a9-11f1-b773-5eea1d7fcc1d';
+ID_	REV_	PROC_INST_ID_	BUSINESS_KEY_	PROC_DEF_ID_	START_TIME_	END_TIME_	DURATION_	START_USER_ID_	START_ACT_ID_	END_ACT_ID_	SUPER_PROCESS_INSTANCE_ID_	DELETE_REASON_	TENANT_ID_	NAME_	CALLBACK_ID_	CALLBACK_TYPE_	REFERENCE_ID_	REFERENCE_TYPE_	PROPAGATED_STAGE_INST_ID_	BUSINESS_STATUS_
+4a9abb76-84a9-11f1-b773-5eea1d7fcc1d	2	4a9abb76-84a9-11f1-b773-5eea1d7fcc1d	test-0002	leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d	2026-07-21 10:10:06.120	2026-07-21 10:57:09.297	2823177	3	startEvent			测试终止
 
-==============================================================================================================
-
-
-
+再次执行同一个id的终止操作返回：
+{
+  "code": 500,
+  "msg": "运行中的流程实例不存在：4a9abb76-84a9-11f1-b773-5eea1d7fcc1d",
+  "data": null
+}
 ==============================================================================================================
 
 
