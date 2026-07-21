@@ -3185,14 +3185,44 @@ ID_	REV_	PROC_INST_ID_	BUSINESS_KEY_	PROC_DEF_ID_	START_TIME_	END_TIME_	DURATION
   "data": null
 }
 ==============================================================================================================
+查询到了ACT_RE_PROCDEF表的数据了：
+SELECT ID_, KEY_, VERSION_, DEPLOYMENT_ID_ FROM ACT_RE_PROCDEF;
+leaveProcess:1:2695eea2-83e7-11f1-86fb-5eea1d7fcc1d	leaveProcess	1	25f2a9bf-83e7-11f1-86fb-5eea1d7fcc1d
 
+deploymentId=25f2a9bf-83e7-11f1-86fb-5eea1d7fcc1d
 
+流程定义删除接口测试1：
+deploymentId=25f2a9bf-83e7-11f1-86fb-5eea1d7fcc1d
+cascade=false,
+接口返回：
+{
+  "code": 500,
+  "msg": "删除失败：该部署下可能存在流程实例。确认后可用 cascade=true 级联删除（连实例与历史一起删）",
+  "data": null
+}
 
+流程定义删除接口测试2：
+deploymentId=25f2a9bf-83e7-11f1-86fb-5eea1d7fcc1d
+cascade=true,
+接口返回：
+{
+  "code": 200,
+  "msg": "success",
+  "data": null
+}
 
 ==============================================================================================================
+   SELECT COUNT(*) FROM ACT_RE_PROCDEF;    -- 预期 0（定义没了）
+  SELECT COUNT(*) FROM ACT_RU_EXECUTION;  -- 预期 0（两条在途实例没了）
+  SELECT COUNT(*) FROM ACT_HI_PROCINST;   -- 预期 0 ← 重点
+  三个查询结果全部为空，数据全没了；
 
+我又查了一下这三个表，数据也全部清空了；
+  SELECT * from ACT_RU_TASK art ;
 
+ SELECT * FROM ACT_RU_VARIABLE arv ;
 
+SELECT * FROM ACT_RU_IDENTITYLINK ari ;
 
 ==============================================================================================================
 
