@@ -3225,48 +3225,387 @@ cascade=true,
 SELECT * FROM ACT_RU_IDENTITYLINK ari ;
 
 ==============================================================================================================
+我用admin账号重新部署了
+接口返回如下：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "id": "leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d",
+    "key": "leaveProcess",
+    "name": "请假流程",
+    "version": 1,
+    "deploymentId": "e4854af7-84ba-11f1-b2ab-5eea1d7fcc1d",
+    "suspended": false,
+    "resourceName": "leave.bpmn20.xml",
+    "diagramResourceName": "leave.leaveProcess.png"
+  }
+}
+
+数据库查询结果：
+SELECT * FROM  ACT_RE_PROCDEF;
+ID_	REV_	CATEGORY_	NAME_	KEY_	VERSION_	DEPLOYMENT_ID_	RESOURCE_NAME_	DGRM_RESOURCE_NAME_	DESCRIPTION_	HAS_START_FORM_KEY_	HAS_GRAPHICAL_NOTATION_	SUSPENSION_STATE_	TENANT_ID_	DERIVED_FROM_	DERIVED_FROM_ROOT_	DERIVED_VERSION_	ENGINE_VERSION_
+leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d	1	http://ha.com/pr/flowwork	请假流程	leaveProcess	1	e4854af7-84ba-11f1-b2ab-5eea1d7fcc1d	leave.bpmn20.xml	leave.leaveProcess.png		0	1	1				0
+
+SELECT * FROM ACT_RE_DEPLOYMENT ard ;
+ID_	NAME_	CATEGORY_	KEY_	TENANT_ID_	DEPLOY_TIME_	DERIVED_FROM_	DERIVED_FROM_ROOT_	PARENT_DEPLOYMENT_ID_	ENGINE_VERSION_
+e4854af7-84ba-11f1-b2ab-5eea1d7fcc1d	leave.bpmn20.xml				2026-07-21 12:16:05.793			e4854af7-84ba-11f1-b2ab-5eea1d7fcc1d
+
+SELECT * FROM ACT_GE_BYTEARRAY agb ;
+ID_	REV_	NAME_	DEPLOYMENT_ID_	BYTES_	GENERATED_
+e4854af8-84ba-11f1-b2ab-5eea1d7fcc1d	1	leave.bpmn20.xml	e4854af7-84ba-11f1-b2ab-5eea1d7fcc1d	<?xml version="1.0" encoding="UTF-8"?> <!--   è¯·å  æµ ç¨ ï¼ å ºå® æ¨¡æ ¿ï¼ Day 10 ç ¨äº éª è¯ å¼ æ  é ¾è·¯ï¼ ï¼      å¼ å§ ï¼ å  å·¥å  èµ·ï¼ â   ç» ç  å®¡æ ¹ â   ç» æ     - startEvent ç   flowable:initiator ä¼ æ  "å  èµ·äºº"å­ è¿ æµ ç¨ å  é   initiatorï¼ å  èµ·æ ¥å £é  è¦  setAuthenticatedUserIdï¼    - å®¡æ ¹è  ç ¹ç ¨ candidateGroups="manager"ï¼ æ  è§ è ²è®¤é¢ ï¼ ä»»ä½  manager é ½è ½å ¨å¾ å  é  ç  å °å¹¶å  ç       ï¼ è ¥æ ³å ºå® æ  æ´¾æ  ä¸ªäººï¼ å ¯æ ¹ä¸º flowable:assignee="å ·ä½ ç ¨æ ·å  "ï¼  --> <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"              xmlns:flowable="http://flowable.org/bpmn"              xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"              xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"              xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"              targetNamespace="http://ha.com/pr/flowwork"              xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">    <process id="leaveProcess" name="è¯·å  æµ ç¨ " isExecutable="true">      <startEvent id="startEvent" name="å  å·¥å  èµ·" flowable:initiator="initiator"/>      <sequenceFlow id="flow1" sourceRef="startEvent" targetRef="managerApprove"/>      <userTask id="managerApprove" name="ç» ç  å®¡æ ¹" flowable:candidateGroups="manager"/>      <sequenceFlow id="flow2" sourceRef="managerApprove" targetRef="endEvent"/>      <endEvent id="endEvent" name="ç» æ  "/>    </process>    <!-- å ¾å½¢å  æ  ï¼ DIï¼ ï¼ å¼ æ  æ §è¡ ä¸ é  è¦ ï¼ ä½ å  ç«¯ bpmn-js æ¸²æ  æµ ç¨ å ¾é  è¦  -->   <bpmndi:BPMNDiagram id="BPMNDiagram_leaveProcess">     <bpmndi:BPMNPlane id="BPMNPlane_leaveProcess" bpmnElement="leaveProcess">       <bpmndi:BPMNShape id="shape_startEvent" bpmnElement="startEvent">         <omgdc:Bounds x="120" y="122" width="36" height="36"/>       </bpmndi:BPMNShape>       <bpmndi:BPMNShape id="shape_managerApprove" bpmnElement="managerApprove">         <omgdc:Bounds x="220" y="100" width="120" height="80"/>       </bpmndi:BPMNShape>       <bpmndi:BPMNShape id="shape_endEvent" bpmnElement="endEvent">         <omgdc:Bounds x="404" y="122" width="36" height="36"/>       </bpmndi:BPMNShape>       <bpmndi:BPMNEdge id="edge_flow1" bpmnElement="flow1">         <omgdi:waypoint x="156" y="140"/>         <omgdi:waypoint x="220" y="140"/>       </bpmndi:BPMNEdge>       <bpmndi:BPMNEdge id="edge_flow2" bpmnElement="flow2">         <omgdi:waypoint x="340" y="140"/>         <omgdi:waypoint x="404" y="140"/>       </bpmndi:BPMNEdge>     </bpmndi:BPMNPlane>   </bpmndi:BPMNDiagram>  </definitions> 	0
+e51de179-84ba-11f1-b2ab-5eea1d7fcc1d	1	leave.leaveProcess.png	e4854af7-84ba-11f1-b2ab-5eea1d7fcc1d	 PNG        IHDR   Â   ¾     ¦  K   âIDATx^íÝÝoTg~ ðlWªö2Ûî^æ¦Wû/ìö¦ ]µj¤ì^ 6`  $8J¤   µP- Hmî²   UjBÂªM .L 5%&ÔR 7"6lHÅ¦     1/[ aÃôù  3<cû /¶Çç|>ÒOÆsÎ çAç óõ33ç ûî                                                                                                                                                                               `ÖÔjµ?>vìØ«ï½÷Þ×}}}µ½{÷ª9^i?Þèïï?½oß¾ åû  L Á×ÒA³væÌ ÚÈÈHíÚµkj WìÇØ û÷ï¿  ñÁ|  Ð f qÐÌ ¦jî×ààà¹   æû   ñv¨ `9+ök Â«ù>  A|¦  @Uy*öo¾Ï hÐj þþÂ`íØGÿ\;üöæÑ  Çcùzª½J   h% /  ª}úÖß×>ù·5·T< ËòõUû   (ÐJ  <ÜÛ  õ 8¼§i}Õ>%   ´  ÿýÎ³M X¯X ¯¯Ú§ !@ V ðÓ½   °^±,__µO B   °Ü%   ´  ñ-Ñ< ë ËòõUû   (ÐJ ~þîóM X¯X ¯¯Ú§ !@ V ðü©CµOÿã M!  Å²|}Õ>%   ´  Q_ ØÙ  ñX¾ j¯    Z Â«Wk ÿ×¶¦  ÇbYÓúªmJ   ( Â¸rÌïÞÝÚ  õ e®.Ó¾%   L  i¦7øù¾Úoÿýï Â/¯X'Ö5;l¿    & Â¢YàdevØ~%   L  ­Ì '«xn¾=5{%   L  y¸ÝnåÛS³W   ÀDA¨ÊS ðötwwßßÙÙ9¯££cKúÙ ê TWRÕÆ~Æï}cËçÅúù6à »xñâ ôöön~þùç?Ù´iÓ¹uëÖ <úè£7b`öôô\_½zõ¥õë× Ø¼yó 5kÖüuzÊwòm09AXî  ­Y¸páOÓ1ewªkc¡×jÅú»ãùù6á®}ðÁ =Ï=÷Ü© +WÖRøÕ^{íµÚÇ  \;zôhíüùóµ ?ã÷x< ¯]»öÆòåË¯¥@|kÑ¢E  o f °Ü% §  ìÇ)ÈÞ  àî¤Þ íåmÀm;tèÐß¼ðÂ § yä Úë¯¿^;{öìhèµ*Ö ç¥@üzÕªU¯¦ ù ¼ ¾% Ë] pbÝÝÝßëèèøU ¯Ñw  ëÉ' ¬íÚµkÊ?¼cy¬ ?7¶ Û íçmB¡4Î¾ûæ oöF ¾ôÒKµË /ß p·)  ÛI òJWW×Ïóö¸I  » a³ V ¤? ?i °E  ÕvìØQ   È %S õãyñü,   íämÃ¤Òxºÿå _þÝc =V;vìX>ÖîJl/ ëH !nÊÛE  ½ á­R þ(Õ©ÆÐzöÙgk'O Ì  ·%  ÛÉÂðd´ ÷  ¤1tÿ -[ 7lØP   ÎÇ×= Û]·nÝ ¥K îÌÛ¯:AXî  ß     `Ìâz{{óÃÅ] íe³Ã f L)  ï¦ àç  ñ¢ N±ýÕ«W_X¼xñú¼ U& Ë] ð¦øÌ®ñíÐeË Õ  <  &î Ønl¿!  ã3C&   >þøãÓ6 ÌE;+V¬¸  æCy_ªJ  » áMc_    NW ÖÅö g Ñ~Þ'¸/   ã 1÷ú3Á"Ñ^WW×ðüùó  ÷©  a¹K   "ñM= öìÙ   ¦E´Ó0+üÆ© 4 S$â[ ³aÛ¶m§ÓÀüeÞ§*  å.A8úÙàøy ñ    } æý¼oTX , ³ÁK .åãfFD»K ,¹è¤{AXöªz .X°à/ëA oUÞí·CoW´×ø iô'ï#  W Ù½{w>ffÔÎ ; ¦ ¹#ï[Õ ÂrWÕ °óæeÓFC(Î÷  ÑnÃ¬pwÞG*(ÍÆþ´§§§644     ÚÿCúKíÌÆ  ÿ(ïc  ÂrW  0½¾¿ßÙpíÐ   ÖE» Ax-ú ÷  yã 76ÅµCÛÁ  +¾L ó'y Ë ý¿ÞIõ ùã9AXî*k ¶2¾Óòyõ  Ë¡Í¦ìrlóò¾R1[·ným\ » lß¾=. ô y Ë áE7å C  »J   ã;=¾µ¾Þ+¯¼ ¿ügT´ßÐç­y_© ¸ R\´¶ ô÷÷ êèèèÍûX  /º)   °ÜU   t|/\¸p_}ù   ò ÿ  öë} ~5ö  Z»víÈL ;8 #G Ä[£ å},      0 a¹«BAØ4¾ÓÏ õÇgû  í7ôñDöß¡jzzzn|õÕWù8  çÏ ¿  å©¼ e0Á "¯Ñ   ,wU0  Ç÷ÿÕ  ícN´_ïK  ^Êÿ?TÌ %Kj×¯_ÏÇÉ¬Hý Ë­å/ J  ,wåû»ª5ÛÇ h¿¡? È  TÌÊ +¯Ïö_gugÏ ý ÎêÍ ßéôÖheª 3Âññ 3¯úã³}Ì1#ä O=õÔ¥Ù~¿¾î³Ï>;ÐY Ï o Àº¹  ©ë ÖL- +U¡ l ß >#¤]mØ°ád»|kôí·ßî«À·F    ær NõØt/ +U   t|ûÖ(mkãÆ {Úå<Âg y&.¿TÖó '=@4  w¶|®T  °p|w:  vµnÝº¿Z»ví | Ì ë  -:ÔYÒ+Ë´J ÞÙò¹Re ÂVt¶Ñ e xâ   AèÊ2U ×ö\±bÅµÙ¾ÖèÀÀÀ»i@ ºÖ¨  è±¢ås¥ª  ®5J[[³fÍ[³}÷ § ~ú× î>! ïpù\©* aèt÷ ÚUÜ pùòå_ÏÖý    ?L rÈý  á . +Uõ l û .\¸pümQ÷#ä «V­zu¶îP Úþ×Nw¨ 5  p¢ ©ås¥ª  ¡Ó êiWóçÏÿaww÷  >¿çÀ  ñ èP´ ÷© æj ªÖJ   Fñãô ÿ¦ H{öìÉ  Ó"Úi Áo¢ yßà¾®®® ¯\¹rdxx8 CÓbhhè?Ó < ê¡¼/U% Ë] ð¦   _ÕC)Þ"=xð`~x¸§bû o Fûy `ÜòåËãF½WâE; ®^½úYz |  çßæ}¨2AXî  7uww / RÜ t4  -[6ma ÛMí Ï@£Ýh?ï ÜbéÒ¥;W¯^}aºf i&¸?B0 È ÊÛ®:AXî  ßJ¯ÿ R l  öööæ  » Ûk   µ÷@Þ  ÐâÅ ×§Ùá=¿ éØg 'Ì '& Ë] ðVé8ð£Æ0  /´Üí·IãùÙ cFC0ÚËû SJ ç¡®®®ámÛ¶ ¾|ùr>ÖnË   > ûvèPl7o   a¹K 6  ZgÃÛ¤Q1; óý   òCÉ býx^6  };4ÚÉÛ  ¤ õ 4 ~¹dÉ  /¾øâÑ³gÏÞÎ Ä® :uêÝM 6 ~34¶ ÛËÛà[ °Ü% '  Ù } & °ÑË±íÚµ« 7 8zôhÜÀ{ôà ?ã÷x< g M«× Ø®Ï ¹'âd÷4¨v¤  zøá  oß¾ý`  ÿ¡#G  8wîÜïÓ¸¼<44tìðáÃ Ò }o\@{ìÚ¡ÿ Ïs²|k a¹K NmìÔ ñó ï²Þw  Óå;  ,øó4Àþ!n   [\ ¦þ  üü0  å±^¬ o É Âr  lM:~ü´óæåØÆ¯MÚbÅú»ãùù6 9B  » áíéîî¾? Û¼ôÇõ ô³/Õ ©®  ^ü ßã>¦±|^¬ o  c a¹K     å.A P@  » !@ AXî     a¹K     å.A P@  » !@ AXî     a¹K     å.A P@  » !@ AXî     a¹K     å.A P@  » !@ AXî     a¹K   èëë»122Òt Us¿Ò~=  ðj¾Ï hÐßß úÌ 3M Q5÷ëøñãÿ  ðÃ|  Ð`ß¾}?Û¿ ÿÅÁÁÁsf å¨´  ¿üòË_§ < êÁ|     eÌ R] Ï Ô ¯Ø ±?                 Ð>þ     ¯Y`Í    IEND®B` 	1
+
+==============================================================================================================
+发起流程接口返回结果：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "id": "175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d",
+    "processDefinitionId": "leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d",
+    "processDefinitionKey": "leaveProcess",
+    "processDefinitionName": "请假流程",
+    "businessKey": "test-0004",
+    "startUserId": "3",
+    "startTime": "2026-07-21 12:24:40",
+    "suspended": false
+  }
+}
+各个表的数据如下：
+SELECT * FROM ACT_RU_EXECUTION;
+ID_	REV_	PROC_INST_ID_	BUSINESS_KEY_	PARENT_ID_	PROC_DEF_ID_	SUPER_EXEC_	ROOT_PROC_INST_ID_	ACT_ID_	IS_ACTIVE_	IS_CONCURRENT_	IS_SCOPE_	IS_EVENT_SCOPE_	IS_MI_ROOT_	SUSPENSION_STATE_	CACHED_ENT_STATE_	TENANT_ID_	NAME_	START_ACT_ID_	START_TIME_	START_USER_ID_	LOCK_TIME_	LOCK_OWNER_	IS_COUNT_ENABLED_	EVT_SUBSCR_COUNT_	TASK_COUNT_	JOB_COUNT_	TIMER_JOB_COUNT_	SUSP_JOB_COUNT_	DEADLETTER_JOB_COUNT_	EXTERNAL_WORKER_JOB_COUNT_	VAR_COUNT_	ID_LINK_COUNT_	CALLBACK_ID_	CALLBACK_TYPE_	REFERENCE_ID_	REFERENCE_TYPE_	PROPAGATED_STAGE_INST_ID_	BUSINESS_STATUS_
+175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	1	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	test-0004		leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d		175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d		1	0	1	0	0	1				startEvent	2026-07-21 12:24:40.607	3			1	0	0	0	0	0	0	0	0	0
+17609740-84bc-11f1-b2ab-5eea1d7fcc1d	1	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d		175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d		175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	managerApprove	1	0	0	0	0	1					2026-07-21 12:24:40.613				1	0	1	0	0	0	0	0	0	0
+
+SELECT * FROM ACT_RU_TASK;
+ID_	REV_	EXECUTION_ID_	PROC_INST_ID_	PROC_DEF_ID_	TASK_DEF_ID_	SCOPE_ID_	SUB_SCOPE_ID_	SCOPE_TYPE_	SCOPE_DEFINITION_ID_	PROPAGATED_STAGE_INST_ID_	STATE_	NAME_	PARENT_TASK_ID_	DESCRIPTION_	TASK_DEF_KEY_	OWNER_	ASSIGNEE_	DELEGATION_	PRIORITY_	CREATE_TIME_	IN_PROGRESS_TIME_	IN_PROGRESS_STARTED_BY_	CLAIM_TIME_	CLAIMED_BY_	SUSPENDED_TIME_	SUSPENDED_BY_	IN_PROGRESS_DUE_DATE_	DUE_DATE_	CATEGORY_	SUSPENSION_STATE_	TENANT_ID_	FORM_KEY_	IS_COUNT_ENABLED_	VAR_COUNT_	ID_LINK_COUNT_	SUB_TASK_COUNT_
+1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d	1	17609740-84bc-11f1-b2ab-5eea1d7fcc1d	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d							created	经理审批			managerApprove				50	2026-07-21 12:24:40.620										1			1	0	1	0
+
+SELECT * FROM ACT_RU_IDENTITYLINK;
+ID_	REV_	GROUP_ID_	TYPE_	USER_ID_	TASK_ID_	PROC_INST_ID_	PROC_DEF_ID_	SCOPE_ID_	SUB_SCOPE_ID_	SCOPE_TYPE_	SCOPE_DEFINITION_ID_
+1760702d-84bc-11f1-b2ab-5eea1d7fcc1d	1		starter	3		175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d
+17650315-84bc-11f1-b2ab-5eea1d7fcc1d	1	manager	candidate		1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d
+
+SELECT * FROM ACT_RU_VARIABLE ;
+ID_	REV_	TYPE_	NAME_	EXECUTION_ID_	PROC_INST_ID_	TASK_ID_	SCOPE_ID_	SUB_SCOPE_ID_	SCOPE_TYPE_	BYTEARRAY_ID_	DOUBLE_	LONG_	TEXT_	TEXT2_	META_INFO_
+175ffafc-84bc-11f1-b2ab-5eea1d7fcc1d	1	string	initiator	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d								3
+1760973e-84bc-11f1-b2ab-5eea1d7fcc1d	1	integer	days	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d							2	2
+1760973f-84bc-11f1-b2ab-5eea1d7fcc1d	1	string	reason	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d								病假
+
+==============================================================================================================
+ 要我把上面那个部署权限的缺口记进文档吗？（我倾向记到 docs/deep_dive/待深入主题清单.md 或排期 Day 31 的打磨项里，不现在改代码。）
+
+==============================================================================================================
+1.把上面那个部署权限的缺口先记进文档；
+
+2.各个用户的测试employ,admin,manager结果如下：
+employee:
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [],
+    "total": 0,
+    "size": 10,
+    "current": 1,
+    "pages": 0
+  }
+}
+admin:
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [],
+    "total": 0,
+    "size": 10,
+    "current": 1,
+    "pages": 0
+  }
+}
+manager:
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "records": [
+      {
+        "id": "1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d",
+        "name": "经理审批",
+        "taskDefinitionKey": "managerApprove",
+        "assignee": null,
+        "processInstanceId": "175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d",
+        "processDefinitionId": "leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d",
+        "createTime": "2026-07-21 12:24:40",
+        "suspended": false
+      }
+    ],
+    "total": 1,
+    "size": 10,
+    "current": 1,
+    "pages": 1
+  }
+}
+
+各个表的数据如下：
+SELECT * FROM ACT_RU_EXECUTION;
+ID_	REV_	PROC_INST_ID_	BUSINESS_KEY_	PARENT_ID_	PROC_DEF_ID_	SUPER_EXEC_	ROOT_PROC_INST_ID_	ACT_ID_	IS_ACTIVE_	IS_CONCURRENT_	IS_SCOPE_	IS_EVENT_SCOPE_	IS_MI_ROOT_	SUSPENSION_STATE_	CACHED_ENT_STATE_	TENANT_ID_	NAME_	START_ACT_ID_	START_TIME_	START_USER_ID_	LOCK_TIME_	LOCK_OWNER_	IS_COUNT_ENABLED_	EVT_SUBSCR_COUNT_	TASK_COUNT_	JOB_COUNT_	TIMER_JOB_COUNT_	SUSP_JOB_COUNT_	DEADLETTER_JOB_COUNT_	EXTERNAL_WORKER_JOB_COUNT_	VAR_COUNT_	ID_LINK_COUNT_	CALLBACK_ID_	CALLBACK_TYPE_	REFERENCE_ID_	REFERENCE_TYPE_	PROPAGATED_STAGE_INST_ID_	BUSINESS_STATUS_
+175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	1	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	test-0004		leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d		175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d		1	0	1	0	0	1				startEvent	2026-07-21 12:24:40.607	3			1	0	0	0	0	0	0	0	0	0
+17609740-84bc-11f1-b2ab-5eea1d7fcc1d	1	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d		175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d		175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	managerApprove	1	0	0	0	0	1					2026-07-21 12:24:40.613				1	0	1	0	0	0	0	0	0	0
+
+SELECT * FROM ACT_RU_TASK;
+ID_	REV_	EXECUTION_ID_	PROC_INST_ID_	PROC_DEF_ID_	TASK_DEF_ID_	SCOPE_ID_	SUB_SCOPE_ID_	SCOPE_TYPE_	SCOPE_DEFINITION_ID_	PROPAGATED_STAGE_INST_ID_	STATE_	NAME_	PARENT_TASK_ID_	DESCRIPTION_	TASK_DEF_KEY_	OWNER_	ASSIGNEE_	DELEGATION_	PRIORITY_	CREATE_TIME_	IN_PROGRESS_TIME_	IN_PROGRESS_STARTED_BY_	CLAIM_TIME_	CLAIMED_BY_	SUSPENDED_TIME_	SUSPENDED_BY_	IN_PROGRESS_DUE_DATE_	DUE_DATE_	CATEGORY_	SUSPENSION_STATE_	TENANT_ID_	FORM_KEY_	IS_COUNT_ENABLED_	VAR_COUNT_	ID_LINK_COUNT_	SUB_TASK_COUNT_
+1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d	1	17609740-84bc-11f1-b2ab-5eea1d7fcc1d	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d							created	经理审批			managerApprove				50	2026-07-21 12:24:40.620										1			1	0	1	0
+
+SELECT * FROM ACT_RU_IDENTITYLINK;
+1760702d-84bc-11f1-b2ab-5eea1d7fcc1d	1		starter	3		175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d
+17650315-84bc-11f1-b2ab-5eea1d7fcc1d	1	manager	candidate		1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d
+
+SELECT * FROM ACT_RU_VARIABLE ;
+ID_	REV_	TYPE_	NAME_	EXECUTION_ID_	PROC_INST_ID_	TASK_ID_	SCOPE_ID_	SUB_SCOPE_ID_	SCOPE_TYPE_	BYTEARRAY_ID_	DOUBLE_	LONG_	TEXT_	TEXT2_	META_INFO_
+175ffafc-84bc-11f1-b2ab-5eea1d7fcc1d	1	string	initiator	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d								3
+1760973e-84bc-11f1-b2ab-5eea1d7fcc1d	1	integer	days	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d							2	2
+1760973f-84bc-11f1-b2ab-5eea1d7fcc1d	1	string	reason	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d								病假
 
 
+==============================================================================================================
+任务详情接口返回了：
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "id": "1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d",
+    "name": "经理审批",
+    "taskDefinitionKey": "managerApprove",
+    "assignee": null,
+    "processInstanceId": "175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d",
+    "processDefinitionId": "leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d",
+    "createTime": "2026-07-21 12:24:40",
+    "suspended": false,
+    "variables": {
+      "reason": "病假",
+      "initiator": "3",
+      "days": 2
+    },
+    "formKey": null
+  }
+}
+
+==============================================================================================================
+1.使用employee用户登录查询任务详情返回报错：
+{
+  "code": 500,
+  "msg": "你不在该任务的候选办理人范围内，无权操作",
+  "data": null
+}
+
+2.越权办理测试：
+请求：
+{ "taskId": "1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d", "variables": { "approved": true } }
+返回：
+{
+  "code": 500,
+  "msg": "你不在该任务的候选办理人范围内，无权操作",
+  "data": null
+}
+3.任务不存在，
+taskId
+1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d
+改为1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d1
+返回：
+{
+  "code": 500,
+  "msg": "待办任务不存在或已办理：1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d1",
+  "data": null
+}
+4.删除taskId发起请求：
+返回结果：
+swagger直接提示了，都无法发起请求：
+Please correct the following validation errors and try again.
+Required field is not provided
+
+==============================================================================================================
+4.taskId传空串返回：
+{
+  "code": 500,
+  "msg": "待办任务不存在或已办理：\"\"",
+  "data": null
+}
+
+切换到manager 请求/task/complete接口
+返回：
+{
+  "code": 200,
+  "msg": "success",
+  "data": null
+}
+后端日志若干：
+2026-07-21T14:48:27.125+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.selectExecution            : ==>  Preparing: select * from ACT_RU_EXECUTION where ID_ = ?
+2026-07-21T14:48:27.125+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.selectExecution            : ==> Parameters: 17609740-84bc-11f1-b2ab-5eea1d7fcc1d(String)
+2026-07-21T14:48:27.293+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.selectExecution            : <==      Total: 1
+2026-07-21T14:48:27.294+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.A.selectActivityInstanceByTaskId : ==>  Preparing: select * from ACT_RU_ACTINST RES where TASK_ID_ = ?
+2026-07-21T14:48:27.294+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.A.selectActivityInstanceByTaskId : ==> Parameters: 1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d(String)
+2026-07-21T14:48:27.402+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.A.selectActivityInstanceByTaskId : <==      Total: 1
+2026-07-21T14:48:27.403+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.H.selectHistoricActivityInstance : ==>  Preparing: select * from ACT_HI_ACTINST where ID_ =?
+2026-07-21T14:48:27.403+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.H.selectHistoricActivityInstance : ==> Parameters: 1761cec3-84bc-11f1-b2ab-5eea1d7fcc1d(String)
+2026-07-21T14:48:27.520+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.H.selectHistoricActivityInstance : <==      Total: 1
+2026-07-21T14:48:27.666+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.selectExecution            : ==>  Preparing: select * from ACT_RU_EXECUTION where ID_ = ?
+2026-07-21T14:48:27.666+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.selectExecution            : ==> Parameters: 175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d(String)
+2026-07-21T14:48:27.788+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.selectExecution            : <==      Total: 1
+2026-07-21T14:48:28.169+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.C.insertComment              : ==>  Preparing: insert into ACT_HI_COMMENT (ID_, TYPE_, TIME_, USER_ID_, TASK_ID_, PROC_INST_ID_, ACTION_, MESSAGE_, FULL_MSG_) values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-07-21T14:48:28.169+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.C.insertComment              : ==> Parameters: 2da68db8-84d0-11f1-b2ab-5eea1d7fcc1d(String), event(String), 2026-07-21 14:48:27.915(Timestamp), null, 1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d(String), null, AddUserLink(String), 2_|_assignee(String), null
+2026-07-21T14:48:28.297+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.C.insertComment              : <==    Updates: 1
+2026-07-21T14:48:28.442+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.A.updateActivityInstance     : ==>  Preparing: update ACT_RU_ACTINST SET REV_ = ?, PROC_DEF_ID_ = ?, ASSIGNEE_ = ? where ID_ = ? and REV_ = ?
+2026-07-21T14:48:28.442+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.A.updateActivityInstance     : ==> Parameters: 2(Integer), leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d(String), 2(String), 1761cec3-84bc-11f1-b2ab-5eea1d7fcc1d(String), 1(Integer)
+2026-07-21T14:48:28.572+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.A.updateActivityInstance     : <==    Updates: 1
+2026-07-21T14:48:28.572+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.H.updateHistoricActivityInstance : ==>  Preparing: update ACT_HI_ACTINST SET REV_ = ?, PROC_DEF_ID_ = ?, ASSIGNEE_ = ? where ID_ = ? and REV_ = ?
+2026-07-21T14:48:28.573+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.H.updateHistoricActivityInstance : ==> Parameters: 2(Integer), leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d(String), 2(String), 1761cec3-84bc-11f1-b2ab-5eea1d7fcc1d(String), 1(Integer)
+2026-07-21T14:48:28.685+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.H.updateHistoricActivityInstance : <==    Updates: 1
+2026-07-21T14:48:29.335+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.selectExecution            : ==>  Preparing: select * from ACT_RU_EXECUTION where ID_ = ?
+2026-07-21T14:48:29.335+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.selectExecution            : ==> Parameters: 17609740-84bc-11f1-b2ab-5eea1d7fcc1d(String)
+2026-07-21T14:48:29.480+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.selectExecution            : <==      Total: 1
+2026-07-21T14:48:29.620+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.selectExecution            : ==>  Preparing: select * from ACT_RU_EXECUTION where ID_ = ?
+2026-07-21T14:48:29.620+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.selectExecution            : ==> Parameters: 175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d(String)
+2026-07-21T14:48:29.747+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.selectExecution            : <==      Total: 1
+2026-07-21T14:48:30.253+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] ActivityInstanceExecutionIdAndActivityId : ==>  Preparing: select * from ACT_RU_ACTINST RES where EXECUTION_ID_ = ? and ACT_ID_ = ? and END_TIME_ is null
+2026-07-21T14:48:30.254+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] ActivityInstanceExecutionIdAndActivityId : ==> Parameters: 17609740-84bc-11f1-b2ab-5eea1d7fcc1d(String), managerApprove(String)
+2026-07-21T14:48:30.401+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] ActivityInstanceExecutionIdAndActivityId : <==      Total: 1
+2026-07-21T14:48:30.402+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.H.selectHistoricActivityInstance : ==>  Preparing: select * from ACT_HI_ACTINST where ID_ =?
+2026-07-21T14:48:30.402+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.H.selectHistoricActivityInstance : ==> Parameters: 1761cec3-84bc-11f1-b2ab-5eea1d7fcc1d(String)
+2026-07-21T14:48:30.503+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.H.selectHistoricActivityInstance : <==      Total: 1
+2026-07-21T14:48:30.504+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] ActivityInstanceExecutionIdAndActivityId : ==>  Preparing: select * from ACT_RU_ACTINST RES where EXECUTION_ID_ = ? and ACT_ID_ = ? and END_TIME_ is null
+2026-07-21T14:48:30.504+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] ActivityInstanceExecutionIdAndActivityId : ==> Parameters: 17609740-84bc-11f1-b2ab-5eea1d7fcc1d(String), endEvent(String)
+2026-07-21T14:48:30.615+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] ActivityInstanceExecutionIdAndActivityId : <==      Total: 0
+2026-07-21T14:48:30.617+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.ExecutionEntityManagerImpl   : Ending and deleting execution Execution[ id '17609740-84bc-11f1-b2ab-5eea1d7fcc1d' ] - definition 'leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d' - activity 'endEvent' - parent '175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d' Reason: null
+2026-07-21T14:48:30.617+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] .e.E.selectExecutionsByParentExecutionId : ==>  Preparing: select * from ACT_RU_EXECUTION where PARENT_ID_ = ?
+2026-07-21T14:48:30.617+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] .e.E.selectExecutionsByParentExecutionId : ==> Parameters: 175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d(String)
+2026-07-21T14:48:30.725+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] .e.E.selectExecutionsByParentExecutionId : <==      Total: 1
+2026-07-21T14:48:30.725+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] selectChildExecutionsByProcessInstanceId : ==>  Preparing: select * from ACT_RU_EXECUTION where PROC_INST_ID_ = ? and PARENT_ID_ is not null
+2026-07-21T14:48:30.725+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] selectChildExecutionsByProcessInstanceId : ==> Parameters: 175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d(String)
+2026-07-21T14:48:30.853+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] selectChildExecutionsByProcessInstanceId : <==      Total: 1
+2026-07-21T14:48:30.854+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] lectSubProcessInstanceBySuperExecutionId : ==>  Preparing: select * from ACT_RU_EXECUTION where SUPER_EXEC_ = ?
+2026-07-21T14:48:30.854+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] lectSubProcessInstanceBySuperExecutionId : ==> Parameters: 175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d(String)
+2026-07-21T14:48:30.979+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] lectSubProcessInstanceBySuperExecutionId : <==      Total: 0
+2026-07-21T14:48:30.979+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.ExecutionEntityManagerImpl   : Ending and deleting execution ProcessInstance[175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d] - definition 'leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d' Reason: null
+2026-07-21T14:48:32.108+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] .e.i.p.e.H.selectHistoricProcessInstance : ==>  Preparing: select RES.*, DEF.KEY_ as PROC_DEF_KEY_, DEF.NAME_ as PROC_DEF_NAME_, DEF.VERSION_ as PROC_DEF_VERSION_, DEF.CATEGORY_ as PROC_DEF_CATEGORY_, DEF.DEPLOYMENT_ID_ as DEPLOYMENT_ID_ from ACT_HI_PROCINST RES left outer join ACT_RE_PROCDEF DEF on RES.PROC_DEF_ID_ = DEF.ID_ where PROC_INST_ID_ = ?
+2026-07-21T14:48:32.109+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] .e.i.p.e.H.selectHistoricProcessInstance : ==> Parameters: 175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d(String)
+2026-07-21T14:48:32.229+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] .e.i.p.e.H.selectHistoricProcessInstance : <==      Total: 1
+2026-07-21T14:48:32.352+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] p.e.H.bulkInsertHistoricActivityInstance : ==>  Preparing: insert into ACT_HI_ACTINST ( ID_, REV_, PROC_DEF_ID_, PROC_INST_ID_, EXECUTION_ID_, ACT_ID_, TASK_ID_, CALL_PROC_INST_ID_, ACT_NAME_, ACT_TYPE_, ASSIGNEE_, START_TIME_, END_TIME_, TRANSACTION_ORDER_, DURATION_, DELETE_REASON_, TENANT_ID_ ) values (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) , (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-07-21T14:48:32.353+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] p.e.H.bulkInsertHistoricActivityInstance : ==> Parameters: 2f31737b-84d0-11f1-b2ab-5eea1d7fcc1d(String), leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d(String), 175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d(String), 17609740-84bc-11f1-b2ab-5eea1d7fcc1d(String), flow2(String), null, null, null, sequenceFlow(String), null, 2026-07-21 14:48:30.503(Timestamp), 2026-07-21 14:48:30.503(Timestamp), 1(Integer), 0(Long), null, (String), 2f428a7c-84d0-11f1-b2ab-5eea1d7fcc1d(String), leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d(String), 175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d(String), 17609740-84bc-11f1-b2ab-5eea1d7fcc1d(String), endEvent(String), null, null, 结束(String), endEvent(String), null, 2026-07-21 14:48:30.615(Timestamp), 2026-07-21 14:48:30.617(Timestamp), 2(Integer), 2(Long), null, (String)
+2026-07-21T14:48:32.477+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] p.e.H.bulkInsertHistoricActivityInstance : <==    Updates: 2
+2026-07-21T14:48:32.479+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] .e.i.p.e.H.updateHistoricProcessInstance : ==>  Preparing: update ACT_HI_PROCINST SET REV_ = ?, END_TIME_ = ?, DURATION_ = ?, END_ACT_ID_ = ? where ID_ = ? and REV_ = ?
+2026-07-21T14:48:32.479+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] .e.i.p.e.H.updateHistoricProcessInstance : ==> Parameters: 2(Integer), 2026-07-21 14:48:32.108(Timestamp), 8631501(Long), endEvent(String), 175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d(String), 1(Integer)
+2026-07-21T14:48:32.599+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] .e.i.p.e.H.updateHistoricProcessInstance : <==    Updates: 1
+2026-07-21T14:48:32.604+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.updateExecution            : ==>  Preparing: update ACT_RU_EXECUTION SET REV_ = ?, IS_ACTIVE_ = ? where ID_ = ? and REV_ = ?
+2026-07-21T14:48:32.604+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.updateExecution            : ==> Parameters: 2(Integer), false(Boolean), 175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d(String), 1(Integer)
+2026-07-21T14:48:32.717+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.updateExecution            : <==    Updates: 1
+2026-07-21T14:48:32.718+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.updateExecution            : ==>  Preparing: update ACT_RU_EXECUTION SET REV_ = ?, ACT_ID_ = ?, IS_ACTIVE_ = ?, TASK_COUNT_ = ? where ID_ = ? and REV_ = ?
+2026-07-21T14:48:32.718+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.updateExecution            : ==> Parameters: 2(Integer), endEvent(String), false(Boolean), 0(Integer), 17609740-84bc-11f1-b2ab-5eea1d7fcc1d(String), 1(Integer)
+2026-07-21T14:48:32.838+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.updateExecution            : <==    Updates: 1
+2026-07-21T14:48:32.968+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.H.updateHistoricActivityInstance : ==>  Preparing: update ACT_HI_ACTINST SET REV_ = ?, PROC_DEF_ID_ = ?, END_TIME_ = ?, DURATION_ = ? where ID_ = ? and REV_ = ?
+2026-07-21T14:48:32.969+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.H.updateHistoricActivityInstance : ==> Parameters: 3(Integer), leaveProcess:1:e531deaa-84ba-11f1-b2ab-5eea1d7fcc1d(String), 2026-07-21 14:48:30.402(Timestamp), 8629782(Long), 1761cec3-84bc-11f1-b2ab-5eea1d7fcc1d(String), 2(Integer)
+2026-07-21T14:48:33.107+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] e.i.p.e.H.updateHistoricActivityInstance : <==    Updates: 1
+2026-07-21T14:48:33.745+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] leteActivityInstancesByProcessInstanceId : ==>  Preparing: delete from ACT_RU_ACTINST where PROC_INST_ID_ = ?
+2026-07-21T14:48:33.746+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] leteActivityInstancesByProcessInstanceId : ==> Parameters: 175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d(String)
+2026-07-21T14:48:33.854+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] leteActivityInstancesByProcessInstanceId : <==    Updates: 3
+2026-07-21T14:48:33.854+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.deleteExecution            : ==>  Preparing: delete from ACT_RU_EXECUTION where ID_ = ? and REV_ = ?
+2026-07-21T14:48:33.855+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.deleteExecution            : ==> Parameters: 17609740-84bc-11f1-b2ab-5eea1d7fcc1d(String), 2(Integer)
+2026-07-21T14:48:33.973+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.deleteExecution            : <==    Updates: 1
+2026-07-21T14:48:33.973+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.deleteExecution            : ==>  Preparing: delete from ACT_RU_EXECUTION where ID_ = ? and REV_ = ?
+2026-07-21T14:48:33.973+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.deleteExecution            : ==> Parameters: 175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d(String), 2(Integer)
+2026-07-21T14:48:34.098+08:00 DEBUG 26232 --- [process-back] [nio-9090-exec-2] o.f.e.i.p.e.E.deleteExecution            : <==    Updates: 1
+2026-07-21T14:48:34.312+08:00  INFO 26232 --- [process-back] [nio-9090-exec-2] c.h.p.f.s.impl.FlowableTaskServiceImpl   : 任务已办理：taskId=1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d, taskKey=managerApprove, instanceId=175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d, assignee=2
+
+表的数据：
+SELECT COUNT(*) FROM ACT_RU_EXECUTION;
+SELECT COUNT(*) FROM ACT_RU_TASK;
+SELECT COUNT(*) FROM ACT_RU_VARIABLE;
+SELECT COUNT(*) FROM ACT_RU_IDENTITYLINK;
+这四个查询的结果全部是0
+==============================================================================================================
+ -- ① 命门：ASSIGNEE_ 必须 = '2'                                                                                                                                                  SELECT ID_, NAME_, TASK_DEF_KEY_, ASSIGNEE_, START_TIME_, END_TIME_, DURATION_
+  SELECT ID_, NAME_, TASK_DEF_KEY_, ASSIGNEE_, START_TIME_, END_TIME_, DURATION_
+  FROM ACT_HI_TASKINST WHERE PROC_INST_ID_ = '175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d';
+ 返回结果：
+ 1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d	经理审批	managerApprove	2	2026-07-21 12:24:40.620	2026-07-21 14:48:29.993	8629374
+
+  -- ② 预期 5 行：days/reason/initiator + approved/comment
+  SELECT NAME_, VAR_TYPE_, TEXT_, LONG_ FROM ACT_HI_VARINST                                                                                                                        WHERE PROC_INST_ID_ = '175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d';
+返回结果：
+initiator	string	3
+days	integer	2	2
+reason	string	病假
+approved	boolean		1
+comment	string	同意
+
+  -- ③ 轨迹：数一下几行、ACT_TYPE_ 都有哪些（关系到 Day 14 要不要过滤连线）
+  SELECT ACT_ID_, ACT_NAME_, ACT_TYPE_, ASSIGNEE_, START_TIME_, END_TIME_
+  FROM ACT_HI_ACTINST WHERE PROC_INST_ID_ = '175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d' ORDER BY START_TIME_;
+返回结果：
+startEvent	员工发起	startEvent		2026-07-21 12:24:40.613	2026-07-21 12:24:40.617
+flow1		sequenceFlow		2026-07-21 12:24:40.620	2026-07-21 12:24:40.620
+managerApprove	经理审批	userTask	2	2026-07-21 12:24:40.620	2026-07-21 14:48:30.403
+flow2		sequenceFlow		2026-07-21 14:48:30.503	2026-07-21 14:48:30.503
+endEvent	结束	endEvent		2026-07-21 14:48:30.617	2026-07-21 14:48:30.617
+
+  -- ④ 办结标志：END_ACT_ID_='endEvent' 且 DELETE_REASON_ 为 NULL
+  SELECT ID_, BUSINESS_KEY_, END_TIME_, END_ACT_ID_, DELETE_REASON_
+  FROM ACT_HI_PROCINST WHERE ID_ = '175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d';
+返回结果：
+175ffafb-84bc-11f1-b2ab-5eea1d7fcc1d	test-0004	2026-07-21 14:48:32.107	endEvent
 
 
 ==============================================================================================================
 
+ SELECT ACT_ID_, ACT_NAME_, ACT_TYPE_, ASSIGNEE_, START_TIME_, END_TIME_
+  FROM ACT_HI_ACTINST WHERE PROC_INST_ID_ = '6a897d3d-84d2-11f1-b2ab-5eea1d7fcc1d' ORDER BY START_TIME_;
+sql返回结果：
 
+startEvent	员工发起	startEvent		2026-07-21 15:04:29.060	2026-07-21 15:04:29.060
+flow1		sequenceFlow		2026-07-21 15:04:29.060	2026-07-21 15:04:29.060
+managerApprove	经理审批	userTask		2026-07-21 15:04:29.060
+
+换了manager登录
+使用旧数据请求办理接口：
+{
+    "taskId": "taskId 1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d",
+    "variables": { "approved": true, "comment": "同意" }
+  }
+返回：
+{
+  "code": 500,
+  "msg": "待办任务不存在或已办理：taskId 1764dc04-84bc-11f1-b2ab-5eea1d7fcc1d",
+  "data": null
+}
+
+第二次请求参数：
+{ "taskId": " ", "variables": {} }
+
+返回：
+{
+  "code": 400,
+  "msg": "taskId 任务 id 不能为空",
+  "data": null
+}
 
 
 ==============================================================================================================
+ACT_HI_TASKINST,ACT_HI_VARINST,ACT_HI_ACTINST,ACT_HI_PROCINST
+可以详细讲讲这四个表吗？这里我不是很理解，你上面讲的太快了；
+还是从诞生背景，设计意图，功能结构，是否可以删除，会有哪些影响；以及实际的应用场景分别讲讲吗？
+先宏观，后微观；
+你可以理解我的需求吗？你先复述一遍你的理解，我确认后再具体回复内容；
 
+确认点：
+1.落成文档，方便后续复习；
+2.可以用我现在数据库的数据当例子；
+3.B
 
-==============================================================================================================
-
-
-==============================================================================================================
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
+但是我建议一个一个表来吧，一次讲四个，有点多，一口吃不成胖子；
+先ACT_HI_TASKINST吧
+后续的四个表也一并生成对应的文档吧： ACT_HI_COMMENT、ACT_HI_ATTACHMENT、ACT_HI_IDENTITYLINK、ACT_HI_DETAIL
+方便后续复习回顾；
 ==============================================================================================================
 
 
