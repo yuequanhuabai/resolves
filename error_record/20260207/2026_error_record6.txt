@@ -3660,18 +3660,140 @@ What are we thinking about, Ethon?
 另一份给全部的代码吧；
 我的前端不是很好，我先看思路逻辑的文档，自己写，写不出再看你给的实现的代码文档，有问题再问你，这样可以吗？
 
+==============================================================================================================
+import request from '@/utils/request'
+import type { PageResult } from '@/api/user'
+export function pageDefinitions(current = 1, size = 10, latestOnly = false) {
+  return request.get<never, PageResult<ProcessDefinition>>('/process-definition/page', {
+    params: { current, size, latestOnly },
+  })
+}
+这里的get方法在哪里有？
+这是我的request原文件：
+import axios, { type AxiosResponse } from 'axios'
+import { ElMessage } from 'element-plus'
+import router from '@/router'
 
+// 登录态 token 在 localStorage 的键名，全项目统一用 fe_token
+const TOKEN_KEY = 'fe_token'
+
+// 统一 axios 实例：baseURL = /workflow，配合 vite proxy 转发到后端 9090
+const request = axios.create({
+  baseURL: '/workflow',
+  timeout: 10000,
+})
+
+// 请求拦截：注入 JWT（有 token 才加 Authorization 头）
+request.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_KEY)
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+// 响应拦截：
+//  1) 非 JSON（文件流 / BPMN XML）原样返回，不拆包
+//  2) 后端统一结构 R{ code, msg, data }：code==200 取 data，否则弹错并 reject
+//  3) HTTP 401：清登录态 + 跳登录页
+request.interceptors.response.use(
+  (response: AxiosResponse) => {
+    // 文件流 / 二进制：直接把原始数据交给业务层
+    const responseType = response.config.responseType
+    if (responseType === 'blob' || responseType === 'arraybuffer') {
+      return response.data
+    }
+    const res = response.data
+    // 不是统一结构（如流程图 XML 纯字符串）→ 原样返回
+    if (res == null || typeof res !== 'object' || res.code === undefined) {
+      return res
+    }
+    // 业务失败：弹错并中断
+    if (res.code !== 200) {
+      ElMessage.error(res.msg || '请求失败')
+      return Promise.reject(new Error(res.msg || 'Error'))
+    }
+    // 省去每处 res.data.data，直接拿 data
+    return res.data
+  },
+  (error) => {
+    const status = error.response?.status
+    if (status === 401) {
+      // token 失效 / 未登录：清理并跳登录
+      localStorage.removeItem(TOKEN_KEY)
+      ElMessage.error('登录已过期，请重新登录')
+      router.push('/login')
+    } else {
+      ElMessage.error(error.response?.data?.msg || error.message || '网络异常')
+    }
+    return Promise.reject(error)
+  },
+)
+
+export default request
+
+user.ts原文件：
+import request from '@/utils/request'
+
+export interface PageResult<T>{
+    records: T[]
+    total: number
+    current: number
+    size: number
+}
+
+export interface SysUser{
+    id: string
+    username: string
+    realName: string
+    role: string
+    managerId: string | null
+    enabled: boolean
+    createTime: string
+}
+
+// 新增入参：对齐后端 CreateUserRequest（username/password/role 必填，managerId 可空）
+export interface CreateUserBody{
+    username: string
+    password: string
+    realName: string
+    role: string
+    // 雪花 id 用字符串传，避免 JS 大数丢精度；后端 Long 字段能吃字符串
+    managerId: string | null
+}
+
+// 修改入参：对齐后端 UpdateUserRequest（部分更新，无 username/password）
+export interface UpdateUserBody{
+    id: string
+    realName: string
+    role: string
+    managerId: string | null
+    enabled: boolean
+}
+
+export function pageUsers(current=1,size=10){
+    return request.get<never,PageResult<SysUser>>('/user/page',{params:{current,size}})
+}
+
+export function getUser(id: string){
+    return request.get<never,SysUser>(`/user/${id}`)
+}
+
+// 后端返回新建用户的雪花 id（字符串）
+export function createUser(body: CreateUserBody){
+    return request.post<never,string>('/user',body)
+}
+
+export function updateUser(body: UpdateUserBody){
+    return request.put<never,void>('/user',body)
+}
+
+export function deleteUser(id: string){
+    return request.delete<never,void>(`/user/${id}`)
+}
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-
-
+基于当前目录下的process-back的docs下的“05-重写排期计划.md”文档以及对应的实际前后端代码，定位一下当前项目的进度;
 ==============================================================================================================
 
 
