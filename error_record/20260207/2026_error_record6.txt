@@ -3795,20 +3795,43 @@ export function deleteUser(id: string){
 ==============================================================================================================
 基于当前目录下的process-back的docs下的“05-重写排期计划.md”文档以及对应的实际前后端代码，定位一下当前项目的进度;
 ==============================================================================================================
+我现在有个疑问，就是我再WebStore，点击vue跳转到了node_models的vue.d.ts源码,但是整个文件很简单，根本没有onMounted, ref呢
+vue.d.ts的内容如下：
+import { CompilerOptions } from '@vue/compiler-dom';
+import { RenderFunction } from '@vue/runtime-dom';
+export * from '@vue/runtime-dom';
 
+export declare function compileToFunction(template: string | HTMLElement, options?: CompilerOptions): RenderFunction;
 
-
-
-==============================================================================================================
-
-
-
-
-==============================================================================================================
-
+export { compileToFunction as compile };
 
 ==============================================================================================================
+我找到了，是在reactivity.d.ts里面，
+是这个吗？
+export interface Ref<T = any, S = T> {
+    get value(): T;
+    set value(_: S);
+    /**
+     * Type differentiator only.
+     * We need this to be in public d.ts but don't want it to show up in IDE
+     * autocomplete, so we use a private Symbol instead.
+     */
+    [RefSymbol]: true;
+}
 
+==============================================================================================================
+我在当前源码文件里搜索：export declare function ref
+找到了两个：
+export declare function ref<T>(value: T): [T] extends [Ref] ? IfAny<T, Ref<T>, T> : Ref<UnwrapRef<T>, UnwrapRef<T> | T>;
+export declare function ref<T = any>(): Ref<T | undefined>;
+
+==============================================================================================================
+我用Ctrl+Alt+B跳转了reactivity.cjs.js
+// @__NO_SIDE_EFFECTS__
+function ref(value) {
+  return createRef(value, false);
+}
+是这个吗？
 
 ==============================================================================================================
 
