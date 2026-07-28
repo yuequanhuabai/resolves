@@ -3960,8 +3960,11 @@ ref/响应式原理、watch 细节、computed 这些暂时还没显示的遇到�
 我了解了，动态自定义场景就会用slot吧；
 另外为什么这里没有slot标签，而是<template #default="{row}">呢？
 
+我再问下，这个也是slot吗？
+<el-button link type="danger">删除</el-button>
 
-
+<el-button link type="danger">删除</el-button>
+这里的link是啥意思？
 ==============================================================================================================
 
 
