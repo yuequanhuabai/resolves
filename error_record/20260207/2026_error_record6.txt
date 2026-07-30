@@ -4003,34 +4003,87 @@ D:\software\develop_tools\git\github\workspace\core2\process-docs
 你再帮我看看“03-完整代码.md”文档里script最后的onMounted(loadList)是啥意思？
 
 ==============================================================================================================
+关于“03-完整代码.md”这个文档里面的代码：
+async function handleToggleSuspend(row: ProcessDefinition) {
+  try {
+    if (row.suspended) {
+      await activateDefinition(row.id)
+      ElMessage.success('已激活')
+    } else {
+      await suspendDefinition(row.id)
+      ElMessage.success('已挂起')
+    }
+    loadList()
+  } catch {
+    // 错误提示已由 request.ts 拦截器统一处理
+  }
+}
 
+会不会还没执行完条件代码，就直接执行查询操作了？
 
+我还是没有特别理解，你先把这个问题记到文档里面;
+==============================================================================================================
+不用了，这个我知道了，你现在这个回答从历史角度从它的来源讲新旧，很清晰；让我很容易理解
 
+你把这个讲解解析规则也新建一个文档吧，方便以后换机器也能用；
+
+把这两个事情更新一下吧。
+1.双calude code cli的docs目录在“05-重写排期计划.md”或“测试进度断点.md”文档里面加一个指针；会话刚开始的时候必读;
+2.更新一下进度，回写一下；
+==============================================================================================================
+ : 是 v-bind: 的简写，@ 是 v-on: 的简写
+
+帮我写一下文档，你这个讲解的很清晰，比起之前的讲解解析好多了；
+还有这个：“ : 是 v-bind: 的简写，@ 是 v-on: 的简写”，我之前一直不知道组件里的:和@是啥意思，现在一步就讲解清晰了；
 
 ==============================================================================================================
-
-
-
+按照刚才el-pagination的解析规则帮我把el-table也重新讲解一遍吧;
+<el-table :data="list" v-loading="loading" border style="width: 100%">
+      <el-table-column prop="name" label="流程名称" min-width="140" />
+      <el-table-column prop="key" label="流程 Key" min-width="140" />
+      <el-table-column prop="version" label="版本" width="80" />
+      <el-table-column label="状态" width="90">
+        <template #default="{ row }">
+          <el-tag :type="row.suspended ? 'info' : 'success'">
+            {{ row.suspended ? '挂起' : '激活' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="resourceName" label="资源名" min-width="200" show-overflow-tooltip />
+      <el-table-column label="操作" width="180" fixed="right">
+        <template #default="{ row }">
+          <el-button
+              link
+              :type="row.suspended ? 'success' : 'warning'"
+              @click="handleToggleSuspend(row)"
+          >
+            {{ row.suspended ? '激活' : '挂起' }}
+          </el-button>
+          <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
 
 ==============================================================================================================
-
-
-
-
-==============================================================================================================
-
-
-==============================================================================================================
-
+在帮我解析一下这个组件吧：
+<el-switch
+          v-model="latestOnly"
+          active-text="只看最新版本"
+          @change="handleLatestChange"
+      />
 
 ==============================================================================================================
+要不你重新帮我讲下这个：async / await 与 JS 单线程
+以现在的新分析方式来解析；诞生背景，设计目的，适用场景；以及源码的逻辑
 
-
-
+我允许你现在改动代码，帮我加下catch
 ==============================================================================================================
-
-
-
+先不看这个了，你帮我看看css相关吧；
+帮我看看这个样式，在“03-完整代码.md”文档里面
+.pager {
+    margin-top: 16px;
+    justify-content: flex-end;
+  }
 
 ==============================================================================================================
 
