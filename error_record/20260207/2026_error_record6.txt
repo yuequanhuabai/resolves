@@ -4361,11 +4361,23 @@ private <E> IPage<ProcessInstanceVO> toPage(Query<?, E> query,
 ==============================================================================================================
 基于当前目录下的process-docs下的“05-重写排期计划.md”以及“测试进度断点.md”文档以及对应的实际前后端代码，定位一下当前项目的进度;
 ==============================================================================================================
+查询流程定义：
+SELECT * FROM ACT_RE_PROCDEF  ;
 
+ID_	REV_	CATEGORY_	NAME_	KEY_	VERSION_	DEPLOYMENT_ID_	RESOURCE_NAME_	DGRM_RESOURCE_NAME_	DESCRIPTION_	HAS_START_FORM_KEY_	HAS_GRAPHICAL_NOTATION_	SUSPENSION_STATE_	TENANT_ID_	DERIVED_FROM_	DERIVED_FROM_ROOT_	DERIVED_VERSION_	ENGINE_VERSION_
+leaveProcess:1:1e0ebf20-8bcf-11f1-85d8-5eea1d7fcc1d	1	http://ha.com/pr/flowwork	请假流程	leaveProcess	1	1cf84605-8bcf-11f1-85d8-5eea1d7fcc1d	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\leave.bpmn20.xml	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\leave.leaveProcess.png		0	1	1				0
+purchaseProcess:1:1e0ebf1f-8bcf-11f1-85d8-5eea1d7fcc1d	1	http://ha.com/pr/flowwork	采购流程	purchaseProcess	1	1cf84605-8bcf-11f1-85d8-5eea1d7fcc1d	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\purchase.bpmn20.xml	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\purchase.purchaseProcess.png		0	1	1				0
+reimburseProcess:1:1e0ebf21-8bcf-11f1-85d8-5eea1d7fcc1d	1	http://ha.com/pr/flowwork	报销流程	reimburseProcess	1	1cf84605-8bcf-11f1-85d8-5eea1d7fcc1d	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\reimburse.bpmn20.xml	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\reimburse.reimburseProcess.png		0	1	1				0
+travelProcess:1:1e0e22de-8bcf-11f1-85d8-5eea1d7fcc1d	1	http://ha.com/pr/flowwork	出差流程	travelProcess	1	1cf84605-8bcf-11f1-85d8-5eea1d7fcc1d	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\travel.bpmn20.xml	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\travel.travelProcess.png		0	1	1				0
 
+之前流程部署了四个，现在我要发起流程，用查询接口看看数据；
+请求参数怎么填写？
+==============================================================================================================
+businessKey可以随意填写吗？
 
-
-
+definitionKey是哪个表的哪个字段？我要调用/process-instance/page接口去查找;
+==============================================================================================================
+基于当前目录下的process-docs下的“05-重写排期计划.md”以及“测试进度断点.md”文档以及对应的实际前后端代码，定位一下当前项目的进度;
 ==============================================================================================================
 
 
