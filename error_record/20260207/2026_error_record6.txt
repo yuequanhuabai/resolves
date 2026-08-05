@@ -4384,9 +4384,56 @@ yt-dlp  "https://www.douyin.com/video/7670103713423445298"
 ==============================================================================================================
 在线视频下载网址： https://any-save.com
 ==============================================================================================================
+帮我看看“03-完整代码.md”文档里的 export type InstanceStatus = 'RUNNING' | 'COMPLETED' | 'TERMINATED'
+这个是啥意思？枚举？
+
+还有个问题，还是“03-完整代码.md”文档，ProcessInstance对象里面的属性字段，为什么有些是String，有些却多了null呢？我没记错的话，还有一个undefined，这个的应用场景是什么？
+==============================================================================================================
+还是“03-完整代码.md”文档,StartInstanceBody对象里的Record<string, unknown>是什么意思？和后端的Map有什么关系，等价？
+
+==============================================================================================================
+还是“03-完整代码.md”文档,
+export function pageInstances(current = 1, size = 10, definitionKey?: string) {
+  return request.get<never, PageResult<ProcessInstance>>('/process-instance/page', {
+    params: { current, size, definitionKey: definitionKey || undefined },
+  })
+}
+可以改为下面这个吗？
+export function pageInstances(current = 1, size = 10, definitionKey?: string) {
+  return request.get('/process-instance/page', {
+    params: { current, size, definitionKey: definitionKey || undefined },
+  })
+}
+==============================================================================================================
+还有一个问题，
+export function pageInstances(current = 1, size = 10, definitionKey?: string) {
+  return request.get<never, PageResult<ProcessInstance>>('/process-instance/page', {
+    params: { current, size, definitionKey: definitionKey || undefined },
+  })
+}
+这里的current，size，都是传变量进去就ok了，为什么definitionKey是这样：definitionKey: definitionKey || undefined
+
+==============================================================================================================
+还是“03-完整代码.md”文档,
+export function startInstance(body:StartInstanceBody){
+    request.post<never,ProcessInstance>('/process-instance/start', body);
+}
+前端是这样，
+后端的controller是这样的：
+  @Operation(summary = "发起流程实例（按 key 用最新版本，当前用户记为发起人）")
+    @PostMapping("start")
+    public R<ProcessInstanceVO> start(@RequestBody @Valid StartProcessInstanceRequest req) {
+        return R.ok(processInstanceService.start(req));
+    }
+这里是post请求，只要传结构相同的数据就可以了吗？
 
 
-
+你帮我看看我前端的实际修改代码，帮我检查一下，
+另外我修改了后端接口的url，terminate接口感觉直接传instanceId看起来不明显，在原url前加了/terminate 前缀；
+后端接口也改了
+你帮我检查一下；
+==============================================================================================================
+基于当前目录下的process-docs下的“05-重写排期计划.md”以及“测试进度断点.md”文档以及对应的实际前后端代码，定位一下当前项目的进度;
 ==============================================================================================================
 
 
