@@ -4598,26 +4598,68 @@ const page = await pageInstances(current.value, size.value, definitionKey.value)
 export interface ProcessInstance
 
 ==============================================================================================================
+我更新了vies/instance/index.vue文件，你看看我的修改，先不管el-table的代码，现在我想把标题和下拉框弄成水平的，css怎么写？
 
-
-
+方案B你详细一点告诉我怎么写，在现有的代码上怎么写；
+可以附上具体的代码改动以及原因
+==============================================================================================================
+"03-完整代码.md"文档里
+<el-table-column label="业务标识" min-width="140">
+        <template #default="{ row }">{{ row.businessKey || '—' }}</template>
+      </el-table-column>
+这个代码里的row是从那里来的？也没有声明啊
 
 ==============================================================================================================
+你说的有点复杂，我可以直接理解为它是el-table里的:data="list" 数组的单个对象吗？
 
+我更新了vies/instance/index.vue文件，el-table中间这个框我我更代码了，你帮我检查一下？
 
+我更新了vies/instance/index.vue文件，你再帮我检查看看
 
-
+我更新了vies/instance/index.vue文件，加了分页组件部分代码，为什么前端为什么没有展示呢？
 ==============================================================================================================
+我还有一个问题，为什么我直接注释
+      <el-pagination
+          layout="total,prev, pager, next"
+          :total="total"
+          :page-size="size"
+          :disabled="loading"
+<!--          current-page="current"-->
+      />
+它会报错:
+[plugin:vite:vue] Element is missing end tag.
+D:/software/developmentTools/Git/github/workspace001/core2/process-front/src/views/instance/index.vue:45:7
+43 |      <!--    这个div里面存储分页组件-->
+44 |      <div>
+45 |        <el-pagination
+   |         ^
+46 |            layout="total,prev, pager, next"
+47 |            :total="total"
+    at createCompilerError (D:\software\developmentTools\Git\github\workspace001\core2\process-front\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:1378:17)
+    at emitError (D:\software\developmentTools\Git\github\workspace001\core2\process-front\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:3014:5)
+    at Object.onclosetag (D:\software\developmentTools\Git\github\workspace001\core2\process-front\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2381:13)
+    at Tokenizer.stateInClosingTagName (D:\software\developmentTools\Git\github\workspace001\core2\process-front\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:799:16)
+    at Tokenizer.parse (D:\software\developmentTools\Git\github\workspace001\core2\process-front\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:1157:16)
+    at Object.baseParse (D:\software\developmentTools\Git\github\workspace001\core2\process-front\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:3053:13)
+    at Object.parse (D:\software\developmentTools\Git\github\workspace001\core2\process-front\node_modules\@vue\compiler-dom\dist\compiler-dom.cjs.js:910:23)
+    at Object.parse$1 [as parse] (D:\software\developmentTools\Git\github\workspace001\core2\process-front\node_modules\@vue\compiler-sfc\dist\compiler-sfc.cjs.js:1824:24)
+    at createDescriptor (file:///D:/software/developmentTools/Git/github/workspace001/core2/process-front/node_modules/@vitejs/plugin-vue/dist/index.mjs:50:42)
+    at handleHotUpdate (file:///D:/software/developmentTools/Git/github/workspace001/core2/process-front/node_modules/@vitejs/plugin-vue/dist/index.mjs:1144:25)
+Click outside, press Esc key, or fix the code to dismiss.
 
+但是删掉不会报错呢？
+      <el-pagination
+          layout="total,prev, pager, next"
+          :total="total"
+          :page-size="size"
+          :disabled="loading"
 
-
-
+      />
 ==============================================================================================================
+我更新了vies/instance/index.vue文件，你再帮我检查看看
 
-
-==============================================================================================================
-
-
+你可以讲详细一点的该法步骤吗，中间的div怎么改后最后一行的div怎么改？
+还有css，目前分页还是在左下角；
 ==============================================================================================================
 
 
