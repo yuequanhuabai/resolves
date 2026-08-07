@@ -4661,11 +4661,26 @@ Click outside, press Esc key, or fix the code to dismiss.
 你可以讲详细一点的该法步骤吗，中间的div怎么改后最后一行的div怎么改？
 还有css，目前分页还是在左下角；
 ==============================================================================================================
-
-
-
+基于当前目录下的process-docs下的“05-重写排期计划.md”以及“测试进度断点.md”文档以及对应的实际前后端代码，定位一下当前项目的进度;
 ==============================================================================================================
-
+我现在在菜单栏和路由栏里加“我的发起”功能，我有一个疑问
+const menus = [{index: '/', title: '首页'},
+  {index: '/user', title: '用户管理'},
+  {index: '/process', title: '流程管理'},
+  {index: '/instance', title: '运行中的实例'},
+  {index: '/my-start', title: '我的发起'},
+  {index: '/about', title: '关于'},
+]
+里面的
+  {index: '/my-start', title: '我的发起'},
+和
+router/index.ts里children数组里的
+  {
+                path: 'my-start',
+                name: 'Mystart',
+                component: () => import('@/views/myStart/index.vue'),
+  },
+  有什么关联吗？还是说随便写也可以？
 
 
 
