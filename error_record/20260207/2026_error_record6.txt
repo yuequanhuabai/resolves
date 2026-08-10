@@ -4704,11 +4704,39 @@ views/process/index.vue 的竞态：el-switch（:5）无 :loading、el-paginatio
  函数内守卫 if (loading.value) return │ 只发第一个 │ 丢弃调用（点击产生了，请求没发）
   latest-wins / AbortController        │ 每次都发   │ 丢弃过时的结果（回来了但不写进 list）
 ==============================================================================================================
+不用了，我了解清楚了；
+返回“03-完整代码.md”文档，定位到我的发起，
+<el-select
+          v-model="status"
+          style="width: 140px"
+          :disabled="loading"
+          @change="handleFilterChange"
+        >
+          <el-option v-for="s in statusOptions" :key="s.value" :value="s.value" :label="s.label" />
+        </el-select>
+我对这个组件的理解有点问题：
+首先v-model的作用是啥？
+我认为只要用户操作下拉框的值发生了变化，会触发handleFilterChange方法；这个方法是捕获下拉框的值吧，并不是v-model的status的值吧？
+而且我了解v-model是双向响应，这里只需要页面到数据的单向响应即可，即用户选中某个下拉框的值触事件请求接口；
 
-
+你可以理解我的需求吗？你先复述一遍你的理解，我确认后再继续操作；
 ==============================================================================================================
+Position Analysis 在投资方面是什么意思？
 
+wealthProjectionUserInputs 那它的这些参数呢？
+inflationAssumption
 
+netAlpha
+
+yearsInProjection
+
+cashFlows
+
+endDateOverride
+
+maxMonthsOverride
+
+feeOverride
 ==============================================================================================================
 
 
