@@ -4738,19 +4738,44 @@ maxMonthsOverride
 
 feeOverride
 ==============================================================================================================
-
-
+不用了，你先帮我看看前端的报错：
+我按照“03-完整代码.md”文档来的，
+报错信息如下：
+      at Tokenizer.parse (D:\software\developmentTools\Git\github\workspace001\core2\process-front\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:111314:20:17 [vite] Internal server error: Error parsing JavaScript expression: Unexpected token (1:12)
+  Plugin: vite:vue
+  File: D:/software/developmentTools/Git/github/workspace001/core2/process-front/src/views/myStart/index.vue:22:28
+  20 |          <el-table-column label="状态" min-width="120">
+  21 |            <template #default="{row}">
+  22 |              <el-tag :type="STATUS_MAP.[row.status].type">{{ STATUS_MAP[row.status].text }}</el-tag>
+     |                              ^
+  23 |            </template>
+  24 |          </el-table-column>
 
 ==============================================================================================================
-
-
-
+谢谢你给的排查方法，授人以鱼不如授人以渔，我没有仔细注意这个；
+另外：
+<el-table-column label="操作" width="90" fixed="right">
+        <template #default="{ row }">
+          <!-- 只有进行中的能撤回，已结束的撤不了 -->
+          <el-button
+            v-if="row.status === 'RUNNING'"
+            link
+            type="danger"
+            @click="handleRevoke(row)"
+          >
+            撤回
+          </el-button>
+          <span v-else class="muted">—</span>
+        </template>
+      </el-table-column>
+我再问问，这里的<span v-else class="muted">—</span>有啥用？
 
 ==============================================================================================================
+你再帮我看看，为什么启动前后端，点击我的发起，我看浏览器没有发起请求呢？
+运行中的实例这个页面正常；
 
-
-
-
+这个return的问题，我看你的文档“03-完整代码.md”这里面好像也没有呢？
+另外，defs不加.value好像也可以，没有报错呢？
 ==============================================================================================================
 
 
