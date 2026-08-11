@@ -1,0 +1,4 @@
+//  /batch-generate-proposal/{id}:complete-external-verification
+{
+  "verified": true
+}

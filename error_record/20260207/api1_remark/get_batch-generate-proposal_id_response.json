@@ -1,0 +1,23 @@
+{
+  "id": "0a61a8af-badd-409f-b23f-04efdfec331d",
+  "name": "Batch Proposal Aug 6, 2024 10:25 AM",
+  "createBy": "user",
+  "creationTimestamp": "2019-08-24T14:15:22Z",
+  "lastUpdateTimestamp": "2019-08-24T14:15:22Z",
+  "state": "STATE_UNSPECIFIED",
+  "tasks": [
+    {
+      "id": "81869504-df00-4cbf-a875-b47a810ad1cf",
+      "account": {
+        "id": "ACCT-428704"
+      },
+      "aggregate": {
+        "id": "ACCT-428704",
+        "tag": "HOUSEHOLD-ID"
+      },
+      "state": "UNSPECIFIED",
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}
