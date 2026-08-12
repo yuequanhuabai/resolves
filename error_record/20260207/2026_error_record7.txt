@@ -75,6 +75,93 @@ research project;
 
 可以，帮我更新一下文档;
 
+==============================================================================================================
+前提：
+目前数据库中有两笔已经发起的数据：
+
+SELECT * FROM ACT_RU_ACTINST ara ;
+ID_	REV_	PROC_DEF_ID_	PROC_INST_ID_	EXECUTION_ID_	ACT_ID_	TASK_ID_	CALL_PROC_INST_ID_	ACT_NAME_	ACT_TYPE_	ASSIGNEE_	START_TIME_	END_TIME_	DURATION_	TRANSACTION_ORDER_	DELETE_REASON_	TENANT_ID_
+087f7f70-8f43-11f1-bb40-2cf05d7f891d	1	purchaseProcess:1:1e0ebf1f-8bcf-11f1-85d8-5eea1d7fcc1d	087f7f6a-8f43-11f1-bb40-2cf05d7f891d	087f7f6f-8f43-11f1-bb40-2cf05d7f891d	startEvent			员工发起	startEvent		2026-08-03 21:55:49.337	2026-08-03 21:55:49.337	0	1
+087fa581-8f43-11f1-bb40-2cf05d7f891d	1	purchaseProcess:1:1e0ebf1f-8bcf-11f1-85d8-5eea1d7fcc1d	087f7f6a-8f43-11f1-bb40-2cf05d7f891d	087f7f6f-8f43-11f1-bb40-2cf05d7f891d	flow1				sequenceFlow		2026-08-03 21:55:49.337	2026-08-03 21:55:49.337	0	2
+087fa582-8f43-11f1-bb40-2cf05d7f891d	1	purchaseProcess:1:1e0ebf1f-8bcf-11f1-85d8-5eea1d7fcc1d	087f7f6a-8f43-11f1-bb40-2cf05d7f891d	087f7f6f-8f43-11f1-bb40-2cf05d7f891d	managerApprove	087fa583-8f43-11f1-bb40-2cf05d7f891d		经理审批	userTask		2026-08-03 21:55:49.337			3
+2854ad35-8f41-11f1-bb40-2cf05d7f891d	1	leaveProcess:1:1e0ebf20-8bcf-11f1-85d8-5eea1d7fcc1d	285410ef-8f41-11f1-bb40-2cf05d7f891d	2854ad34-8f41-11f1-bb40-2cf05d7f891d	startEvent			员工发起	startEvent		2026-08-03 21:42:23.747	2026-08-03 21:42:23.750	3	1
+28557086-8f41-11f1-bb40-2cf05d7f891d	1	leaveProcess:1:1e0ebf20-8bcf-11f1-85d8-5eea1d7fcc1d	285410ef-8f41-11f1-bb40-2cf05d7f891d	2854ad34-8f41-11f1-bb40-2cf05d7f891d	flow1				sequenceFlow		2026-08-03 21:42:23.753	2026-08-03 21:42:23.753	0	2
+28557087-8f41-11f1-bb40-2cf05d7f891d	1	leaveProcess:1:1e0ebf20-8bcf-11f1-85d8-5eea1d7fcc1d	285410ef-8f41-11f1-bb40-2cf05d7f891d	2854ad34-8f41-11f1-bb40-2cf05d7f891d	managerApprove	2857e188-8f41-11f1-bb40-2cf05d7f891d		经理审批	userTask		2026-08-03 21:42:23.753			3
+
+SELECT * from ACT_RE_PROCDEF arp ;
+ID_	REV_	CATEGORY_	NAME_	KEY_	VERSION_	DEPLOYMENT_ID_	RESOURCE_NAME_	DGRM_RESOURCE_NAME_	DESCRIPTION_	HAS_START_FORM_KEY_	HAS_GRAPHICAL_NOTATION_	SUSPENSION_STATE_	TENANT_ID_	DERIVED_FROM_	DERIVED_FROM_ROOT_	DERIVED_VERSION_	ENGINE_VERSION_
+leaveProcess:1:1e0ebf20-8bcf-11f1-85d8-5eea1d7fcc1d	2	http://ha.com/pr/flowwork	请假流程	leaveProcess	1	1cf84605-8bcf-11f1-85d8-5eea1d7fcc1d	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\leave.bpmn20.xml	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\leave.leaveProcess.png		0	1	2				0
+purchaseProcess:1:1e0ebf1f-8bcf-11f1-85d8-5eea1d7fcc1d	1	http://ha.com/pr/flowwork	采购流程	purchaseProcess	1	1cf84605-8bcf-11f1-85d8-5eea1d7fcc1d	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\purchase.bpmn20.xml	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\purchase.purchaseProcess.png		0	1	1				0
+reimburseProcess:1:1e0ebf21-8bcf-11f1-85d8-5eea1d7fcc1d	1	http://ha.com/pr/flowwork	报销流程	reimburseProcess	1	1cf84605-8bcf-11f1-85d8-5eea1d7fcc1d	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\reimburse.bpmn20.xml	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\reimburse.reimburseProcess.png		0	1	1				0
+travelProcess:1:1e0e22de-8bcf-11f1-85d8-5eea1d7fcc1d	1	http://ha.com/pr/flowwork	出差流程	travelProcess	1	1cf84605-8bcf-11f1-85d8-5eea1d7fcc1d	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\travel.bpmn20.xml	D:\software\developmentTools\Git\github\workspace001\core2\process-back\target\classes\processes\travel.travelProcess.png		0	1	1				0
+
+我本地启动前端后，在“我的发起”页面点击
+发起流程，
+填入：
+
+流程选择： 请假流程
+业务标识： RB-2026-0001B
+申请事由： asdf
+
+报错信息：
+流程定义已挂起，无法发起：leaveProcess
+
+后端日志：
+2026-08-11T21:28:22.284+08:00 DEBUG 13400 --- [process-back] [nio-9090-exec-8] .selectProcessDefinitionsByQueryCriteria : ==>  Preparing: SELECT RES.* from ACT_RE_PROCDEF RES WHERE RES.KEY_ = ? and RES.VERSION_ = (select max(VERSION_) from ACT_RE_PROCDEF where KEY_ = RES.KEY_ and ( (TENANT_ID_ IS NOT NULL and TENANT_ID_ = RES.TENANT_ID_) or (TENANT_ID_ IS NULL and RES.TENANT_ID_ IS NULL) ) ) order by RES.ID_ asc
+2026-08-11T21:28:22.284+08:00 DEBUG 13400 --- [process-back] [nio-9090-exec-8] .selectProcessDefinitionsByQueryCriteria : ==> Parameters: leaveProcess(String)
+2026-08-11T21:28:22.299+08:00 DEBUG 13400 --- [process-back] [nio-9090-exec-8] .selectProcessDefinitionsByQueryCriteria : <==      Total: 1
+2026-08-11T21:28:22.319+08:00  WARN 13400 --- [process-back] [nio-9090-exec-8] c.h.p.f.common.GlobalExceptionHandler    : 业务异常: 流程定义已挂起，无法发起：leaveProcess
+可以帮我看看这个吗？
+
+==============================================================================================================
+我在swagger上调用激活了，重新输入之前的参数发起成功了；
+但是我又一个问题，就是同一个流程，我发起过一次，现在又发起第二次，他不会重复吗？
+还是说只要业务标识不一致就可以一直重复发起？
+或者其它？它的底层源码逻辑是怎样的？
+==============================================================================================================
+我突然发现目前前端还没有“我的代办”页面，管理员不好处理发起人的任务；下一步是做什么的？
+
+我测试了一下，发起没问题，已办结和已终止的显示也都正常，和进行中的一起显示；现在是不是ok了？
+
+上面的问题全部ok，可以更新文档了；
+==============================================================================================================
+我向你表达一个事情：
+Git的操作不用你来，所有Git的操作；
+我自己来commit和push，你可以查看git记录，但是你不要commit和push代码
+你把这个记录到你的内存和文档；方便跨机器还记得这个指令;
+
+还有一个指令，
+如果没有特别说明的话，默认你就是代码解析测claude code cli ，不是代码设计规划生成的claude code cli；
+这样会让 代码设计规划生成的claude code cli 的内存相对小一点，可以更加专注主干核心架构设计;
+你把这个记录到你的内存和文档；方便跨机器还记得这个指令;
+
+==============================================================================================================
+现在我声明你是主claude code cli，负责代码架构设计；
+你可以看到process_instance对应的代码及文档吗？
+
+你可以理解我的需求吗？ 你先复述一遍你的理解，我确认后再继续：
+
+原指令取消。
+稍等一下，我刚才的指令有问题，首先是明确需求才对，
+需求明确后，基于已有的需求来规划原型图；
+你先给基于已有的需求总结一个需求文档吧；
+
+同意，新建 process-docs/process-front/process_task/ 目录
+
+同意你的三个决策的推荐，开始画原型图吧;
+
+现在按照原型图参考前端process_instance设计文档吧，建议前端的修改单独分开
+后端也有process_instance目录，并且后来额外加了文档，你可以参考一下
+
+你可以理解我的需求吗？ 你先复述一遍你的理解，我确认后再继续：
+==============================================================================================================
+细节确认：
+1. 按照你的建议吧
+2. 还是给完整代码吧，我需要的时候可能要看下，但是我尽量保持不看;
+
+你先写后端吧，写完后向我回复，我检查无误后开始前端；
+==============================================================================================================
+
 
 
 ==============================================================================================================
