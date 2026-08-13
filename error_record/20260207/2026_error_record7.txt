@@ -195,13 +195,16 @@ private final static String[] EBCDIC2ASCII={
 
 };
 全部存储在这里面
-
-
-
 ==============================================================================================================
+Task目录名改为小写task，但是报错了：
 
-
-
+Vue：Already included file name
+d:/software/developmentTools/Git/github/workspace001/core2/process-front/src/views/task/index.vue
+differs from file name
+d:/software/developmentTools/Git/github/workspace001/core2/process-front/src/views/Task/index.vue
+only in casing.
+The file is in the program because:
+D:\software\developmentTools\Git\github\workspace001\core2\process-front\src\views\task\index.vue
 
 ==============================================================================================================
 
