@@ -244,7 +244,11 @@ D:\software\developmentTools\Git\github\workspace001\core2\process-front\src\vie
 
 你可以理解我的需求吗？ 你先复述一遍你对我上面问题的理解，我确认后再具体回复:
 ==============================================================================================================
+yt-dlp -o "D:\resource\youtube_vedio\%(title)s.%(ext)s" "https://www.youtube.com/watch?v=Ia82xrp8_i8"
+==============================================================================================================
+yt-dlp https://www.youtube.com/watch?v=MgtOAVOXBWo
 
+yt-dlp https://youtu.be/MgtOAVOXBWo
 
 ==============================================================================================================
 DEAs227bcSGd
