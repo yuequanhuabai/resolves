@@ -331,16 +331,35 @@ ty-asdfas-asdf
 ==============================================================================================================
 先不进入下一步，现在功能是做好了，但是还有一些css和具体的代码我没有彻底搞懂；
 接下来是夯实一下；
-
-
-
 ==============================================================================================================
+ CSS 类
+1. 分页右对齐你写了三种写法，而且都work：
+- views/process、myStart、task、approved：.pager { justify-content: flex-end } —— 类直接挂在 <el-pagination> 上
+- views/instance：.pager-wrap :deep(.el-pagination) { justify-content: flex-end }
+- views/instance 里还注释掉了第三版：.pager-wrap { display: flex; justify-content: flex-end }
+  三种都对，但理由完全不同。第一种能生效其实藏着一个前提（el-pagination 根元素自己就是 flex 容器），这个前提不成立时第一种会静默失效。
+2. :deep() 什么时候必须加、什么时候不用：你的代码里正反例都有 —— .pager（不加，生效）vs layout 的 :deep(.el-menu-item.is-active)（不加就打不到）。规律是一句话的事，但那句话得从
+  scoped 编译成什么样讲起。
+3. views/approved 的 .middle/.bottom 是裸写的（没有外层 .approved-page 包着），其他页都嵌套了一层。为什么不会串到别的页面去？
+4. .muted 死代码（Day 18 后没人用了）——顺带讲 scoped 样式为什么"没人用也不报错"。
 
+ 代码类
 
+5. defineModel<boolean>({required: true}) 到底编译成了什么（你第一次自己实现 v-model，这个宏展开后有 props + emit 两半）
+6. TraceDialog 用 watch(visible) 拉数据、不用 onMounted——弹窗组件的加载时机为什么必须这么选
+7. request.get<never, ActivityTrace[]> 那两个泛型参数分别是什么（这条已登记为欠账，你说过看着别扭）
+8. Record<InstanceStatus, {...}> 这个映射类型，以及为什么 STATUS_MAP[row.status] 不会越界
+9. traceRow?.processDefinitionName ?? null —— ?? 和 || 在这里的差别，以及 ?. 链上为什么还要再 ?? ''
+10. 为什么 openTrace 类型标错 npm run build 才报、模板里传参却一声不吭
 ==============================================================================================================
+轨迹弹窗的这个css是什么意思？
+.node-title {
+    display: flex;
+  }
 
-
-
+你说了一大堆，我没有懂，但是有个问题我想问清楚一下，
+元素是行元素还是块元素，这个是它自身的基因吧，
+这个可以外部修改吗？
 ==============================================================================================================
 
 
