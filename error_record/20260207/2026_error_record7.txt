@@ -577,7 +577,14 @@ date -d "2024-08-10" +%Y%m%d
 FDIC-Insured-Backed by the full faith and credit of the U.S. Government
 
 ==============================================================================================================
-
+还有一个问题，我可以直接用usdt从币安直接转到bitget的钱包，也用usdt接受吗？
+我看到了usdt的网络选择有：
+Ethereum,
+Solana
+Polygon
+BNB Chain 小字（BEP20）
+Arbitrum
+Optimism
 
 
 
